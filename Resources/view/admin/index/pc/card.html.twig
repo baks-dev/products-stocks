@@ -1,0 +1,105 @@
+<tr class="vertical-middle">
+
+
+    <td class="text-nowrap">
+        {# Пользовательское меню #}
+        {# {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }} #}
+    </td>
+
+
+    <td class="ps-5 align-middle w-100">
+        <div class="d-flex">
+
+            {# Обложка  #}
+            {# {% if item.cdn %}
+				<div class="symbol symbol-50px">
+					<span class="symbol-label h-65px lazy"
+						  data-bg="{{ cdn_host ~ product_cover_dir ~ item.dir~'/'~item.cover~'.min.'~item.ext }}"></span>
+				</div>
+			{% else %}
+				<div class="symbol symbol-50px">
+					<span class="symbol-label h-65px lazy" data-bg="{{ item.cover is not null ?
+					product_photo ~ item.dir ~ '/' ~ item.cover ~'.'~ item.ext  : '/img/blank.svg' }}"></span>
+				</div>
+			{% endif %} #}
+
+
+            {% set img_path = item.product_image_cdn == true ? cdn_host : '' %}
+
+            <div>
+                <a href="{# {{ path('Product:user.detail', {
+				url : card.product_url ,
+				offer: card.product_offer_value,
+				variation: card.product_variation_value,
+				modification: card.product_modification_value
+			}) }} #}" class="icon rounded-4 mb-2 lazy bg-contain p-1"
+                   data-bg="{{ item.product_image ? img_path ~ item.product_image ~ item.product_image_ext : '/assets/img/blank.svg' }}"
+                   style="width: 75px; height: 75px;"
+                ></a>
+            </div>
+
+
+            <div class="ms-5">
+
+                {# Название #}
+                <a href="{# {{ path('ProductStocks:admin.detail', { id : item.id }) }} #}"
+                   class="text-decoration-none mb-1 modal-link fw-bolder text-muted"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal"
+                   title="Детали заявки">
+
+
+                    {{ item.product_name }}
+
+                    {# Значение торгового предложения #}
+                    {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+                    {# Постфикс торгового предложения #}
+                    {{ item.product_offer_postfix }}
+
+                    {# Значение множественного варианта ТП #}
+                    {{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
+                    {# Постфикс множественного варианта #}
+                    {{ item.product_variation_postfix }}
+
+
+                    {# Значение модификации множественного варианта ТП #}
+                    {{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
+                    {# Постфикс модификации #}
+                    {{ item.product_modification_postfix }}
+
+                    {# Свойства, учавствующие в названии #}
+                    {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
+						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
+					{% endfor %} #}
+
+
+                </a>
+
+                {# Описание #}
+                <div class="text-muted small">54654 dfgsd
+                    {{ string_width(item.product_description, 150)|raw }}
+                </div>
+
+                {# Артикул #}
+                <div class="text-muted ">
+                    <strong>Артикул:</strong> {{ item.product_article }}
+                </div>
+            </div>
+
+        </div>
+    </td>
+
+    <td class="text-center">
+        {{ item.category_name }}
+    </td>
+
+
+    <td class="text-center">
+        {{ item.warehouse_name }}
+    </td>
+
+    <td class="text-center">
+        {{ item.stock_total }}
+    </td>
+
+</tr>
