@@ -23,10 +23,8 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-//use App\Module\Product\Type\Category\Id\CategoryUidConverter;
-//use BaksDev\Users\Entity\User;
-//use App\Module\Product\Entity;
-//use App\Module\Product\EntityListeners;
+
+use BaksDev\Products\Stocks\Type\Status;
 
 return static function(ContainerConfigurator $configurator) {
 	$services = $configurator->services()
@@ -37,24 +35,32 @@ return static function(ContainerConfigurator $configurator) {
 	
 	$namespace = 'BaksDev\Products\Stocks';
 	
-//	$services->load($namespace.'\Controller\\', __DIR__.'/../../Controller')
-//		->tag('controller.service_arguments')
-//	;
-//	
-//	$services->load($namespace.'\Repository\\', __DIR__.'/../../Repository')
-//		->exclude(__DIR__.'/../../Repository/**/*DTO.php')
-//	;
-//	//->tag('controller.service_arguments');
-//	
-//	$services->load($namespace.'\UseCase\\', __DIR__.'/../../UseCase')
-//		->exclude(__DIR__.'/../../UseCase/**/*DTO.php')
-//	;
-//	
-//	$services->load($namespace.'\DataFixtures\\', __DIR__.'/../../DataFixtures')
-//		->exclude(__DIR__.'/../../DataFixtures/**/*DTO.php')
-//	;
-//	
-//	$services->load($namespace.'\Forms\\', __DIR__.'/../../Forms');
+	$services->load($namespace.'\Controller\\', __DIR__.'/../../Controller')
+		->tag('controller.service_arguments')
+	;
+
+	$services->load($namespace.'\Repository\\', __DIR__.'/../../Repository');
+
+	$services->load($namespace.'\UseCase\\', __DIR__.'/../../UseCase')
+		->exclude(__DIR__.'/../../UseCase/**/*DTO.php')
+	;
+
+	$services->load($namespace.'\DataFixtures\\', __DIR__.'/../../DataFixtures')
+		->exclude(__DIR__.'/../../DataFixtures/**/*DTO.php')
+	;
+
+
+    $services->load($namespace.'\Listeners\\', __DIR__.'/../../Listeners');
+
+
+    $services
+        ->set(Status\ProductStockStatus\ProductStockStatusIncoming::class)
+        ->tag('baks.product.stock.status')
+    ;
+
+    $services->set(Status\Collection\ProductStockStatusCollection::class)
+        ->args([tagged_iterator('baks.product.stock.status')])
+    ;
 
 };
 
