@@ -33,7 +33,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class IncomingProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
-    private ?ProductStockEventUid $id = null;
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private readonly ProductStockEventUid $id;
 
     /** Ответственное лицо (Профиль пользователя) */
     #[Assert\NotBlank]
@@ -44,39 +46,14 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
-    /** Коллекция продукции  */
-    #[Assert\Valid]
-    private ArrayCollection $product;
-
     /** Комментарий */
     private ?string $comment = null;
 
-    // Вспомогательные свойства
-
-    /** Склад */
-    private ?ContactsRegionCallUid $preWarehouse = null;
-
-    /** Продукт */
-    private ?ProductUid $preProduct = null;
-
-    /** Торговое предложение */
-    private ?ProductOfferConst $preOffer = null;
-
-    /** Множественный вариант */
-    private ?ProductOfferVariationConst $preVariation = null;
-
-    /** Модификация множественного варианта */
-    private ?ProductOfferVariationModificationConst $preModification = null;
-
-    /** Количество */
-    private ?int $preTotal = null;
 
     public function __construct(UserProfileUid $profile)
     {
         $this->profile = $profile;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming());
-
-        $this->product = new ArrayCollection();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -89,28 +66,9 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
         $this->id = $id;
     }
 
-    /** Коллекция продукции  */
-    public function getProduct(): ArrayCollection
-    {
-        return $this->product;
-    }
-
-    public function setProduct(ArrayCollection $product): void
-    {
-        $this->product = $product;
-    }
-
-    public function addProduct(Products\ProductStockDTO $product): void
-    {
-        $this->product->add($product);
-    }
-
-    public function removeProduct(Products\ProductStockDTO $product): void
-    {
-        $this->product->removeElement($product);
-    }
 
     /** Комментарий */
+
     public function getComment(): ?string
     {
         return $this->comment;
@@ -122,88 +80,17 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     }
 
     /** Ответственное лицо (Профиль пользователя) */
+
     public function getProfile(): UserProfileUid
     {
         return $this->profile;
     }
 
     /** Статус заявки - ПРИХОД */
+
     public function getStatus(): ProductStockStatus
     {
         return $this->status;
     }
 
-    /** ВСПОМОГАТЕЛЬНЫЕ СВОЙСТВА */
-
-    // WAREHOUSE
-
-    public function getPreWarehouse(): ?ContactsRegionCallUid
-    {
-        return $this->preWarehouse;
-    }
-
-    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
-    {
-        $this->preWarehouse = $warehouse;
-    }
-
-    // PRODUCT
-
-    public function getPreProduct(): ?ProductUid
-    {
-        return $this->preProduct;
-    }
-
-    public function setPreProduct(ProductUid $product): void
-    {
-        $this->preProduct = $product;
-    }
-
-    // OFFER
-
-    public function getPreOffer(): ?ProductOfferConst
-    {
-        return $this->preOffer;
-    }
-
-    public function setPreOffer(ProductOfferConst $offer): void
-    {
-        $this->preOffer = $offer;
-    }
-
-    // VARIATION
-
-    public function getPreVariation(): ?ProductOfferVariationConst
-    {
-        return $this->preVariation;
-    }
-
-    public function setPreVariation(?ProductOfferVariationConst $preVariation): void
-    {
-        $this->preVariation = $preVariation;
-    }
-
-    // MODIFICATION
-
-    public function getPreModification(): ?ProductOfferVariationModificationConst
-    {
-        return $this->preModification;
-    }
-
-    public function setPreModification(?ProductOfferVariationModificationConst $preModification): void
-    {
-        $this->preModification = $preModification;
-    }
-
-    // TOTAL
-
-    public function getPreTotal(): ?int
-    {
-        return $this->preTotal;
-    }
-
-    public function setPreTotal(int $total): void
-    {
-        $this->preTotal = $total;
-    }
 }

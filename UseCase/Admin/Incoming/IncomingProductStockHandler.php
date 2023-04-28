@@ -56,8 +56,6 @@ final class IncomingProductStockHandler
         IncomingProductStockDTO $command,
     ): string|Entity\ProductStock
     {
-
-
         if ($command->getEvent()) {
             $EventRepo = $this->entityManager->getRepository(Entity\Event\ProductStockEvent::class)->find(
                 $command->getEvent()
@@ -115,6 +113,16 @@ final class IncomingProductStockHandler
 
         // Валидация сущности
         $errors = $this->validator->validate($Event);
+
+        if (count($errors) > 0) {
+            $uniqid = uniqid('', false);
+            $errorsString = (string)$errors;
+            $this->logger->error($uniqid . ': ' . $errorsString);
+
+            return $uniqid;
+        }
+
+        $errors = $this->validator->validate($Main);
 
         if (count($errors) > 0) {
             $uniqid = uniqid('', false);

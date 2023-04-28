@@ -73,7 +73,6 @@
 					{# Постфикс множественного варианта #}
 					{{ item.product_variation_postfix }}
 
-
 					{# Значение модификации множественного варианта ТП #}
 					{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
 					{# Постфикс модификации #}
@@ -109,10 +108,6 @@
 
 	<td class="ps-5">
 		{{ item.category_name }}
-	</td>
-
-	<td class="ps-5 vertical-middle">
-		 {{ item.warehouse_name }}
 	</td>
 
 	<td class="ps-5 text-center fw-bolder vertical-middle">

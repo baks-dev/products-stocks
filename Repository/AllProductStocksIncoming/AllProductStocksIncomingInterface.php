@@ -29,5 +29,5 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksIncomingInterface
 {
-    public function fetchAllProductStocksAssociative(SearchDTO $search, UserProfileUid $profile): PaginatorInterface;
+    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface;
 }

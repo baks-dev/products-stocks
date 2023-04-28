@@ -1,0 +1,39 @@
+{% trans_default_domain('admin.product.stock') %}
+
+{% set ROLE = 'ROLE_MATERIAL_STOCK_PURCHASE' %}
+
+{# ---- CSS ------------------------------------------------------------ #}
+{% block title %}
+	{{ 'admin.page.purchase'|trans }}
+{% endblock %}
+
+{# ---- ШАБЛОН ------------------------------------------------------------ #}
+{% extends Template('/admin/base.html.twig') %}
+
+{# ---- CSS ------------------------------------------------------------ #}
+{% block stylesheets %}
+	<link href="/assets/plugins/nice-select2/nice-select2.min.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+
+{# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
+{% block content %}
+	{{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
+{% endblock %}
+
+
+{% block javascript %}
+
+<script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js" class="lazy"></script>
+
+<script async nonce="{{ csp_nonce() }}" data-src="/assets/products_stocks/purchase{{ app.environment != 'dev'?'.min' }}.js" class="lazy"></script>
+
+
+{#<script defer src="{{ path(app.request.attributes.get('_route')~'.js') }}"></script>#}
+{# <script async src="/plugins/nice-select2/nice-select2.min.js"></script> #}
+{# <script>
+    window.addEventListener('load', function () {
+    jsRequire('/js/countup.min.js');
+});
+</script> #}
+{% endblock %}

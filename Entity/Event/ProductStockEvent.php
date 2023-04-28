@@ -26,9 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Entity\Event;
 
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Core\Type\Modify\ModifyAction;
-use BaksDev\Core\Type\Modify\ModifyActionEnum;
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
@@ -37,14 +35,12 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
-use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/* ProductStockEvent */
+// ProductStockEvent
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_event')]
@@ -65,10 +61,26 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: ProductStockUid::TYPE, nullable: false)]
     private ?ProductStockUid $main = null;
 
+    /** Модификатор */
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
+    private ProductStockModify $modify;
+
+    /** Номер заявки */
+    #[Assert\NotBlank]
+    #[Assert\Type('string')]
+    #[Assert\Length(max: 36)]
+    #[ORM\Column(type: Types::STRING)]
+    private string $number;
+
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[ORM\Column(type: UserProfileUid::TYPE)]
     private UserProfileUid $profile;
+
+    /** ID склада */
+    #[Assert\Uuid]
+    #[ORM\Column(type: ContactsRegionCallUid::TYPE, nullable: true)]
+    private ?ContactsRegionCallUid $warehouse = null;
 
     /** Коллекция подукции в заявке */
     #[Assert\Valid]
@@ -81,12 +93,9 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: ProductStockStatus::TYPE)]
     protected ProductStockStatus $status;
 
-    /** Модификатор */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
-    private ProductStockModify $modify;
-
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $comment = null;
 
 
@@ -94,7 +103,6 @@ class ProductStockEvent extends EntityEvent
     {
         $this->id = new ProductStockEventUid();
         $this->modify = new ProductStockModify($this);
-
     }
 
     public function __clone()
@@ -117,10 +125,14 @@ class ProductStockEvent extends EntityEvent
         $this->main = $main instanceof ProductStock ? $main->getId() : $main;
     }
 
-
     public function getMain(): ?ProductStockUid
     {
         return $this->main;
+    }
+
+    public function getNumber(): string
+    {
+        return $this->number;
     }
 
     public function getDto($dto): mixed
@@ -140,5 +152,4 @@ class ProductStockEvent extends EntityEvent
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
-
 }

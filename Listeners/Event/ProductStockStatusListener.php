@@ -27,14 +27,14 @@ namespace BaksDev\Products\Stocks\Listeners\Event;
 
 use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatusType;
-use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 /**
- * Слушатель инициирует статусы складского учета для определения в типе доктрины
+ * Слушатель инициирует статусы складского учета для определения в типе доктрины.
+ *
  * @see ProductStockStatusType метод getProductStockStatus()
  */
-
 #[AsEventListener(event: ControllerEvent::class)]
 final class ProductStockStatusListener
 {

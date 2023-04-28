@@ -26,26 +26,19 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Entity\Products;
 
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Core\Type\Modify\ModifyAction;
-use BaksDev\Core\Type\Modify\ModifyActionEnum;
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
-use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
-/* ProductStockProduct */
+// ProductStockProduct
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_product')]
@@ -66,12 +59,6 @@ class ProductStockProduct extends EntityEvent
     #[ORM\ManyToOne(targetEntity: ProductStockEvent::class, inversedBy: 'product')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockEvent $event;
-
-    /** ID склада */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    #[ORM\Column(type: ContactsRegionCallUid::TYPE)]
-    private ContactsRegionCallUid $warehouse;
 
     /** ID продукта */
     #[Assert\NotBlank]
@@ -103,17 +90,16 @@ class ProductStockProduct extends EntityEvent
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $package = false;
 
-
-    public function __construct(ProductStockEvent $event) {
+    public function __construct(ProductStockEvent $event)
+    {
         $this->event = $event;
         $this->id = new ProductStockCollectionUid();
     }
 
-    public function __clone() : void
+    public function __clone(): void
     {
         $this->id = new ProductStockCollectionUid();
     }
-
 
     public function getDto($dto): mixed
     {
@@ -133,12 +119,10 @@ class ProductStockProduct extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-
     public function getWarehouse(): ContactsRegionCallUid
     {
         return $this->warehouse;
     }
-
 
     public function getProduct(): ProductUid
     {
@@ -150,23 +134,18 @@ class ProductStockProduct extends EntityEvent
         return $this->offer;
     }
 
-
     public function getVariation(): ?ProductOfferVariationConst
     {
         return $this->variation;
     }
-
 
     public function getModification(): ?ProductOfferVariationModificationConst
     {
         return $this->modification;
     }
 
-
     public function getTotal(): int
     {
         return $this->total;
     }
-
-
 }

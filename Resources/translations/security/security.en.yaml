@@ -1,0 +1,26 @@
+
+ROLE_PRODUCT_STOCK:
+  name: 'Inventory'
+  desc: 'Inventory inventory'
+
+
+ROLE_PRODUCT_STOCK_INCOMING:
+  name: 'Warehouse receipts'
+
+ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
+  name: 'Add a parish'
+
+
+ROLE_PRODUCT_STOCK_PURCHASE:
+  name: 'Purchases'
+
+ROLE_PRODUCT_STOCK_PURCHASE_NEW:
+  name: 'Add purchase'
+
+
+
+ROLE_PRODUCT_STOCK_WAREHOUSE:
+  name: 'Receipts'
+
+ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
+  name: 'Send to warehouse'

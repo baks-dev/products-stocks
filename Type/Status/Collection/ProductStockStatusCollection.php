@@ -25,48 +25,41 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status\Collection;
 
-
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use InvalidArgumentException;
 
 final class ProductStockStatusCollection
 {
-	private iterable $status;
-	
-	public function __construct(iterable $status)
-	{
-		$this->status = $status;
-	}
-	
-	/** Возвращает массив из значнией OrderStatus */
-	
-	public function cases() : array
-	{
-		$case = null;
+    private iterable $status;
 
-		foreach($this->status as $status)
-		{
-			$case[$status::sort()] = new ProductStockStatus(new $status());
-		}
-		
-		ksort($case);
-		
-		return $case;
-	}
-	
-	/** Метод возвращает класс статуса заказа  */
-	
-	public function from(string $name) : ProductStockStatus
-	{
-		foreach($this->status as $status)
-		{
-			if($status::STATUS === $name)
-			{
-				return new ProductStockStatus(new $status());
-			}
-		}
-		
-		throw new InvalidArgumentException(sprintf('OrderStatus not found by name %s', $name));
-	}
-	
+    public function __construct(iterable $status)
+    {
+        $this->status = $status;
+    }
+
+    /** Возвращает массив из значнией OrderStatus */
+    public function cases(): array
+    {
+        $case = null;
+
+        foreach ($this->status as $status) {
+            $case[$status::sort()] = new ProductStockStatus(new $status());
+        }
+
+        ksort($case);
+
+        return $case;
+    }
+
+    /** Метод возвращает класс статуса заказа  */
+    public function from(string $name): ProductStockStatus
+    {
+        foreach ($this->status as $status) {
+            if ($status::STATUS === $name) {
+                return new ProductStockStatus(new $status());
+            }
+        }
+
+        throw new InvalidArgumentException(sprintf('OrderStatus not found by name %s', $name));
+    }
 }

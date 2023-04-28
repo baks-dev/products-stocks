@@ -46,28 +46,21 @@ final class ProductStockMessage
         $this->event = $event;
     }
 
-
     /** Идентификатор */
-
     public function getId(): ProductStockUid
     {
         return $this->id;
     }
 
-
     /** Идентификатор события */
-
     public function getEvent(): ProductStockEventUid
     {
         return $this->event;
     }
 
-
     /** Идентификатор предыдущего события */
-
     public function getLast(): ?ProductStockEventUid
     {
         return $this->last;
     }
-
 }

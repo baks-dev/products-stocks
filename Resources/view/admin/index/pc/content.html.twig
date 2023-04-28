@@ -31,18 +31,23 @@
 				
 				{% if is_granted('ROLE_PRODUCT_NEW') %}
 					{% if is_granted('ROLE_PRODUCT_STOCKS_INCOMING') or is_granted('ROLE_ADMIN') %}
-						<a href="{{ path('ProductStocks:admin.incoming.new') }}"
-						   class="btn btn-primary modal-link"
+						<a href="{{ path('ProductStocks:admin.purchase.new') }}"
+						   class="btn btn-danger modal-link"
 						   data-bs-toggle="modal"
 						   data-bs-target="#modal"
-						   title="Добавить приход">
-							{{ 'Добавить приход'|trans({}, 'messages') }}
+						   title="Добавить закупку">
+							{{ 'Добавить закупку'|trans({}, 'messages') }}
 						</a>
 					{% endif %}
 				{% endif %}
 
 
-				<a href="{{ path('ProductStocks:admin.incoming.index') }}" class="btn btn-light" title="Приходные ордера">
+				<a href="{{ path('ProductStocks:admin.purchase.index') }}"
+				   class="btn btn-light"
+				   data-bs-toggle="tooltip"
+				   data-bs-placement="bottom"
+				   title="Список закупок продукции"
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-journal-plus" viewBox="0 0 16 16">
 						<path fill-rule="evenodd" d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5z"></path>
 						<path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"></path>

@@ -1,0 +1,29 @@
+
+# Роль
+ROLE_PRODUCT_STOCK:
+  name: 'Складской учет'
+  desc: 'Складской учет товаров'
+
+# Правила
+
+
+ROLE_PRODUCT_STOCK_INCOMING:
+  name: 'Приходы на склад'
+
+ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
+  name: 'Добавить приход'
+
+
+ROLE_PRODUCT_STOCK_PURCHASE:
+  name: 'Закупки'
+
+ROLE_PRODUCT_STOCK_PURCHASE_NEW:
+  name: 'Добавить закупку'
+
+
+
+ROLE_PRODUCT_STOCK_WAREHOUSE:
+  name: 'Поступления'
+
+ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
+  name: 'Отправить на склад'

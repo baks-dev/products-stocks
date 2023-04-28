@@ -25,11 +25,13 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksIncoming;
 
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
+
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Core\Services\Switcher\SwitcherInterface;
 use BaksDev\Core\Type\Locale\Locale;
+
+use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Products\Category\Entity as CategoryEntity;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
@@ -60,7 +62,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         $this->paginator = $paginator;
     }
 
-    public function fetchAllProductStocksAssociative(SearchDTO $search, UserProfileUid $profile): PaginatorInterface
+    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->connection->createQueryBuilder();
 
@@ -68,7 +70,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
 
         // ProductStock
         $qb->select('stock.id');
-        $qb->addSelect('stock.number');
+
         $qb->addSelect('stock.event');
         $qb->from(ProductStockEntity\ProductStock::TABLE, 'stock');
 
@@ -76,6 +78,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         // $qb->addSelect('event.total');
         $qb->addSelect('event.comment');
         $qb->addSelect('event.status');
+        $qb->addSelect('event.number');
         $qb->join(
             'stock',
             ProductStockEntity\Event\ProductStockEvent::TABLE,
@@ -105,10 +108,10 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         $qb->addSelect('warehouse.id as warehouse_id');
         $qb->addSelect('warehouse.event as warehouse_event');
         $qb->join(
-            'stock_product',
+            'event',
             ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
             'warehouse',
-            'warehouse.id = stock_product.warehouse'
+            'warehouse.id = event.warehouse'
         );
 
         // Product Warehouse Trans
@@ -464,7 +467,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
 
             $searcher = $this->connection->createQueryBuilder();
 
-            $searcher->orWhere('LOWER(stock.number) LIKE :query');
+            $searcher->orWhere('LOWER(event.number) LIKE :query');
 
 //            $searcher->orWhere('LOWER(region_trans.name) LIKE :query');
 //            $searcher->orWhere('LOWER(region_trans.name) LIKE :switcher');
@@ -475,7 +478,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');
-        $qb->addOrderBy('stock.number', 'DESC');
+
 
         return $this->paginator->fetchAllAssociative($qb);
     }

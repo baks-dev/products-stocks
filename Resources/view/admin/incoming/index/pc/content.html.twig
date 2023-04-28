@@ -29,7 +29,7 @@
 			</div>
 
 			{# Добавить #}
-			<div class="w-100 d-flex align-items-center gap-3 justify-content-end">
+			{#<div class="w-100 d-flex align-items-center gap-3 justify-content-end">
 					{% if is_granted('ROLE_PRODUCT_STOCKS_INCOMING') or is_granted('ROLE_ADMIN') %}
 						<a href="{{ path('ProductStocks:admin.incoming.new') }}"
 						   class="btn btn-primary modal-link"
@@ -39,7 +39,7 @@
 							{{ 'Добавить приход'|trans({}, 'messages') }}
 						</a>
 					{% endif %}
-			</div>
+			</div>#}
 		</div>
 
 		<div class="border border-light rounded-4 p-3">
@@ -77,22 +77,21 @@
 						   data-bs-toggle="modal"
 						   data-bs-target="#modal"
 						   title="Детали заявки">
-							# {{ item.number }}
+							<span class="badge text-bg-success me-3">Приход на склад</span> # {{ item.number }}
 						</a>
 						<span class="fw-normal text-nowrap">{{ item.mod_date|date('d.m.Y H:m:i')  }}</span>
 					</div>
 
-
-
-
+					<div class="text-dark">
+						<div class="text-muted opacity-50">Склад:</div>
+						{{ item.warehouse_name }}
+					</div>
 
 
 
                     <div class="d-flex w-75 gap-3">
 
                         {% set img_path = item.users_profile_avatar_cdn == true ? cdn_host : '' %}
-
-
 
                        <div> <a href="{#{{ is_granted('ROLE_ADMIN') ? path('UserProfile:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}#}"
                            class="icon rounded-circle bg-contain lazy p-1"
@@ -144,8 +143,6 @@
                         </div>
                     </div>
 
-
-                    <div><span class="badge text-bg-success">приход на склад</span></div>
 				</div>
 
 			</div>

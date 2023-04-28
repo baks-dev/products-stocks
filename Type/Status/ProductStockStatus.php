@@ -43,7 +43,7 @@ final class ProductStockStatus
 		
 		if($status instanceof $this)
 		{
-			$this->status = $status->getOrderStatus();
+			$this->status = $status->getProductStockStatus();
 		}
 		
 	}

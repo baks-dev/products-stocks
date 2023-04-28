@@ -23,13 +23,6 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin;
 
-// use App\Module\Materials\Stock\Forms\StockFilter\User\StockFilterDTO;
-// use App\Module\Materials\Stock\Forms\StockFilter\User\StockFilterForm;
-// use App\Module\Materials\Stock\Repository\AllStocks\AllStockInterface;
-//
-// use App\System\Handler\Search\SearchDTO;
-// use App\System\Handler\Search\SearchForm;
-// use App\System\Helper\Paginator;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
@@ -39,18 +32,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-// Состояние склада ответственного лица
-
 #[RoleSecurity('ROLE_PRODUCT_STOCK')]
 final class StocksController extends AbstractController
 {
-    /** Состояние склада */
+    /** Состояние склада ответственного лица */
     #[Route('/admin/product/stocks/{page<\d+>}', name: 'admin.index', methods: ['GET', 'POST'])]
-    public function index(
-        Request $request,
-        AllProductStocksInterface $allProductStocks,
-        int $page = 0
-    ): Response {
+    public function index(Request $request, AllProductStocksInterface $allProductStocks, int $page = 0): Response
+    {
         $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
@@ -74,7 +62,7 @@ final class StocksController extends AbstractController
 
         $query = $allProductStocks->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
 
-        dump( current(($query->getData())));
+        //dump(current($query->getData()));
 
         return $this->render(
             [

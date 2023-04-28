@@ -30,32 +30,27 @@ use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
 /** Статус "Принят со склада заявителю" */
 class ProductStockStatusAccept implements ProductStockStatusInterface
 {
-	public const STATUS = 'shipment';
-	
-	private static int $sort = 300;
+    public const STATUS = 'shipment';
 
-	private static string $color = '#198754';
-	
-	/** Возвращает значение (value) */
-	
-	public function getValue() : string
-	{
-		return self::STATUS;
-	}
-	
-	/** Сортирвка */
-	
-	public static function sort() : int
-	{
-		return self::$sort;
-	}
-	
-	
-	/** Цвет */
-	
-	public static function color() : string
-	{
-		return self::$color;
-	}
-	
+    private static int $sort = 300;
+
+    private static string $color = '#198754';
+
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
+
+    /** Сортирвка */
+    public static function sort(): int
+    {
+        return self::$sort;
+    }
+
+    /** Цвет */
+    public static function color(): string
+    {
+        return self::$color;
+    }
 }

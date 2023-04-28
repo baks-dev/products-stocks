@@ -27,36 +27,30 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
 use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
 
-/** Статус "Новая заявка на сборку" */
+/** Статус "Новая заявка (Закупка)" */
 class ProductStockStatusNew implements ProductStockStatusInterface
 {
-	public const STATUS = 'new';
-	
-	private static int $sort = 100;
+    public const STATUS = 'new';
 
-	
-	private static string $color = '#4684D0';
-	
-	/** Возвращает значение (value) */
-	
-	public function getValue() : string
-	{
-		return self::STATUS;
-	}
-	
-	/** Сортирвка */
-	
-	public static function sort() : int
-	{
-		return self::$sort;
-	}
-	
-	
-	/** Цвет */
-	
-	public static function color() : string
-	{
-		return self::$color;
-	}
-	
+    private static int $sort = 100;
+
+    private static string $color = '#4684D0';
+
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
+
+    /** Сортирвка */
+    public static function sort(): int
+    {
+        return self::$sort;
+    }
+
+    /** Цвет */
+    public static function color(): string
+    {
+        return self::$color;
+    }
 }

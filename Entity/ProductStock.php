@@ -28,11 +28,11 @@ namespace BaksDev\Products\Stocks\Entity;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
-
-/* ProductStock */
+// ProductStock
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock')]
@@ -41,24 +41,22 @@ class ProductStock
     public const TABLE = 'product_stock';
 
     /** ID */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
     #[ORM\Id]
     #[ORM\Column(type: ProductStockUid::TYPE)]
     private ProductStockUid $id;
 
-
     /** ID События */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
     #[ORM\Column(type: ProductStockEventUid::TYPE, unique: true)]
     private ProductStockEventUid $event;
-
-
-    /** Номер заявки */
-    #[ORM\Column(type: Types::STRING, length: 10, unique: true)]
-    private string $number;
 
     public function __construct()
     {
         $this->id = new ProductStockUid();
-        $this->number = (string) time();
+        // $this->number = (string) time();
     }
 
     public function getId(): ProductStockUid
@@ -75,5 +73,4 @@ class ProductStock
     {
         $this->event = $event instanceof ProductStockEvent ? $event->getId() : $event;
     }
-
 }

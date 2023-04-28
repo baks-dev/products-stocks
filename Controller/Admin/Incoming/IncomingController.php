@@ -18,54 +18,52 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 
-// use App\Module\Materials\Stock\Entity\MaterialStock;
-// use App\Module\Materials\Stock\UseCase\Admin\Incoming\IncomingMaterialStockDTO;
-// use App\Module\Materials\Stock\UseCase\Admin\Incoming\IncomingMaterialStockForm;
-// use App\Module\Materials\Stock\UseCase\MaterialStockAggregate;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[RoleSecurity('ROLE_PRODUCT_STOCK_INCOMING')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_INCOMING_ACCEPT')]
 final class IncomingController extends AbstractController
 {
     /** Добавить приход на склад */
-    #[Route('/admin/product/stock/incoming', name: 'admin.incoming.new', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stock/incoming/{id}', name: 'admin.incoming.accept', methods: ['GET', 'POST'])]
     public function incoming(
-        Request                     $request,
-        IncomingProductStockHandler $handler
-    ): Response
-    {
-
+        Request $request,
+        IncomingProductStockHandler $handler,
+        #[MapEntity] ProductStockEvent $Event,
+    ): Response {
         $incomingDTO = new IncomingProductStockDTO($this->getProfileUid());
+        $Event->getDto($incomingDTO);
+        $incomingDTO->setComment(null); // обнуляем комментарий
 
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $incomingDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.incoming.new'),
+            'action' => $this->generateUrl('ProductStocks:admin.incoming.accept', ['id' => $incomingDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-
+        if ($form->isSubmitted() && $form->isValid() && $form->has('incoming')) {
             $ProductStock = $handler->handle($incomingDTO);
 
             if ($ProductStock instanceof ProductStock) {
-                $this->addFlash('success', 'admin.success.new', 'admin.product.stock');
+                $this->addFlash('success', 'admin.success.accept', 'admin.product.stock');
             } else {
-                $this->addFlash('danger', 'admin.danger.new', 'admin.product.stock', $ProductStock);
+                $this->addFlash('danger', 'admin.danger.accept', 'admin.product.stock', $ProductStock);
             }
 
-            //return $this->redirectToReferer();
+            // return $this->redirectToReferer();
             return $this->redirectToRoute('ProductStocks:admin.incoming.index');
         }
 
-        return $this->render(['form' => $form->createView()]);
+        return $this->render(['form' => $form->createView(), 'name' => $Event->getNumber()]);
     }
 }

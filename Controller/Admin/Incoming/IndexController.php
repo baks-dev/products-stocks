@@ -18,17 +18,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 
-// use App\Module\Materials\Stock\Forms\StockFilter\User\StockFilterDTO;
-// use App\Module\Materials\Stock\Forms\StockFilter\User\StockFilterForm;
-// use App\Module\Materials\Stock\Repository\AllRequired\AllRequiredInterface;
-// use App\Module\Materials\Stock\Type\Status\MaterialStockStatus;
-// use App\Module\Materials\Stock\Type\Status\MaterialStockStatusEnum;
-
 use BaksDev\Core\Controller\AbstractController;
-
-// use App\System\Handler\Search\SearchDTO;
-// use App\System\Handler\Search\SearchForm;
-// use App\System\Helper\Paginator;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Services\Security\RoleSecurity;
@@ -45,9 +35,8 @@ final class IndexController extends AbstractController
     public function incoming(
         Request $request,
         AllProductStocksIncomingInterface $allIncoming,
-        int     $page = 0
-    ): Response
-    {
+        int $page = 0
+    ): Response {
         $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
@@ -60,12 +49,8 @@ final class IndexController extends AbstractController
 //        $filterForm = $this->createForm(StockFilterForm::class, $filter);
 //        $filterForm->handleRequest($request);
 
-        // Получаем состояние склада ответственного лица
-        //$stmt = $allRequired->get($search, new MaterialStockStatus(MaterialStockStatusEnum::INCOMING), $this->getProfileUid());
-        //$query = new Paginator($page, $stmt, $request);
-
-        /* Получаем список */
-        $query = $allIncoming->fetchAllProductStocksAssociative($search, $this->getProfileUid());
+        // Получаем псисок приходов ответственного лица
+        $query = $allIncoming->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
 
         return $this->render(
             [

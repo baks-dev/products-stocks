@@ -43,7 +43,8 @@ final class UpdateProductStocksTotal
         $this->entityManager = $entityManager;
     }
 
-    public function __invoke(ProductStockMessage $message)
+    /** Пополнение складских остатков */
+    public function __invoke(ProductStockMessage $message): void
     {
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
@@ -63,13 +64,6 @@ final class UpdateProductStocksTotal
                         'modification' => $product->getModification(),
                     ]
                 );
-
-//                dump($product->getProduct());
-//                dump($product->getWarehouse());
-//                dump($product->getOffer());
-//                dump($product->getVariation());
-//                dump($product->getModification());
-//                dd($ProductStockTotal);
 
                 if (!$ProductStockTotal) {
                     $ProductStockTotal = new ProductStockTotal(

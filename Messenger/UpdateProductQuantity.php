@@ -60,7 +60,8 @@ final class UpdateProductQuantity
         $this->productQuantity = $productQuantity;
     }
 
-    public function __invoke(ProductStockMessage $message)
+    /** Пополнение наличия продукции */
+    public function __invoke(ProductStockMessage $message): void
     {
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
@@ -69,8 +70,7 @@ final class UpdateProductQuantity
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $product)
-            {
+            foreach ($products as $product) {
                 $ProductUpdateQuantity = null;
 
                 // Количественный учет модификации множественного варианта торгового предложения

@@ -32,7 +32,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 10)]
 final class ProductStockCacheClear
 {
-    public function __invoke(ProductStockMessage $message)
+    public function __invoke(ProductStockMessage $message): void
     {
         // Чистим кеш модуля
         $cache = new FilesystemAdapter('CacheProductStock');
