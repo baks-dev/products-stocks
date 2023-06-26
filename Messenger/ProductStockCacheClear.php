@@ -35,7 +35,7 @@ final class ProductStockCacheClear
     public function __invoke(ProductStockMessage $message): void
     {
         // Чистим кеш модуля
-        $cache = new FilesystemAdapter('CacheProductStock');
+        $cache = new FilesystemAdapter('ProductStock');
         $cache->clear();
 
         // Сбрасываем индивидуальный кеш
@@ -52,5 +52,10 @@ final class ProductStockCacheClear
             $cache = new ApcuAdapter((string) $message->getLast()->getValue());
             $cache->clear();
         }
+
+
+        /* Чистим кеш путевых листов */
+        $cache = new FilesystemAdapter('DeliveryTransport');
+        $cache->clear();
     }
 }

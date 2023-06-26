@@ -28,8 +28,8 @@ namespace BaksDev\Products\Stocks\Entity;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 // ProductStock
@@ -53,10 +53,9 @@ class ProductStock
     #[ORM\Column(type: ProductStockEventUid::TYPE, unique: true)]
     private ProductStockEventUid $event;
 
-    public function __construct()
+    public function __construct(AbstractUid|string $id = null)
     {
-        $this->id = new ProductStockUid();
-        // $this->number = (string) time();
+        $this->id = new ProductStockUid($id);
     }
 
     public function getId(): ProductStockUid

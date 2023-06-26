@@ -25,11 +25,11 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity;
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,7 +38,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_total')]
-class ProductStockTotal
+final class ProductStockTotal
 {
     public const TABLE = 'product_stock_total';
 
@@ -47,46 +47,50 @@ class ProductStockTotal
     #[ORM\Column(type: ProductStockTotalUid::TYPE)]
     private ProductStockTotalUid $id;
 
+    /** ID склада */
+    #[ORM\Column(type: ContactsRegionCallConst::TYPE)]
+    private ContactsRegionCallConst $warehouse;
+
     /** ID продукта */
     #[ORM\Column(type: ProductUid::TYPE)]
     private ProductUid $product;
-
-    /** ID склада */
-    #[ORM\Column(type: ContactsRegionCallUid::TYPE)]
-    private ContactsRegionCallUid $warehouse;
-
+    
     /** Постоянный уникальный идентификатор ТП */
     #[ORM\Column(type: ProductOfferConst::TYPE, nullable: true)]
     private ?ProductOfferConst $offer;
 
     /** Постоянный уникальный идентификатор варианта */
-    #[ORM\Column(type: ProductOfferVariationConst::TYPE, nullable: true)]
-    private ?ProductOfferVariationConst $variation;
+    #[ORM\Column(type: ProductVariationConst::TYPE, nullable: true)]
+    private ?ProductVariationConst $variation;
 
     /** Постоянный уникальный идентификатор модификации */
-    #[ORM\Column(type: ProductOfferVariationModificationConst::TYPE, nullable: true)]
-    private ?ProductOfferVariationModificationConst $modification;
+    #[ORM\Column(type: ProductModificationConst::TYPE, nullable: true)]
+    private ?ProductModificationConst $modification;
 
     /** Общее количество на данном складе */
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $total = 0;
 
-    // Увеличиваем количество
+    /** Зарезервированно на данном складе */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $reserve = 0;
 
     public function __construct(
-        ProductUid $product,
-        ContactsRegionCallUid $warehouse,
-        ?ProductOfferConst $offer,
-        ?ProductOfferVariationConst $variation,
-        ?ProductOfferVariationModificationConst $modification
+        ContactsRegionCallConst   $warehouse,
+        ProductUid                $product,
+        ?ProductOfferConst        $offer,
+        ?ProductVariationConst    $variation,
+        ?ProductModificationConst $modification
     ) {
         $this->id = new ProductStockTotalUid();
-        $this->product = $product;
         $this->warehouse = $warehouse;
+        $this->product = $product;
         $this->offer = $offer;
         $this->variation = $variation;
         $this->modification = $modification;
     }
+
+    /** Количество */
 
     // Увеличиваем количество
     public function addTotal(int $total): void
@@ -99,4 +103,36 @@ class ProductStockTotal
     {
         $this->total -= $total;
     }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /** Резервирование */
+
+    // Увеличиваем количество
+    public function addReserve(int $reserve): void
+    {
+        $this->reserve += $reserve;
+    }
+
+    // Уменьшаем количество
+    public function subReserve(int $reserve): void
+    {
+        $this->reserve -= $reserve;
+        
+        if ($this->reserve < 0)
+        {
+            $this->reserve = 0;
+        }
+
+    }
+
+    public function getReserve(): int
+    {
+        return $this->reserve;
+    }
+
+
 }

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status;
 
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\StringType;
 use InvalidArgumentException;
@@ -71,7 +71,7 @@ final class ProductStockStatusType extends StringType
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
-        $column['length'] = 10;
+        $column['length'] = 15;
 
         return $platform->getStringTypeDeclarationSQL($column);
     }

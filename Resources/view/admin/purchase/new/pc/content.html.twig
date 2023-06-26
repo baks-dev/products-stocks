@@ -120,3 +120,7 @@
 
     {{ form_end(form) }}
 </div>
+
+
+<script async nonce="{{ csp_nonce() }}" data-src="/assets/products_stocks/purchase{{ app.environment != 'dev'?'.min' }}.js?v={{ version }}" class="lazy"></script>
+

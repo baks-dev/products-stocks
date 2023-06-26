@@ -21,25 +21,78 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Security;
 
+use BaksDev\Menu\Admin\DataFixtures\Menu\MenuAdminFixturesInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\MenuAdminSectionGroupEnum;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterIncoming implements VoterFixturesInterface
+final class VoterIncoming implements VoterFixturesInterface, MenuAdminFixturesInterface
 {
-    /** Список приходов */
+    /** Список приходных ордеров */
     public const VOTER = 'INCOMING';
 
-    public function getVoter(): string
+    public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
     }
 
     public function equals(RoleFixturesInterface $role): bool
     {
-        return Role::ROLE === $role->getRole();
+        return $role->getRole() === Role::ROLE;
+    }
+
+    /**
+     * Добавляем раздел в меню администрирвоания.
+     */
+
+    /**
+     * Метод возвращает префикс роли доступа.
+     */
+    public function getRole(): string
+    {
+        return self::getVoter();
+    }
+
+    /** Метод возвращает PATH раздела */
+    public function getPath(): string
+    {
+        return 'ProductStocks:admin.incoming.index';
+    }
+
+    /** Метод возвращает секцию, в которую помещается ссылка на раздел */
+    public function getGroupMenu(): MenuAdminSectionGroupEnum|bool
+    {
+        if (enum_exists(MenuAdminSectionGroupEnum::class))
+        {
+            return MenuAdminSectionGroupEnum::STOCKS;
+        }
+
+        return false;
+    }
+
+    /** Метод возвращает позицию, в которую распологается ссылка в секции меню */
+    public function getSortMenu(): int
+    {
+        return 120;
+    }
+
+    /** Метод возвращает флаг "Показать в выпадающем меню"  */
+    public function getDropdownMenu(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Метод возвращает флаг "Модальное окно".
+     */
+    public function getModal(): bool
+    {
+        return false;
     }
 }

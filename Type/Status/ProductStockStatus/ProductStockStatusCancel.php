@@ -25,37 +25,20 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
-/** Статус "Отменен" */
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
+#[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusCancel implements ProductStockStatusInterface
 {
-	public const STATUS = 'cancel';
-	
-	private static int $sort = 900;
-    
-	private static string $color = '#FF3945';
-	
-	/** Возвращает значение (value) */
-	
-	public function getValue() : string
-	{
-		return self::STATUS;
-	}
-	
-	/** Сортирвка */
-	
-	public static function sort() : int
-	{
-		return self::$sort;
-	}
-	
-	
-	/** Цвет */
-	
-	public static function color() : string
-	{
-		return self::$color;
-	}
-	
+    /**
+     * Статус "Отменен".
+     */
+    public const STATUS = 'cancel';
+
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
 }

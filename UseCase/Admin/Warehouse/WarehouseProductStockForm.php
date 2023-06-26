@@ -18,30 +18,16 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
-use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
-use BaksDev\Products\Product\Repository\ProductChoice\ProductChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductModificationChoice\ProductModificationChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductOfferChoice\ProductOfferChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductVariationChoice\ProductVariationChoiceInterface;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\CallbackTransformer;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
 
 final class WarehouseProductStockForm extends AbstractType
 {
@@ -49,8 +35,7 @@ final class WarehouseProductStockForm extends AbstractType
 
     public function __construct(
         WarehouseChoiceInterface $warehouseChoice,
-    )
-    {
+    ) {
         $this->warehouseChoice = $warehouseChoice;
     }
 
@@ -60,15 +45,24 @@ final class WarehouseProductStockForm extends AbstractType
 
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function (FormEvent $event) {
+            function (FormEvent $event): void {
                 /** @var WarehouseProductStockDTO $data */
-
                 $data = $event->getData();
                 $form = $event->getForm();
 
-                $warehouses = $this->warehouseChoice->fetchWarehouseByProfile($data->getProfile());
+//                /dd($data);
 
-                if (1 === count($warehouses)) {
+                if ($data->getDestination())
+                {
+                    //$form->add('warehouse', HiddenType::class);
+                    return;
+                }
+
+                /** Список всех активных складов */
+                $warehouses = $this->warehouseChoice->fetchAllWarehouse();
+
+                if (count($warehouses) === 1)
+                {
                     $data->setWarehouse(current($warehouses));
                 }
 
@@ -76,17 +70,16 @@ final class WarehouseProductStockForm extends AbstractType
                 $form
                     ->add('warehouse', ChoiceType::class, [
                         'choices' => $warehouses,
-                        'choice_value' => function (?ContactsRegionCallUid $warehouse) {
+                        'choice_value' => function (?ContactsRegionCallConst $warehouse) {
                             return $warehouse?->getValue();
                         },
-                        'choice_label' => function (ContactsRegionCallUid $warehouse) {
+                        'choice_label' => function (ContactsRegionCallConst $warehouse) {
                             return $warehouse->getAttr();
                         },
 
                         'label' => false,
                         'required' => true,
-                    ])
-                ;
+                    ]);
             }
         );
 
@@ -100,7 +93,6 @@ final class WarehouseProductStockForm extends AbstractType
         );
     }
 
-
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(
@@ -108,6 +100,7 @@ final class WarehouseProductStockForm extends AbstractType
                 'data_class' => WarehouseProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
+                'csrf_protection' => false
             ]
         );
     }

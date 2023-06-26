@@ -30,5 +30,7 @@ use BaksDev\Core\Type\UidType\Uid;
 
 final class ProductStockUid extends Uid
 {
+    public const TEST = '0188a9a1-3dcd-75a3-b7a0-55845a57ccae';
+    
     public const TYPE = 'product_stock_uid';
 }

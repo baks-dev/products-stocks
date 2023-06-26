@@ -25,38 +25,21 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
 
-/** Статус "Приход на склад" */
+#[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusIncoming implements ProductStockStatusInterface
 {
-	public const STATUS = 'incoming';
-	
-	private static int $sort = 900;
+    /**
+     * Статус "Приход на склад"
+     */
+    public const STATUS = 'incoming';
 
-	private static string $color = '#000';
-	
-	/** Возвращает значение (value) */
-	
-	public function getValue() : string
-	{
-		return self::STATUS;
-	}
-	
-	/** Сортирвка */
-	
-	public static function sort() : int
-	{
-		return self::$sort;
-	}
-	
-	
-	/** Цвет */
-	
-	public static function color() : string
-	{
-		return self::$color;
-	}
-	
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
 }

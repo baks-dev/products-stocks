@@ -23,9 +23,10 @@
 
 namespace BaksDev\Products\Stocks\Entity\Event;
 
-use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Core\Type\UidType\Uid;
 
 interface ProductStockEventInterface
 {
-    public function getEvent(): ?ProductStockEventUid;
+    /** @see ProductStockEvent */
+    public function getEvent(): ?Uid;
 }

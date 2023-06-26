@@ -21,8 +21,8 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase\Products;
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -41,11 +41,11 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     /** Множественный вариант */
     #[Assert\Uuid]
-    private ?ProductOfferVariationConst $variation = null;
+    private ?ProductVariationConst $variation = null;
 
     /** Модификация множественного варианта */
     #[Assert\Uuid]
-    private ?ProductOfferVariationModificationConst $modification = null;
+    private ?ProductModificationConst $modification = null;
 
     /** Количество */
     #[Assert\NotBlank]
@@ -86,23 +86,23 @@ final class ProductStockDTO implements ProductStockProductInterface
     }
 
     /** Множественный вариант */
-    public function getVariation(): ?ProductOfferVariationConst
+    public function getVariation(): ?ProductVariationConst
     {
         return $this->variation;
     }
 
-    public function setVariation(?ProductOfferVariationConst $variation): void
+    public function setVariation(?ProductVariationConst $variation): void
     {
         $this->variation = $variation;
     }
 
     /** Модификация множественного варианта */
-    public function getModification(): ?ProductOfferVariationModificationConst
+    public function getModification(): ?ProductModificationConst
     {
         return $this->modification;
     }
 
-    public function setModification(?ProductOfferVariationModificationConst $modification): void
+    public function setModification(?ProductModificationConst $modification): void
     {
         $this->modification = $modification;
     }

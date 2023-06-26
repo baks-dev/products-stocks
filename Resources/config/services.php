@@ -23,50 +23,20 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use BaksDev\Products\Stocks\Type\Status;
-
-return static function (ContainerConfigurator $configurator) {
+return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
         ->defaults()
         ->autowire()
-        ->autoconfigure()
-    ;
+        ->autoconfigure();
 
     $namespace = 'BaksDev\Products\Stocks';
 
+    $services->load($namespace.'\\', __DIR__.'/../../')
+        ->exclude(__DIR__.'/../../{Controller,Entity,Resources,Type,Tests,*DTO.php,*Message.php}');
+
     $services->load($namespace.'\Controller\\', __DIR__.'/../../Controller')
         ->tag('controller.service_arguments')
-    ;
+        ->exclude(__DIR__.'/../../Controller/**/*Test.php');
 
-    $services->load($namespace.'\Repository\\', __DIR__.'/../../Repository');
-
-    $services->load($namespace.'\UseCase\\', __DIR__.'/../../UseCase')
-        ->exclude(__DIR__.'/../../UseCase/**/*DTO.php')
-    ;
-
-    $services->load($namespace.'\Listeners\\', __DIR__.'/../../Listeners');
-
-    $services->load($namespace.'\Security\\', __DIR__.'/../../Security');
-
-    // Статус Закупка
-    $services
-        ->set(Status\ProductStockStatus\ProductStockStatusPurchase::class)
-        ->tag('baks.product.stock.status')
-    ;
-
-    // Статус отпарвки закупки на склад
-    $services
-        ->set(Status\ProductStockStatus\ProductStockStatusWarehouse::class)
-        ->tag('baks.product.stock.status')
-    ;
-
-    // Статус "Приход на склад"
-    $services
-        ->set(Status\ProductStockStatus\ProductStockStatusIncoming::class)
-        ->tag('baks.product.stock.status')
-    ;
-
-    $services->set(Status\Collection\ProductStockStatusCollection::class)
-        ->args([tagged_iterator('baks.product.stock.status')])
-    ;
+    $services->load($namespace.'\Type\Status\ProductStockStatus\\', __DIR__.'/../../Type/Status/ProductStockStatus');
 };

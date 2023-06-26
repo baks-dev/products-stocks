@@ -27,6 +27,8 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventType;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockType;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Parameters\ProductStockParameterType;
+use BaksDev\Products\Stocks\Type\Parameters\ProductStockParameterUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionType;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -42,6 +44,7 @@ return static function (ContainerConfigurator $container, DoctrineConfig $doctri
     $doctrine->dbal()->type(ProductStockCollectionUid::TYPE)->class(ProductStockCollectionType::class);
     $doctrine->dbal()->type(ProductStockStatus::TYPE)->class(ProductStockStatusType::class);
     $doctrine->dbal()->type(ProductStockTotalUid::TYPE)->class(ProductStockTotalType::class);
+    $doctrine->dbal()->type(ProductStockParameterUid::TYPE)->class(ProductStockParameterType::class);
 
     $emDefault = $doctrine->orm()->entityManager('default');
 

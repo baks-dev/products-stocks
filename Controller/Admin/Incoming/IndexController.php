@@ -21,7 +21,9 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
-use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksIncoming\AllProductStocksIncomingInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,17 +47,18 @@ final class IndexController extends AbstractController
         $searchForm->handleRequest($request);
 
         // Фильтр
-//        $filter = new StockFilterDTO($ROLE_ADMIN ? null : $this->getProfileUid(), $request);
-//        $filterForm = $this->createForm(StockFilterForm::class, $filter);
-//        $filterForm->handleRequest($request);
+        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
 
-        // Получаем псисок приходов ответственного лица
-        $query = $allIncoming->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
+        // Получаем список приходов ответственного лица
+        $query = $allIncoming->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }

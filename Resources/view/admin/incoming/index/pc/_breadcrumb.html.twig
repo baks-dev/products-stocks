@@ -41,6 +41,15 @@
 				{{ 'admin.breadcrumb.index'|trans }}
 			</a>
 		</li>
+
+		<li class="breadcrumb-item">
+			<a href="{{ path('ProductStocks:admin.warehouse.index') }}"
+			   class="text-decoration-none"
+			   aria-label="{{ 'admin.breadcrumb.warehouse'|trans }}"
+			   title="{{ 'admin.breadcrumb.warehouse'|trans }}">
+				{{ 'admin.breadcrumb.warehouse'|trans }}
+			</a>
+		</li>
 		
 		<li class="breadcrumb-item active" aria-current="page"
 				aria-label="{{ 'admin.breadcrumb.orders'|trans }}"

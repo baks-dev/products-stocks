@@ -1,0 +1,143 @@
+{% trans_default_domain 'admin.product.stock' %}
+
+<tr>
+
+    {# <td>
+    #}{# Пользовательское меню #}{#
+    {{ include(_self|replace({ "_table.tbody.html.twig": "_usecase.html.twig" })) }}
+</td> #}
+
+    {# Чекбокс #}
+    {# <td>
+		<div class="form-check form-check-sm form-check-custom">
+			<input class="form-check-input checked-item" type="checkbox" onchange=checkedItem();
+				   value="{{ item.event }}"
+				   name=" #}{# {{ multi.multiple.vars.full_name }} #}{# [][event]"
+			>
+
+		</div>
+	</td> #}
+
+    <td class="ps-5 align-middle">
+        <div class="d-flex align-content-center">
+
+            {# Обложка  #}
+            {# {% if item.cdn %}
+				<div class="symbol symbol-50px">
+					<span class="symbol-label h-65px lazy"
+						  data-bg="{{ cdn_host ~ product_cover_dir ~ item.dir~'/'~item.cover~'.min.'~item.ext }}"></span>
+				</div>
+			{% else %}
+				<div class="symbol symbol-50px">
+					<span class="symbol-label h-65px lazy" data-bg="{{ item.cover is not null ?
+					product_photo ~ item.dir ~ '/' ~ item.cover ~'.'~ item.ext  : '/img/blank.svg' }}"></span>
+				</div>
+			{% endif %} #}
+
+
+
+            {% set img_path = item.product_image_cdn == true ? cdn_host : '' %}
+
+            <div>
+                <a href="{{ path('Product:user.detail', {
+                    url : item.product_url ,
+                    offer: item.product_offer_value,
+                    variation: item.product_variation_value,
+                    modification: item.product_modification_value
+                }) }}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
+                   data-bg="{{ item.product_image ? img_path ~ item.product_image ~ item.product_image_ext : '/assets/img/blank.svg' }}"
+                   style="width: 60px; height: 60px;"
+                ></a>
+            </div>
+
+
+            <div class="ms-5">
+                {# Артикул #}
+                <div class="text-muted small">
+                    <strong>Артикул:</strong> {{ item.product_article }}
+                </div>
+
+
+
+
+                {# Название #}
+                <a href="{{ path('Product:user.detail', {
+                    url : item.product_url ,
+                    offer: item.product_offer_value,
+                    variation: item.product_variation_value,
+                    modification: item.product_modification_value
+                }) }}"
+                   class="text-decoration-none mb-1 fw-bolder text-muted"
+                   {#data-bs-toggle="modal"
+                   data-bs-target="#modal"#}
+                        target="_detail"
+                   title="Детали заявки">
+
+
+                    {{ item.product_name }}
+
+                    {# Значение торгового предложения #}
+                    {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+                    {# Постфикс торгового предложения #}
+                    {{ item.product_offer_postfix }}
+
+                    {# Значение множественного варианта ТП #}
+                    {{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
+                    {# Постфикс множественного варианта #}
+                    {{ item.product_variation_postfix }}
+
+
+                    {# Значение модификации множественного варианта ТП #}
+                    {{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
+                    {# Постфикс модификации #}
+                    {{ item.product_modification_postfix }}
+
+                    {# Свойства, учавствующие в названии #}
+                    {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
+						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
+					{% endfor %} #}
+
+
+                </a>
+
+                {# Описание #}
+                {# <div class="text-muted small">54654 dfgsd
+					{{ string_width(item.product_description, 150)|raw }}
+				</div> #}
+                <div>
+                    {% if item.product_offer_value %}
+                        {{ item.product_offer_name }} : {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+                    {% endif %}
+
+                    {% if item.product_variation_value %}
+                        , {{ item.product_variation_name }} : {{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
+                    {% endif %}
+
+                    {% if item.product_modification_value %}
+                        , {{ item.product_modification_name }}: {{ item.product_modification_value|call_twig_func(item.product_modification_reference~'_render') }}
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </td>
+
+    {# <td class="ps-5 text-nowrap">
+
+		{{ item.article_offer_name }}: {{ reference(item.article_reference, item.offer) }}<br>
+		{{ item.variation_offer_name }}: {{ reference(item.variation_reference, item.variation) }}
+	</td> #}
+
+    <td class="ps-5">
+        {{ item.category_name }}
+    </td>
+
+    <td class="ps-5 text-center fw-bolder vertical-middle {#{{ item.products_move ? 'text-danger' : 'text-primary' }}#} h5">
+        {{ item.total }}
+    </td>
+
+    <td class="ps-5 text-center fw-bolder vertical-middle text-muted">
+        {{ item.stock_total }}
+    </td>
+
+</tr>

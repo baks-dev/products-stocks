@@ -25,16 +25,17 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-/** Статус "Новая заявка (Закупка)" */
+
+#[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusNew implements ProductStockStatusInterface
 {
+    /**
+     * Статус "Новая заявка (Закупка)"
+     */
     public const STATUS = 'new';
-
-    private static int $sort = 100;
-
-    private static string $color = '#4684D0';
 
     /** Возвращает значение (value) */
     public function getValue(): string
@@ -42,15 +43,4 @@ class ProductStockStatusNew implements ProductStockStatusInterface
         return self::STATUS;
     }
 
-    /** Сортирвка */
-    public static function sort(): int
-    {
-        return self::$sort;
-    }
-
-    /** Цвет */
-    public static function color(): string
-    {
-        return self::$color;
-    }
 }

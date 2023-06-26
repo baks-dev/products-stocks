@@ -20,6 +20,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
@@ -53,7 +54,7 @@ class Role implements RoleFixturesInterface, MenuAdminFixturesInterface
     public function getGroupMenu(): MenuAdminSectionGroupEnum|bool
     {
         if (enum_exists(MenuAdminSectionGroupEnum::class)) {
-            return MenuAdminSectionGroupEnum::PRODUCTS;
+            return MenuAdminSectionGroupEnum::STOCKS;
         }
 
         return false;
@@ -62,6 +63,21 @@ class Role implements RoleFixturesInterface, MenuAdminFixturesInterface
     /** Метод возвращает позицию, в которую распологается ссылка в секции меню */
     public function getSortMenu(): int
     {
-        return 600;
+        return 100;
+    }
+
+    /** Метод возвращает флаг "Показать в выпадающем меню"  */
+    public function getDropdownMenu(): bool
+    {
+        return true;
+    }
+
+
+    /**
+     * Метод возвращает флаг "Модальное окно".
+     */
+    public function getModal(): bool
+    {
+        return false;
     }
 }

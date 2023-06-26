@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPurchase;
 
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Core\Services\Switcher\SwitcherInterface;
@@ -102,7 +101,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
 
         $qb->addSelect('stock_product.id as product_stock_id');
         $qb->addSelect('stock_product.total');
-        $qb->addSelect('stock_product.package');
+        //$qb->addSelect('stock_product.package');
         $qb->join(
             'event',
             ProductStockEntity\Products\ProductStockProduct::TABLE,
@@ -110,32 +109,6 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
             'stock_product.event = stock.event'
         );
 
-
-
-
-        // Warehouse
-//
-//        // Product Warehouse
-//        $qb->addSelect('warehouse.id as warehouse_id');
-//        $qb->addSelect('warehouse.event as warehouse_event');
-//        $qb->join(
-//            'stock_product',
-//            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-//            'warehouse',
-//            'warehouse.id = stock_product.warehouse'
-//        );
-//
-//        // Product Warehouse Trans
-//        $qb->addSelect('warehouse_trans.name AS warehouse_name');
-//        // $qb->addSelect('warehouse_trans.description AS warehouse_description');
-//
-//        $qb->join(
-//            'warehouse',
-//            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-//            'warehouse_trans',
-//            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-//        );
-//
         $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
 
 

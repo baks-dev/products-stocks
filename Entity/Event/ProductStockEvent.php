@@ -25,9 +25,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Event;
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Entity\EntityEvent;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
+use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
+use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
@@ -44,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_event')]
-class ProductStockEvent extends EntityEvent
+final class ProductStockEvent extends EntityEvent
 {
     public const TABLE = 'product_stock_event';
 
@@ -61,10 +64,6 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: ProductStockUid::TYPE, nullable: false)]
     private ?ProductStockUid $main = null;
 
-    /** Модификатор */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
-    private ProductStockModify $modify;
-
     /** Номер заявки */
     #[Assert\NotBlank]
     #[Assert\Type('string')]
@@ -72,32 +71,45 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: Types::STRING)]
     private string $number;
 
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    #[ORM\Column(type: UserProfileUid::TYPE)]
-    private UserProfileUid $profile;
-
-    /** ID склада */
-    #[Assert\Uuid]
-    #[ORM\Column(type: ContactsRegionCallUid::TYPE, nullable: true)]
-    private ?ContactsRegionCallUid $warehouse = null;
-
-    /** Коллекция подукции в заявке */
-    #[Assert\Valid]
-    #[Assert\Count(min: 1)]
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: ProductStockProduct::class, cascade: ['all'])]
-    protected Collection $product;
-
     /** Статус заявки */
     #[Assert\NotBlank]
     #[ORM\Column(type: ProductStockStatus::TYPE)]
     protected ProductStockStatus $status;
 
+    /** Коллекция продукции в заявке */
+    #[Assert\Valid]
+    #[Assert\Count(min: 1)]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: ProductStockProduct::class, cascade: ['all'])]
+    protected Collection $product;
+
+    /** Модификатор */
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
+    private ProductStockModify $modify;
+
+    /** Профиль пользователя */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\Column(type: UserProfileUid::TYPE)]
+    private UserProfileUid $profile;
+
+    /** Константа склада */
+    #[Assert\Uuid]
+    #[ORM\Column(type: ContactsRegionCallConst::TYPE, nullable: true)]
+    private ?ContactsRegionCallConst $warehouse = null;
+
+    /** Склад назначения (при перемещении) */
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockMove::class, cascade: ['all'])]
+    private ?ProductStockMove $move = null;
+
+    /** ID Заказа на сборку */
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockOrder::class, cascade: ['all'])]
+    private ?ProductStockOrder $ord = null;
+    
+
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $comment = null;
-
 
     public function __construct()
     {
@@ -112,7 +124,7 @@ class ProductStockEvent extends EntityEvent
 
     public function __toString(): string
     {
-        return (string)$this->id;
+        return (string) $this->id;
     }
 
     public function getId(): ProductStockEventUid
@@ -135,9 +147,70 @@ class ProductStockEvent extends EntityEvent
         return $this->number;
     }
 
+    public function getStatus(): ProductStockStatus
+    {
+        return $this->status;
+    }
+
+    /**
+     * Идентификатор склада.
+     */
+    public function getWarehouse(): ?ContactsRegionCallConst
+    {
+        return $this->warehouse;
+    }
+
+    /**
+     * Идентификатор заказа.
+     */
+    public function getOrder(): ?OrderUid
+    {
+        return $this->ord?->getOrder();
+    }
+
+    /**
+     * Идентификатор заказа при перемещении.
+     */
+    public function getMoveOrder(): ?OrderUid
+    {
+        return $this->move?->getOrder();
+    }
+
+    /**
+     * Идентификатор целевого склада при перемещении.
+     */
+    public function getMoveDestination(): ?ContactsRegionCallConst
+    {
+        return $this->move?->getDestination();
+    }
+
+
+    public function getMove(): ProductStockMove
+    {
+        return $this->move;
+    }
+
+
+    /**
+     * Идентификатор ответственного.
+     */
+    public function getProfile(): UserProfileUid
+    {
+        return $this->profile;
+    }
+
+    /**
+     * Product.
+     */
+    public function getProduct(): Collection
+    {
+        return $this->product;
+    }
+
     public function getDto($dto): mixed
     {
-        if ($dto instanceof ProductStockEventInterface) {
+        if ($dto instanceof ProductStockEventInterface)
+        {
             return parent::getDto($dto);
         }
 
@@ -146,7 +219,8 @@ class ProductStockEvent extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockEventInterface) {
+        if ($dto instanceof ProductStockEventInterface)
+        {
             return parent::setEntity($dto);
         }
 

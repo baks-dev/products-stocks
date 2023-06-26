@@ -25,55 +25,52 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status;
 
-
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
 final class ProductStockStatus
 {
-	public const TYPE = 'product_stock_status_type';
-	
-	private ?ProductStockStatusInterface $status = null;
-	
-	public function __construct(self|string|ProductStockStatusInterface $status)
-	{
-		if($status instanceof ProductStockStatusInterface)
-		{
-			$this->status = $status;
-		}
-		
-		if($status instanceof $this)
-		{
-			$this->status = $status->getProductStockStatus();
-		}
-		
-	}
-	
-	public function __toString() : string
-	{
-		return $this->status ? $this->status->getValue() :  '';
-	}
-	
-	/** Возвращает значение (value) страны String */
-	
-	public function getProductStockStatus() : ProductStockStatusInterface
-	{
-		return $this->status;
-	}
+    public const TYPE = 'product_stock_status_type';
 
-	
-	/** Возвращает значение (value) страны String */
-	
-	public function getProductStockStatusValue() : ?string
-	{
-		return $this->status?->getValue();
-	}
-	
-	
-	/** Возвращает код цвета */
-	
-	public function getColor() : string
-	{
-		return $this->status::color();
-	}
-	
+    private ?ProductStockStatusInterface $status = null;
+
+    public function __construct(self|string|ProductStockStatusInterface $status)
+    {
+        if ($status instanceof ProductStockStatusInterface) {
+            $this->status = $status;
+        }
+
+        if ($status instanceof $this) {
+            $this->status = $status->getProductStockStatus();
+        }
+    }
+
+    public function __toString(): string
+    {
+        return $this->status ? $this->status->getValue() : '';
+    }
+
+    /** Возвращает значение (value) страны String */
+    public function getProductStockStatus(): ProductStockStatusInterface
+    {
+        return $this->status;
+    }
+
+    /** Возвращает значение (value) страны String */
+    public function getProductStockStatusValue(): ?string
+    {
+        return $this->status?->getValue();
+    }
+
+//    /** Возвращает код цвета */
+//    public function getColor(): string
+//    {
+//        return $this->status::color();
+//    }
+
+
+    public function equals(ProductStockStatusInterface $status): bool
+    {
+        return $this->status->getValue() === $status->getValue();
+    }
+
 }

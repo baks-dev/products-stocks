@@ -25,28 +25,32 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksWarehouse;
 
+use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Core\Services\Switcher\SwitcherInterface;
 use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Products\Category\Entity as CategoryEntity;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Groups\Group\Entity as GroupEntity;
 use BaksDev\Users\Groups\Users\Entity as CheckUsersEntity;
 use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\DBAL\Connection;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterface
 {
     private Connection $connection;
+
     private TranslatorInterface $translator;
+
     private SwitcherInterface $switcher;
+
     private PaginatorInterface $paginator;
 
     public function __construct(
@@ -61,13 +65,15 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         $this->paginator = $paginator;
     }
 
-    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
-    {
+    /** Метод возвращает список всех поступлений на склад  */
+    public function fetchAllProductStocksAssociative(
+        SearchDTO $search,
+        ProductsStocksFilterInterface $filter,
+        ?UserProfileUid $profile
+    ): PaginatorInterface {
         $qb = $this->connection->createQueryBuilder();
 
-        // Stock
 
-        // ProductStock
         $qb->select('stock.id');
 
         $qb->addSelect('stock.event');
@@ -93,7 +99,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
         $qb->addSelect('stock_product.id as product_stock_id');
         $qb->addSelect('stock_product.total');
-        $qb->addSelect('stock_product.package');
+        //$qb->addSelect('stock_product.package');
         $qb->join(
             'event',
             ProductStockEntity\Products\ProductStockProduct::TABLE,
@@ -101,18 +107,21 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             'stock_product.event = stock.event'
         );
 
-
-
         // Warehouse
+        $exist = $this->connection->createQueryBuilder();
+        $exist->select('1');
+        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
+        $exist->where('tmp.event = warehouse.event');
 
         // Product Warehouse
         $qb->addSelect('warehouse.id as warehouse_id');
         $qb->addSelect('warehouse.event as warehouse_event');
+
         $qb->join(
             'event',
             ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
             'warehouse',
-            'warehouse.id = event.warehouse'
+            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
         );
 
         // Product Warehouse Trans
@@ -127,10 +136,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         );
 
         $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
-
-
-
-
 
         // Product
         $qb->addSelect('product.id as product_id');
@@ -464,8 +469,16 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             'groups_trans.event = groups.event AND groups_trans.local = :local'
         );
 
+
+        if($filter->getWarehouse())
+        {
+            $qb->andWhere('warehouse.const = :warehouse_filter');
+            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
+        }
+        
         // Поиск
-        if ($search->query) {
+        if ($search->query)
+        {
             $search->query = mb_strtolower($search->query);
 
             $searcher = $this->connection->createQueryBuilder();
@@ -481,7 +494,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');
-
 
         return $this->paginator->fetchAllAssociative($qb);
     }

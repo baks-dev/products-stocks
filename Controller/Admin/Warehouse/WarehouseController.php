@@ -19,7 +19,7 @@
 namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse;
 
 use BaksDev\Core\Controller\AbstractController;
-use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockDTO;
@@ -36,9 +36,13 @@ final class WarehouseController extends AbstractController
 {
     /** Отправить закупку на склад */
     #[Route('/admin/product/stock/warehouse/{id}', name: 'admin.warehouse.send', methods: ['GET', 'POST'])]
-    public function incoming(Request $request, WarehouseProductStockHandler $handler, #[MapEntity] ProductStockEvent $Event): Response
-    {
-        if (!$this->getProfileUid()) {
+    public function incoming(
+        Request $request,
+        WarehouseProductStockHandler $handler,
+        #[MapEntity] ProductStockEvent $Event
+    ): Response {
+        if (!$this->getProfileUid())
+        {
             throw new UserNotFoundException('User Profile not found');
         }
 
@@ -52,12 +56,15 @@ final class WarehouseController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('send')) {
+        if ($form->isSubmitted() && $form->isValid() && $form->has('send'))
+        {
             $ProductStock = $handler->handle($warehouseDTO);
 
-            if ($ProductStock instanceof ProductStock) {
+            if ($ProductStock instanceof ProductStock)
+            {
                 $this->addFlash('success', 'admin.success.warehouse', 'admin.product.stock');
-            } else {
+            } else
+            {
                 $this->addFlash('danger', 'admin.danger.warehouse', 'admin.product.stock', $ProductStock);
             }
 

@@ -74,6 +74,9 @@ function changeObjectProduct() {
 
     requestModalName.open(incomingForm.getAttribute('method'), incomingForm.getAttribute('action'), true);
 
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
@@ -123,6 +126,9 @@ function changeObjectOffer() {
 
     requestModalName.open(incomingForm.getAttribute('method'), incomingForm.getAttribute('action'), true);
 
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
@@ -169,6 +175,9 @@ function changeObjectVariation()
     formData.append(this.getAttribute('name'), this.value);
 
     requestModalName.open(incomingForm.getAttribute('method'), incomingForm.getAttribute('action'), true);
+
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {

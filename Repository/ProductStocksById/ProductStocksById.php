@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksById;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductStocksById implements ProductStocksByIdInterface
@@ -38,6 +39,48 @@ final class ProductStocksById implements ProductStocksByIdInterface
     {
         $this->entityManager = $entityManager;
     }
+
+
+    /**
+     * Метод возвращает всю продукцию заявке с определенным статусом
+     */
+    public function getProductsByProductStocksStatus(ProductStockUid $id, ProductStockStatus|ProductStockStatusInterface $status): array
+    {
+
+        $status = $status instanceof ProductStockStatus ? $status : new ProductStockStatus($status);
+        
+        $qb = $this->entityManager->createQueryBuilder();
+
+        $qb->select('product');
+        $qb->from(ProductStockEntity\ProductStock::class, 'stock');
+
+        $qb->join(
+            ProductStockEntity\Event\ProductStockEvent::class,
+            'event',
+            'WITH',
+            'event.id = stock.event AND event.status = :status'
+        );
+
+        $qb->leftJoin(
+            ProductStockEntity\Products\ProductStockProduct::class,
+            'product',
+            'WITH',
+            'product.event = event.id'
+        );
+
+        $qb->where('stock.id = :id');
+        $qb->setParameter('id', $id, ProductStockUid::TYPE);
+        $qb->setParameter('status', $status, ProductStockStatus::TYPE);
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+
+
+
+
+
 
     /** Метод возвращает всю продукция в приходном ордере */
     public function getProductsIncomingStocks(ProductStockUid $id): array
@@ -67,4 +110,102 @@ final class ProductStocksById implements ProductStocksByIdInterface
 
         return $qb->getQuery()->getResult();
     }
+
+
+
+
+    /**
+     * Метод возвращает всю продукцию для сборки (Package)
+     */
+    public function getProductsPackageStocks(ProductStockUid $id): array
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+
+        $qb->select('product');
+        $qb->from(ProductStockEntity\ProductStock::class, 'stock');
+
+        $qb->join(
+            ProductStockEntity\Event\ProductStockEvent::class,
+            'event',
+            'WITH',
+            'event.id = stock.event AND event.status = :status'
+        );
+
+        $qb->leftJoin(
+            ProductStockEntity\Products\ProductStockProduct::class,
+            'product',
+            'WITH',
+            'product.event = event.id'
+        );
+
+        $qb->where('stock.id = :id');
+        $qb->setParameter('id', $id, ProductStockUid::TYPE);
+        $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Метод возвращает всю продукцию для перемещения
+     */
+    public function getProductsMovingStocks(ProductStockUid $id): array
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+
+        $qb->select('product');
+        $qb->from(ProductStockEntity\ProductStock::class, 'stock');
+
+        $qb->join(
+            ProductStockEntity\Event\ProductStockEvent::class,
+            'event',
+            'WITH',
+            'event.id = stock.event AND event.status = :status'
+        );
+
+        $qb->leftJoin(
+            ProductStockEntity\Products\ProductStockProduct::class,
+            'product',
+            'WITH',
+            'product.event = event.id'
+        );
+
+        $qb->where('stock.id = :id');
+        $qb->setParameter('id', $id, ProductStockUid::TYPE);
+        $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+    /**
+     * Метод возвращает всю продукцию которая переместилась со склада
+     */
+    public function getProductsWarehouseStocks(ProductStockUid $id): array
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+
+        $qb->select('product');
+        $qb->from(ProductStockEntity\ProductStock::class, 'stock');
+
+        $qb->join(
+            ProductStockEntity\Event\ProductStockEvent::class,
+            'event',
+            'WITH',
+            'event.id = stock.event AND event.status = :status'
+        );
+
+        $qb->leftJoin(
+            ProductStockEntity\Products\ProductStockProduct::class,
+            'product',
+            'WITH',
+            'product.event = event.id'
+        );
+
+        $qb->where('stock.id = :id');
+        $qb->setParameter('id', $id, ProductStockUid::TYPE);
+        $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE);
+
+        return $qb->getQuery()->getResult();
+    }
+
 }

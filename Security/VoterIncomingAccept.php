@@ -20,6 +20,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
@@ -33,7 +34,7 @@ class VoterIncomingAccept implements VoterFixturesInterface
     /** Добавить приход на склад */
     public const VOTER = 'INCOMING_ACCEPT';
 
-    public function getVoter(): string
+    public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
     }

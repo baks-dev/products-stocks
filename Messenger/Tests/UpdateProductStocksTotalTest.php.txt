@@ -1,0 +1,258 @@
+<?php
+/*
+ *  Copyright 2022.  Baks.dev <admin@baks.dev>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ */
+
+namespace BaksDev\Products\Stocks\Messenger\Tests;
+
+use BaksDev\Contacts\Region\Entity\Call\ContactsRegionCall;
+use BaksDev\Products\Product\Entity\Event\ProductEvent;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
+use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Products\Stocks\Messenger\AddQuantityProductStocksTotalByIncomingStock;
+use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Products\ProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockHandler;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+/**
+ * @internal
+ *
+ * @coversNothing
+ *
+ * @group products-stocks
+ */
+final class UpdateProductStocksTotalTest extends KernelTestCase
+{
+    // private ?ProductStockEventUid $event;
+
+    /** Закупка */
+    private static ?ProductStock $PurchaseProductStock = null;
+
+    private static ?ProductStock $WarehouseProductStock = null;
+
+    private static ?ProductStock $IncomingProductStock = null;
+
+    /**
+     * Этот метод вызывается перед запуском первого теста этого тестового класса.
+     */
+    public static function setUpBeforeClass(): void
+    {
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+
+        /** @var ProductEvent $ProductEvent */
+        $ProductEvent = $em->getRepository(ProductEvent::class)->findOneBy([], ['id' => 'DESC']);
+
+        /** @var ContactsRegionCall $WarehouseEvent */
+        $WarehouseEvent = $em->getRepository(ContactsRegionCall::class)->findOneBy([], ['id' => 'DESC']);
+
+        if (!$ProductEvent->getOffer()->isEmpty()) {
+            // TODO: необходимо в тесте присвоить торговое предложение
+            dd('необходимо в тесте присвоить торговое предложение');
+        }
+
+        /** Закупка */
+
+        /** @var PurchaseProductStockHandler $PurchaseProductStockHandler */
+        $PurchaseProductStockHandler = static::getContainer()->get(PurchaseProductStockHandler::class);
+
+        $PurchaseProductStockDTO = new PurchaseProductStockDTO(new UserProfileUid());
+        $PurchaseProductStockDTO->setComment('Тестовое событие');
+        $PurchaseProductStockDTO->setNumber('1234567890');
+
+        $ProductStockDTO = new ProductStockDTO();
+        $ProductStockDTO->setProduct($ProductEvent->getProduct());
+        $ProductStockDTO->setTotal(1);
+
+        $PurchaseProductStockDTO->addProduct($ProductStockDTO);
+
+        $PurchaseProductStock = $PurchaseProductStockHandler->handle($PurchaseProductStockDTO);
+        if ($PurchaseProductStock instanceof ProductStock) {
+            self::$PurchaseProductStock = $PurchaseProductStock;
+
+            /** Поступление на склад */
+
+            /** @var WarehouseProductStockHandler $WarehouseProductStockHandler */
+            $WarehouseProductStockHandler = static::getContainer()->get(WarehouseProductStockHandler::class);
+
+            $WarehouseProductStockDTO = new WarehouseProductStockDTO(new UserProfileUid());
+            $WarehouseProductStockDTO->setId(self::$PurchaseProductStock->getEvent());
+            $WarehouseProductStockDTO->setWarehouse($WarehouseEvent->getConst());
+            $WarehouseProductStockDTO->setComment('Тестовое событие');
+
+            $WarehouseProductStock = $WarehouseProductStockHandler->handle($WarehouseProductStockDTO);
+            if ($WarehouseProductStock instanceof ProductStock) {
+                self::$WarehouseProductStock = $WarehouseProductStock;
+
+                /** Приход на склад */
+
+                /** @var IncomingProductStockHandler $IncomingProductStockHandler */
+                $IncomingProductStockHandler = static::getContainer()->get(IncomingProductStockHandler::class);
+
+                $IncomingProductStockDTO = new IncomingProductStockDTO(new UserProfileUid());
+                $IncomingProductStockDTO->setId(self::$WarehouseProductStock->getEvent());
+                $IncomingProductStockDTO->setComment('Тестовое событие');
+
+                $IncomingProductStock = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
+
+                if ($IncomingProductStock instanceof ProductStock) {
+                    self::$IncomingProductStock = $IncomingProductStock;
+                }
+            }
+        }
+
+        parent::setUpBeforeClass();
+    }
+
+    /**
+     * Этот метод вызывается после выполнения последнего теста этого тестового класса.
+     */
+    public static function tearDownAfterClass(): void
+    {
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+
+        // Удаляем закупку
+        if (self::$PurchaseProductStock) {
+            $ProductStockEvent = $em->getRepository(ProductStockEvent::class)->find(self::$PurchaseProductStock->getEvent());
+            $em->remove($ProductStockEvent);
+
+            $ProductStock = $em->getRepository(ProductStock::class)->find(self::$PurchaseProductStock->getId());
+            $em->remove($ProductStock);
+        }
+
+        // Удаляем поступление на склад
+        if (self::$WarehouseProductStock) {
+            $ProductStockEvent = $em->getRepository(ProductStockEvent::class)->find(self::$WarehouseProductStock->getEvent());
+            $em->remove($ProductStockEvent);
+
+            $ProductStock = $em->getRepository(ProductStock::class)->find(self::$WarehouseProductStock->getId());
+            $em->remove($ProductStock);
+        }
+
+        // Удаляем приход склад
+        if (self::$IncomingProductStock) {
+            $ProductStockEvent = $em->getRepository(ProductStockEvent::class)->find(self::$IncomingProductStock->getEvent());
+            $em->remove($ProductStockEvent);
+
+            $ProductStock = $em->getRepository(ProductStock::class)->find(self::$IncomingProductStock->getId());
+            $em->remove($ProductStock);
+        }
+
+        // Удаляем все события и корни
+        $em->flush();
+
+        parent::tearDownAfterClass();
+    }
+
+    /** Метод проверяет пополнение наличия продукта */
+    public function testUpdateProductStocksTotalMessenger(): void
+    {
+        self::assertNotEmpty(self::$IncomingProductStock);
+
+        if (self::$IncomingProductStock) {
+            $em = static::getContainer()->get(EntityManagerInterface::class);
+
+            /** @var ProductStockEvent $ProductStockEvent */
+            $ProductStockEvent = $em->getRepository(ProductStockEvent::class)->find(self::$IncomingProductStock->getEvent());
+
+            /** Получаем продукцию в заявке */
+            /** @var ProductStocksByIdInterface $productStocks */
+            $productStocks = static::getContainer()->get(ProductStocksByIdInterface::class);
+            $ProductsIncomingStocks = $productStocks->getProductsIncomingStocks(self::$IncomingProductStock->getId());
+            $Product = current($ProductsIncomingStocks);
+
+            // Получаем текущее состояни склада
+            $ProductStockTotal = $em->getRepository(ProductStockTotal::class)->findOneBy(
+                [
+                    'warehouse' => $ProductStockEvent->getWarehouse(),
+                    'product' => $Product->getProduct(),
+                    'offer' => $Product->getOffer(),
+                    'variation' => $Product->getVariation(),
+                    'modification' => $Product->getModification(),
+                ]
+            );
+
+            if (!$ProductStockTotal) {
+                $ProductStockTotal = new ProductStockTotal(
+                    $ProductStockEvent->getWarehouse(),
+                    $Product->getProduct(),
+                    $Product->getOffer(),
+                    $Product->getVariation(),
+                    $Product->getModification()
+                );
+            }
+
+            $oldQuantity = $ProductStockTotal->getTotal();
+
+            /** Вызываем хендлер сообщения */
+            $ProductStockMessage = new ProductStockMessage(self::$IncomingProductStock->getId(), self::$IncomingProductStock->getEvent());
+            self::assertEquals($ProductStockMessage->getId(), self::$IncomingProductStock->getId());
+            $MessageBusInterface = static::getContainer()->get(AddQuantityProductStocksTotalByIncomingStock::class);
+            ($MessageBusInterface)($ProductStockMessage);
+
+            $em->clear();
+
+            /** @var ProductStockEvent $ProductStockEvent */
+            $ProductStockTotal = $em->getRepository(ProductStockTotal::class)->findOneBy(
+                [
+                    'warehouse' => $ProductStockEvent->getWarehouse(),
+                    'product' => $Product->getProduct(),
+                    'offer' => $Product->getOffer(),
+                    'variation' => $Product->getVariation(),
+                    'modification' => $Product->getModification(),
+                ]
+            );
+
+            $newQuantity = $ProductStockTotal->getTotal();
+
+            self::assertTrue($newQuantity > $oldQuantity);
+            self::assertEquals($oldQuantity + 1, $newQuantity);
+
+            // Сбрасываем поподнение
+            $ProductStockTotal->subTotal(1);
+            $em->flush();
+
+            // Проверяем что пополнение сбросилось
+            $em->clear();
+
+            /** @var ProductQuantityInterface $ProductQuantity */
+            $ProductStockTotal = $em->getRepository(ProductStockTotal::class)->findOneBy(
+                [
+                    'warehouse' => $ProductStockEvent->getWarehouse(),
+                    'product' => $Product->getProduct(),
+                    'offer' => $Product->getOffer(),
+                    'variation' => $Product->getVariation(),
+                    'modification' => $Product->getModification(),
+                ]
+            );
+
+            $newQuantity = $ProductStockTotal->getTotal();
+            self::assertEquals($oldQuantity, $newQuantity);
+        }
+
+        // dump($ProductStockMessage);
+    }
+}

@@ -18,16 +18,14 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase;
 
-use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Repository\ProductChoice\ProductChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductModificationChoice\ProductModificationChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductOfferChoice\ProductOfferChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductVariationChoice\ProductVariationChoiceInterface;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -53,12 +51,11 @@ final class PurchaseProductStockForm extends AbstractType
 
     public function __construct(
         // WarehouseChoiceInterface $warehouseChoice,
-        ProductChoiceInterface             $productChoice,
-        ProductOfferChoiceInterface        $productOfferChoice,
-        ProductVariationChoiceInterface    $productVariationChoice,
+        ProductChoiceInterface $productChoice,
+        ProductOfferChoiceInterface $productOfferChoice,
+        ProductVariationChoiceInterface $productVariationChoice,
         ProductModificationChoiceInterface $modificationChoice
-    )
-    {
+    ) {
         // $this->warehouseChoice = $warehouseChoice;
         $this->productChoice = $productChoice;
         $this->productOfferChoice = $productOfferChoice;
@@ -68,7 +65,7 @@ final class PurchaseProductStockForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        /* Номер заявки */
+        // Номер заявки
         $builder->add('number', TextType::class);
 
 //        $builder->get('number')->addModelTransformer(
@@ -82,7 +79,6 @@ final class PurchaseProductStockForm extends AbstractType
 //            )
 //        );
 
-
         // Продукт
         $builder
             ->add('preProduct', ChoiceType::class, [
@@ -94,9 +90,10 @@ final class PurchaseProductStockForm extends AbstractType
                     return $product->getAttr();
                 },
                 'label' => false,
-            ]);
+            ])
+        ;
 
-        /**
+        /*
          * Торговые предложения
          * @var ProductOfferConst $offer
          */
@@ -147,7 +144,8 @@ final class PurchaseProductStockForm extends AbstractType
                     },
                     'label' => $label,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ]);
+                ])
+            ;
         };
 
         $builder->get('preProduct')->addEventListener(
@@ -158,9 +156,9 @@ final class PurchaseProductStockForm extends AbstractType
             }
         );
 
-        /**
+        /*
          * Множественный вариант торгового предложения
-         * @var ProductOfferVariationConst $variation
+         * @var ProductVariationConst $variation
          */
 
         $builder->add(
@@ -171,10 +169,10 @@ final class PurchaseProductStockForm extends AbstractType
         $builder->get('preVariation')->addModelTransformer(
             new CallbackTransformer(
                 function ($variation) {
-                    return $variation instanceof ProductOfferVariationConst ? $variation->getValue() : $variation;
+                    return $variation instanceof ProductVariationConst ? $variation->getValue() : $variation;
                 },
                 function ($variation) {
-                    return $variation ? new ProductOfferVariationConst($variation) : null;
+                    return $variation ? new ProductVariationConst($variation) : null;
                 }
             )
         );
@@ -201,15 +199,16 @@ final class PurchaseProductStockForm extends AbstractType
             $form
                 ->add('preVariation', ChoiceType::class, [
                     'choices' => $variations,
-                    'choice_value' => function (?ProductOfferVariationConst $variation) {
+                    'choice_value' => function (?ProductVariationConst $variation) {
                         return $variation?->getValue();
                     },
-                    'choice_label' => function (ProductOfferVariationConst $variation) {
+                    'choice_label' => function (ProductVariationConst $variation) {
                         return $variation->getAttr();
                     },
                     'label' => $label,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ]);
+                ])
+            ;
         };
 
         $builder->get('preOffer')->addEventListener(
@@ -220,7 +219,7 @@ final class PurchaseProductStockForm extends AbstractType
             }
         );
 
-        /**
+        /*
          * Модификация множественного варианта торгового предложения
          * @var ProductOfferVariationModificationConst $modification
          */
@@ -233,15 +232,15 @@ final class PurchaseProductStockForm extends AbstractType
         $builder->get('preModification')->addModelTransformer(
             new CallbackTransformer(
                 function ($modification) {
-                    return $modification instanceof ProductOfferVariationModificationConst ? $modification->getValue() : $modification;
+                    return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
                 function ($modification) {
-                    return $modification ? new ProductOfferVariationModificationConst($modification) : null;
+                    return $modification ? new ProductModificationConst($modification) : null;
                 }
             )
         );
 
-        $formModificationModifier = function (FormInterface $form, ProductOfferVariationConst $variation = null) {
+        $formModificationModifier = function (FormInterface $form, ProductVariationConst $variation = null) {
             if (null === $variation) {
                 return;
             }
@@ -263,15 +262,16 @@ final class PurchaseProductStockForm extends AbstractType
             $form
                 ->add('preModification', ChoiceType::class, [
                     'choices' => $modifications,
-                    'choice_value' => function (?ProductOfferVariationModificationConst $modification) {
+                    'choice_value' => function (?ProductModificationConst $modification) {
                         return $modification?->getValue();
                     },
-                    'choice_label' => function (ProductOfferVariationModificationConst $modification) {
+                    'choice_label' => function (ProductModificationConst $modification) {
                         return $modification->getAttr();
                     },
                     'label' => $label,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ]);
+                ])
+            ;
         };
 
         $builder->get('preVariation')->addEventListener(

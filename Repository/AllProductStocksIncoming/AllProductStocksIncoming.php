@@ -25,16 +25,16 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksIncoming;
 
-
+use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Core\Services\Switcher\SwitcherInterface;
 use BaksDev\Core\Type\Locale\Locale;
-
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Products\Category\Entity as CategoryEntity;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Groups\Group\Entity as GroupEntity;
 use BaksDev\Users\Groups\Users\Entity as CheckUsersEntity;
@@ -46,8 +46,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class AllProductStocksIncoming implements AllProductStocksIncomingInterface
 {
     private Connection $connection;
+
     private TranslatorInterface $translator;
+
     private SwitcherInterface $switcher;
+
     private PaginatorInterface $paginator;
 
     public function __construct(
@@ -62,11 +65,10 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         $this->paginator = $paginator;
     }
 
-    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
+    /** Возвращает список всех принятых на склад продуктов */
+    public function fetchAllProductStocksAssociative(SearchDTO $search, ProductsStocksFilterInterface $filter, ?UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->connection->createQueryBuilder();
-
-        // Stock
 
         // ProductStock
         $qb->select('stock.id');
@@ -94,7 +96,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
 
         $qb->addSelect('stock_product.id as product_stock_id');
         $qb->addSelect('stock_product.total');
-        $qb->addSelect('stock_product.package');
+        //$qb->addSelect('stock_product.package');
         $qb->join(
             'event',
             ProductStockEntity\Products\ProductStockProduct::TABLE,
@@ -103,15 +105,20 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         );
 
         // Warehouse
+        $exist = $this->connection->createQueryBuilder();
+        $exist->select('1');
+        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
+        $exist->where('tmp.event = warehouse.event');
 
         // Product Warehouse
         $qb->addSelect('warehouse.id as warehouse_id');
         $qb->addSelect('warehouse.event as warehouse_event');
+
         $qb->join(
             'event',
             ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
             'warehouse',
-            'warehouse.id = event.warehouse'
+            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
         );
 
         // Product Warehouse Trans
@@ -126,8 +133,6 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         );
 
         $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
-
-
 
         // Product
         $qb->addSelect('product.id as product_id');
@@ -461,13 +466,23 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'groups_trans.event = groups.event AND groups_trans.local = :local'
         );
 
+        if ($filter->getWarehouse())
+        {
+            $qb->andWhere('warehouse.const = :warehouse_filter');
+            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
+        }
+
         // Поиск
-        if ($search->query) {
+        if ($search->query)
+        {
             $search->query = mb_strtolower($search->query);
 
             $searcher = $this->connection->createQueryBuilder();
 
+
+            $searcher->orWhere('event.number LIKE :number');
             $searcher->orWhere('LOWER(event.number) LIKE :query');
+            $qb->setParameter('number', '%'.$search->query.'%');
 
 //            $searcher->orWhere('LOWER(region_trans.name) LIKE :query');
 //            $searcher->orWhere('LOWER(region_trans.name) LIKE :switcher');
@@ -478,7 +493,6 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');
-
 
         return $this->paginator->fetchAllAssociative($qb);
     }

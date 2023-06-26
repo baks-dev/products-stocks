@@ -19,9 +19,10 @@
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 
 use BaksDev\Core\Controller\AbstractController;
-use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
@@ -36,12 +37,13 @@ final class IncomingController extends AbstractController
     /** Добавить приход на склад */
     #[Route('/admin/product/stock/incoming/{id}', name: 'admin.incoming.accept', methods: ['GET', 'POST'])]
     public function incoming(
+        #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
         IncomingProductStockHandler $handler,
-        #[MapEntity] ProductStockEvent $Event,
+        ProductsByProductStocksInterface $productDetail,
     ): Response {
         $incomingDTO = new IncomingProductStockDTO($this->getProfileUid());
-        $Event->getDto($incomingDTO);
+        $ProductStockEvent->getDto($incomingDTO);
         $incomingDTO->setComment(null); // обнуляем комментарий
 
         // Форма добавления
@@ -51,12 +53,15 @@ final class IncomingController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('incoming')) {
+        if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
+        {
             $ProductStock = $handler->handle($incomingDTO);
 
-            if ($ProductStock instanceof ProductStock) {
+            if ($ProductStock instanceof ProductStock)
+            {
                 $this->addFlash('success', 'admin.success.accept', 'admin.product.stock');
-            } else {
+            } else
+            {
                 $this->addFlash('danger', 'admin.danger.accept', 'admin.product.stock', $ProductStock);
             }
 
@@ -64,6 +69,10 @@ final class IncomingController extends AbstractController
             return $this->redirectToRoute('ProductStocks:admin.incoming.index');
         }
 
-        return $this->render(['form' => $form->createView(), 'name' => $Event->getNumber()]);
+        return $this->render([
+            'form' => $form->createView(),
+            'name' => $ProductStockEvent->getNumber(),
+            'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
+        ]);
     }
 }

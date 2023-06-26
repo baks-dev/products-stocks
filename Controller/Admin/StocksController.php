@@ -26,7 +26,9 @@ namespace BaksDev\Products\Stocks\Controller\Admin;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
-use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,39 +39,33 @@ final class StocksController extends AbstractController
 {
     /** Состояние склада ответственного лица */
     #[Route('/admin/product/stocks/{page<\d+>}', name: 'admin.index', methods: ['GET', 'POST'])]
-    public function index(Request $request, AllProductStocksInterface $allProductStocks, int $page = 0): Response
-    {
+    public function index(
+        Request $request,
+        AllProductStocksInterface $allProductStocks,
+        int $page = 0,
+    )
+    : Response {
         $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
-
         // Поиск
         $search = new SearchDTO();
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
-//
-//        // Фильтр
-//        $filter = new StockFilterDTO($ROLE_ADMIN ? null : $this->getProfileUid(), $request);
-//        $filterForm = $this->createForm(StockFilterForm::class, $filter);
-//        $filterForm->handleRequest($request);
-//
-//        if ($ROLE_ADMIN) {
-//            $stmt = $allStock->get($search, $filter);
-//        } else {
-//            // Получаем состояние склада ответственного лица
-//            $stmt = $allStock->getByProfile($search, $filter, $this->getProfileUid());
-//        }
-//
-//        $query = new Paginator($page, $stmt, $request);
 
-        $query = $allProductStocks->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
+        // Фильтр
+        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
+
+
+        $query = $allProductStocks->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
 
         //dump(current($query->getData()));
-
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                // 'filter' => $filterForm->createView(),
-            ]
+                'filter' => $filterForm->createView(),
+            ],
         );
     }
 }

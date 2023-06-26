@@ -25,12 +25,11 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Products;
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use Doctrine\DBAL\Types\Types;
@@ -73,22 +72,19 @@ class ProductStockProduct extends EntityEvent
 
     /** Постоянный уникальный идентификатор варианта */
     #[Assert\Uuid]
-    #[ORM\Column(type: ProductOfferVariationConst::TYPE, nullable: true)]
-    private ?ProductOfferVariationConst $variation;
+    #[ORM\Column(type: ProductVariationConst::TYPE, nullable: true)]
+    private ?ProductVariationConst $variation;
 
     /** Постоянный уникальный идентификатор модификации */
     #[Assert\Uuid]
-    #[ORM\Column(type: ProductOfferVariationModificationConst::TYPE, nullable: true)]
-    private ?ProductOfferVariationModificationConst $modification;
+    #[ORM\Column(type: ProductModificationConst::TYPE, nullable: true)]
+    private ?ProductModificationConst $modification;
 
     /** Количество */
     #[Assert\Range(min: 1)]
     #[ORM\Column(type: Types::INTEGER)]
     private int $total;
 
-    /** Статус (Приход, заявка) */
-    #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $package = false;
 
     public function __construct(ProductStockEvent $event)
     {
@@ -119,10 +115,10 @@ class ProductStockProduct extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getWarehouse(): ContactsRegionCallUid
-    {
-        return $this->warehouse;
-    }
+//    public function getWarehouse(): ContactsRegionCallUid
+//    {
+//        return $this->warehouse;
+//    }
 
     public function getProduct(): ProductUid
     {
@@ -134,12 +130,12 @@ class ProductStockProduct extends EntityEvent
         return $this->offer;
     }
 
-    public function getVariation(): ?ProductOfferVariationConst
+    public function getVariation(): ?ProductVariationConst
     {
         return $this->variation;
     }
 
-    public function getModification(): ?ProductOfferVariationModificationConst
+    public function getModification(): ?ProductModificationConst
     {
         return $this->modification;
     }
@@ -147,5 +143,10 @@ class ProductStockProduct extends EntityEvent
     public function getTotal(): int
     {
         return $this->total;
+    }
+
+    public function getEvent(): ProductStockEvent
+    {
+        return $this->event;
     }
 }

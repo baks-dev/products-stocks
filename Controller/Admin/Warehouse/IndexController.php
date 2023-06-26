@@ -21,7 +21,9 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
-use BaksDev\Core\Services\Security\RoleSecurity;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksWarehouse\AllProductStocksWarehouseInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +32,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_WAREHOUSE')]
 final class IndexController extends AbstractController
 {
-    // Поступления на склад
+    /**
+     * Поступления на склад
+     */
     #[Route('/admin/product/stocks/warehouse/{page<\d+>}', name: 'admin.warehouse.index', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,
@@ -45,22 +49,18 @@ final class IndexController extends AbstractController
         $searchForm->handleRequest($request);
 
         // Фильтр
-//        $filter = new StockFilterDTO($ROLE_ADMIN ? null : $this->getProfileUid(), $request);
-//        $filterForm = $this->createForm(StockFilterForm::class, $filter);
-//        $filterForm->handleRequest($request);
-
-        // Получаем состояние склада ответственного лица
-        // $stmt = $allRequired->get($search, new MaterialStockStatus(MaterialStockStatusEnum::INCOMING), $this->getProfileUid());
-        // $query = new Paginator($page, $stmt, $request);
-
+        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
 
         /* Получаем список поступлений на склад */
-        $query = $allPurchase->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allPurchase->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }

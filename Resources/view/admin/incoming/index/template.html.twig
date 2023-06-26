@@ -24,16 +24,17 @@
 
 {% block javascript %}
 
-<script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js" class="lazy"></script>
+<script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
 
-<script async nonce="{{ csp_nonce() }}" data-src="/assets/products_stocks/incoming{{ app.environment != 'dev'?'.min' }}.js" class="lazy"></script>
+<script async nonce="{{ csp_nonce() }}" data-src="/assets/products_stocks/incoming{{ app.environment != 'dev'?'.min' }}.js?v={{ version }}" class="lazy"></script>
 
 
-{#<script defer src="{{ path(app.request.attributes.get('_route')~'.js') }}"></script>#}
-{# <script async src="/plugins/nice-select2/nice-select2.min.js"></script> #}
-{# <script>
-    window.addEventListener('load', function () {
-    jsRequire('/js/countup.min.js');
+<script nonce="{{ csp_nonce() }}">
+
+document.addEventListener("DOMContentLoaded", (event) => {
+	document.getElementById('products_stocks_filter_form_warehouse').addEventListener("change", (event) => {
+	     document.forms.products_stocks_filter_form.submit();
+	});
 });
-</script> #}
+</script>
 {% endblock %}

@@ -18,28 +18,10 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming;
 
-use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
-use BaksDev\Products\Product\Repository\ProductChoice\ProductChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductModificationChoice\ProductModificationChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductOfferChoice\ProductOfferChoiceInterface;
-use BaksDev\Products\Product\Repository\ProductVariationChoice\ProductVariationChoiceInterface;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\CallbackTransformer;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class IncomingProductStockForm extends AbstractType

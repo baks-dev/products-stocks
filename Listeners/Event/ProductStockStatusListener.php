@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Listeners\Event;
 
-use BaksDev\Products\Stocks\Type\Status\Collection\ProductStockStatusCollection;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatusType;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -47,6 +47,10 @@ final class ProductStockStatusListener
 
     public function onKernelController(ControllerEvent $event): void
     {
-        $this->collection->cases();
+        // Инициируем статусы складских остатков
+        if (in_array(ProductStockStatusType::class, get_declared_classes(), true))
+        {
+            $this->collection->cases();
+        }
     }
 }

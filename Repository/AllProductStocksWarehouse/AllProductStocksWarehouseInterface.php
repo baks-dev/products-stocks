@@ -25,9 +25,15 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksWarehouse;
 
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksWarehouseInterface
 {
-    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface;
+    /** Метод возвращает список всех поступлений на склад  */
+    public function fetchAllProductStocksAssociative(
+        SearchDTO $search,
+        ProductsStocksFilterInterface $filter,
+        ?UserProfileUid $profile
+    ): PaginatorInterface;
 }

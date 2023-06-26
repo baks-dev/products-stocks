@@ -16,45 +16,68 @@
  */
 
 
-modal.addEventListener('shown.bs.modal', function () {
 
+setTimeout(function initPurchase() {
 
-
-    /* Change PRODUCT */
-    let object_product = document.getElementById('purchase_product_stock_form_preProduct');
-
-
+    object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
     if (object_product) {
+
         object_product.addEventListener('change', changeObjectProduct, false);
 
 
         let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
 
-        if ($addButtonStock) {
+        //if ($addButtonStock) {
             $addButtonStock.addEventListener('click', addProductPurchase, false);
-        }
+       // }
 
-
-    } else {
-        eventEmitter.addEventListener('complete', function ()
-        {
-            let object_product = document.getElementById('purchase_product_stock_form_preProduct');
-
-            if (object_product) {
-                object_product.addEventListener('change', changeObjectProduct, false);
-
-
-                let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
-
-                if ($addButtonStock) {
-                    $addButtonStock.addEventListener('click', addProductPurchase, false);
-                }
-            }
-        });
+        return;
     }
 
-});
+    setTimeout(initPurchase, 100);
+
+}, 100);
+
+
+
+//modal.addEventListener('shown.bs.modal', function () {
+
+    /* Change PRODUCT */
+    //object_product = document.getElementById('purchase_product_stock_form_preProduct');
+
+
+
+    // if (object_product) {
+    //     object_product.addEventListener('change', changeObjectProduct, false);
+    //
+    //
+    //     let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
+    //
+    //     if ($addButtonStock) {
+    //         $addButtonStock.addEventListener('click', addProductPurchase, false);
+    //     }
+    //
+    //
+    // } else {
+    //     eventEmitter.addEventListener('complete', function ()
+    //     {
+    //         let object_product = document.getElementById('purchase_product_stock_form_preProduct');
+    //
+    //         if (object_product) {
+    //             object_product.addEventListener('change', changeObjectProduct, false);
+    //
+    //
+    //             let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
+    //
+    //             if ($addButtonStock) {
+    //                 $addButtonStock.addEventListener('click', addProductPurchase, false);
+    //             }
+    //         }
+    //     });
+    // }
+
+//});
 
 
 function changeObjectProduct() {
@@ -72,6 +95,9 @@ function changeObjectProduct() {
     formData.append(this.getAttribute('name'), this.value);
 
     requestModalName.open(purchaseForm.getAttribute('method'), purchaseForm.getAttribute('action'), true);
+
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {
@@ -122,6 +148,9 @@ function changeObjectOffer() {
 
     requestModalName.open(purchaseForm.getAttribute('method'), purchaseForm.getAttribute('action'), true);
 
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
@@ -169,6 +198,9 @@ function changeObjectVariation()
 
     requestModalName.open(purchaseForm.getAttribute('method'), purchaseForm.getAttribute('action'), true);
 
+    /* Указываем заголовки для сервера */
+    requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
     /* Получаем ответ от сервера на запрос*/
     requestModalName.addEventListener("readystatechange", function () {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
@@ -211,11 +243,12 @@ function addProductPurchase()
 
     let $preTotal = document.getElementById('purchase_product_stock_form_preTotal');
     let $TOTAL = $preTotal.value * 1;
+
     if ($TOTAL === undefined || $TOTAL < 1) {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"'+header+'"  , ' +
-            '"message" : "Не заполнен номер закупки" }';
+            '"message" : "Не заполнено количество" }';
 
     }
 
@@ -224,7 +257,7 @@ function addProductPurchase()
     if ($number.value.length === 0) {
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"'+header+'"  , ' +
-            '"message" : "Не заполнено количество" }';
+            '"message" : "Не заполнен номер закупки" }';
     }
 
     // let $preWarehouse = document.getElementById('purchase_product_stock_form_preWarehouse');
@@ -285,8 +318,6 @@ function addProductPurchase()
         createToast(JSON.parse($errorFormHandler));
         return false;
     }
-
-
 
     /* получаем прототип коллекции  */
     let $addButtonStock = this;

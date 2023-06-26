@@ -8,22 +8,50 @@ ROLE_PRODUCT_STOCK:
 
 
 ROLE_PRODUCT_STOCK_INCOMING:
-  name: 'Приходы на склад'
+  name: 'Приходные ордера'
+  desc: 'Список приходных ордеров на сколад'
 
 ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
   name: 'Добавить приход'
 
 
+
+ROLE_PRODUCT_STOCK_MOVING:
+  name: 'Перемещения'
+  desc: 'Перемещение товаров между складами'
+
+ROLE_PRODUCT_STOCK_MOVING_NEW:
+  name: 'Добавить перемещение'
+  desc: 'Добавить заявку на перемещение товаров с со склада'
+
+
+
+
+
+
 ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Закупки'
+  desc: 'Закупки товаров'
+
 
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Добавить закупку'
+  desc: 'Добавить закупку товара на склад'
 
 
 
 ROLE_PRODUCT_STOCK_WAREHOUSE:
-  name: 'Поступления'
+  name: 'Поступления на склад'
+  desc: 'Список поступлений на склад'
 
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Отправить на склад'
+
+
+
+ROLE_PRODUCT_STOCK_PACKAGE:
+  name: 'Упаковка заказов'
+  desc: 'Упаковка заказов на погрузку'
+
+
+

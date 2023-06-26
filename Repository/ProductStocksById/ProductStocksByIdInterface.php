@@ -24,9 +24,25 @@
 namespace BaksDev\Products\Stocks\Repository\ProductStocksById;
 
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
 interface ProductStocksByIdInterface
 {
-    /** Метод возвращает всю продукция в приходном ордере */
+
+    /**
+     * Метод возвращает всю продукцию с определенным статусом
+     */
+    public function getProductsByProductStocksStatus(ProductStockUid $id, ProductStockStatusInterface $status): array;
+
+
+    /**
+     * Метод возвращает всю продукцию в приходном ордере (Move)
+     */
     public function getProductsIncomingStocks(ProductStockUid $id): array;
+
+
+    /**
+     * Метод возвращает всю продукцию для сборки (Package)
+     */
+    public function getProductsPackageStocks(ProductStockUid $id): array;
 }

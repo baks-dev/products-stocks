@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *  
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,35 +23,23 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use BaksDev\Orders\Order\Messenger\OrderMessage;
 use Symfony\Config\FrameworkConfig;
 
-return static function (ContainerConfigurator $configurator, FrameworkConfig $framework)
-{
-    $services = $configurator->services()
-      ->defaults()
-      ->autowire()
-      ->autoconfigure()
-    ;
-	
-	$namespace = 'BaksDev\Products\Stocks';
+return static function (ContainerConfigurator $configurator, FrameworkConfig $framework) {
 
-    $services->load($namespace.'\Messenger\\', __DIR__.'/../../Messenger')
-        ->exclude('../../Messenger/**/*Message.php')
-    ;
-
-    /** Транспорт складского учета продукции */
+    /** Транспорт заказов */
     $messenger = $framework->messenger();
 
     $messenger
-        ->transport('product_stock')
+        ->transport('products_stocks')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
-        ->options(['queue_name' => 'product_stock'])
+        ->options(['queue_name' => 'products_stocks'])
         ->retryStrategy()
         ->maxRetries(5)
-        ->delay(3000)
+        ->delay(1000)
         ->maxDelay(0)
-        ->multiplier(3)
-        ->service(null);
+        ->multiplier(3) // увеличиваем задержку перед каждой повторной попыткой
+        ->service(null)
+    ;
 
 };

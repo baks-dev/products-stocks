@@ -27,8 +27,9 @@ namespace BaksDev\Products\Stocks\Type\Event;
 
 use BaksDev\Core\Type\UidType\Uid;
 
-
 final class ProductStockEventUid extends Uid
 {
+    public const TEST = '0188a9a0-de97-7283-aa86-39ae06713eb2';
+
     public const TYPE = 'product_stock_event_uid';
 }

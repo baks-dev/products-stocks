@@ -18,11 +18,10 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase\Products;
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductOfferVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductOfferVariationModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -85,10 +84,10 @@ final class ProductStockForm extends AbstractType
         $builder->get('variation')->addModelTransformer(
             new CallbackTransformer(
                 function ($variation) {
-                    return $variation instanceof ProductOfferVariationConst ? $variation->getValue() : $variation;
+                    return $variation instanceof ProductVariationConst ? $variation->getValue() : $variation;
                 },
                 function ($variation) {
-                    return $variation ? new ProductOfferVariationConst($variation) : null;
+                    return $variation ? new ProductVariationConst($variation) : null;
                 }
             )
         );
@@ -100,11 +99,11 @@ final class ProductStockForm extends AbstractType
         $builder->get('modification')->addModelTransformer(
             new CallbackTransformer(
                 function ($modification) {
-                    return $modification instanceof ProductOfferVariationModificationConst ? $modification->getValue() : $modification;
+                    return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
                 function ($modification) {
 
-                    return $modification ? new ProductOfferVariationModificationConst($modification) : null;
+                    return $modification ? new ProductModificationConst($modification) : null;
                 }
             )
         );

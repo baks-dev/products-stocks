@@ -1,26 +1,51 @@
-
 ROLE_PRODUCT_STOCK:
   name: 'Inventory'
   desc: 'Inventory inventory'
 
 
+
 ROLE_PRODUCT_STOCK_INCOMING:
-  name: 'Warehouse receipts'
+  name: 'Incoming orders'
+  desc: 'List of warehouse receipts'
 
 ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
   name: 'Add a parish'
 
 
+
+ROLE_PRODUCT_STOCK_MOVING:
+  name: 'Movement'
+  desc: 'Move goods between warehouses'
+
+ROLE_PRODUCT_STOCK_MOVING_NEW:
+  name: 'Add Move'
+  desc: 'Add a request to move goods from the warehouse'
+
+
+
+
+
+
 ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Purchases'
+  desc: 'Procurement of goods'
+
 
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Add purchase'
+  desc: 'Add purchase item to warehouse'
 
 
 
 ROLE_PRODUCT_STOCK_WAREHOUSE:
-  name: 'Receipts'
+  name: 'Inventory Receipts'
+  desc: 'Inventory List'
 
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Send to warehouse'
+
+
+
+ROLE_PRODUCT_STOCK_PACKAGE:
+  name: 'Packing Orders'
+  desc: 'Packing Load Orders'
