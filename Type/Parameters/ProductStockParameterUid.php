@@ -31,5 +31,5 @@ final class ProductStockParameterUid extends Uid
 {
     public const TEST = '0188a9a1-62bb-7625-bab6-36797bef63f4';
 
-    public const TYPE = 'product_parameters_uid';
+    public const TYPE = 'product_parameters';
 }
