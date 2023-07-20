@@ -24,14 +24,15 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Menu\Admin\DataFixtures\Menu\MenuAdminFixturesInterface;
-use BaksDev\Menu\Admin\Type\SectionGroup\MenuAdminSectionGroupEnum;
+
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-final class VoterPackage implements VoterFixturesInterface, MenuAdminFixturesInterface
+final class VoterPackage implements VoterFixturesInterface, MenuAdminInterface
 {
     /** Список перемещений между складами */
     public const VOTER = 'PACKAGE';
@@ -65,14 +66,9 @@ final class VoterPackage implements VoterFixturesInterface, MenuAdminFixturesInt
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupEnum|bool
+    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
     {
-        if (enum_exists(MenuAdminSectionGroupEnum::class))
-        {
-            return MenuAdminSectionGroupEnum::STOCKS;
-        }
-
-        return false;
+        return new MenuGroupStocks();
     }
 
     /** Метод возвращает позицию, в которую располагается ссылка в секции меню */

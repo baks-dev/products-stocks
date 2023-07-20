@@ -29,7 +29,7 @@ use Symfony\Component\Cache\Adapter\ApcuAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler(priority: 10)]
+#[AsMessageHandler(fromTransport: 'sync')]
 final class ProductStockCacheClear
 {
     public function __invoke(ProductStockMessage $message): void

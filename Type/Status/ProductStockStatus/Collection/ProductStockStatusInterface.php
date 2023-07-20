@@ -31,9 +31,4 @@ interface ProductStockStatusInterface
     /** Возвращает значение статуса (value) */
     public function getValue(): string;
 
-//    /** Сортирвока */
-//    public static function sort(): int;
-//
-//    /** Цвет */
-//    public static function color(): string;
 }

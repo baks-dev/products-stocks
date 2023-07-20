@@ -26,6 +26,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -48,19 +49,23 @@ final class PurchaseProductStockForm extends AbstractType
     private ProductOfferChoiceInterface $productOfferChoice;
     private ProductVariationChoiceInterface $productVariationChoice;
     private ProductModificationChoiceInterface $modificationChoice;
+    private iterable $reference;
 
     public function __construct(
         // WarehouseChoiceInterface $warehouseChoice,
         ProductChoiceInterface $productChoice,
         ProductOfferChoiceInterface $productOfferChoice,
         ProductVariationChoiceInterface $productVariationChoice,
-        ProductModificationChoiceInterface $modificationChoice
-    ) {
+        ProductModificationChoiceInterface $modificationChoice,
+        #[TaggedIterator('baks.reference.choice')] iterable $reference,
+    )
+    {
         // $this->warehouseChoice = $warehouseChoice;
         $this->productChoice = $productChoice;
         $this->productOfferChoice = $productOfferChoice;
         $this->productVariationChoice = $productVariationChoice;
         $this->modificationChoice = $modificationChoice;
+        $this->reference = $reference;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -68,30 +73,31 @@ final class PurchaseProductStockForm extends AbstractType
         // Номер заявки
         $builder->add('number', TextType::class);
 
-//        $builder->get('number')->addModelTransformer(
-//            new CallbackTransformer(
-//                function ($offer) {
-//                    return (string) $offer;
-//                },
-//                function ($offer) {
-//                    return  (string) $offer;
-//                }
-//            )
-//        );
+        //        $builder->get('number')->addModelTransformer(
+        //            new CallbackTransformer(
+        //                function ($offer) {
+        //                    return (string) $offer;
+        //                },
+        //                function ($offer) {
+        //                    return  (string) $offer;
+        //                }
+        //            )
+        //        );
 
         // Продукт
         $builder
             ->add('preProduct', ChoiceType::class, [
                 'choices' => $this->productChoice->fetchAllProduct(),
-                'choice_value' => function (?ProductUid $product) {
+                'choice_value' => function(?ProductUid $product) {
                     return $product?->getValue();
                 },
-                'choice_label' => function (ProductUid $product) {
+                'choice_label' => function(ProductUid $product) {
                     return $product->getAttr();
                 },
+
+
                 'label' => false,
-            ])
-        ;
+            ]);
 
         /*
          * Торговые предложения
@@ -105,24 +111,27 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preOffer')->addModelTransformer(
             new CallbackTransformer(
-                function ($offer) {
+                function($offer) {
                     return $offer instanceof ProductOfferConst ? $offer->getValue() : $offer;
                 },
-                function ($offer) {
+                function($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
                 }
             )
         );
 
-        $formOfferModifier = function (FormInterface $form, ProductUid $product = null) {
-            if (null === $product) {
+        $formOfferModifier = function(FormInterface $form, ProductUid $product = null) {
+            if(null === $product)
+            {
                 return;
             }
 
             $offer = $this->productOfferChoice->fetchProductOfferByProduct($product);
 
+
             // Если у продукта нет ТП
-            if (empty($offer)) {
+            if(empty($offer))
+            {
                 $form->add(
                     'preOffer',
                     HiddenType::class
@@ -131,26 +140,43 @@ final class PurchaseProductStockForm extends AbstractType
                 return;
             }
 
-            $label = current($offer)->getOption();
+            $currenOffer = current($offer);
+            $label = $currenOffer->getOption();
+            $domain = null;
+
+
+            if($currenOffer->getProperty())
+            {
+                /** Если торговое предложение Справочник - ищем домен переводов */
+                foreach($this->reference as $reference)
+                {
+                    if($reference->type() === $currenOffer->getProperty()->getType())
+                    {
+                        $domain = $reference->domain();
+                    }
+                }
+            }
+
+
 
             $form
                 ->add('preOffer', ChoiceType::class, [
                     'choices' => $offer,
-                    'choice_value' => function (?ProductOfferConst $offer) {
+                    'choice_value' => function(?ProductOfferConst $offer) {
                         return $offer?->getValue();
                     },
-                    'choice_label' => function (ProductOfferConst $offer) {
+                    'choice_label' => function(ProductOfferConst $offer) {
                         return $offer->getAttr();
                     },
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ])
-            ;
+                ]);
         };
 
         $builder->get('preProduct')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($formOfferModifier) {
+            function(FormEvent $event) use ($formOfferModifier) {
                 $product = $event->getForm()->getData();
                 $formOfferModifier($event->getForm()->getParent(), $product);
             }
@@ -168,24 +194,26 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preVariation')->addModelTransformer(
             new CallbackTransformer(
-                function ($variation) {
+                function($variation) {
                     return $variation instanceof ProductVariationConst ? $variation->getValue() : $variation;
                 },
-                function ($variation) {
+                function($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
                 }
             )
         );
 
-        $formVariationModifier = function (FormInterface $form, ProductOfferConst $offer = null) {
-            if (null === $offer) {
+        $formVariationModifier = function(FormInterface $form, ProductOfferConst $offer = null) {
+            if(null === $offer)
+            {
                 return;
             }
 
-            $variations = $this->productVariationChoice->fetchProductVariationByOffer($offer);
+            $variations = $this->productVariationChoice->fetchProductVariationByOfferConst($offer);
 
             // Если у продукта нет множественных вариантов
-            if (empty($variations)) {
+            if(empty($variations))
+            {
                 $form->add(
                     'preVariation',
                     HiddenType::class
@@ -194,26 +222,40 @@ final class PurchaseProductStockForm extends AbstractType
                 return;
             }
 
-            $label = current($variations)->getOption();
+            $currenVariation = current($variations);
+            $label = $currenVariation->getOption();
+            $domain = null;
+
+            /** Если множественный вариант Справочник - ищем домен переводов */
+            if($currenVariation->getProperty())
+            {
+                foreach($this->reference as $reference)
+                {
+                    if($reference->type() === $currenVariation->getProperty()->getType())
+                    {
+                        $domain = $reference->domain();
+                    }
+                }
+            }
 
             $form
                 ->add('preVariation', ChoiceType::class, [
                     'choices' => $variations,
-                    'choice_value' => function (?ProductVariationConst $variation) {
+                    'choice_value' => function(?ProductVariationConst $variation) {
                         return $variation?->getValue();
                     },
-                    'choice_label' => function (ProductVariationConst $variation) {
+                    'choice_label' => function(ProductVariationConst $variation) {
                         return $variation->getAttr();
                     },
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ])
-            ;
+                ]);
         };
 
         $builder->get('preOffer')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($formVariationModifier) {
+            function(FormEvent $event) use ($formVariationModifier) {
                 $offer = $event->getForm()->getData();
                 $formVariationModifier($event->getForm()->getParent(), $offer);
             }
@@ -231,24 +273,26 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preModification')->addModelTransformer(
             new CallbackTransformer(
-                function ($modification) {
+                function($modification) {
                     return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
-                function ($modification) {
+                function($modification) {
                     return $modification ? new ProductModificationConst($modification) : null;
                 }
             )
         );
 
-        $formModificationModifier = function (FormInterface $form, ProductVariationConst $variation = null) {
-            if (null === $variation) {
+        $formModificationModifier = function(FormInterface $form, ProductVariationConst $variation = null) {
+            if(null === $variation)
+            {
                 return;
             }
 
-            $modifications = $this->modificationChoice->fetchProductModificationByVariation($variation);
+            $modifications = $this->modificationChoice->fetchProductModificationConstByVariationConst($variation);
 
             // Если у продукта нет множественных вариантов
-            if (empty($modifications)) {
+            if(empty($modifications))
+            {
                 $form->add(
                     'preModification',
                     HiddenType::class
@@ -257,85 +301,103 @@ final class PurchaseProductStockForm extends AbstractType
                 return;
             }
 
-            $label = current($modifications)->getOption();
+            //$label = current($modifications)->getOption();
+
+
+            $currenModifications = current($modifications);
+            $label = $currenModifications->getOption();
+            $domain = null;
+
+            /** Если модификация Справочник - ищем домен переводов */
+            if($currenModifications->getProperty())
+            {
+                foreach($this->reference as $reference)
+                {
+                    if($reference->type() === $currenModifications->getProperty()->getType())
+                    {
+                        $domain = $reference->domain();
+                    }
+                }
+            }
+
 
             $form
                 ->add('preModification', ChoiceType::class, [
                     'choices' => $modifications,
-                    'choice_value' => function (?ProductModificationConst $modification) {
+                    'choice_value' => function(?ProductModificationConst $modification) {
                         return $modification?->getValue();
                     },
-                    'choice_label' => function (ProductModificationConst $modification) {
+                    'choice_label' => function(ProductModificationConst $modification) {
                         return $modification->getAttr();
                     },
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ])
-            ;
+                ]);
         };
 
         $builder->get('preVariation')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($formModificationModifier) {
+            function(FormEvent $event) use ($formModificationModifier) {
                 $variation = $event->getForm()->getData();
                 $formModificationModifier($event->getForm()->getParent(), $variation);
             }
         );
 
-//        $builder->addEventListener(
-//          FormEvents::SUBMIT,
-//          function (FormEvent $event) use ($formModifier)
-//          {
-//              $data = $event->getData();
-//              $form = $event->getForm();
-//
-//              if($data->getPreOffer())
-//              {
-//                  $formModifier($form, $data->getPreMaterial(), $data->getPreOffer());
-//              }
-//          }
-//        );
+        //        $builder->addEventListener(
+        //          FormEvents::SUBMIT,
+        //          function (FormEvent $event) use ($formModifier)
+        //          {
+        //              $data = $event->getData();
+        //              $form = $event->getForm();
+        //
+        //              if($data->getPreOffer())
+        //              {
+        //                  $formModifier($form, $data->getPreMaterial(), $data->getPreOffer());
+        //              }
+        //          }
+        //        );
 
-//        $builder->get('preMaterial')->addEventListener(
-//          FormEvents::POST_SUBMIT,
-//          function (FormEvent $event) use ($formModifier)
-//          {
-//              $material = $event->getForm()->getData();
-//              $formModifier($event->getForm()->getParent(), $material);
-//          }
-//        );
+        //        $builder->get('preMaterial')->addEventListener(
+        //          FormEvents::POST_SUBMIT,
+        //          function (FormEvent $event) use ($formModifier)
+        //          {
+        //              $material = $event->getForm()->getData();
+        //              $formModifier($event->getForm()->getParent(), $material);
+        //          }
+        //        );
 
         // Склад
 
-//        $builder->addEventListener(
-//            FormEvents::PRE_SET_DATA,
-//            function (FormEvent $event) {
-//                $data = $event->getData();
-//                $form = $event->getForm();
-//
-//                $warehouses = $this->warehouseChoice->fetchWarehouseByProfile($data->getProfile());
-//
-//                if (1 === count($warehouses)) {
-//                    $data->setPreWarehouse(current($warehouses));
-//                }
-//
-//                // Склад
-//                $form
-//                    ->add('preWarehouse', ChoiceType::class, [
-//                        'choices' => $warehouses,
-//                        'choice_value' => function (?ContactsRegionCallUid $warehouse) {
-//                            return $warehouse?->getValue();
-//                        },
-//                        'choice_label' => function (ContactsRegionCallUid $warehouse) {
-//                            return $warehouse->getAttr();
-//                        },
-//
-//                        'label' => false,
-//                        'required' => true,
-//                    ])
-//                ;
-//            }
-//        );
+        //        $builder->addEventListener(
+        //            FormEvents::PRE_SET_DATA,
+        //            function (FormEvent $event) {
+        //                $data = $event->getData();
+        //                $form = $event->getForm();
+        //
+        //                $warehouses = $this->warehouseChoice->fetchWarehouseByProfile($data->getProfile());
+        //
+        //                if (1 === count($warehouses)) {
+        //                    $data->setPreWarehouse(current($warehouses));
+        //                }
+        //
+        //                // Склад
+        //                $form
+        //                    ->add('preWarehouse', ChoiceType::class, [
+        //                        'choices' => $warehouses,
+        //                        'choice_value' => function (?ContactsRegionCallUid $warehouse) {
+        //                            return $warehouse?->getValue();
+        //                        },
+        //                        'choice_label' => function (ContactsRegionCallUid $warehouse) {
+        //                            return $warehouse->getAttr();
+        //                        },
+        //
+        //                        'label' => false,
+        //                        'required' => true,
+        //                    ])
+        //                ;
+        //            }
+        //        );
 
         // Количество
         $builder->add('preTotal', IntegerType::class, ['required' => false]);

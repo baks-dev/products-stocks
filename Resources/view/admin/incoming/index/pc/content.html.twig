@@ -198,7 +198,7 @@
                     {# ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ #}
                     <div class="d-flex w-75 gap-3">
 
-                        {% set img_path = item.users_profile_avatar_cdn == true ? cdn_host : '' %}
+                        {% set img_path = item.users_profile_avatar_cdn == true ? CDN_HOST : '' %}
 
                         <div>
                             <a href="{# {{ is_granted('ROLE_ADMIN') ? path('UserProfile:admin.newedit.edit', { id: item.users_profile_event }) : '#' }} #}"

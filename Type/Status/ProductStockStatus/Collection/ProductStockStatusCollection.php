@@ -31,20 +31,25 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 final class ProductStockStatusCollection
 {
+
     private iterable $status;
 
+
     public function __construct(
-        #[TaggedIterator('baks.product.stock.status')] iterable $status)
+        #[TaggedIterator('baks.product.stock.status')] iterable $status,
+    )
     {
         $this->status = $status;
     }
+
 
     /** Возвращает массив из знание OrderStatus */
     public function cases(): array
     {
         $case = null;
 
-        foreach ($this->status as $status) {
+        foreach($this->status as $status)
+        {
             $case[] = new ProductStockStatus(new $status());
         }
 
@@ -53,11 +58,14 @@ final class ProductStockStatusCollection
         return $case;
     }
 
+
     /** Метод возвращает класс статуса заказа  */
     public function from(string $name): ProductStockStatus
     {
-        foreach ($this->status as $status) {
-            if ($status::STATUS === $name) {
+        foreach($this->status as $status)
+        {
+            if($status::STATUS === $name)
+            {
                 return new ProductStockStatus(new $status());
             }
         }

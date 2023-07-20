@@ -25,14 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Menu\Admin\DataFixtures\Menu\MenuAdminFixturesInterface;
-use BaksDev\Menu\Admin\Type\SectionGroup\MenuAdminSectionGroupEnum;
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-final class VoterIncoming implements VoterFixturesInterface, MenuAdminFixturesInterface
+final class VoterIncoming implements VoterFixturesInterface, MenuAdminInterface
 {
     /** Список приходных ордеров */
     public const VOTER = 'INCOMING';
@@ -48,7 +48,7 @@ final class VoterIncoming implements VoterFixturesInterface, MenuAdminFixturesIn
     }
 
     /**
-     * Добавляем раздел в меню администрирвоания.
+     * Добавляем раздел в меню администрирования.
      */
 
     /**
@@ -66,17 +66,12 @@ final class VoterIncoming implements VoterFixturesInterface, MenuAdminFixturesIn
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupEnum|bool
+    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
     {
-        if (enum_exists(MenuAdminSectionGroupEnum::class))
-        {
-            return MenuAdminSectionGroupEnum::STOCKS;
-        }
-
-        return false;
+        return new MenuGroupStocks();
     }
 
-    /** Метод возвращает позицию, в которую распологается ссылка в секции меню */
+    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
     public function getSortMenu(): int
     {
         return 120;

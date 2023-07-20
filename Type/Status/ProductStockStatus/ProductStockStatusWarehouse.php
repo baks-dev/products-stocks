@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class ProductStockStatusWarehouse implements ProductStockStatusInterface
 {
     /**
-     * Статус отправки закупки на склад
+     * Статус отправки на склад
      */
     public const STATUS = 'warehouse';
 

@@ -366,7 +366,7 @@ final class MovingProductStockForm extends AbstractType
                         return $offer?->getValue();
                     },
                     'choice_label' => function (ProductOfferConst $offer) {
-                        return $offer->getAttr().' ('.$offer->getCounter().')';
+                        return $offer->getAttr().' ('.$offer->getProperty().')';
                     },
                     'choice_attr' => function (?ProductOfferConst $offer) {
                         return $offer ? ['data-name' => $offer->getAttr()] : [];

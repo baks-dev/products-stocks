@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class ProductStockStatusExtradition implements ProductStockStatusInterface
 {
     /**
-     * Укомплектовать складскую заявку
+     * Заявка укомплектована
      */
     public const STATUS = 'extradition';
 

@@ -24,14 +24,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Menu\Admin\DataFixtures\Menu\MenuAdminFixturesInterface;
-use BaksDev\Menu\Admin\Type\SectionGroup\MenuAdminSectionGroupEnum;
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
 use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.role')]
 #[AutoconfigureTag('baks.menu.admin')]
-class Role implements RoleFixturesInterface, MenuAdminFixturesInterface
+class Role implements RoleFixturesInterface, MenuAdminInterface
 {
     public const ROLE = 'ROLE_PRODUCT_STOCK';
 
@@ -41,7 +41,7 @@ class Role implements RoleFixturesInterface, MenuAdminFixturesInterface
     }
 
     /**
-     * Добавляем раздел в меню администрирвоания.
+     * Добавляем раздел в меню администрирования.
      */
 
     /** Метод возвращает PATH раздела */
@@ -51,16 +51,12 @@ class Role implements RoleFixturesInterface, MenuAdminFixturesInterface
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupEnum|bool
+    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
     {
-        if (enum_exists(MenuAdminSectionGroupEnum::class)) {
-            return MenuAdminSectionGroupEnum::STOCKS;
-        }
-
-        return false;
+        return new MenuGroupStocks();
     }
 
-    /** Метод возвращает позицию, в которую распологается ссылка в секции меню */
+    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
     public function getSortMenu(): int
     {
         return 100;

@@ -35,7 +35,7 @@ class ProductStockStatusAccept implements ProductStockStatusInterface
     /**
      * Статус "Принят со склада заявителю"
      */
-    public const STATUS = 'shipment';
+    public const STATUS = 'accept';
 
     /** Возвращает значение (value) */
     public function getValue(): string
