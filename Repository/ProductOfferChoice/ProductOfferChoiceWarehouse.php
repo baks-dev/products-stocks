@@ -25,33 +25,37 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductOfferChoice;
 
+use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Category\Entity as CategoryEntity;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseInterface
 {
-    private EntityManagerInterface $entityManager;
+
     private TranslatorInterface $translator;
+    private ORMQueryBuilder $ORMQueryBuilder;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        ORMQueryBuilder $ORMQueryBuilder,
         TranslatorInterface $translator
-    ) {
-        $this->entityManager = $entityManager;
+    )
+    {
+
         $this->translator = $translator;
+        $this->ORMQueryBuilder = $ORMQueryBuilder;
     }
 
-    /** Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличие на складе */
+    /**
+     * Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличие на складе
+     */
     public function getProductsOfferExistWarehouse(ProductUid $product): ?array
     {
-        $qb = $this->entityManager->createQueryBuilder();
+        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
         $select = sprintf('new %s(stock.offer, offer.value, trans.name, (SUM(stock.total) - SUM(stock.reserve)))', ProductOfferConst::class);
 
@@ -103,20 +107,12 @@ final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseIn
             'trans.offer = category_offer.id AND trans.local = :local'
         );
 
+        $qb->setParameter('product', $product, ProductUid::TYPE);
+        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
 
 
-        $cacheQueries = new FilesystemAdapter('ProductStocks');
+        /* Кешируем результат ORM */
+        return $qb->enableCache('ProductStocks', 86400)->getResult();
 
-        $query = $this->entityManager->createQuery($qb->getDQL());
-        $query->setQueryCache($cacheQueries);
-        $query->setResultCache($cacheQueries);
-        $query->enableResultCache();
-        $query->setLifetime(60 * 60 * 24);
-
-        //$query->setParameter('warehouse', $warehouse, ContactsRegionCallUid::TYPE);
-        $query->setParameter('product', $product, ProductUid::TYPE);
-        $query->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
-
-        return $query->getResult();
     }
 }

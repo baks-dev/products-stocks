@@ -27,8 +27,10 @@ use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm
 use BaksDev\Products\Stocks\Repository\AllProductStocksIncoming\AllProductStocksIncomingInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[AsController]
 #[RoleSecurity('ROLE_MATERIAL_STOCK_INCOMING')]
 final class IndexController extends AbstractController
 {

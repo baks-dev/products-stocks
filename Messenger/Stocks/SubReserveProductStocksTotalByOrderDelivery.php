@@ -31,8 +31,8 @@ use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductOfferVariationModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductOfferVariation;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -112,12 +112,12 @@ final class SubReserveProductStocksTotalByOrderDelivery
 
         /** Постоянный уникальный идентификатор варианта */
         $ProductVariationConst = $product->getVariation() ? $this->entityManager
-            ->getRepository(ProductOfferVariation::class)
+            ->getRepository(ProductVariation::class)
             ->find($product->getVariation())?->getConst() : null;
 
         /** Постоянный уникальный идентификатор модификации */
         $ProductModificationConst = $product->getModification() ? $this->entityManager
-            ->getRepository(ProductOfferVariationModification::class)
+            ->getRepository(ProductModification::class)
             ->find($product->getModification())?->getConst() : null;
 
         $ProductStockTotal = $this->entityManager

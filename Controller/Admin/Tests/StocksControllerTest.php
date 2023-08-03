@@ -20,10 +20,10 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Tests;
 
 use BaksDev\Users\User\Tests\TestUserAccount;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- */
+/** @group products-stocks */
+#[When(env: 'test')]
 final class StocksControllerTest extends WebTestCase
 {
 

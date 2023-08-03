@@ -23,10 +23,10 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Users\User\Tests\TestUserAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- */
+/** @group products-stocks */
+#[When(env: 'test')]
 final class WarehouseControllerTest extends WebTestCase
 {
     private const URL = '/admin/product/stock/warehouse/%s';

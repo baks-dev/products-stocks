@@ -28,9 +28,11 @@ use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockHandler
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
+#[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_WAREHOUSE_SEND')]
 final class WarehouseController extends AbstractController
 {

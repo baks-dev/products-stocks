@@ -25,11 +25,11 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving;
 
-use Psr\Log\LoggerInterface;
-use BaksDev\Products\Stocks\Entity;
-use Doctrine\ORM\EntityManagerInterface;
-use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Core\Services\Messenger\MessageDispatchInterface;
+use BaksDev\Products\Stocks\Entity;
+use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class MovingProductStockHandler
@@ -150,7 +150,7 @@ final class MovingProductStockHandler
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new ProductStockMessage($Main->getId(), $Main->getEvent(), $command->getEvent()),
-            transport: 'products_stocks'
+            transport: 'products-stocks'
         );
 
         return $Main;

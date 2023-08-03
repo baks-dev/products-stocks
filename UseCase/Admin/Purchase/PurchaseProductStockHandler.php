@@ -153,7 +153,7 @@ final class PurchaseProductStockHandler
                 $Main->getEvent(),
                 $command->getEvent()
             ),
-            transport: 'products_stocks'
+            transport: 'products-stocks'
         );
 
         return $Main;

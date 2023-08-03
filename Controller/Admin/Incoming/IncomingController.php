@@ -29,8 +29,10 @@ use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_INCOMING_ACCEPT')]
 final class IncomingController extends AbstractController
 {

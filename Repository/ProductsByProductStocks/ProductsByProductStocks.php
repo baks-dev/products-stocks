@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\ProductsByProductStocks;
 use BaksDev\Contacts\Region\Entity\Call\ContactsRegionCall;
 use BaksDev\Contacts\Region\Entity\Call\Trans\ContactsRegionCallTrans;
 use BaksDev\Contacts\Region\Entity\ContactsRegion;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Delivery\Entity\Fields\DeliveryField;
 use BaksDev\Delivery\Entity\Fields\Trans\DeliveryFieldTrans;
@@ -38,17 +39,17 @@ use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryOffersVariationModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryOffersVariationModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryOffersVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryOffersVariationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductOfferVariationImage;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductOfferVariationModificationImage;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductOfferVariationModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductOfferVariation;
+use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
@@ -58,23 +59,19 @@ use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
-use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\DBAL\Connection;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductsByProductStocks implements ProductsByProductStocksInterface
 {
-    private Connection $connection;
-
     private TranslatorInterface $translator;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
-        Connection $connection,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        DBALQueryBuilder $DBALQueryBuilder,
     ) {
-        $this->connection = $connection;
         $this->translator = $translator;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /**
@@ -82,7 +79,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
      */
     public function fetchAllProductsByProductStocksAssociative(ProductStockUid $stock): array|bool
     {
-        $qb = $this->connection->createQueryBuilder();
+        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
         $locale = new Locale($this->translator->getLocale());
 
        // $qb->select('*');
@@ -334,7 +331,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         $qb->leftJoin(
             'product_offer',
-            ProductOfferVariation::TABLE,
+            ProductVariation::TABLE,
             'product_variation',
             'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
         );
@@ -343,7 +340,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductCategoryOffersVariation::TABLE,
+            ProductCategoryVariation::TABLE,
             'category_variation',
             'category_variation.id = product_variation.category_variation'
         );
@@ -351,7 +348,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         /* Получаем название множественного варианта */
         $qb->leftJoin(
             'category_variation',
-            ProductCategoryOffersVariationTrans::TABLE,
+            ProductCategoryVariationTrans::TABLE,
             'category_variation_trans',
             'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
         );
@@ -369,7 +366,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductOfferVariationModification::TABLE,
+            ProductModification::TABLE,
             'product_modification',
             'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
         );
@@ -382,7 +379,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         $qb->leftJoin(
             'product_modification',
-            ProductCategoryOffersVariationModification::TABLE,
+            ProductCategoryModification::TABLE,
             'category_modification',
             'category_modification.id = product_modification.category_modification'
         );
@@ -390,7 +387,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         /* Получаем название типа модификации */
         $qb->leftJoin(
             'category_modification',
-            ProductCategoryOffersVariationModificationTrans::TABLE,
+            ProductCategoryModificationTrans::TABLE,
             'category_modification_trans',
             'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
@@ -417,14 +414,14 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductOfferVariationImage::TABLE,
+            ProductVariationImage::TABLE,
             'product_variation_image',
             'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
         );
 
         $qb->leftJoin(
             'product_modification',
-            ProductOfferVariationModificationImage::TABLE,
+            ProductModificationImage::TABLE,
             'product_modification_image',
             'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
         );
@@ -432,9 +429,9 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         $qb->addSelect("
          CASE
                WHEN product_modification_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductOfferVariationModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
+                    CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
                WHEN product_variation_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductOfferVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
+                    CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
                WHEN product_offer_image.name IS NOT NULL THEN
                     CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.dir, '/', product_offer_image.name, '.')
                WHEN product_photo.name IS NOT NULL THEN
@@ -495,22 +492,14 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         ;
 
 
+        /* Кешируем результат DBAL */
+        return $qb
+            ->enableCache('ProductStocks', 86400)
+            ->fetchAllAssociative();
+
 
         //dd($this->connection->prepare('EXPLAIN (ANALYZE)  '.$qb->getSQL())->executeQuery($qb->getParameters())->fetchAllAssociativeIndexed());
 
-
-        /* Кешируем результат DBAL */
-        $cacheFilesystem = new FilesystemAdapter('ProductStocks');
-
-        $config = $this->connection->getConfiguration();
-        $config?->setResultCache($cacheFilesystem);
-
-        return $this->connection->executeCacheQuery(
-            $qb->getSQL(),
-            $qb->getParameters(),
-            $qb->getParameterTypes(),
-            new QueryCacheProfile((60 * 60 * 24))
-        )->fetchAllAssociative();
 
     }
 }

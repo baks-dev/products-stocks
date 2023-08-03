@@ -27,8 +27,10 @@ use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_MOVING_NEW')]
 final class PackageController extends AbstractController
 {
@@ -73,30 +75,8 @@ final class PackageController extends AbstractController
                 return $this->redirectToRoute('ProductStocks:admin.moving.index');
             }
 
-//            foreach ($movingDTO->getMove() as $move)
-//            {
-//                dd( $move);
-//
-//                $ProductStock = $handler->handle($movingDTO);
-//            }
-//
-//            if ($ProductStock instanceof ProductStock)
-//            {
-//                $this->addFlash('success', 'admin.success.accept', 'admin.product.stock');
-//            } else
-//            {
-//                $this->addFlash('danger', 'admin.danger.accept', 'admin.product.stock', $ProductStock);
-//            }
-
-            // return $this->redirectToReferer();
-
-
         }
 
-//        foreach ($form->getErrors() as $error)
-//        {
-//            dd($error->getMessage());
-//        }
 
         return $this->render(['form' => $form->createView()]);
     }

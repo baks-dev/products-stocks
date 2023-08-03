@@ -31,18 +31,18 @@ use BaksDev\Orders\Order\Entity as OrderEntity;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryOffersVariationModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryOffersVariationModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryOffersVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryOffersVariationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductOfferVariationImage;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductOfferVariationModificationImage;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductOfferVariationModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductOfferVariation;
+use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
@@ -197,7 +197,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_offer',
-            ProductOfferVariation::TABLE,
+            ProductVariation::TABLE,
             'product_variation',
             'product_variation.id = order_product.variation AND product_variation.offer = product_offer.id'
         );
@@ -206,7 +206,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductCategoryOffersVariation::TABLE,
+            ProductCategoryVariation::TABLE,
             'category_variation',
             'category_variation.id = product_variation.category_variation'
         );
@@ -214,7 +214,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
         /* Получаем название множественного варианта */
         $qb->leftJoin(
             'category_variation',
-            ProductCategoryOffersVariationTrans::TABLE,
+            ProductCategoryVariationTrans::TABLE,
             'category_variation_trans',
             'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
         );
@@ -226,14 +226,14 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductOfferVariationModification::TABLE,
+            ProductModification::TABLE,
             'product_modification',
             'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id'
         );
 
         $qb->leftJoin(
             'product_modification',
-            ProductCategoryOffersVariationModification::TABLE,
+            ProductCategoryModification::TABLE,
             'category_modification',
             'category_modification.id = product_modification.category_modification'
         );
@@ -241,7 +241,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
         /* Получаем название типа модификации */
         $qb->leftJoin(
             'category_modification',
-            ProductCategoryOffersVariationModificationTrans::TABLE,
+            ProductCategoryModificationTrans::TABLE,
             'category_modification_trans',
             'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
@@ -268,14 +268,14 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductOfferVariationImage::TABLE,
+            ProductVariationImage::TABLE,
             'product_variation_image',
             'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
         );
 
         $qb->leftJoin(
             'product_modification',
-            ProductOfferVariationModificationImage::TABLE,
+            ProductModificationImage::TABLE,
             'product_modification_image',
             'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
         );
@@ -333,9 +333,9 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 						
 						'product_image', CASE
 						                   WHEN product_modification_image.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductOfferVariationModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
+                                                CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
                                            WHEN product_variation_image.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductOfferVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
+                                                CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
                                            WHEN product_offer_image.name IS NOT NULL THEN
                                                 CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.dir, '/', product_offer_image.name, '.')
                                            WHEN product_photo.name IS NOT NULL THEN

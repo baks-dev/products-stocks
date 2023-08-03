@@ -26,9 +26,11 @@ use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockHandler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
+#[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PURCHASE_NEW')]
 final class PurchaseController extends AbstractController
 {

@@ -21,9 +21,11 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming\Tests;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockForm;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\Form\Test\TypeTestCase;
 
 /** @group products-stocks */
+#[When(env: 'test')]
 final class IncomingProductStockFormTest extends TypeTestCase
 {
     public function testSubmitValidData(): void

@@ -29,14 +29,12 @@ return static function (ContainerConfigurator $configurator): void {
         ->autowire()
         ->autoconfigure();
 
-    $namespace = 'BaksDev\Products\Stocks';
+    $NAMESPACE = 'BaksDev\Products\Stocks\\';
 
-    $services->load($namespace.'\\', __DIR__.'/../../')
-        ->exclude(__DIR__.'/../../{Controller,Entity,Resources,Type,Tests,*DTO.php,*Message.php}');
+    $MODULE = substr(__DIR__, 0, strpos(__DIR__, "Resources"));
 
-    $services->load($namespace.'\Controller\\', __DIR__.'/../../Controller')
-        ->tag('controller.service_arguments')
-        ->exclude(__DIR__.'/../../Controller/**/*Test.php');
+    $services->load($NAMESPACE, $MODULE)
+        ->exclude($MODULE.'{Entity,Resources,Type,*DTO.php,*Message.php}');
 
-    $services->load($namespace.'\Type\Status\ProductStockStatus\\', __DIR__.'/../../Type/Status/ProductStockStatus');
+    $services->load($NAMESPACE.'Type\Status\ProductStockStatus\\', $MODULE.'Type/Status/ProductStockStatus');
 };

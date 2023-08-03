@@ -27,10 +27,9 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksWarehouse;
 
 use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Core\Services\Switcher\SwitcherInterface;
-use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Category\Entity as CategoryEntity;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
@@ -40,29 +39,19 @@ use BaksDev\Users\Groups\Group\Entity as GroupEntity;
 use BaksDev\Users\Groups\Users\Entity as CheckUsersEntity;
 use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\DBAL\Connection;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterface
 {
-    private Connection $connection;
-
-    private TranslatorInterface $translator;
-
-    private SwitcherInterface $switcher;
-
     private PaginatorInterface $paginator;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
-        Connection $connection,
-        TranslatorInterface $translator,
-        SwitcherInterface $switcher,
+        DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
-    ) {
-        $this->connection = $connection;
-        $this->translator = $translator;
-        $this->switcher = $switcher;
+    )
+    {
         $this->paginator = $paginator;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /** Метод возвращает список всех поступлений на склад  */
@@ -70,8 +59,12 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         SearchDTO $search,
         ProductsStocksFilterInterface $filter,
         ?UserProfileUid $profile
-    ): PaginatorInterface {
-        $qb = $this->connection->createQueryBuilder();
+    ): PaginatorInterface
+    {
+        $qb = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal()
+        ;
 
 
         $qb->select('stock.id');
@@ -108,7 +101,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         );
 
         // Warehouse
-        $exist = $this->connection->createQueryBuilder();
+        $exist = $this->DBALQueryBuilder->builder();
         $exist->select('1');
         $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
         $exist->where('tmp.event = warehouse.event');
@@ -135,7 +128,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
         );
 
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
 
         // Product
         $qb->addSelect('product.id as product_id');
@@ -204,7 +196,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
         $qb->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Variation\ProductOfferVariation::TABLE,
+            ProductEntity\Offers\Variation\ProductVariation::TABLE,
             'product_offer_variation',
             'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
         );
@@ -213,7 +205,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         $qb->addSelect('category_offer_variation.reference as product_variation_reference');
         $qb->leftJoin(
             'product_offer_variation',
-            CategoryEntity\Offers\Variation\ProductCategoryOffersVariation::TABLE,
+            CategoryEntity\Offers\Variation\ProductCategoryVariation::TABLE,
             'category_offer_variation',
             'category_offer_variation.id = product_offer_variation.category_variation'
         );
@@ -226,7 +218,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
         $qb->leftJoin(
             'product_offer_variation',
-            ProductEntity\Offers\Variation\Modification\ProductOfferVariationModification::TABLE,
+            ProductEntity\Offers\Variation\Modification\ProductModification::TABLE,
             'product_offer_modification',
             'product_offer_modification.variation = product_offer_variation.id'
         );
@@ -235,7 +227,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         $qb->addSelect('category_offer_modification.reference as product_modification_reference');
         $qb->leftJoin(
             'product_offer_modification',
-            CategoryEntity\Offers\Variation\Modification\ProductCategoryOffersVariationModification::TABLE,
+            CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::TABLE,
             'category_offer_modification',
             'category_offer_modification.id = product_offer_modification.category_modification'
         );
@@ -258,7 +250,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
         $qb->leftJoin(
             'product_offer_modification',
-            ProductEntity\Offers\Variation\Modification\Image\ProductOfferVariationModificationImage::TABLE,
+            ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE,
             'product_offer_modification_image',
             '
 			product_offer_modification_image.modification = product_offer_modification.id AND
@@ -268,7 +260,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
         $qb->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Variation\Image\ProductOfferVariationImage::TABLE,
+            ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE,
             'product_offer_variation_image',
             '
 			product_offer_variation_image.variation = product_offer_variation.id AND
@@ -303,9 +295,9 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 			CASE
 			 
 			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductOfferVariationModificationImage::TABLE."' , '/', product_offer_modification_image.dir, '/', product_offer_modification_image.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE."' , '/', product_offer_modification_image.dir, '/', product_offer_modification_image.name, '.')
 			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductOfferVariationImage::TABLE."' , '/', product_offer_variation_image.dir, '/', product_offer_variation_image.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE."' , '/', product_offer_variation_image.dir, '/', product_offer_variation_image.name, '.')
 			   WHEN product_offer_images.name IS NOT NULL THEN
 					CONCAT ( '/upload/".ProductEntity\Offers\Image\ProductOfferImage::TABLE."' , '/', product_offer_images.dir, '/', product_offer_images.name, '.')
 			   WHEN product_photo.name IS NOT NULL THEN
@@ -377,15 +369,15 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         );
 
         // Product Cover
-//        $qb->addSelect('product_photo.name AS cover');
-//        $qb->addSelect('product_photo.ext');
-//        $qb->addSelect('product_photo.cdn');
-//        $qb->addSelect('product_photo.dir');
-//        $qb->leftJoin(
-//            'product_event',
-//            ProductEntity\Photo\ProductPhoto::TABLE,
-//            'product_photo',
-//            'product_photo.event = product_event.id');
+        //        $qb->addSelect('product_photo.name AS cover');
+        //        $qb->addSelect('product_photo.ext');
+        //        $qb->addSelect('product_photo.cdn');
+        //        $qb->addSelect('product_photo.dir');
+        //        $qb->leftJoin(
+        //            'product_event',
+        //            ProductEntity\Photo\ProductPhoto::TABLE,
+        //            'product_photo',
+        //            'product_photo.event = product_event.id');
 
         // ОТВЕТСТВЕННЫЙ
 
@@ -475,26 +467,19 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             $qb->andWhere('warehouse.const = :warehouse_filter');
             $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
         }
-        
+
         // Поиск
-        if ($search->query)
+        if($search->getQuery())
         {
-            $search->query = mb_strtolower($search->query);
-
-            $searcher = $this->connection->createQueryBuilder();
-
-            $searcher->orWhere('LOWER(event.number) LIKE :query');
-
-//            $searcher->orWhere('LOWER(region_trans.name) LIKE :query');
-//            $searcher->orWhere('LOWER(region_trans.name) LIKE :switcher');
-
-            $qb->andWhere('('.$searcher->getQueryPart('where').')');
-            $qb->setParameter('query', '%'.$this->switcher->toRus($search->query).'%');
-            $qb->setParameter('switcher', '%'.$this->switcher->toEng($search->query).'%');
+            $qb
+                ->createSearchQueryBuilder($search)
+                ->addSearchLike('event.number')
+            ;
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');
 
         return $this->paginator->fetchAllAssociative($qb);
+
     }
 }

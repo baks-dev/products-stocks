@@ -32,8 +32,10 @@ use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK')]
 final class StocksController extends AbstractController
 {

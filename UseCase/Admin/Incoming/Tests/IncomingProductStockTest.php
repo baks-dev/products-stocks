@@ -24,8 +24,10 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\DependencyInjection\Attribute\When;
 
 /** @group products-stocks */
+#[When(env: 'test')]
 final class IncomingProductStockTest extends KernelTestCase
 {
     public function testProductStockDTO(): void

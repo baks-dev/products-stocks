@@ -153,18 +153,6 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
 
         /** Не кешируем результат! Необходима актуальная информация о наличии */
         return $qb->getQuery()->getResult();
-
-
-//        // Кешируем результат ORM
-//        $cacheQueries = new FilesystemAdapter('ContactsRegion');
-//
-//        $query = $this->entityManager->createQuery($qb->getDQL());
-//        $query->setQueryCache($cacheQueries);
-//        $query->setResultCache($cacheQueries);
-//        $query->enableResultCache();
-//        $query->setLifetime(60 * 60 * 24);
-//        $query->setParameters($qb->getParameters());
-//
-//        return $query->getResult();
+        
     }
 }
