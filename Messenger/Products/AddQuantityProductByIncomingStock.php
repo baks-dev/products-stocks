@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityRepositoryInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
@@ -44,7 +44,7 @@ final class AddQuantityProductByIncomingStock
 {
     private ProductStocksByIdInterface $productStocks;
     private EntityManagerInterface $entityManager;
-    private ProductModificationQuantityInterface $modificationQuantity;
+    private ProductModificationQuantityRepositoryInterface $modificationQuantity;
     private ProductVariationQuantityInterface $variationQuantity;
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
@@ -52,7 +52,7 @@ final class AddQuantityProductByIncomingStock
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
-        ProductModificationQuantityInterface $modificationQuantity,
+        ProductModificationQuantityRepositoryInterface $modificationQuantity,
         ProductVariationQuantityInterface $variationQuantity,
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
