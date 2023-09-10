@@ -435,7 +435,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'users_profile_info',
             CheckUsersEntity\CheckUsers::TABLE,
             'check_user',
-            'check_user.user_id = users_profile_info.user_id'
+            'check_user.usr = users_profile_info.usr'
         );
 
         $qb->join(

@@ -33,7 +33,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_counter')]
-final class ProductStockCounter
+class ProductStockCounter
 {
     public const TABLE = 'product_stock_counter';
 

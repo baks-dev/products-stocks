@@ -41,8 +41,8 @@ final class StocksControllerTest extends WebTestCase
         {
             $client->setServerParameter('HTTP_USER_AGENT', $device);
 
-            $user = TestUserAccount::getModer(self::ROLE);
-            $client->loginUser($user, 'user');
+            $usr = TestUserAccount::getModer(self::ROLE);
+            $client->loginUser($usr, 'user');
             $client->request('GET', self::URL);
 
             self::assertResponseIsSuccessful();
@@ -57,10 +57,10 @@ final class StocksControllerTest extends WebTestCase
 
         foreach (TestUserAccount::getDevice() as $device)
         {
-            $user = TestUserAccount::getAdmin();
+            $usr = TestUserAccount::getAdmin();
 
             $client->setServerParameter('HTTP_USER_AGENT', $device);
-            $client->loginUser($user, 'user');
+            $client->loginUser($usr, 'user');
             $client->request('GET', self::URL);
 
             self::assertResponseIsSuccessful();
@@ -76,10 +76,10 @@ final class StocksControllerTest extends WebTestCase
 
         foreach (TestUserAccount::getDevice() as $device)
         {
-            $user = TestUserAccount::getUser();
+            $usr = TestUserAccount::getUsr();
 
             $client->setServerParameter('HTTP_USER_AGENT', $device);
-            $client->loginUser($user, 'user');
+            $client->loginUser($usr, 'user');
             $client->request('GET', self::URL);
         }
 

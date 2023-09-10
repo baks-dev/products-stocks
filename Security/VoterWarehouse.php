@@ -26,12 +26,12 @@ namespace BaksDev\Products\Stocks\Security;
 
 use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
 use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
-use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
-use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterWarehouse implements VoterFixturesInterface, MenuAdminInterface
+class VoterWarehouse implements VoterInterface, MenuAdminInterface
 {
     /** Список поступлений на склад */
     public const VOTER = 'WAREHOUSE';
@@ -41,7 +41,7 @@ class VoterWarehouse implements VoterFixturesInterface, MenuAdminInterface
         return Role::ROLE.'_'.self::VOTER;
     }
 
-    public function equals(RoleFixturesInterface $role): bool
+    public function equals(RoleInterface $role): bool
     {
         return Role::ROLE === $role->getRole();
     }

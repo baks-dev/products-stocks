@@ -24,12 +24,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
-use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterIncomingAccept implements VoterFixturesInterface
+class VoterIncomingAccept implements VoterInterface
 {
     /** Добавить приход на склад */
     public const VOTER = 'INCOMING_ACCEPT';
@@ -39,7 +39,7 @@ class VoterIncomingAccept implements VoterFixturesInterface
         return Role::ROLE.'_'.self::VOTER;
     }
 
-    public function equals(RoleFixturesInterface $role): bool
+    public function equals(RoleInterface $role): bool
     {
         return Role::ROLE === $role->getRole();
     }

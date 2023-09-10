@@ -47,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_event')]
-final class ProductStockEvent extends EntityEvent
+class ProductStockEvent extends EntityEvent
 {
     public const TABLE = 'product_stock_event';
 

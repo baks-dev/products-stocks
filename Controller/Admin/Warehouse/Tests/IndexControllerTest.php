@@ -34,9 +34,9 @@ final class IndexControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $user = TestUserAccount::getModer(self::ROLE);
+        $usr = TestUserAccount::getModer(self::ROLE);
 
-        $client->loginUser($user, 'user');
+        $client->loginUser($usr, 'user');
         $client->request('GET', self::URL);
 
         self::assertResponseIsSuccessful();
@@ -48,9 +48,9 @@ final class IndexControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $user = TestUserAccount::getAdmin();
+        $usr = TestUserAccount::getAdmin();
 
-        $client->loginUser($user, 'user');
+        $client->loginUser($usr, 'user');
         $client->request('GET', self::URL);
 
         self::assertResponseIsSuccessful();
@@ -61,8 +61,8 @@ final class IndexControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $user = TestUserAccount::getUser();
-        $client->loginUser($user, 'user');
+        $usr = TestUserAccount::getUsr();
+        $client->loginUser($usr, 'user');
         $client->request('GET', self::URL);
 
         self::assertResponseStatusCodeSame(403);

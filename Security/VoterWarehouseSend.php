@@ -24,12 +24,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Users\Groups\Group\DataFixtures\Security\RoleFixturesInterface;
-use BaksDev\Users\Groups\Group\DataFixtures\Security\VoterFixturesInterface;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterWarehouseSend implements VoterFixturesInterface
+class VoterWarehouseSend implements VoterInterface
 {
     /** Отправить закупку на склад */
     public const VOTER = 'WAREHOUSE_SEND';
@@ -39,7 +39,7 @@ class VoterWarehouseSend implements VoterFixturesInterface
         return Role::ROLE . '_' . self::VOTER;
     }
 
-    public function equals(RoleFixturesInterface $role): bool
+    public function equals(RoleInterface $role): bool
     {
         return Role::ROLE === $role->getRole();
     }

@@ -65,25 +65,25 @@ class ProductStockModify extends EntityEvent
     private DateTimeImmutable $modDate;
 
     /** ID пользователя  */
-    #[ORM\Column(name: 'user_id', type: UserUid::TYPE, nullable: true)]
-    private ?UserUid $user = null;
+    #[ORM\Column(type: UserUid::TYPE, nullable: true)]
+    private ?UserUid $usr = null;
 
-    /** Ip адресс */
+    /** Ip адрес */
     #[Assert\NotBlank]
-    #[ORM\Column(name: 'user_ip', type: IpAddress::TYPE, nullable: false)]
-    private IpAddress $ipAddress;
+    #[ORM\Column(type: IpAddress::TYPE, nullable: false)]
+    private IpAddress $ip;
 
     /** User-agent */
     #[Assert\NotBlank]
-    #[ORM\Column(name: 'user_agent', type: Types::TEXT, nullable: false)]
-    private string $userAgent;
+    #[ORM\Column(type: Types::TEXT, nullable: false)]
+    private string $agent;
 
     public function __construct(ProductStockEvent $event)
     {
         $this->event = $event;
         $this->modDate = new DateTimeImmutable();
-        $this->ipAddress = new IpAddress('127.0.0.1');
-        $this->userAgent = 'console';
+        $this->ip = new IpAddress('127.0.0.1');
+        $this->agent = 'console';
         $this->action = new ModifyAction(ModifyActionEnum::NEW);
     }
 
@@ -91,8 +91,8 @@ class ProductStockModify extends EntityEvent
     {
         $this->modDate = new DateTimeImmutable();
         $this->action = new ModifyAction(ModifyActionEnum::UPDATE);
-        $this->ipAddress = new IpAddress('127.0.0.1');
-        $this->userAgent = 'console';
+        $this->ip = new IpAddress('127.0.0.1');
+        $this->agent = 'console';
     }
 
     public function getDto($dto): mixed
@@ -113,16 +113,16 @@ class ProductStockModify extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function upModifyAgent(IpAddress $ipAddress, ?string $userAgent): void
+    public function upModifyAgent(IpAddress $ip, ?string $agent): void
     {
-        $this->ipAddress = $ipAddress;
-        $this->userAgent = $userAgent ?: 'console';
+        $this->ip = $ip;
+        $this->agent = $agent ?: 'console';
         $this->modDate = new DateTimeImmutable();
     }
 
-    public function setUser(UserUid|User|null $user): void
+    public function setUsr(UserUid|User|null $usr): void
     {
-        $this->user = $user instanceof User ? $user->getId() : $user;
+        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
     }
 
     public function equals(ModifyActionEnum $action): bool
