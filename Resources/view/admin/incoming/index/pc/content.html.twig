@@ -1,6 +1,6 @@
 {% trans_default_domain('admin.product.stock') %}
 
-<main class="main ">
+<main class="main d-print-none ">
 
     <section class="container px-4 mb-5">
 
@@ -189,7 +189,7 @@
                         <div>
                             <a href="{# {{ is_granted('ROLE_ADMIN') ? path('UserProfile:admin.newedit.edit', { id: item.users_profile_event }) : '#' }} #}"
                                class="icon rounded-circle bg-contain lazy p-1"
-                               data-bg="{{ item.users_profile_avatar ? img_path ~ item.users_profile_avatar ~ item.users_profile_avatar_ext : '/img/blank.svg' }}"
+                               data-bg="{{ item.users_profile_avatar ? img_path ~ item.users_profile_avatar ~ item.users_profile_avatar_ext : '/assets/img/blank.svg' }}"
                             > </a>
                         </div>
 

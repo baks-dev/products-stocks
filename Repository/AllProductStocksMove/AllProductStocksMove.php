@@ -35,8 +35,6 @@ use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Stocks\Entity as ProductStockEntity;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Groups\Group\Entity as GroupEntity;
-use BaksDev\Users\Groups\Users\Entity as CheckUsersEntity;
 use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
@@ -477,37 +475,9 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'users_profile_avatar.event = users_profile_event.id'
         );
 
-        // Группа
 
-        $qb->join(
-            'users_profile_info',
-            CheckUsersEntity\CheckUsers::TABLE,
-            'check_user',
-            'check_user.usr = users_profile_info.usr'
-        );
+        $qb->addSelect('NULL AS group_name'); // Название группы
 
-        $qb->join(
-            'check_user',
-            CheckUsersEntity\Event\CheckUsersEvent::TABLE,
-            'check_user_event',
-            'check_user_event.id = check_user.event'
-        );
-
-        $qb->leftJoin(
-            'check_user_event',
-            GroupEntity\Group::TABLE,
-            'groups',
-            'groups.id = check_user_event.group_id'
-        );
-
-        $qb->addSelect('groups_trans.name AS group_name'); // Название группы
-
-        $qb->leftJoin(
-            'groups',
-            GroupEntity\Trans\GroupTrans::TABLE,
-            'groups_trans',
-            'groups_trans.event = groups.event AND groups_trans.local = :local'
-        );
 
         if($filter->getWarehouse())
         {

@@ -31,7 +31,7 @@ use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterWarehouse implements VoterInterface, MenuAdminInterface
+final class VoterWarehouse implements VoterInterface, MenuAdminInterface
 {
     /** Список поступлений на склад */
     public const VOTER = 'WAREHOUSE';

@@ -174,6 +174,8 @@ final class PurchaseProductStockForm extends AbstractType
                 ]);
         };
 
+        
+
         $builder->get('preProduct')->addEventListener(
             FormEvents::POST_SUBMIT,
             function(FormEvent $event) use ($formOfferModifier) {
