@@ -58,6 +58,11 @@ class ProductStock
         $this->id = new ProductStockUid($id);
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->id;
+    }
+
     public function getId(): ProductStockUid
     {
         return $this->id;

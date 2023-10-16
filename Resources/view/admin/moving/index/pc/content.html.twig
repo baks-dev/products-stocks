@@ -39,6 +39,7 @@
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
                        title="Складской учет"
 
                     >
@@ -56,6 +57,7 @@
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
                        title="Список закупок продукции"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -74,6 +76,7 @@
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
                        title="Поступления на склад"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -95,6 +98,7 @@
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
                        title="Приходные ордера"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -110,6 +114,7 @@
                        class="btn btn-light bold"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
                        title="Упаковка заказов"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
@@ -126,6 +131,7 @@
                             class="btn btn-light opacity-25"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
+                            data-bs-delay='{"show":600,"hide":100}'
                             title="Перемещения между складами"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -186,7 +192,7 @@
                             <span class="badge text-bg-danger me-3">Перемещение</span>
                             <div># {{ item.number }}</div>
                         </a>
-                        <span class="fw-normal text-nowrap">{{ item.mod_date|date('d.m.Y H:m:i') }}</span>
+                        <span class="fw-normal text-nowrap">{{ item.mod_date|date('d.m.Y H:i') }}</span>
                     </div>
 
                     {# СКЛАД #}
@@ -198,12 +204,20 @@
 
                     <div class="d-flex w-75 gap-3">
 
-                        {% set img_path = item.users_profile_avatar_cdn == true ? CDN_HOST : '' %}
+                        {# Обложка #}
+                        {% set image_path = '/assets/img/blank.svg' %}
+
+                        {% if item.users_profile_avatar_ext is defined and item.users_profile_avatar_ext is not null %}
+                            {% set img_host =  item.users_profile_avatar_cdn == true  ? CDN_HOST : '' %}
+                            {% set img_dir = item.users_profile_avatar %}
+                            {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.users_profile_avatar_ext %}
+                            {% set image_path = img_host ~ img_table ~ img_dir ~ img_file %}
+                        {% endif %}
 
                         <div>
-                            <a href="{# {{ is_granted('ROLE_ADMIN') ? path('UserProfile:admin.newedit.edit', { id: item.users_profile_event }) : '#' }} #}"
+                            <a href="#"
                                class="icon rounded-circle bg-contain lazy p-1"
-                               data-bg="{{ item.users_profile_avatar ? img_path ~ item.users_profile_avatar ~ item.users_profile_avatar_ext : '/assets/img/blank.svg' }}"
+                               data-bg="{{ image_path }}"
                             > </a>
                         </div>
 

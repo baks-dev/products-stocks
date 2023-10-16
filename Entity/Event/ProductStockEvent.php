@@ -119,7 +119,7 @@ class ProductStockEvent extends EntityEvent
 
     public function __clone()
     {
-        $this->id = new ProductStockEventUid();
+        $this->id = clone $this->id;
     }
 
     public function __toString(): string
@@ -209,6 +209,8 @@ class ProductStockEvent extends EntityEvent
 
     public function getDto($dto): mixed
     {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if ($dto instanceof ProductStockEventInterface)
         {
             return parent::getDto($dto);
@@ -219,7 +221,7 @@ class ProductStockEvent extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockEventInterface)
+        if ($dto instanceof ProductStockEventInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

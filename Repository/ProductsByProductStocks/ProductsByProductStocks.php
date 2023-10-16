@@ -429,27 +429,20 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         $qb->addSelect("
          CASE
                WHEN product_modification_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
+                    CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.name)
                WHEN product_variation_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
+                    CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.name)
                WHEN product_offer_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.dir, '/', product_offer_image.name, '.')
+                    CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.name)
                WHEN product_photo.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.dir, '/', product_photo.name, '.')
+                    CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.name)
                ELSE NULL
             END
            AS product_image")
-            ->addGroupBy('product_modification_image.dir')
 
             ->addGroupBy('product_modification_image.name')
-            ->addGroupBy('product_variation_image.dir')
-
             ->addGroupBy('product_variation_image.name')
-            ->addGroupBy('product_offer_image.dir')
-
             ->addGroupBy('product_offer_image.name')
-            ->addGroupBy('product_photo.dir')
-
             ->addGroupBy('product_photo.name')
         ;
 

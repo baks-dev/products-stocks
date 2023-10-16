@@ -204,7 +204,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         // Product Trans
         $qb->addSelect('product_trans.name as product_name');
-        $qb->addSelect('product_trans.description as product_description');
+        //$qb->addSelect('product_trans.description as product_description');
         $qb->join(
             'product_event',
             ProductEntity\Trans\ProductTrans::TABLE,
@@ -341,13 +341,13 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 			CASE
 			 
 			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE."' , '/', product_offer_modification_image.dir, '/', product_offer_modification_image.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE."' , '/', product_offer_modification_image.name)
 			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE."' , '/', product_offer_variation_image.dir, '/', product_offer_variation_image.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE."' , '/', product_offer_variation_image.name)
 			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Image\ProductOfferImage::TABLE."' , '/', product_offer_images.dir, '/', product_offer_images.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Offers\Image\ProductOfferImage::TABLE."' , '/', product_offer_images.name)
 			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Photo\ProductPhoto::TABLE."' , '/', product_photo.dir, '/', product_photo.name, '.')
+					CONCAT ( '/upload/".ProductEntity\Photo\ProductPhoto::TABLE."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
 		"
@@ -414,16 +414,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'category_trans.event = category.event AND category_trans.local = :local'
         );
 
-        // Product Cover
-        //        $qb->addSelect('product_photo.name AS cover');
-        //        $qb->addSelect('product_photo.ext');
-        //        $qb->addSelect('product_photo.cdn');
-        //        $qb->addSelect('product_photo.dir');
-        //        $qb->leftJoin(
-        //            'product_event',
-        //            ProductEntity\Photo\ProductPhoto::TABLE,
-        //            'product_photo',
-        //            'product_photo.event = product_event.id');
 
         // ОТВЕТСТВЕННЫЙ
 
@@ -464,7 +454,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         // Avatar
 
-        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.dir, '/', users_profile_avatar.name, '.') AS users_profile_avatar");
+        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
         $qb->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
         $qb->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
 

@@ -77,16 +77,21 @@ final class ExtraditionProductStockHandler
                 return $uniqid;
             }
 
+            $EventRepo->setEntity($command);
+            $EventRepo->setEntityManager($this->entityManager);
             $Event = $EventRepo->cloneEntity();
-        } else
+        }
+        else
         {
             $Event = new Entity\Event\ProductStockEvent();
+            $Event->setEntity($command);
             $this->entityManager->persist($Event);
         }
 
-        $this->entityManager->clear();
+//        $this->entityManager->clear();
+//        $this->entityManager->persist($Event);
 
-        // @var Entity\ProductStock $Main
+
         if ($Event->getMain())
         {
             $Main = $this->entityManager->getRepository(Entity\ProductStock::class)->findOneBy(
@@ -105,41 +110,45 @@ final class ExtraditionProductStockHandler
 
                 return $uniqid;
             }
-        } else
+        }
+        else
         {
             $Main = new Entity\ProductStock();
             $this->entityManager->persist($Main);
             $Event->setMain($Main);
         }
 
-        $Event->setEntity($command);
-        $this->entityManager->persist($Event);
-
         // присваиваем событие корню
         $Main->setEvent($Event);
 
-        /** ВАЛИДАЦИЯ */
 
-        // Валидация События
+
+        /**
+         * Валидация Event
+         */
+
         $errors = $this->validator->validate($Event);
 
-        if (count($errors) > 0)
+        if(count($errors) > 0)
         {
             /** Ошибка валидации */
             $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__LINE__ => __FILE__]);
+            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
 
             return $uniqid;
         }
 
-        // Валидация Main
+
+        /**
+         * Валидация Main
+         */
         $errors = $this->validator->validate($Main);
 
         if (count($errors) > 0)
         {
             /** Ошибка валидации */
             $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__LINE__ => __FILE__]);
+            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
 
             return $uniqid;
         }

@@ -95,9 +95,17 @@ class ProductStockModify extends EntityEvent
         $this->agent = 'console';
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->event;
+    }
+
     public function getDto($dto): mixed
     {
-        if ($dto instanceof ProductStockModifyInterface) {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
+        if ($dto instanceof ProductStockModifyInterface)
+        {
             return parent::getDto($dto);
         }
 
@@ -106,7 +114,8 @@ class ProductStockModify extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockModifyInterface) {
+        if ($dto instanceof ProductStockModifyInterface || $dto instanceof self)
+        {
             return parent::setEntity($dto);
         }
 

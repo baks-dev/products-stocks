@@ -74,7 +74,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         $OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
 
         /* Если статус заказа не "ДОСТАВКА" - завершаем обработчик */
-        if ($OrderEvent->getStatus()->getOrderStatusValue() !== 'delivery')
+        if (!$OrderEvent || $OrderEvent->getStatus()->getOrderStatusValue() !== 'delivery')
         {
             return;
         }
@@ -103,7 +103,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         /** ID продукта */
         $ProductUid = $this->entityManager
             ->getRepository(ProductEvent::class)
-            ->find($product->getProduct())?->getProduct();
+            ->find($product->getProduct())?->getMain();
 
         /** Постоянный уникальный идентификатор ТП */
         $ProductOfferConst = $product->getOffer() ? $this->entityManager

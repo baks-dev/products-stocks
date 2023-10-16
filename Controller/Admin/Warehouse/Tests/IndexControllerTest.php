@@ -30,7 +30,7 @@ final class IndexControllerTest extends WebTestCase
     private const ROLE = 'ROLE_PRODUCT_STOCK_WAREHOUSE';
 
     /** Доступ по роли ROLE_PRODUCT */
-    public function testRoleProductSuccessful(): void
+    public function testRoleSuccessful(): void
     {
         $client = static::createClient();
 

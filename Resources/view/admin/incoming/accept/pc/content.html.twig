@@ -26,12 +26,19 @@
                 <div class="d-flex justify-content-between align-items-center gap-3">
 
                     <div class="w-100 d-flex align-items-center gap-3">
-                        {# ФОТО ПРОДУКТА  #}
-                        {% set img_path = product.product_image_cdn == true ? CDN_HOST : '' %}
-                        {% set product_image_ext = product.product_image_cdn == true ? 'small.'~product.product_image_ext : product.product_image_ext %}
+
+                        {# Обложка #}
+                        {% set image_path = '/assets/img/blank.svg' %}
+
+                        {% if product.product_image_ext is defined and product.product_image_ext is not null %}
+                            {% set img_host = product.product_image_cdn  == true  ? CDN_HOST : '' %}
+                            {% set img_dir = product.product_image %}
+                            {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ product.product_image_ext %}
+                            {% set image_path = img_host ~ img_dir ~ img_file %}
+                        {% endif %}
 
                         <div class="rounded-circle bg-contain lazy p-1" style="width: 50px; height: 50px;"
-                             data-bg="{{  product.product_image ? img_path ~ product.product_image ~ product_image_ext : '/assets/img/blank.svg' }}">
+                             data-bg="{{ image_path }}">
                         </div>
 
                         <div>

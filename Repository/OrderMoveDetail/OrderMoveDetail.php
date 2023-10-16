@@ -149,7 +149,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
             'product_event',
             ProductInfo::TABLE,
             'product_info',
-            'product_info.product = product_event.product '
+            'product_info.product = product_event.main '
         )->addGroupBy('product_info.article');
 
         
@@ -282,35 +282,13 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 
 
 
-
-        /*$qb->addGroupBy('product_offer_variation_image.name')
-            ->addGroupBy('product_offer_variation_image.dir')
-            ->addGroupBy('product_offer_variation_image.ext')
-            ->addGroupBy('product_offer_variation_image.cdn')
-
-            ->addGroupBy('product_offer_images.name')
-            ->addGroupBy('product_offer_images.dir')
-            ->addGroupBy('product_offer_images.ext')
-            ->addGroupBy('product_offer_images.cdn')
-
-            ->addGroupBy('product_photo.name')
-            ->addGroupBy('product_photo.dir')
-            ->addGroupBy('product_photo.ext')
-            ->addGroupBy('product_photo.cdn')
-
-
-        ;*/
-
-
-
-
         $qb->addSelect(
             "JSON_AGG
 			( DISTINCT
 				
 					JSONB_BUILD_OBJECT
 					(
-						/* свойства для сортирвоки JSON */
+						/* свойства для сортировки JSON */
 						'product_id', order_product.id,
 						'product_url', product_info.url,
 						'product_name', product_trans.name,
@@ -333,13 +311,13 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 						
 						'product_image', CASE
 						                   WHEN product_modification_image.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.dir, '/', product_modification_image.name, '.')
+                                                CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/',  product_modification_image.name)
                                            WHEN product_variation_image.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.dir, '/', product_variation_image.name, '.')
+                                                CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/',  product_variation_image.name)
                                            WHEN product_offer_image.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.dir, '/', product_offer_image.name, '.')
+                                                CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.name)
                                            WHEN product_photo.name IS NOT NULL THEN
-                                                CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.dir, '/', product_photo.name, '.')
+                                                CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.name)
                                            ELSE NULL
                                         END,
                                         
@@ -375,51 +353,6 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
 			)
 			AS order_products"
         );
-
-
-//        $qb->addSelect(
-//            "
-//			CASE
-//			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-//					CONCAT ( '/upload/".ProductOfferVariationImage::TABLE."' , '/', product_offer_variation_image.dir, '/', product_offer_variation_image.name, '.')
-//			   WHEN product_offer_images.name IS NOT NULL THEN
-//					CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_images.dir, '/', product_offer_images.name, '.')
-//			   WHEN product_photo.name IS NOT NULL THEN
-//					CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.dir, '/', product_photo.name, '.')
-//			   ELSE NULL
-//			END AS product_image
-//		"
-//        );
-
-        /* Флаг загрузки файла CDN */
-//        $qb->addSelect('
-//			CASE
-//			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-//					product_offer_variation_image.ext
-//			   WHEN product_offer_images.name IS NOT NULL THEN
-//					product_offer_images.ext
-//			   WHEN product_photo.name IS NOT NULL THEN
-//					product_photo.ext
-//			   ELSE NULL
-//			END AS product_image_ext
-//		');
-
-
-
-        /* Флаг загрузки файла CDN */
-//        $qb->addSelect('
-//			CASE
-//			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-//					product_offer_variation_image.cdn
-//			   WHEN product_offer_images.name IS NOT NULL THEN
-//					product_offer_images.cdn
-//			   WHEN product_photo.name IS NOT NULL THEN
-//					product_photo.cdn
-//			   ELSE NULL
-//			END AS product_image_cdn
-//		');
-
-
 
 
         /* Доставка */
@@ -515,8 +448,7 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
         );
 
         /* Автарка профиля клиента */
-        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', profile_avatar.dir, '/', profile_avatar.name, '.') AS profile_avatar_name")
-            ->addGroupBy('profile_avatar.dir')
+        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', profile_avatar.name) AS profile_avatar_name")
             ->addGroupBy('profile_avatar.name');
 
         $qb->addSelect('profile_avatar.ext AS profile_avatar_ext')->addGroupBy('profile_avatar.ext');

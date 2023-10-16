@@ -33,7 +33,7 @@ final class IncomingProductStockTest extends KernelTestCase
     public function testProductStockDTO(): void
     {
         /** DATA */
-        $ProductStockEventUid = new ProductStockEventUid();
+        $ProductStockEventUid = new ProductStockEventUid('018ae034-1762-7199-8803-e3645cc46ea7');
         $UserProfileUid = new UserProfileUid();
         $status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming());
         $comment = 'comment';

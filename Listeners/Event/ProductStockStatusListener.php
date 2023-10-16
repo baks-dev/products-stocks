@@ -27,6 +27,8 @@ namespace BaksDev\Products\Stocks\Listeners\Event;
 
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatusType;
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
@@ -36,6 +38,7 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
  * @see ProductStockStatusType метод getProductStockStatus()
  */
 #[AsEventListener(event: ControllerEvent::class)]
+#[AsEventListener(event: ConsoleEvents::COMMAND)]
 final class ProductStockStatusListener
 {
     private ProductStockStatusCollection $collection;
@@ -52,5 +55,11 @@ final class ProductStockStatusListener
         {
             $this->collection->cases();
         }
+    }
+
+    public function onConsoleCommand(ConsoleCommandEvent $event): void
+    {
+        // Всегда инициируем в консольной комманде
+        $this->collection->cases();
     }
 }

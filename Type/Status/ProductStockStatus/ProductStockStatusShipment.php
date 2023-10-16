@@ -39,7 +39,7 @@ class ProductStockStatusShipment implements ProductStockStatusInterface
 	
 
 	/** Возвращает значение (value) */
-	public function getValue() : string
+	public function getValue(): string
 	{
 		return self::STATUS;
 	}

@@ -25,11 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Parameters;
 
+use App\Kernel;
 use BaksDev\Core\Type\UidType\Uid;
+use Symfony\Component\Uid\AbstractUid;
 
 final class ProductStockParameterUid extends Uid
 {
     public const TEST = '0188a9a1-62bb-7625-bab6-36797bef63f4';
 
     public const TYPE = 'product_parameters';
+
 }

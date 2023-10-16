@@ -21,22 +21,17 @@
     <td class="ps-5 align-middle">
         <div class="d-flex align-content-center">
 
-            {# Обложка  #}
-            {# {% if item.cdn %}
-				<div class="symbol symbol-50px">
-					<span class="symbol-label h-65px lazy"
-						  data-bg="{{ CDN_HOST ~ product_cover_dir ~ item.dir~'/'~item.cover~'.min.'~item.ext }}"></span>
-				</div>
-			{% else %}
-				<div class="symbol symbol-50px">
-					<span class="symbol-label h-65px lazy" data-bg="{{ item.cover is not null ?
-					product_photo ~ item.dir ~ '/' ~ item.cover ~'.'~ item.ext  : '/assets/img/blank.svg' }}"></span>
-				</div>
-			{% endif %} #}
+            {# Обложка #}
+            {% set image_path = '/assets/img/blank.svg' %}
+
+            {% if item.product_image_ext is defined and item.product_image_ext is not null %}
+                {% set img_host =  item.product_image_cdn == true  ? CDN_HOST : '' %}
+                {% set img_dir = item.product_image %}
+                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.product_image_ext %}
+                {% set image_path = img_host ~ img_dir ~ img_file %}
+            {% endif %}
 
 
-
-            {% set img_path = item.product_image_cdn == true ? CDN_HOST : '' %}
 
             <div>
                 <a href="{{ path('Product:user.detail', {
@@ -45,7 +40,7 @@
                     variation: item.product_variation_value,
                     modification: item.product_modification_value
                 }) }}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
-                   data-bg="{{ item.product_image ? img_path ~ item.product_image ~ item.product_image_ext : '/assets/img/blank.svg' }}"
+                   data-bg="{{ image_path }}"
                    style="width: 60px; height: 60px;"
                 ></a>
             </div>

@@ -26,7 +26,8 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase;
 
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Products\Stocks\Entity;
+use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -39,6 +40,7 @@ final class PurchaseProductStockHandler
     private ValidatorInterface $validator;
 
     private LoggerInterface $logger;
+
     private MessageDispatchInterface $messageDispatch;
 
 
@@ -47,7 +49,8 @@ final class PurchaseProductStockHandler
         ValidatorInterface $validator,
         LoggerInterface $logger,
         MessageDispatchInterface $messageDispatch
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->validator = $validator;
         $this->logger = $logger;
@@ -56,19 +59,20 @@ final class PurchaseProductStockHandler
 
     public function handle(
         PurchaseProductStockDTO $command,
-    ): string|Entity\ProductStock {
-        if ($command->getEvent())
+    ): string|ProductStock
+    {
+        if($command->getEvent())
         {
-            $EventRepo = $this->entityManager->getRepository(Entity\Event\ProductStockEvent::class)->find(
+            $EventRepo = $this->entityManager->getRepository(ProductStockEvent::class)->find(
                 $command->getEvent()
             );
 
-            if ($EventRepo === null)
+            if($EventRepo === null)
             {
                 $uniqid = uniqid('', false);
                 $errorsString = sprintf(
                     'Not found %s by id: %s',
-                    Entity\Event\ProductStockEvent::class,
+                    ProductStockEvent::class,
                     $command->getEvent()
                 );
                 $this->logger->error($uniqid.': '.$errorsString);
@@ -76,69 +80,78 @@ final class PurchaseProductStockHandler
                 return $uniqid;
             }
 
+            $EventRepo->setEntity($command);
+            $EventRepo->setEntityManager($this->entityManager);
             $Event = $EventRepo->cloneEntity();
-        } else
+        }
+        else
         {
-            $Event = new Entity\Event\ProductStockEvent();
+            $Event = new ProductStockEvent();
+            $Event->setEntity($command);
             $this->entityManager->persist($Event);
         }
 
-        $this->entityManager->clear();
+//        $this->entityManager->clear();
+//        $this->entityManager->persist($Event);
 
-        /* @var Entity\ProductStock $Main */
-        if ($Event->getMain())
+
+        /* @var ProductStock $Main */
+        if($Event->getMain())
         {
-            $Main = $this->entityManager->getRepository(Entity\ProductStock::class)->findOneBy(
-                ['event' => $command->getEvent()]
-            );
+            $Main = $this->entityManager->getRepository(ProductStock::class)
+                ->findOneBy(['event' => $command->getEvent()]);
 
-            if (empty($Main))
+            if(empty($Main))
             {
                 $uniqid = uniqid('', false);
                 $errorsString = sprintf(
                     'Not found %s by event: %s',
-                    Entity\ProductStock::class,
+                    ProductStock::class,
                     $command->getEvent()
                 );
                 $this->logger->error($uniqid.': '.$errorsString);
 
                 return $uniqid;
             }
-        } else
+        }
+        else
         {
-            $Main = new Entity\ProductStock();
+            $Main = new ProductStock();
             $this->entityManager->persist($Main);
             $Event->setMain($Main);
         }
 
-        $Event->setEntity($command);
-        $this->entityManager->persist($Event);
 
         // присваиваем событие корню
         $Main->setEvent($Event);
 
-        /** ВАЛИДАЦИЯ */
 
-        // Валидация События
+        /**
+         * Валидация Event
+         */
+
         $errors = $this->validator->validate($Event);
 
-        if (count($errors) > 0)
+        if(count($errors) > 0)
         {
             /** Ошибка валидации */
             $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__LINE__ => __FILE__]);
+            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
 
             return $uniqid;
         }
 
-        // Валидация Main
+        /**
+         * Валидация Main
+         */
+
         $errors = $this->validator->validate($Main);
 
-        if (count($errors) > 0)
+        if(count($errors) > 0)
         {
             /** Ошибка валидации */
             $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__LINE__ => __FILE__]);
+            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
 
             return $uniqid;
         }

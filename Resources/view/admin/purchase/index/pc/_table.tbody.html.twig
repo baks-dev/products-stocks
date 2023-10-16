@@ -2,117 +2,104 @@
 
 <tr>
 
-	{#<td>
-		#}{# Пользовательское меню #}{#
-		{{ include(_self|replace({ "_table.tbody.html.twig": "_usecase.html.twig" })) }}
-	</td>#}
+    {# <td>
+    #}{# Пользовательское меню #}{#
+    {{ include(_self|replace({ "_table.tbody.html.twig": "_usecase.html.twig" })) }}
+</td> #}
 
-	{# Чекбокс #}
-	{#<td>
+    {# Чекбокс #}
+    {# <td>
 		<div class="form-check form-check-sm form-check-custom">
 			<input class="form-check-input checked-item" type="checkbox" onchange=checkedItem();
 				   value="{{ item.event }}"
-				   name="#}{#{{ multi.multiple.vars.full_name }}#}{#[][event]"
+				   name=" #}{# {{ multi.multiple.vars.full_name }} #}{# [][event]"
 			>
 
 		</div>
-	</td>#}
+	</td> #}
 
-	<td class="ps-5 align-middle">
-		<div class="d-flex">
+    <td class="ps-5 align-middle">
+        <div class="d-flex">
 
-			{# Обложка  #}
-			{#{% if item.cdn %}
-				<div class="symbol symbol-50px">
-					<span class="symbol-label h-65px lazy"
-						  data-bg="{{ CDN_HOST ~ product_cover_dir ~ item.dir~'/'~item.cover~'.min.'~item.ext }}"></span>
-				</div>
-			{% else %}
-				<div class="symbol symbol-50px">
-					<span class="symbol-label h-65px lazy" data-bg="{{ item.cover is not null ?
-					product_photo ~ item.dir ~ '/' ~ item.cover ~'.'~ item.ext  : '/assets/img/blank.svg' }}"></span>
-				</div>
-			{% endif %}#}
+            {# Обложка #}
+            {% set image_path = '/assets/img/blank.svg' %}
 
+            {% if item.product_image_ext is defined and item.product_image_ext is not null %}
+                {% set img_host =  item.product_image_cdn == true  ? CDN_HOST : '' %}
+                {% set img_dir = item.product_image %}
+                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.product_image_ext %}
+                {% set image_path = img_host ~ img_dir ~ img_file %}
+            {% endif %}
 
+            <div>
+                <a href="#" class="icon rounded-3 mb-2 lazy bg-contain p-1"
+                   data-bg="{{ image_path }}"
+                   style="width: 45px; height: 45px;"
+                ></a>
+            </div>
 
-			{% set img_path = item.product_image_cdn == true ? CDN_HOST : '' %}
+            <div class="ms-5">
 
-			<div>
-				<a href="{#{{ path('Product:user.detail', {
-				url : card.product_url ,
-				offer: card.product_offer_value,
-				variation: card.product_variation_value,
-				modification: card.product_modification_value
-			}) }}#}" class="icon rounded-3 mb-2 lazy bg-contain p-1"
-			   data-bg="{{ item.product_image ? img_path ~ item.product_image ~ item.product_image_ext : '/assets/img/blank.svg' }}"
-			   style="width: 45px; height: 45px;"
-			></a>
-			</div>
+                {# Название #}
+                <a href="{# {{ path('ProductStocks:admin.detail', { id : item.id }) }} #}"
+                   class="text-decoration-none mb-1 modal-link fw-bolder text-muted"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal"
+                   title="Детали заявки">
 
 
-			<div class="ms-5">
+                    {{ item.product_name }}
 
-				 {#Название#}
-				<a href="{#{{ path('ProductStocks:admin.detail', { id : item.id }) }}#}"
-				   class="text-decoration-none mb-1 modal-link fw-bolder text-muted"
-				   data-bs-toggle="modal"
-				   data-bs-target="#modal"
-				   title="Детали заявки">
+                    {# Значение торгового предложения #}
+                    {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+                    {# Постфикс торгового предложения #}
+                    {{ item.product_offer_postfix }}
 
-
-					{{ item.product_name }}
-
-					{# Значение торгового предложения #}
-					{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
-					{# Постфикс торгового предложения #}
-					{{ item.product_offer_postfix }}
-
-					{# Значение множественного варианта ТП #}
-					{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
-					{# Постфикс множественного варианта #}
-					{{ item.product_variation_postfix }}
+                    {# Значение множественного варианта ТП #}
+                    {{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
+                    {# Постфикс множественного варианта #}
+                    {{ item.product_variation_postfix }}
 
 
-					{# Значение модификации множественного варианта ТП #}
-					{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
-					{# Постфикс модификации #}
-					{{ item.product_modification_postfix }}
+                    {# Значение модификации множественного варианта ТП #}
+                    {{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
+                    {# Постфикс модификации #}
+                    {{ item.product_modification_postfix }}
 
-					{# Свойства, учавствующие в названии #}
-					{#{% for name_property in arr_property | filter(props => props.field_name == true) %}
+                    {# Свойства, учавствующие в названии #}
+                    {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
 						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
-					{% endfor %}#}
+					{% endfor %} #}
 
 
-				</a>
+                </a>
 
-				 {#Описание#}
-				{#<div class="text-muted small">54654 dfgsd
+                {# Описание #}
+                {# <div class="text-muted small">54654 dfgsd
 					{{ string_width(item.product_description, 150)|raw }}
-				</div>#}
+				</div> #}
 
-				{# Артикул #}
-				<div class="text-muted ">
-					<strong>Артикул:</strong> {{ item.product_article }}
-				</div>
-			</div>
+                {# Артикул #}
+                <div class="text-muted ">
+                    <strong>Артикул:</strong> {{ item.product_article }}
+                </div>
+            </div>
 
-		</div>
-	</td>
+        </div>
+    </td>
 
-	{#<td class="ps-5 text-nowrap">
+    {# <td class="ps-5 text-nowrap">
 
 		{{ item.article_offer_name }}: {{ reference(item.article_reference, item.offer) }}<br>
 		{{ item.variation_offer_name }}: {{ reference(item.variation_reference, item.variation) }}
-	</td>#}
+	</td> #}
 
-	<td class="ps-5">
-		{{ item.category_name }}
-	</td>
+    <td class="ps-5">
+        {{ item.category_name }}
+    </td>
 
-	<td class="ps-5 text-center fw-bolder vertical-middle">
-		{{ item.total }}
-	</td>
+    <td class="ps-5 text-center fw-bolder vertical-middle">
+        {{ item.total }}
+    </td>
 
 </tr>
