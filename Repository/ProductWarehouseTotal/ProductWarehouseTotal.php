@@ -96,7 +96,7 @@ final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
 
         /* Кешируем результат DBAL */
 
-//        $cacheFilesystem = new FilesystemAdapter('ProductStocks');
+//        $cacheFilesystem = new FilesystemAdapter('products-stocks');
 //
 //        $config = $this->entityManager->getConnection()->getConfiguration();
 //        $config?->setResultCache($cacheFilesystem);

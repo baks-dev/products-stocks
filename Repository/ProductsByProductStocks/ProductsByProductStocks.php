@@ -487,7 +487,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
 
         /* Кешируем результат DBAL */
         return $qb
-            ->enableCache('ProductStocks', 86400)
+            ->enableCache('products-stocks', 86400)
             ->fetchAllAssociative();
 
 

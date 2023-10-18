@@ -56,7 +56,7 @@ final class ExtraditionController extends AbstractController
 
         // Форма заявки
         $form = $this->createForm(ExtraditionProductStockForm::class, $ExtraditionProductStockDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.package.extradition', ['id' => $ExtraditionProductStockDTO->getEvent()]),
+            'action' => $this->generateUrl('products-stocks:admin.package.extradition', ['id' => $ExtraditionProductStockDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
@@ -69,7 +69,7 @@ final class ExtraditionController extends AbstractController
             {
                 $this->addFlash('success', 'admin.success.extradition', 'admin.product.stock');
 
-                return $this->redirectToRoute('ProductStocks:admin.package.index');
+                return $this->redirectToRoute('products-stocks:admin.package.index');
             }
 
             $this->addFlash('danger', 'admin.danger.extradition', 'admin.product.stock', $ProductStocks);

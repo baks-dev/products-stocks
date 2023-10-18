@@ -49,7 +49,7 @@ final class PurchaseController extends AbstractController
 
         // Форма добавления
         $form = $this->createForm(PurchaseProductStockForm::class, $purchaseDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.purchase.new'),
+            'action' => $this->generateUrl('products-stocks:admin.purchase.new'),
         ]);
 
         $form->handleRequest($request);
@@ -63,7 +63,7 @@ final class PurchaseController extends AbstractController
                 $this->addFlash('danger', 'admin.danger.purchase', 'admin.product.stock', $ProductStock);
             }
 
-            return $this->redirectToRoute('ProductStocks:admin.purchase.index');
+            return $this->redirectToRoute('products-stocks:admin.purchase.index');
         }
 
         return $this->render(['form' => $form->createView()]);

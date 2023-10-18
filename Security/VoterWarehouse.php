@@ -62,7 +62,7 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
-        return 'ProductStocks:admin.warehouse.index';
+        return 'products-stocks:admin.warehouse.index';
     }
 
 

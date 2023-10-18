@@ -62,7 +62,7 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
-        return 'ProductStocks:admin.package.index';
+        return 'products-stocks:admin.package.index';
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */

@@ -112,7 +112,7 @@ final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseIn
 
 
         /* Кешируем результат ORM */
-        return $qb->enableCache('ProductStocks', 86400)->getResult();
+        return $qb->enableCache('products-stocks', 86400)->getResult();
 
     }
 }

@@ -62,7 +62,7 @@ final class VoterIncoming implements VoterInterface, MenuAdminInterface
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
-        return 'ProductStocks:admin.incoming.index';
+        return 'products-stocks:admin.incoming.index';
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */

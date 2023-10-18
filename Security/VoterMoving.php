@@ -61,7 +61,7 @@ final class VoterMoving implements VoterInterface, MenuAdminInterface
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
-        return 'ProductStocks:admin.moving.index';
+        return 'products-stocks:admin.moving.index';
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */

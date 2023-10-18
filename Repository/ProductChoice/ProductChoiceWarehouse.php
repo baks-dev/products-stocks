@@ -84,7 +84,7 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
         $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
 
         /* Кешируем результат ORM */
-        return $qb->enableCache('ProductStocks', 86400)->getResult();
+        return $qb->enableCache('products-stocks', 86400)->getResult();
 
     }
 
@@ -125,6 +125,6 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
         $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
 
         /* Кешируем результат ORM */
-        return $qb->enableCache('ProductStocks', 86400)->getResult();
+        return $qb->enableCache('products-stocks', 86400)->getResult();
     }
 }

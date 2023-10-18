@@ -114,19 +114,6 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
 
 
 
-//        /* Проверка статуса ACTIVE */
-//        $objQueryExistStatus = $this->entityManager->createQueryBuilder();
-//        $objQueryExistStatus->select('1');
-//        $objQueryExistStatus->from(ContactsRegionEntity\ContactsRegion::class, 'tmp');
-//        $objQueryExistStatus->where('tmp.event = warehouse.event');
-//
-//        /* Только активный пользователь */
-//        $qb->setParameter('status', new AccountStatus(AccountStatusEnum::ACTIVE), AccountStatus::TYPE);
-//
-//        $qb->andWhere($qb->expr()->exists($objQueryExistStatus->getDQL()));
-
-
-
         $qb->join(
             ContactsRegionEntity\Event\ContactsRegionEvent::class,
             'event',

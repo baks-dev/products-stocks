@@ -30,25 +30,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class ProductStockCacheClear
+final class ProductStockDispatch
 {
-    private AppCacheInterface $cache;
-    private LoggerInterface $messageDispatchLogger;
-
-    public function __construct(
-        AppCacheInterface $cache,
-        LoggerInterface $messageDispatchLogger,
-    ) {
-        $this->cache = $cache;
-        $this->messageDispatchLogger = $messageDispatchLogger;
-    }
-
-    public function __invoke(ProductStockMessage $message): void
-    {
-        // Чистим кеш модуля
-        $cache = $this->cache->init('ProductStock');
-        $cache->clear();
-
-        $this->messageDispatchLogger->info('Очистили кеш ProductStock', [__FILE__.':'.__LINE__]);
-    }
+    public function __invoke(ProductStockMessage $message): void {}
 }

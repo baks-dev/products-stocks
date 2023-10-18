@@ -50,7 +50,7 @@ final class IncomingController extends AbstractController
 
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $incomingDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.incoming.accept', ['id' => $incomingDTO->getEvent()]),
+            'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $incomingDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
@@ -68,7 +68,7 @@ final class IncomingController extends AbstractController
             }
 
             // return $this->redirectToReferer();
-            return $this->redirectToRoute('ProductStocks:admin.incoming.index');
+            return $this->redirectToRoute('products-stocks:admin.incoming.index');
         }
 
         return $this->render([

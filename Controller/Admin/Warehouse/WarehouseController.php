@@ -53,7 +53,7 @@ final class WarehouseController extends AbstractController
 
         // Форма добавления
         $form = $this->createForm(WarehouseProductStockForm::class, $warehouseDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.warehouse.send', ['id' => $warehouseDTO->getEvent()]),
+            'action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $warehouseDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
@@ -70,7 +70,7 @@ final class WarehouseController extends AbstractController
                 $this->addFlash('danger', 'admin.danger.warehouse', 'admin.product.stock', $ProductStock);
             }
 
-            return $this->redirectToRoute('ProductStocks:admin.warehouse.index');
+            return $this->redirectToRoute('products-stocks:admin.warehouse.index');
         }
 
         return $this->render(['form' => $form->createView()]);

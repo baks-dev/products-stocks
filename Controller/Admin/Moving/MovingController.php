@@ -46,7 +46,7 @@ final class MovingController extends AbstractController
 
         // Форма заявки
         $form = $this->createForm(MovingProductStockForm::class, $movingDTO, [
-            'action' => $this->generateUrl('ProductStocks:admin.moving.new'),
+            'action' => $this->generateUrl('products-stocks:admin.moving.new'),
         ]);
 
         $form->handleRequest($request);
@@ -72,7 +72,7 @@ final class MovingController extends AbstractController
             if ($success)
             {
                 $this->addFlash('success', 'admin.success.move', 'admin.product.stock');
-                return $this->redirectToRoute('ProductStocks:admin.moving.index');
+                return $this->redirectToRoute('products-stocks:admin.moving.index');
             }
 
         }

@@ -21,7 +21,7 @@
 
                 {# {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE_NEW') or is_granted('ROLE_ADMIN') %}
 
-                    <a href="{{ path('ProductStocks:admin.purchase.new') }}"
+                    <a href="{{ path('products-stocks:admin.purchase.new') }}"
                        class="btn btn-danger modal-link"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
@@ -33,7 +33,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
 
-                    <button {# href="{{ path('ProductStocks:admin.index') }}" #}
+                    <button {# href="{{ path('products-stocks:admin.index') }}" #}
                             class="btn btn-light opacity-25"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
@@ -51,7 +51,7 @@
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('ProductStocks:admin.purchase.index') }}"
+                    <a href="{{ path('products-stocks:admin.purchase.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -70,7 +70,7 @@
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('ProductStocks:admin.warehouse.index') }}"
+                    <a href="{{ path('products-stocks:admin.warehouse.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -90,7 +90,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
 
-                    <a href="{{ path('ProductStocks:admin.incoming.index') }}"
+                    <a href="{{ path('products-stocks:admin.incoming.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -109,7 +109,7 @@
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('ProductStocks:admin.package.index') }}"
+                    <a href="{{ path('products-stocks:admin.package.index') }}"
                        class="btn btn-light bold"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -126,7 +126,7 @@
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_MOVING') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('ProductStocks:admin.moving.index') }}"
+                    <a href="{{ path('products-stocks:admin.moving.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -150,7 +150,7 @@
 
             {# Добавить #}
             {# {% if is_granted(ROLE~'_NEW') or is_granted('ROLE_ADMIN') %}
-				<a href="{{ path('ProfileType:admin.newedit.new') }}" class="btn btn-danger fw-bolder">
+				<a href="{{ path('users-profile-type:admin.newedit.new') }}" class="btn btn-danger fw-bolder">
 					{{ 'btn.new'|trans({}, 'core.btn') }}
 				</a>
 			{% endif %} #}

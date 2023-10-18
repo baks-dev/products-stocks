@@ -56,7 +56,7 @@ final class VoterPurchase implements VoterInterface, MenuAdminInterface
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
-        return 'ProductStocks:admin.purchase.index';
+        return 'products-stocks:admin.purchase.index';
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
