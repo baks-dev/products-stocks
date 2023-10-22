@@ -66,10 +66,7 @@ final class UpdateProductQuantityTest extends KernelTestCase
         /** @var ProductEvent $ProductEvent */
         $ProductEvent = $em->getRepository(ProductEvent::class)->findOneBy([], ['id' => 'DESC']);
 
-        if (!$ProductEvent->getOffer()->isEmpty()) {
-            // TODO: необходимо в тесте присвоить торговое предложение
-            dd('необходимо в тесте присвоить торговое предложение');
-        }
+
 
         /** Закупка */
 
@@ -184,7 +181,6 @@ final class UpdateProductQuantityTest extends KernelTestCase
             );
 
             $oldQuantity = $ProductUpdateQuantity->getQuantity();
-            // dump($oldQuantity);
 
             /** Вызываем хендлер сообщения */
             $ProductStockMessage = new ProductStockMessage(self::$IncomingProductStock->getId(), self::$IncomingProductStock->getEvent());
@@ -202,7 +198,6 @@ final class UpdateProductQuantityTest extends KernelTestCase
             );
 
             $newQuantity = $ProductUpdateQuantity->getQuantity();
-            // dump($newQuantity);
 
             self::assertTrue($newQuantity > $oldQuantity);
             self::assertEquals($newQuantity, $oldQuantity + 1);
@@ -223,6 +218,6 @@ final class UpdateProductQuantityTest extends KernelTestCase
             self::assertEquals($newQuantity, $oldQuantity);
         }
 
-        // dump($ProductStockMessage);
+
     }
 }

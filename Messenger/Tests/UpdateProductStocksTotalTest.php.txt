@@ -69,10 +69,7 @@ final class UpdateProductStocksTotalTest extends KernelTestCase
         /** @var ContactsRegionCall $WarehouseEvent */
         $WarehouseEvent = $em->getRepository(ContactsRegionCall::class)->findOneBy([], ['id' => 'DESC']);
 
-        if (!$ProductEvent->getOffer()->isEmpty()) {
-            // TODO: необходимо в тесте присвоить торговое предложение
-            dd('необходимо в тесте присвоить торговое предложение');
-        }
+
 
         /** Закупка */
 
@@ -253,6 +250,5 @@ final class UpdateProductStocksTotalTest extends KernelTestCase
             self::assertEquals($oldQuantity, $newQuantity);
         }
 
-        // dump($ProductStockMessage);
     }
 }

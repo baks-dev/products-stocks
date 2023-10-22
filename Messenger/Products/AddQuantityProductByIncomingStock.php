@@ -28,7 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Products;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityRepositoryInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityRepositoryInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
@@ -45,7 +45,7 @@ final class AddQuantityProductByIncomingStock
     private ProductStocksByIdInterface $productStocks;
     private EntityManagerInterface $entityManager;
     private ProductModificationQuantityRepositoryInterface $modificationQuantity;
-    private ProductVariationQuantityInterface $variationQuantity;
+    private ProductVariationQuantityRepositoryInterface $variationQuantity;
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
@@ -53,7 +53,7 @@ final class AddQuantityProductByIncomingStock
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         ProductModificationQuantityRepositoryInterface $modificationQuantity,
-        ProductVariationQuantityInterface $variationQuantity,
+        ProductVariationQuantityRepositoryInterface $variationQuantity,
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
