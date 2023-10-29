@@ -34,19 +34,12 @@ final class ProductStockStatusType extends StringType
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
-        return $value instanceof ProductStockStatus ? $value->getProductStockStatusValue() : $value;
+        return (string) $value;
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        foreach ($this->getProductStockStatus() as $status) {
-
-            if ($status::STATUS === $value) {
-                return new ProductStockStatus(new $status());
-            }
-        }
-
-        throw new InvalidArgumentException(sprintf('Not found product stock status %s', $value));
+        return !empty($value) ? new ProductStockStatus($value) : null;
     }
 
     public function getName(): string
@@ -54,25 +47,10 @@ final class ProductStockStatusType extends StringType
         return ProductStockStatus::TYPE;
     }
 
-    public function getProductStockStatus(): array
-    {
-        return array_filter(
-            get_declared_classes(),
-            static function ($className) {
-                return in_array(ProductStockStatusInterface::class, class_implements($className), true);
-            }
-        );
-    }
 
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
     }
 
-    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
-    {
-        $column['length'] = 15;
-
-        return $platform->getStringTypeDeclarationSQL($column);
-    }
 }
