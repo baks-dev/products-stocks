@@ -50,7 +50,7 @@ final class ProductStockStatusCollection
 
         foreach($this->status as $status)
         {
-            $case[] = new ProductStockStatus(new $status());
+            $case[] = new $status();
         }
 
         return $case;

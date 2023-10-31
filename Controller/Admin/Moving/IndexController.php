@@ -41,26 +41,26 @@ final class IndexController extends AbstractController
         AllProductStocksMoveInterface $allMove,
         int $page = 0
     ): Response {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
+        //$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
         $search = new SearchDTO();
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-        // Фильтр
-        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+//        // Фильтр
+//        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+//        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+//        $filterForm->handleRequest($request);
 
         // Получаем список закупок ответственного лица
-        $query = $allMove->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allMove->fetchAllProductStocksAssociative($search, $this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                /*'filter' => $filterForm->createView(),*/
             ]
         );
     }

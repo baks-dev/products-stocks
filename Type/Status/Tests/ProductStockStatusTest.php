@@ -26,7 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Type\Status\Tests;
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatusType;
 use BaksDev\Wildberries\Orders\Type\OrderStatus\Status\Collection\WbOrderStatusCollection;
 use BaksDev\Wildberries\Orders\Type\OrderStatus\Status\WbOrderStatusConfirm;
 use BaksDev\Wildberries\Orders\Type\OrderStatus\WbOrderStatus;
@@ -68,13 +70,13 @@ final class ProductStockStatusTest extends KernelTestCase
 {
     public function testUseCase(): void
     {
-        /** @var WbOrderStatusCollection $WbOrderStatusCollection */
-        $WbOrderStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
+        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
+        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
 
         /** @var WildberriesStatusInterface $case */
-        foreach($WbOrderStatusCollection->cases() as $case)
+        foreach($ProductStockStatusCollection->cases() as $case)
         {
-            $WbOrderStatus = new WbOrderStatus($case->getValue());
+            $WbOrderStatus = new ProductStockStatus($case->getValue());
 
             self::assertTrue($WbOrderStatus->equals($case::class)); // немспейс интерфейса
             self::assertTrue($WbOrderStatus->equals($case)); // объект интерфейса
@@ -82,15 +84,15 @@ final class ProductStockStatusTest extends KernelTestCase
             self::assertTrue($WbOrderStatus->equals($WbOrderStatus)); // объект класса
 
 
-            $WbOrderStatusType = new WbOrderStatusType();
+            $WbOrderStatusType = new ProductStockStatusType();
             $platform = $this->getMockForAbstractClass(AbstractPlatform::class);
 
             $convertToDatabase = $WbOrderStatusType->convertToDatabaseValue($WbOrderStatus, $platform);
-            self::assertEquals($WbOrderStatus->getWbOrderStatusValue(), $convertToDatabase);
+            self::assertEquals($WbOrderStatus->getProductStockStatusValue(), $convertToDatabase);
 
             $convertToPHP = $WbOrderStatusType->convertToPHPValue($convertToDatabase, $platform);
-            self::assertInstanceOf(WbOrderStatus::class, $convertToPHP);
-            self::assertEquals($case, $convertToPHP->getWbOrderStatus());
+            self::assertInstanceOf(ProductStockStatus::class, $convertToPHP);
+            self::assertEquals($case, $convertToPHP->getProductStockStatus());
 
         }
 

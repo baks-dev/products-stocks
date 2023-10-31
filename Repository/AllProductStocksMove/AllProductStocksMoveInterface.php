@@ -32,8 +32,7 @@ interface AllProductStocksMoveInterface
 {
     /** Метод возвращает все заявки, требующие перемещения между складами */
     public function fetchAllProductStocksAssociative(
-        SearchDTO                     $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid               $profile
+        SearchDTO $search,
+        UserProfileUid $profile
     ): PaginatorInterface;
 }
