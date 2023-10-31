@@ -60,9 +60,14 @@ final class SubReserveProductStockTotalByMove
         $this->logger = $messageDispatchLogger;
     }
 
-    /** Снимаем резерв со склада при статусе "ПЕРЕМЕЩЕНИЕ"  */
+    /**
+     * Снимаем резерв со склада при статусе "ПЕРЕМЕЩЕНИЕ"
+     */
     public function __invoke(ProductStockMessage $message): void
     {
+        return;
+
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         if ($message->getLast() === null)

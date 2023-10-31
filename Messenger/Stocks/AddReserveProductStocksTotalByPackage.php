@@ -58,9 +58,14 @@ final class AddReserveProductStocksTotalByPackage
         $this->logger = $messageDispatchLogger;
     }
 
-    /** Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ" */
+    /**
+     * Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ"
+     */
     public function __invoke(ProductStockMessage $message): void
     {
+        return;
+
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         /** Получаем статус заявки */

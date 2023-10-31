@@ -33,7 +33,6 @@ interface AllProductStocksWarehouseInterface
     /** Метод возвращает список всех поступлений на склад  */
     public function fetchAllProductStocksAssociative(
         SearchDTO $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid $profile
+        UserProfileUid $profile
     ): PaginatorInterface;
 }

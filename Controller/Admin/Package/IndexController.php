@@ -34,7 +34,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PACKAGE')]
 final class IndexController extends AbstractController
 {
-    /** Заказы на сборке */
+    /**
+     * Заказы на сборке
+     */
     #[Route('/admin/product/stocks/package/{page<\d+>}', name: 'admin.package.index', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,

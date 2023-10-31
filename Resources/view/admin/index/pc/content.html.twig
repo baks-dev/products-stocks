@@ -164,13 +164,13 @@
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
-                <div class="col-3">
+                {#<div class="col-3">
                     {{ form_start(filter) }}
                     <div class="w-100" style="height: 55px;">
                         {{ form_widget(filter.warehouse, { placeholder: 'Выберите склад из списка ...', attr: { 'data-select' : 'select2' } }) }}
                     </div>
                     {{ form_end(filter) }}
-                </div>
+                </div>#}
 
             </div>
 
@@ -182,7 +182,7 @@
                     <th>#</th>
                     <th>Продукция</th>
                     <th class="text-center">Категория</th>
-                    <th class="text-center">Склад</th>
+                    {#<th class="text-center">Склад</th>#}
                     <th class="text-center">Количество</th>
                 </tr>
                 </thead>

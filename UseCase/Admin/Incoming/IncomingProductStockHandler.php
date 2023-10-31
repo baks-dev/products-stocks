@@ -25,142 +25,48 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming;
 
-use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use DomainException;
 
-final class IncomingProductStockHandler
+final class IncomingProductStockHandler extends AbstractHandler
 {
-    private EntityManagerInterface $entityManager;
 
-    private ValidatorInterface $validator;
-
-    private MessageDispatchInterface $messageDispatch;
-
-    private LoggerInterface $logger;
-
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        ValidatorInterface $validator,
-        LoggerInterface $logger,
-        MessageDispatchInterface $messageDispatch
-    )
+    public function handle(IncomingProductStockDTO $command,): string|ProductStock
     {
-        $this->entityManager = $entityManager;
-        $this->validator = $validator;
-        $this->logger = $logger;
-        $this->messageDispatch = $messageDispatch;
-    }
 
-    public function handle(
-        IncomingProductStockDTO $command,
-    ): string|ProductStock
-    {
-        /** Всегда должно быть событие */
-        $EventRepo = $this->entityManager->getRepository(ProductStockEvent::class)->find(
-            $command->getEvent()
-        );
+        /** Валидация DTO  */
+        $this->validatorCollection->add($command);
 
-        if($EventRepo === null)
+        $this->main = new ProductStock();
+        $this->event = new ProductStockEvent();
+
+        try
         {
-            $uniqid = uniqid('', false);
-            $errorsString = sprintf(
-                'Не найдено событие %s с идентификатором id: %s',
-                ProductStockEvent::class,
-                $command->getEvent()
-            );
-            $this->logger->error($uniqid.': '.$errorsString);
-
-            return $uniqid;
+            $this->preUpdate($command);
+        }
+        catch(DomainException $errorUniqid)
+        {
+            return $errorUniqid->getMessage();
         }
 
-        // Предшествующий статус события должен быть Поступление (warehouse)
-        if(!$EventRepo->getStatus()->equals(new ProductStockStatusWarehouse()))
+        /** Валидация всех объектов */
+        if($this->validatorCollection->isInvalid())
         {
-            $uniqid = uniqid('', false);
-            $errorsString = sprintf(
-                'Статус события %s не является поступлением (Warehouse) на склад id: %s',
-                ProductStockEvent::class,
-                $command->getEvent()
-            );
-            $this->logger->error($uniqid.': '.$errorsString);
-
-            return $uniqid;
-        }
-
-        $EventRepo->setEntity($command);
-        $EventRepo->setEntityManager($this->entityManager);
-        $Event = $EventRepo->cloneEntity();
-//        $this->entityManager->clear();
-//        $this->entityManager->persist($Event);
-
-        // @var Entity\ProductStock $Main
-        if($Event->getMain())
-        {
-            $Main = $this->entityManager->getRepository(ProductStock::class)
-                ->findOneBy(['event' => $command->getEvent()]);
-
-            if(empty($Main))
-            {
-                $uniqid = uniqid('', false);
-                $errorsString = sprintf(
-                    'Not found %s by event: %s',
-                    ProductStock::class,
-                    $command->getEvent()
-                );
-                $this->logger->error($uniqid.': '.$errorsString);
-
-                return $uniqid;
-            }
-        }
-        else
-        {
-            $Main = new ProductStock();
-            $this->entityManager->persist($Main);
-            $Event->setMain($Main);
-        }
-
-
-
-        // присваиваем событие корню
-        $Main->setEvent($Event);
-
-        // Валидация сущности
-        $errors = $this->validator->validate($Event);
-
-        if(count($errors) > 0)
-        {
-            /** Ошибка валидации */
-            $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
-
-            return $uniqid;
-        }
-
-        $errors = $this->validator->validate($Main);
-
-        if(count($errors) > 0)
-        {
-            /** Ошибка валидации */
-            $uniqid = uniqid('', false);
-            $this->logger->error(sprintf('%s: %s', $uniqid, $errors), [__FILE__.':'.__LINE__]);
-
-            return $uniqid;
+            return $this->validatorCollection->getErrorUniqid();
         }
 
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
-            message: new ProductStockMessage($Main->getId(), $Main->getEvent(), $command->getEvent()),
+            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
             transport: 'products-stocks'
         );
 
-        return $Main;
+        return $this->main;
     }
+
 }

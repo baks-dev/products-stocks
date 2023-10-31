@@ -50,19 +50,19 @@ final class IndexController extends AbstractController
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-        // Фильтр
-        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+//        // Фильтр
+//        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+//        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+//        $filterForm->handleRequest($request);
 
         /* Получаем список поступлений на склад */
-        $query = $allPurchase->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allPurchase->fetchAllProductStocksAssociative($search, $this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                //'filter' => $filterForm->createView(),
             ]
         );
     }

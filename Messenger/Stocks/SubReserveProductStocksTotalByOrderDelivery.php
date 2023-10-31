@@ -61,9 +61,14 @@ final class SubReserveProductStocksTotalByOrderDelivery
         $this->logger = $messageDispatchLogger;
     }
 
-    /** Снимаем резерв со склада при статусе "ДОСТАВКА" */
+    /**
+     * Снимаем резерв со склада при статусе "ДОСТАВКА"
+     */
     public function __invoke(OrderMessage $message): void
     {
+
+        return;
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         /**

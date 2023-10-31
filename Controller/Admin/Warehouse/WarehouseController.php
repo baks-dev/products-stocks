@@ -43,12 +43,13 @@ final class WarehouseController extends AbstractController
         WarehouseProductStockHandler $handler,
         #[MapEntity] ProductStockEvent $Event
     ): Response {
+
         if (!$this->getProfileUid())
         {
             throw new UserNotFoundException('User Profile not found');
         }
 
-        $warehouseDTO = new WarehouseProductStockDTO($this->getProfileUid());
+        $warehouseDTO = new WarehouseProductStockDTO($this->getUsr());
         $Event->getDto($warehouseDTO);
 
         // Форма добавления

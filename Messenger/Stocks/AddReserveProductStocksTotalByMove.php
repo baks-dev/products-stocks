@@ -59,9 +59,14 @@ final class AddReserveProductStocksTotalByMove
         $this->logger = $messageDispatchLogger;
     }
 
-    /** Резервирование на складе продукции при перемещении */
+    /**
+     * Резервирование на складе продукции при перемещении
+     */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        return;
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         /** Получаем статус заявки */

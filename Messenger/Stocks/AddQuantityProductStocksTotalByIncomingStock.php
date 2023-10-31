@@ -58,9 +58,14 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $this->logger = $messageDispatchLogger;
     }
 
-    /** Пополнение складских остатков при поступлении на склад */
+    /**
+     * Пополнение складских остатков при поступлении на склад
+     */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        //return;
+
 
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
@@ -85,7 +90,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                     ->getRepository(ProductStockTotal::class)
                     ->findOneBy(
                         [
-                            'warehouse' => $ProductStockEvent->getWarehouse(),
+                            'profile' => $ProductStockEvent->getProfile(),
                             'product' => $product->getProduct(),
                             'offer' => $product->getOffer(),
                             'variation' => $product->getVariation(),
@@ -96,7 +101,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 if (!$ProductStockTotal)
                 {
                     $ProductStockTotal = new ProductStockTotal(
-                        $ProductStockEvent->getWarehouse(),
+                        $ProductStockEvent->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),

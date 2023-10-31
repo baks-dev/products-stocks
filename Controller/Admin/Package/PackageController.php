@@ -34,7 +34,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_MOVING_NEW')]
 final class PackageController extends AbstractController
 {
-    /** Отправить заказ на упаковку  */
+    /**
+     * Отправить заказ на упаковку
+     */
     #[Route('/admin/product/stock/package/new', name: 'admin.package.new', methods: ['GET', 'POST'])]
     public function moving(
         Request $request,

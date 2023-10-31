@@ -41,7 +41,7 @@ final class IndexController extends AbstractController
         AllProductStocksIncomingInterface $allIncoming,
         int $page = 0
     ): Response {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
+        /*$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');*/
 
         // Поиск
         $search = new SearchDTO();
@@ -49,18 +49,18 @@ final class IndexController extends AbstractController
         $searchForm->handleRequest($request);
 
         // Фильтр
-        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+        /*$filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
         $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+        $filterForm->handleRequest($request);*/
 
         // Получаем список приходов ответственного лица
-        $query = $allIncoming->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allIncoming->fetchAllProductStocksAssociative($search, $this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                /*'filter' => $filterForm->createView(),*/
             ]
         );
     }

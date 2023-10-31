@@ -53,20 +53,20 @@ final class StocksController extends AbstractController
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-        // Фильтр
-        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+//        // Фильтр
+//        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
+//        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
+//        $filterForm->handleRequest($request);
 
 
-        $query = $allProductStocks->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allProductStocks->fetchAllProductStocksAssociative($search, $this->getProfileUid());
 
         //dump(current($query->getData()));
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                /*'filter' => $filterForm->createView(),*/
             ],
         );
     }

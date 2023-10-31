@@ -31,6 +31,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -47,14 +48,14 @@ class ProductStockTotal
     #[ORM\Column(type: ProductStockTotalUid::TYPE)]
     private ProductStockTotalUid $id;
 
-    /** ID склада */
-    #[ORM\Column(type: ContactsRegionCallConst::TYPE)]
-    private ContactsRegionCallConst $warehouse;
+    /** ID профиля (склад) */
+    #[ORM\Column(type: UserProfileUid::TYPE)]
+    private UserProfileUid $profile;
 
     /** ID продукта */
     #[ORM\Column(type: ProductUid::TYPE)]
     private ProductUid $product;
-    
+
     /** Постоянный уникальный идентификатор ТП */
     #[ORM\Column(type: ProductOfferConst::TYPE, nullable: true)]
     private ?ProductOfferConst $offer;
@@ -76,18 +77,20 @@ class ProductStockTotal
     private int $reserve = 0;
 
     public function __construct(
-        ContactsRegionCallConst   $warehouse,
-        ProductUid                $product,
-        ?ProductOfferConst        $offer,
-        ?ProductVariationConst    $variation,
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
         ?ProductModificationConst $modification
-    ) {
+    )
+    {
         $this->id = new ProductStockTotalUid();
-        $this->warehouse = $warehouse;
+
         $this->product = $product;
         $this->offer = $offer;
         $this->variation = $variation;
         $this->modification = $modification;
+        $this->profile = $profile;
     }
 
     /** Количество */
@@ -121,8 +124,8 @@ class ProductStockTotal
     public function subReserve(int $reserve): void
     {
         $this->reserve -= $reserve;
-        
-        if ($this->reserve < 0)
+
+        if($this->reserve < 0)
         {
             $this->reserve = 0;
         }

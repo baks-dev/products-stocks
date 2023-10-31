@@ -28,7 +28,14 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.product.stock.status')]
 interface ProductStockStatusInterface
 {
-    /** Возвращает значение статуса (value) */
+    /**
+     * Возвращает значение статуса (value)
+     */
     public function getValue(): string;
+
+    /**
+     * Проверяет, относится ли статус к данному объекту
+     */
+    public static function equals(string $status): bool;
 
 }

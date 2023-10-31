@@ -85,6 +85,9 @@ class ProductStockProduct extends EntityEvent
     #[ORM\Column(type: Types::INTEGER)]
     private int $total;
 
+    /** Место складирования */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $storage = null;
 
     public function __construct(ProductStockEvent $event)
     {

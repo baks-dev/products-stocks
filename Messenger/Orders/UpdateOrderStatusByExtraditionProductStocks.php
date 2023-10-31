@@ -71,12 +71,14 @@ final class UpdateOrderStatusByExtraditionProductStocks
     /** Обновляет статус заказа при сборке на складе  */
     public function __invoke(ProductStockMessage $message): void
     {
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         /**
          * Получаем статус заявки.
          */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)
+        $ProductStockEvent = $this->entityManager
+            ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
         // Если Статус складской заявки не является "Собран"

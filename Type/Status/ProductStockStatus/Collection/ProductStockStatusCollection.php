@@ -53,8 +53,6 @@ final class ProductStockStatusCollection
             $case[] = new ProductStockStatus(new $status());
         }
 
-        //ksort($case);
-
         return $case;
     }
 

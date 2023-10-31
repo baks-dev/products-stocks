@@ -29,6 +29,7 @@ use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -51,8 +52,8 @@ class ProductStockMove extends EntityEvent
     /** Константа склада назначения (при перемещении) */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    #[ORM\Column(type: ContactsRegionCallConst::TYPE, nullable: true)]
-    private ?ContactsRegionCallConst $destination = null;
+    #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
+    private ?UserProfileUid $destination = null;
 
     /** Идентификатор заказа, если перемещение для упаковки заказа */
     #[Assert\Uuid]

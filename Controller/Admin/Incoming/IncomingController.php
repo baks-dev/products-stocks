@@ -36,7 +36,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_INCOMING_ACCEPT')]
 final class IncomingController extends AbstractController
 {
-    /** Добавить приход на склад */
+    /**
+     * Добавить приход на склад
+     */
     #[Route('/admin/product/stock/incoming/{id}', name: 'admin.incoming.accept', methods: ['GET', 'POST'])]
     public function incoming(
         #[MapEntity] ProductStockEvent $ProductStockEvent,
@@ -44,6 +46,7 @@ final class IncomingController extends AbstractController
         IncomingProductStockHandler $handler,
         ProductsByProductStocksInterface $productDetail,
     ): Response {
+
         $incomingDTO = new IncomingProductStockDTO($this->getProfileUid());
         $ProductStockEvent->getDto($incomingDTO);
         $incomingDTO->setComment(null); // обнуляем комментарий

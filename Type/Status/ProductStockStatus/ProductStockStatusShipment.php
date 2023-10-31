@@ -28,7 +28,6 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusShipment implements ProductStockStatusInterface
 {
@@ -43,5 +42,13 @@ class ProductStockStatusShipment implements ProductStockStatusInterface
 	{
 		return self::STATUS;
 	}
+
+    /**
+     * Проверяет, относится ли статус к данному объекту
+     */
+    public static function equals(string $status): bool
+    {
+        return self::STATUS === $status;
+    }
 
 }

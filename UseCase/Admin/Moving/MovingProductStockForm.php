@@ -402,7 +402,7 @@ final class MovingProductStockForm extends AbstractType
                         return $variation?->getValue();
                     },
                     'choice_label' => function (ProductVariationConst $variation) {
-                        return $variation->getAttr().' ('.$variation->getCounter().')';
+                        return $variation->getAttr().' ('.$variation->getProperty().')';
                     },
                     'choice_attr' => function (?ProductVariationConst $variation) {
                         return $variation ? ['data-name' => $variation->getAttr()] : [];
@@ -443,7 +443,7 @@ final class MovingProductStockForm extends AbstractType
                         return $modification?->getValue();
                     },
                     'choice_label' => function (ProductModificationConst $modification) {
-                        return $modification->getAttr().' ('.$modification->getCounter().')';
+                        return $modification->getAttr().' ('.$modification->getProperty().')';
                     },
                     'choice_attr' => function (?ProductModificationConst $modification) {
                         return $modification ? ['data-name' => $modification->getAttr()] : [];
@@ -487,12 +487,12 @@ final class MovingProductStockForm extends AbstractType
                     return $warehouse?->getValue();
                 },
                 'choice_label' => function (ContactsRegionCallConst $warehouse) {
-                    return $warehouse->getAttr().' ('.$warehouse->getCounter().')';
+                    return $warehouse->getAttr().' ('.$warehouse->getProperty().')';
                 },
                 'choice_attr' => function (?ContactsRegionCallConst $warehouse) {
                     return $warehouse ? [
                         'data-name' => $warehouse->getAttr(),
-                        'data-max' => $warehouse->getCounter(),
+                        'data-max' => $warehouse->getProperty(),
                     ] : [];
                 },
                 'label' => false,

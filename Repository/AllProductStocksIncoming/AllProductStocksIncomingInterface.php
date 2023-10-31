@@ -32,8 +32,7 @@ interface AllProductStocksIncomingInterface
 {
     /** Возвращает список всех принятых на склад продуктов */
     public function fetchAllProductStocksAssociative(
-        SearchDTO                     $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid               $profile
+        SearchDTO $search,
+        UserProfileUid $profile
     ): PaginatorInterface;
 }

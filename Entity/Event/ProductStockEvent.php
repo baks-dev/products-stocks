@@ -92,12 +92,7 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: UserProfileUid::TYPE)]
     private UserProfileUid $profile;
 
-    /** Константа склада */
-    #[Assert\Uuid]
-    #[ORM\Column(type: ContactsRegionCallConst::TYPE, nullable: true)]
-    private ?ContactsRegionCallConst $warehouse = null;
-
-    /** Склад назначения (при перемещении) */
+    /** Профиль назначения (при перемещении) */
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockMove::class, cascade: ['all'])]
     private ?ProductStockMove $move = null;
 

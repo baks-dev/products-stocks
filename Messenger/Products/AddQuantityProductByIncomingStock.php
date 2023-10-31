@@ -75,6 +75,7 @@ final class AddQuantityProductByIncomingStock
     /** Пополнение наличием продукции при поступлении на склад */
     public function __invoke(ProductStockMessage $message): void
     {
+
         $this->logger->info('MessageHandler', ['handler' => self::class]);
 
         /** Получаем статус заявки */

@@ -56,11 +56,10 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
     /** Возвращает список всех принятых на склад продуктов */
     public function fetchAllProductStocksAssociative(
         SearchDTO $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid $profile
+        UserProfileUid $profile
     ): PaginatorInterface
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
         // ProductStock
         $qb->select('stock.id');
@@ -77,10 +76,13 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'stock',
             ProductStockEntity\Event\ProductStockEvent::TABLE,
             'event',
-            'event.id = stock.event AND event.status = :status'
-        );
+            'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+        )
+            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
 
-        $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+
+
 
         // ProductStockModify
         $qb->addSelect('modify.mod_date');
@@ -88,6 +90,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
 
         $qb->addSelect('stock_product.id as product_stock_id');
         $qb->addSelect('stock_product.total');
+        $qb->addSelect('stock_product.storage');
         //$qb->addSelect('stock_product.package');
         $qb->join(
             'event',
@@ -96,35 +99,34 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'stock_product.event = stock.event'
         );
 
-        // Warehouse
-        $exist = $this->DBALQueryBuilder->builder();
-        $exist->select('1');
-        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-        $exist->where('tmp.event = warehouse.event');
-
-        // Product Warehouse
-        $qb->addSelect('warehouse.id as warehouse_id');
-        $qb->addSelect('warehouse.event as warehouse_event');
-
-        $qb->join(
-            'event',
-            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-            'warehouse',
-            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
-        );
-
-        // Product Warehouse Trans
-        $qb->addSelect('warehouse_trans.name AS warehouse_name');
-        // $qb->addSelect('warehouse_trans.description AS warehouse_description');
-
-        $qb->join(
-            'warehouse',
-            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-            'warehouse_trans',
-            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-        )
-        ->bindLocal();
-
+        //        // Warehouse
+        //        $exist = $this->DBALQueryBuilder->builder();
+        //        $exist->select('1');
+        //        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
+        //        $exist->where('tmp.event = warehouse.event');
+        //
+        //        // Product Warehouse
+        //        $qb->addSelect('warehouse.id as warehouse_id');
+        //        $qb->addSelect('warehouse.event as warehouse_event');
+        //
+        //        $qb->join(
+        //            'event',
+        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
+        //            'warehouse',
+        //            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
+        //        );
+        //
+        //        // Product Warehouse Trans
+        //        $qb->addSelect('warehouse_trans.name AS warehouse_name');
+        //        // $qb->addSelect('warehouse_trans.description AS warehouse_description');
+        //
+        //        $qb->join(
+        //            'warehouse',
+        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
+        //            'warehouse_trans',
+        //            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
+        //        )
+        //        ->bindLocal();
 
 
         // Product
@@ -420,19 +422,13 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
 
         $qb->addSelect('null AS group_name'); // Название группы
 
-        if($filter->getWarehouse())
-        {
-            $qb->andWhere('warehouse.const = :warehouse_filter');
-            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
-        }
 
         // Поиск
         if($search->getQuery())
         {
             $qb
                 ->createSearchQueryBuilder($search)
-                ->addSearchLike('event.number')
-            ;
+                ->addSearchLike('event.number');
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');

@@ -22,6 +22,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class IncomingProductStockDTO implements ProductStockEventInterface
@@ -40,6 +41,10 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
+    /** Коллекция продукции  */
+    #[Assert\Valid]
+    private ArrayCollection $product;
+
     /** Комментарий */
     private ?string $comment = null;
 
@@ -48,6 +53,7 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     {
         $this->profile = $profile;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming());
+        $this->product = new ArrayCollection();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -85,6 +91,22 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     public function getStatus(): ProductStockStatus
     {
         return $this->status;
+    }
+
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
+    {
+        return $this->product;
+    }
+
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
+    }
+
+    public function addProduct(Products\ProductStockDTO $product): void
+    {
+        $this->product->add($product);
     }
 
 }

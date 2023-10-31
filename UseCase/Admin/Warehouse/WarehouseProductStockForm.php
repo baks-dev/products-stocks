@@ -18,6 +18,8 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
@@ -31,13 +33,20 @@ use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
 
 final class WarehouseProductStockForm extends AbstractType
 {
-    private WarehouseChoiceInterface $warehouseChoice;
+    //    private WarehouseChoiceInterface $warehouseChoice;
+    //
+    //    public function __construct(
+    //        WarehouseChoiceInterface $warehouseChoice,
+    //    ) {
+    //        $this->warehouseChoice = $warehouseChoice;
+    //    }
 
-    public function __construct(
-        WarehouseChoiceInterface $warehouseChoice,
-    ) {
-        $this->warehouseChoice = $warehouseChoice;
+    private UserProfileChoiceInterface $userProfileChoice;
+
+    public function __construct(UserProfileChoiceInterface $userProfileChoice) {
+        $this->userProfileChoice = $userProfileChoice;
     }
+
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -45,36 +54,43 @@ final class WarehouseProductStockForm extends AbstractType
 
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function (FormEvent $event): void {
+            function(FormEvent $event): void {
                 /** @var WarehouseProductStockDTO $data */
                 $data = $event->getData();
                 $form = $event->getForm();
 
-//                /dd($data);
 
-                if ($data->getDestination())
+                //                /dd($data);
+
+                if($data->getDestination())
                 {
                     //$form->add('warehouse', HiddenType::class);
                     return;
                 }
 
-                /** Список всех активных складов */
-                $warehouses = $this->warehouseChoice->fetchAllWarehouse();
 
-                if (count($warehouses) === 1)
+                /** Все профили пользователя */
+
+                $profiles = $this->userProfileChoice->getActiveUserProfile($data->getUsr());
+
+
+                /** Список всех активных складов */
+                //$warehouses = $this->warehouseChoice->fetchAllWarehouse();
+
+                if(count($profiles) === 1)
                 {
-                    $data->setWarehouse(current($warehouses));
+                    $data->setProfile(current($profiles));
                 }
 
                 // Склад
                 $form
-                    ->add('warehouse', ChoiceType::class, [
-                        'choices' => $warehouses,
-                        'choice_value' => function (?ContactsRegionCallConst $warehouse) {
-                            return $warehouse?->getValue();
+                    ->add('profile', ChoiceType::class, [
+                        'choices' => $profiles,
+                        'choice_value' => function(?UserProfileUid $profile) {
+                            return $profile?->getValue();
                         },
-                        'choice_label' => function (ContactsRegionCallConst $warehouse) {
-                            return $warehouse->getAttr();
+                        'choice_label' => function(UserProfileUid $profile) {
+                            return $profile->getAttr();
                         },
 
                         'label' => false,

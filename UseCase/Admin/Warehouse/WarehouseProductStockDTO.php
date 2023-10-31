@@ -23,6 +23,8 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class WarehouseProductStockDTO implements ProductStockEventInterface
@@ -32,19 +34,19 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    /** Склад */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private ContactsRegionCallConst $warehouse;
+//    /** Склад */
+//    #[Assert\NotBlank]
+//    #[Assert\Uuid]
+//    private ?ContactsRegionCallConst $warehouse = null;
 
     /** Целевой склад при перемещении */
     #[Assert\Uuid]
-    private ?ContactsRegionCallConst $destination = null;
+    private ?UserProfileUid $destination = null;
 
     /** Ответственное лицо (Профиль пользователя) */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    private readonly UserProfileUid $profile;
+    private UserProfileUid $profile;
 
     /** Статус заявки - ОТПАРВЛЕН НА СКЛАД */
     #[Assert\NotBlank]
@@ -53,9 +55,15 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    public function __construct(UserProfileUid $profile)
+
+
+    /** Вспомогательные свойства */
+    private readonly UserUid $usr;
+
+
+    public function __construct(User|UserUid $usr)
     {
-        $this->profile = $profile;
+        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse());
     }
 
@@ -80,11 +88,18 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Ответственное лицо (Профиль пользователя) */
+    /** Профиль назначения */
     public function getProfile(): UserProfileUid
     {
         return $this->profile;
     }
+
+    public function setProfile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
+
 
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
@@ -92,31 +107,41 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         return $this->status;
     }
 
-    /** Склад */
-    public function getWarehouse(): ContactsRegionCallConst
+    /**
+     * Usr
+     */
+    public function getUsr(): UserUid
     {
-        /* Если перемещение между складами - перемещаем */
-        if ($this->destination !== null)
-        {
-            $this->warehouse = $this->destination;
-            $this->destination = null;
-        }
-
-        return $this->warehouse;
+        return $this->usr;
     }
 
-    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
-    {
-        $this->warehouse = $warehouse;
-    }
+
+
+//    /** Склад */
+//    public function getWarehouse(): ContactsRegionCallConst
+//    {
+//        /* Если перемещение между складами - перемещаем */
+//        if ($this->destination !== null)
+//        {
+//            $this->profile = $this->destination;
+//            $this->destination = null;
+//        }
+//
+//        return $this->profile;
+//    }
+
+//    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
+//    {
+//        $this->warehouse = $warehouse;
+//    }
 
     /** Целевой склад при перемещении */
-    public function getDestination(): ?ContactsRegionCallConst
+    public function getDestination(): ?UserProfileUid
     {
         return $this->destination;
     }
 
-    public function setDestination(?ContactsRegionCallConst $destination): void
+    public function setDestination(?UserProfileUid $destination): void
     {
         $this->destination = $destination;
     }

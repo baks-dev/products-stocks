@@ -12,7 +12,6 @@ interface AllProductStocksInterface
     /** Метод возвращает полное состояние складских остатков продукции */
     public function fetchAllProductStocksAssociative(
         SearchDTO $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid $profile
+        UserProfileUid $profile
     ): PaginatorInterface;
 }

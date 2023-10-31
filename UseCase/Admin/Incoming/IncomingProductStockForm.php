@@ -19,6 +19,7 @@
 namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -28,6 +29,17 @@ final class IncomingProductStockForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+
+        // Section Collection
+        $builder->add('product', CollectionType::class, [
+            'entry_type' => Products\ProductStockForm::class,
+            'entry_options' => ['label' => false],
+            'label' => false,
+            'by_reference' => false,
+            'allow_delete' => true,
+            'allow_add' => true,
+            'prototype_name' => '__product__',
+        ]);
 
         $builder->add('comment', TextareaType::class, ['required' => false]);
 
