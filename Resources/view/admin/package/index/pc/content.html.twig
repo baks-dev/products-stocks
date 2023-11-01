@@ -156,11 +156,11 @@
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
                 <div class="col-3">
-                    {{ form_start(filter) }}
+                    {#{{ form_start(filter) }}
                     <div class="w-100" style="height: 55px;">
                         {{ form_widget(filter.warehouse, { placeholder: 'Выберите склад из списка ...', attr: { 'data-select' : 'select2' } }) }}
                     </div>
-                    {{ form_end(filter) }}
+                    {{ form_end(filter) }}#}
                 </div>
             </div>
 
@@ -262,7 +262,7 @@
                             {# ОТВЕТСТВЕННЫЙ  #}
                             <div class="d-flex w-50 gap-3">
 
-                                {# Обложка #}
+                                {# Обложка #}{#
                                 {% set image_path = '/assets/img/blank.svg' %}
 
                                 {% if item.users_profile_avatar_ext is defined and item.users_profile_avatar_ext is not null %}
@@ -277,7 +277,7 @@
                                        class="icon rounded-circle bg-contain lazy p-1"
                                        data-bg="{{ image_path }}"
                                     > </a>
-                                </div>
+                                </div>#}
 
                                 <div class="ms-0">
                                     <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
@@ -285,7 +285,7 @@
                                         {{ item.users_profile_username }}
                                     </a>
 
-                                    <div class="text-muted fs-7 fw-bolder">
+                                   {# <div class="text-muted fs-7 fw-bolder">
 
 											<span class="me-1 text-muted">
 												<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
@@ -298,7 +298,7 @@
 												</svg>
 											</span>
                                         {{ item.group_name }}
-                                    </div>
+                                    </div>#}
 
                                 </div>
                             </div>

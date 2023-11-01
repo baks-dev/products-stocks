@@ -50,13 +50,13 @@ final class IndexController extends AbstractController
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-        // Фильтр
+/*        // Фильтр
         $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
         $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+        $filterForm->handleRequest($request);*/
 
         // Получаем список заявок на упаковку
-        $query = $allPackage->fetchAllProductStocksAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allPackage->fetchAllProductStocksAssociative($search, $this->getProfileUid());
 
         //$allPackage->fetchAllPackageAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
 
@@ -64,7 +64,7 @@ final class IndexController extends AbstractController
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                /*'filter' => $filterForm->createView(),*/
             ]
         );
     }
