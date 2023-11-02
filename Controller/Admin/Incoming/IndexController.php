@@ -31,7 +31,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_MATERIAL_STOCK_INCOMING')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_INCOMING')]
 final class IndexController extends AbstractController
 {
     // Список приходов
