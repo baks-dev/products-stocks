@@ -147,13 +147,13 @@ class ProductStockEvent extends EntityEvent
         return $this->status;
     }
 
-    /**
-     * Идентификатор склада.
-     */
-    public function getWarehouse(): ?ContactsRegionCallConst
-    {
-        return $this->warehouse;
-    }
+//    /**
+//     * Идентификатор склада.
+//     */
+//    public function getWarehouse(): ?ContactsRegionCallConst
+//    {
+//        return $this->warehouse;
+//    }
 
     /**
      * Идентификатор заказа.
