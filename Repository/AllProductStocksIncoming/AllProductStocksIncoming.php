@@ -229,7 +229,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'product_offer_modification',
             CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::TABLE,
             'category_offer_modification',
-            'category_offer_modification.id = product_offer_modification.category_modification'
+            'category_offer_modification.id = product_offer_modification.category_modification AND product_offer_modification.const = stock_product.modification'
         );
 
         // Артикул продукта
