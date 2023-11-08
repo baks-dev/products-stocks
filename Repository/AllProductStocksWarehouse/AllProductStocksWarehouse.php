@@ -217,7 +217,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             'product_offer_variation',
             ProductEntity\Offers\Variation\Modification\ProductModification::TABLE,
             'product_offer_modification',
-            'product_offer_modification.variation = product_offer_variation.id'
+            'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
         );
 
         // Получаем тип модификации множественного варианта

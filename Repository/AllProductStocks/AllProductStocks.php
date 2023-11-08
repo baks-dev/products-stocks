@@ -285,18 +285,11 @@ final class AllProductStocks implements AllProductStocksInterface
             "
 			CASE
 			
-			    WHEN product_offer_modification_image.name IS NOT NULL THEN
-                     CASE WHEN product_offer_modification_image.cdn THEN  CONCAT ( 'small.', product_offer_modification_image.ext) ELSE product_offer_modification_image.ext END
-
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-			        CASE WHEN product_offer_variation_image.cdn THEN  CONCAT ( 'small.', product_offer_variation_image.ext) ELSE product_offer_variation_image.ext END
-
-			   WHEN product_offer_images.name IS NOT NULL THEN
-			        CASE WHEN product_offer_images.cdn THEN  CONCAT ( 'small.', product_offer_images.ext) ELSE product_offer_images.ext END
-
-			   WHEN product_photo.name IS NOT NULL THEN
-			        CASE WHEN product_photo.cdn THEN  CONCAT ( 'small.', product_photo.ext) ELSE product_photo.ext END
-					
+			    WHEN product_offer_modification_image.name IS NOT NULL THEN  product_offer_modification_image.ext
+			   WHEN product_offer_variation_image.name IS NOT NULL THEN product_offer_variation_image.ext
+			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
+			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
+				
 			   ELSE NULL
 			   
 			END AS product_image_ext
