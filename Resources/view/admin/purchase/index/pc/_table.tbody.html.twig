@@ -41,21 +41,25 @@
             <div class="ms-5">
 
                 {# Название #}
-                <a href="{# {{ path('products-stocks:admin.detail', { id : item.id }) }} #}"
-                   class="text-decoration-none mb-1 modal-link fw-bolder text-muted"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
+                <a href="{{ path('products-product:user.detail', {
+                    url : item.product_url ,
+                    offer: item.product_offer_value,
+                    variation: item.product_variation_value,
+                    modification: item.product_modification_value
+                }) }}"
+                   class="text-decoration-none mb-1 fw-bolder text-muted"
+                   target="_detail"
                    title="Детали заявки">
 
 
                     {{ item.product_name }}
 
                     {# Значение множественного варианта ТП #}
-                    {{ product.product_variation_value|call_twig_func(product.product_variation_reference)
-                    ~ product.product_modification_value|call_twig_func(product.product_modification_reference) }}
+                    {{ item.product_variation_value|call_twig_func(item.product_variation_reference)
+                    ~ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
 
                     {# Значение торгового предложения #}
-                    {{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}
+                    {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
 
                     {# Постфикс торгового предложения #}
                     {{ item.product_offer_postfix }}
