@@ -32,6 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,6 +40,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_total')]
+#[ORM\Index(columns: ['usr', 'profile'])]
 class ProductStockTotal
 {
     public const TABLE = 'product_stock_total';
@@ -47,6 +49,10 @@ class ProductStockTotal
     #[ORM\Id]
     #[ORM\Column(type: ProductStockTotalUid::TYPE)]
     private ProductStockTotalUid $id;
+
+    /** ID пользователя */
+    #[ORM\Column(type: UserUid::TYPE, nullable: true, options: ['default' => null])]
+    private ?UserUid $usr = null;
 
     /** ID профиля (склад) */
     #[ORM\Column(type: UserProfileUid::TYPE)]
@@ -68,11 +74,15 @@ class ProductStockTotal
     #[ORM\Column(type: ProductModificationConst::TYPE, nullable: true)]
     private ?ProductModificationConst $modification;
 
+    /** Место складирования */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $storage = null;
+
     /** Общее количество на данном складе */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $total = 0;
 
-    /** Зарезервированно на данном складе */
+    /** Зарезервировано на данном складе */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $reserve = 0;
 

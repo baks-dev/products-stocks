@@ -27,6 +27,8 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
@@ -45,28 +47,37 @@ final class StocksController extends AbstractController
         Request $request,
         AllProductStocksInterface $allProductStocks,
         int $page = 0,
-    )
-    : Response {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
-        // Поиск
+    ): Response
+    {
+
+        /**
+         * Поиск
+         */
         $search = new SearchDTO();
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-//        // Фильтр
-//        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-//        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-//        $filterForm->handleRequest($request);
+        /**
+         * Фильтр продукции по ТП
+         */
+        $filter = new ProductFilterDTO($request);
+        $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
+            'action' => $this->generateUrl('products-stocks:admin.index'),
+        ]);
+        $filterForm->handleRequest($request);
+        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
 
 
-        $query = $allProductStocks->fetchAllProductStocksAssociative($search, $this->getProfileUid());
+        $query = $allProductStocks
+            ->search($search)
+            ->filter($filter)
+            ->fetchAllProductStocksAssociative($this->getProfileUid());
 
-        //dump(current($query->getData()));
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                /*'filter' => $filterForm->createView(),*/
+                'filter' => $filterForm->createView(),
             ],
         );
     }
