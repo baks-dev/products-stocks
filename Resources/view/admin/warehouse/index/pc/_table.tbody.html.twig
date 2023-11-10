@@ -52,19 +52,17 @@
 
 					{{ item.product_name }}
 
+					{# Значение множественного варианта ТП #}
+					{{ product.product_variation_value|call_twig_func(product.product_variation_reference)
+					~ product.product_modification_value|call_twig_func(product.product_modification_reference) }}
+
 					{# Значение торгового предложения #}
-					{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+					{{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}
+
 					{# Постфикс торгового предложения #}
 					{{ item.product_offer_postfix }}
-
-					{# Значение множественного варианта ТП #}
-					{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
 					{# Постфикс множественного варианта #}
 					{{ item.product_variation_postfix }}
-
-
-					{# Значение модификации множественного варианта ТП #}
-					{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}
 					{# Постфикс модификации #}
 					{{ item.product_modification_postfix }}
 
