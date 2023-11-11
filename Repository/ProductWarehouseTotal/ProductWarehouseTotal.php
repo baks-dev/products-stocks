@@ -31,6 +31,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
@@ -43,12 +44,12 @@ final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
     }
 
     /** Метод возвращает количество данной продукции на указанном складе */
-    public function getProductWarehouseTotal(
-        ContactsRegionCallConst $warehouse,
+    public function getProductProfileTotal(
+        UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
     ) : int {
         $qb = $this->entityManager->getConnection()->createQueryBuilder();
 
@@ -56,8 +57,8 @@ final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
 
         $qb->from(ProductStockTotal::TABLE, 'stock');
 
-        $qb->andWhere('stock.warehouse = :warehouse');
-        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallConst::TYPE);
+        $qb->andWhere('stock.profile = :profile');
+        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
 
         $qb->andWhere('stock.product = :product');
         $qb->setParameter('product', $product, ProductUid::TYPE);

@@ -27,6 +27,7 @@ use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/** @see ProductStockEvent */
 final class WarehouseProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
@@ -39,9 +40,9 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
 //    #[Assert\Uuid]
 //    private ?ContactsRegionCallConst $warehouse = null;
 
-    /** Целевой склад при перемещении */
-    #[Assert\Uuid]
-    private ?UserProfileUid $destination = null;
+//    /** Целевой склад при перемещении */
+//    #[Assert\Uuid]
+//    private ?UserProfileUid $destination = null;
 
     /** Ответственное лицо (Профиль пользователя) */
     #[Assert\NotBlank]
@@ -135,14 +136,14 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
 //        $this->warehouse = $warehouse;
 //    }
 
-    /** Целевой склад при перемещении */
-    public function getDestination(): ?UserProfileUid
-    {
-        return $this->destination;
-    }
-
-    public function setDestination(?UserProfileUid $destination): void
-    {
-        $this->destination = $destination;
-    }
+//    /** Целевой склад при перемещении */
+//    public function getDestination(): ?UserProfileUid
+//    {
+//        return $this->destination;
+//    }
+//
+//    public function setDestination(?UserProfileUid $destination): void
+//    {
+//        $this->destination = $destination;
+//    }
 }

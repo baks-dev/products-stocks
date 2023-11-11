@@ -76,8 +76,6 @@ final class AddQuantityProductByIncomingStock
     public function __invoke(ProductStockMessage $message): void
     {
 
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
@@ -141,10 +139,20 @@ final class AddQuantityProductByIncomingStock
                 if ($ProductUpdateQuantity) {
                     $ProductUpdateQuantity->addQuantity($product->getTotal());
                     $this->entityManager->flush();
+
+
+                    $this->logger->info('Пополнили общий остаток продукции в карточке',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'class' => $ProductUpdateQuantity::class,
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]);
                 }
             }
         }
-
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
     }
 }

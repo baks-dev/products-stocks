@@ -42,34 +42,35 @@ final class WarehouseController extends AbstractController
         Request $request,
         WarehouseProductStockHandler $handler,
         #[MapEntity] ProductStockEvent $Event
-    ): Response {
+    ): Response
+    {
 
-        if (!$this->getProfileUid())
+        if(!$this->getProfileUid())
         {
             throw new UserNotFoundException('User Profile not found');
         }
 
-        $warehouseDTO = new WarehouseProductStockDTO($this->getUsr());
-        $Event->getDto($warehouseDTO);
+        $WarehouseProductStockDTO = new WarehouseProductStockDTO($this->getUsr());
+        $Event->getDto($WarehouseProductStockDTO);
 
         // Форма добавления
-        $form = $this->createForm(WarehouseProductStockForm::class, $warehouseDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $warehouseDTO->getEvent()]),
+        $form = $this->createForm(WarehouseProductStockForm::class, $WarehouseProductStockDTO, [
+            'action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $WarehouseProductStockDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('send'))
+        if($form->isSubmitted() && $form->isValid() && $form->has('send'))
         {
-            $ProductStock = $handler->handle($warehouseDTO);
+            $handle = $handler->handle($WarehouseProductStockDTO);
 
-            if ($ProductStock instanceof ProductStock)
-            {
-                $this->addFlash('success', 'admin.success.warehouse', 'admin.product.stock');
-            } else
-            {
-                $this->addFlash('danger', 'admin.danger.warehouse', 'admin.product.stock', $ProductStock);
-            }
+            $this->addFlash
+            (
+                'admin.page.new',
+                $handle instanceof ProductStock ? 'admin.success.warehouse' : 'admin.danger.warehouse',
+                'admin.product.stock',
+                $handle
+            );
 
             return $this->redirectToRoute('products-stocks:admin.warehouse.index');
         }

@@ -30,6 +30,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/** @see ProductStockEvent */
 final class PurchaseProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
@@ -62,7 +63,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     // Вспомогательные свойства
 
     /** Склад */
-    private ?ContactsRegionCallUid $preWarehouse = null;
+    //private ?ContactsRegionCallUid $preWarehouse = null;
 
     /** Продукт */
     private ?ProductUid $preProduct = null;
@@ -110,7 +111,18 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     public function addProduct(Products\ProductStockDTO $product): void
     {
-        $this->product->add($product);
+        $filter = $this->product->filter(function(Products\ProductStockDTO $element) use ($product)
+        {
+            return $element->getProduct()->equals($product->getProduct()) &&
+                $element->getOffer()?->equals($product->getOffer()) &&
+                $element->getVariation()?->equals($product->getVariation()) &&
+                $element->getModification()?->equals($product->getModification());
+        });
+
+        if($filter->isEmpty())
+        {
+            $this->product->add($product);
+        }
     }
 
     public function removeProduct(Products\ProductStockDTO $product): void
@@ -156,17 +168,17 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     /** ВСПОМОГАТЕЛЬНЫЕ СВОЙСТВА */
 
-    // WAREHOUSE
-
-    public function getPreWarehouse(): ?ContactsRegionCallUid
-    {
-        return $this->preWarehouse;
-    }
-
-    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
-    {
-        $this->preWarehouse = $warehouse;
-    }
+//    // WAREHOUSE
+//
+//    public function getPreWarehouse(): ?ContactsRegionCallUid
+//    {
+//        return $this->preWarehouse;
+//    }
+//
+//    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
+//    {
+//        $this->preWarehouse = $warehouse;
+//    }
 
     // PRODUCT
 

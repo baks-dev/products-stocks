@@ -7,7 +7,7 @@
     </td>
 
 
-    <td class="ps-5 align-middle w-100">
+    <td class="align-middle">
         <div class="d-flex">
 
             {# Обложка #}
@@ -19,7 +19,6 @@
                 {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.product_image_ext %}
                 {% set image_path = img_host ~ img_dir ~ img_file %}
             {% endif %}
-
 
             <div>
                 <a href="#" class="icon rounded-3 mb-2 lazy bg-cover p-1"
@@ -40,7 +39,6 @@
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                    target="_detail"
                    >
-
 
                     {{ item.product_name }}
 
@@ -81,13 +79,14 @@
         </div>
     </td>
 
+    <td>
+        <div>{{ item.users_profile_username }}</div>
+        <smal class="small text-muted">{{ item.users_profile_location }}</smal>
+    </td>
+
     <td class="text-center">
         {{ item.category_name }}
     </td>
-
-    {#<td class="text-center">
-        {{ item.warehouse_name }}
-    </td>#}
 
     <td class="text-center">
         {{ item.stock_total - item.stock_reserve }}

@@ -48,10 +48,10 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     #[Assert\Length(max: 36)]
     private string $number;
 
-    /** Константа Целевого склада */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private ?ContactsRegionCallConst $warehouse = null;
+//    /** Константа Целевого склада */
+//    #[Assert\NotBlank]
+//    #[Assert\Uuid]
+//    private ?ContactsRegionCallConst $warehouse = null;
 
 //    /** Константа склада назначения при перемещении */
 //    #[Assert\NotBlank]
@@ -152,16 +152,16 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         $this->number = $number;
     }
 
-    /** Константа Целевого склада */
-    public function getWarehouse(): ?ContactsRegionCallConst
-    {
-        return $this->warehouse;
-    }
-
-    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
-    {
-        $this->warehouse = $warehouse;
-    }
+//    /** Константа Целевого склада */
+//    public function getWarehouse(): ?ContactsRegionCallConst
+//    {
+//        return $this->warehouse;
+//    }
+//
+//    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
+//    {
+//        $this->warehouse = $warehouse;
+//    }
 
 
     /** Идентификатор заказа на сборку */

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\DeliveryTransport\Type\OrderStatus\OrderStatusDelivery;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
@@ -35,6 +36,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -52,7 +54,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductWarehouseByOrderInterface $warehouseByOrder,
-        LoggerInterface $messageDispatchLogger
+        LoggerInterface $messageDispatchLogger,
     ) {
         $this->entityManager = $entityManager;
         $this->entityManager->clear();
@@ -67,9 +69,10 @@ final class SubReserveProductStocksTotalByOrderDelivery
     public function __invoke(OrderMessage $message): void
     {
 
-        return;
-
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
+        if(!class_exists(OrderStatusDelivery::class))
+        {
+            return;
+        }
 
         /**
          * Получаем активное событие.
@@ -79,7 +82,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         $OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
 
         /* Если статус заказа не "ДОСТАВКА" - завершаем обработчик */
-        if (!$OrderEvent || $OrderEvent->getStatus()->getOrderStatusValue() !== 'delivery')
+        if (!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusDelivery::class))
         {
             return;
         }
@@ -87,21 +90,20 @@ final class SubReserveProductStocksTotalByOrderDelivery
         /**
          * Получаем склад, на который была отправлена заявка для сборки.
          *
-         * @var ContactsRegionCallConst $warehouse
+         * @var UserProfileUid $UserProfileUid
          */
-        $warehouse = $this->warehouseByOrder->getWarehouseByOrder($message->getId());
+        $UserProfileUid = $this->warehouseByOrder->getWarehouseByOrder($message->getId());
 
         /** @var OrderProduct $product */
         foreach ($OrderEvent->getProduct() as $product)
         {
             /* Снимаем резерв со склада при доставке */
-            $this->changeReserve($product, $warehouse);
+            $this->changeReserve($product, $UserProfileUid);
         }
 
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
     }
 
-    public function changeReserve(OrderProduct $product, ContactsRegionCallConst $warehouse): void
+    public function changeReserve(OrderProduct $product, UserProfileUid $profile): void
     {
         /** Получаем продукт */
 
@@ -129,7 +131,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
             ->getRepository(ProductStockTotal::class)
             ->findOneBy(
                 [
-                    'warehouse' => $warehouse,
+                    'profile' => $profile,
                     'product' => $ProductUid,
                     'offer' => $ProductOfferConst,
                     'variation' => $ProductVariationConst,
@@ -141,7 +143,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         {
             $throw = sprintf(
                 'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                $warehouse,
+                $profile,
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
@@ -153,5 +155,17 @@ final class SubReserveProductStocksTotalByOrderDelivery
 
         $ProductStockTotal->subReserve($product->getTotal());
         $ProductStockTotal->subTotal($product->getTotal());
+
+        $this->logger->info('Сняли резерв и уменьшили количество на складе при доставке',
+            [
+                __FILE__.':'.__LINE__,
+                'profile' => $profile,
+                'product' => $product->getProduct(),
+                'offer' => $product->getOffer(),
+                'variation' => $product->getVariation(),
+                'modification' => $product->getModification(),
+                'total' => $product->getTotal(),
+            ]);
+
     }
 }

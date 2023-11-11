@@ -25,11 +25,12 @@ namespace BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface ProductWarehouseByOrderInterface
 {
     /**
      * Метод возвращает идентификатор склада, на который была отправлена заявки для сборки
      */
-    public function getWarehouseByOrder(OrderUid $order): ?ContactsRegionCallConst;
+    public function getWarehouseByOrder(OrderUid $order): ?UserProfileUid;
 }

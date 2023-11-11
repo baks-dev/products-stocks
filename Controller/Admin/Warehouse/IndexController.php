@@ -43,7 +43,7 @@ final class IndexController extends AbstractController
         AllProductStocksWarehouseInterface $allPurchase,
         int $page = 0
     ): Response {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
+        //$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
         $search = new SearchDTO();

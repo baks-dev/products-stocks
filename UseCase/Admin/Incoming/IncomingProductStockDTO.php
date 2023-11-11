@@ -49,9 +49,10 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     private ?string $comment = null;
 
 
-    public function __construct(UserProfileUid $profile)
+    //public function __construct(UserProfileUid $profile)
+    public function __construct()
     {
-        $this->profile = $profile;
+        //$this->profile = $profile;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming());
         $this->product = new ArrayCollection();
     }

@@ -47,20 +47,20 @@ final class IncomingController extends AbstractController
         ProductsByProductStocksInterface $productDetail,
     ): Response {
 
-        $incomingDTO = new IncomingProductStockDTO($this->getProfileUid());
-        $ProductStockEvent->getDto($incomingDTO);
-        $incomingDTO->setComment(null); // обнуляем комментарий
+        $IncomingProductStockDTO = new IncomingProductStockDTO(); // $this->getProfileUid()
+        $ProductStockEvent->getDto($IncomingProductStockDTO);
+        $IncomingProductStockDTO->setComment(null); // обнуляем комментарий
 
         // Форма добавления
-        $form = $this->createForm(IncomingProductStockForm::class, $incomingDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $incomingDTO->getEvent()]),
+        $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
+            'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
-            $ProductStock = $handler->handle($incomingDTO);
+            $ProductStock = $handler->handle($IncomingProductStockDTO);
 
             if ($ProductStock instanceof ProductStock)
             {

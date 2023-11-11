@@ -29,6 +29,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
@@ -43,19 +44,25 @@ final class AddReserveProductStocksTotalByPackage
 
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private CurrentProductStocksInterface $currentProductStocks;
 
     public function __construct(
+
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
-        ProductStockStatusCollection $collection,
+        ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $messageDispatchLogger,
-    ) {
+        CurrentProductStocksInterface $currentProductStocks,
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
 
-        // Инициируем статусы складских остатков
-        $collection->cases();
         $this->logger = $messageDispatchLogger;
+        $this->currentProductStocks = $currentProductStocks;
+
+        // Инициируем статусы складских остатков
+        $ProductStockStatusCollection->cases();
     }
 
     /**
@@ -63,17 +70,11 @@ final class AddReserveProductStocksTotalByPackage
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        return;
 
-
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
-        /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)
-            ->find($message->getEvent());
+        $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
 
         // Если Статус не является "Упаковка"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusPackage()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusPackage()))
         {
             return;
         }
@@ -81,16 +82,17 @@ final class AddReserveProductStocksTotalByPackage
         // Получаем всю продукцию в ордере со статусом Package (УПАКОВКА)
         $products = $this->productStocks->getProductsPackageStocks($message->getId());
 
-        if ($products)
+        if($products)
         {
+
             /** @var ProductStockProduct $product */
-            foreach ($products as $product)
+            foreach($products as $product)
             {
                 $ProductStockTotal = $this->entityManager
                     ->getRepository(ProductStockTotal::class)
                     ->findOneBy(
                         [
-                            'warehouse' => $ProductStockEvent->getWarehouse(),
+                            'profile' => $ProductStockEvent->getProfile(),
                             'product' => $product->getProduct(),
                             'offer' => $product->getOffer(),
                             'variation' => $product->getVariation(),
@@ -99,6 +101,19 @@ final class AddReserveProductStocksTotalByPackage
                     );
 
                 $ProductStockTotal->addReserve($product->getTotal());
+
+                $this->logger->info('Добавили резерв продукции на складе при создании заявки на упаковку',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]
+                );
+
             }
 
             $this->entityManager->flush();

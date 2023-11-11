@@ -43,9 +43,9 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    public function __construct(UserProfileUid $profile)
+    public function __construct()
     {
-        $this->profile = $profile;
+        //$this->profile = $profile;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusExtradition());
     }
 
@@ -71,7 +71,7 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Ответственное лицо (Профиль пользователя) */
+    /** Склад (Профиль пользователя) */
     public function getProfile(): UserProfileUid
     {
         return $this->profile;

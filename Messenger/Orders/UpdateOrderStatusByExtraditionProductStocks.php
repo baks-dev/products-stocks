@@ -59,7 +59,8 @@ final class UpdateOrderStatusByExtraditionProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $messageDispatchLogger,
-    ) {
+    )
+    {
 
         $this->entityManager = $entityManager;
         $this->currentOrderEvent = $currentOrderEvent;
@@ -72,8 +73,6 @@ final class UpdateOrderStatusByExtraditionProductStocks
     public function __invoke(ProductStockMessage $message): void
     {
 
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
         /**
          * Получаем статус заявки.
          */
@@ -82,13 +81,13 @@ final class UpdateOrderStatusByExtraditionProductStocks
             ->find($message->getEvent());
 
         // Если Статус складской заявки не является "Собран"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusExtradition()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusExtradition()))
         {
             return;
         }
 
         /* Если упаковка складской заявки на перемещение - статус заказа не обновляем */
-        if ($ProductStockEvent->getMoveOrder())
+        if($ProductStockEvent->getMoveOrder())
         {
             return;
         }
@@ -98,7 +97,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
          */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEventOrNull($ProductStockEvent->getOrder());
 
-        if ($OrderEvent)
+        if($OrderEvent)
         {
             /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
             $OrderStatusDTO = new OrderStatusDTO(new OrderStatus(new OrderStatusExtradition()), $OrderEvent->getId(), $ProductStockEvent->getProfile());
@@ -109,9 +108,16 @@ final class UpdateOrderStatusByExtraditionProductStocks
                 ->addData(['order' => (string) $ProductStockEvent->getOrder()])
                 ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
                 ->send('orders');
+
+
+            $this->logger->info('Обновили статус заказа на "Собран, готов к отправке" (Extradition)',
+                [
+                    __FILE__.':'.__LINE__,
+                    'order' => (string) $ProductStockEvent->getOrder(),
+                    'profile' => (string) $ProductStockEvent->getProfile()
+                ]);
         }
 
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
 
     }
 }

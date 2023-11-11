@@ -43,7 +43,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCKS_EXTRADITION')]
 final class ExtraditionController extends AbstractController
 {
-    /** Укомплектовать складскую заявку */
+    /**
+     * Укомплектовать складскую заявку
+     */
     #[Route('/admin/product/stock/package/extradition/{id}', name: 'admin.package.extradition', methods: ['GET', 'POST'])]
     public function extradition(
         Request $request,

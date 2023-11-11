@@ -64,13 +64,9 @@ final class AddReserveProductStocksTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
-        return;
-
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
         /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)
+        $ProductStockEvent = $this->entityManager
+            ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
         // Если Статус не является "Перемещение"
@@ -91,7 +87,7 @@ final class AddReserveProductStocksTotalByMove
                     ->getRepository(ProductStockTotal::class)
                     ->findOneBy(
                         [
-                            'warehouse' => $ProductStockEvent->getWarehouse(),
+                            'profile' => $ProductStockEvent->getProfile(),
                             'product' => $product->getProduct(),
                             'offer' => $product->getOffer(),
                             'variation' => $product->getVariation(),
@@ -102,8 +98,8 @@ final class AddReserveProductStocksTotalByMove
                 if (!$ProductStockTotal)
                 {
                     $throw = sprintf(
-                        'Невозможно зарезервировать продукцию, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                        $ProductStockEvent->getWarehouse(),
+                        'Невозможно зарезервировать продукцию, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
+                        $ProductStockEvent->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),
@@ -114,11 +110,24 @@ final class AddReserveProductStocksTotalByMove
                 }
 
                 $ProductStockTotal->addReserve($product->getTotal());
+
+                $this->logger->info('Добавили резерв продукции на складе при создании заявки на перемещение',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]
+                );
+
             }
 
             $this->entityManager->flush();
         }
 
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
+
     }
 }

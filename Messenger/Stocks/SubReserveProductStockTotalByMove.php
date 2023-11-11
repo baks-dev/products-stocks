@@ -65,11 +65,6 @@ final class SubReserveProductStockTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        return;
-
-
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
         if ($message->getLast() === null)
         {
             return;
@@ -105,7 +100,7 @@ final class SubReserveProductStockTotalByMove
                     ->getRepository(ProductStockTotal::class)
                     ->findOneBy(
                         [
-                            'warehouse' => $ProductStockEventLast->getWarehouse(), // Склад, с которого переместилась продукция
+                            'profile' => $ProductStockEventLast->getProfile(), // Склад, с которого переместилась продукция
                             'product' => $product->getProduct(),
                             'offer' => $product->getOffer(),
                             'variation' => $product->getVariation(),
@@ -116,8 +111,8 @@ final class SubReserveProductStockTotalByMove
                 if (!$ProductStockTotal)
                 {
                     $throw = sprintf(
-                        'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                        $ProductStockEvent->getWarehouse(),
+                        'Невозможно снять резерв с продукции, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
+                        $ProductStockEvent->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),
@@ -129,11 +124,22 @@ final class SubReserveProductStockTotalByMove
 
                 $ProductStockTotal->subReserve($product->getTotal());
                 $ProductStockTotal->subTotal($product->getTotal());
+
+
+                $this->logger->info('Сняли резерв и уменьшили количество на складе при перемещении продукции',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]);
+
             }
 
             $this->entityManager->flush();
         }
-
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
     }
 }

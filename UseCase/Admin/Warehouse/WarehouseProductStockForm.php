@@ -62,11 +62,11 @@ final class WarehouseProductStockForm extends AbstractType
 
                 //                /dd($data);
 
-                if($data->getDestination())
-                {
-                    //$form->add('warehouse', HiddenType::class);
-                    return;
-                }
+//                if($data->getDestination())
+//                {
+//                    //$form->add('warehouse', HiddenType::class);
+//                    return;
+//                }
 
 
                 /** Все профили пользователя */

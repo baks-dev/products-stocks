@@ -100,7 +100,7 @@ class ProductStockMove extends EntityEvent
     /**
      * Константа склада назначения (при перемещении)
      */
-    public function getDestination(): ?ContactsRegionCallConst
+    public function getDestination(): ?UserProfileUid
     {
         return $this->destination;
     }

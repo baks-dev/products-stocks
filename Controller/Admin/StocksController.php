@@ -67,11 +67,13 @@ final class StocksController extends AbstractController
         $filterForm->handleRequest($request);
         !$filterForm->isSubmitted() ?: $this->redirectToReferer();
 
-
         $query = $allProductStocks
             ->search($search)
             ->filter($filter)
-            ->fetchAllProductStocksAssociative($this->getProfileUid());
+            ->fetchAllProductStocksAssociative(
+                $this->getCurrentUsr(),
+                $this->getProfileUid()
+            );
 
         return $this->render(
             [

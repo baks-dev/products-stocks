@@ -21,25 +21,15 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductWarehouseTotal;
+namespace BaksDev\Products\Stocks\Repository\CurrentProductStocks;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 
-interface ProductWarehouseTotalInterface
+interface CurrentProductStocksInterface
 {
     /**
-     * Метод возвращает количество данной продукции на указанном складе
+     * Метод возвращает активное событие
      */
-    public function getProductProfileTotal(
-        UserProfileUid $profile,
-        ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
-    ): int;
+    public function getCurrentEvent(ProductStockUid $stock): ?ProductStockEvent;
 }

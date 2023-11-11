@@ -94,7 +94,7 @@ class ProductStockTotal
         ?ProductModificationConst $modification
     )
     {
-        $this->id = new ProductStockTotalUid();
+        $this->id = clone new ProductStockTotalUid();
 
         $this->product = $product;
         $this->offer = $offer;

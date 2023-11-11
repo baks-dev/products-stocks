@@ -29,6 +29,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
@@ -40,22 +41,24 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class AddQuantityProductStocksTotalByIncomingStock
 {
     private ProductStocksByIdInterface $productStocks;
-
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
-        ProductStockStatusCollection $collection,
+        ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $messageDispatchLogger,
-    ) {
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
 
         // Инициируем статусы складских остатков
-        $collection->cases();
+        $ProductStockStatusCollection->cases();
         $this->logger = $messageDispatchLogger;
+
     }
 
     /**
@@ -63,17 +66,13 @@ final class AddQuantityProductStocksTotalByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
-        //return;
-
-
-        $this->logger->info('MessageHandler', ['handler' => self::class]);
-
         /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
+        $ProductStockEvent = $this->entityManager
+            ->getRepository(ProductStockEvent::class)
+            ->find($message->getEvent());
 
         // Если Статус не является "Приход на склад"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()))
         {
             return;
         }
@@ -81,10 +80,12 @@ final class AddQuantityProductStocksTotalByIncomingStock
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
-        if ($products)
+        if($products)
         {
+            $this->entityManager->clear();
+
             /** @var ProductStockProduct $product */
-            foreach ($products as $product)
+            foreach($products as $product)
             {
                 $ProductStockTotal = $this->entityManager
                     ->getRepository(ProductStockTotal::class)
@@ -98,7 +99,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                         ]
                     );
 
-                if (!$ProductStockTotal)
+                if(!$ProductStockTotal)
                 {
                     $ProductStockTotal = new ProductStockTotal(
                         $ProductStockEvent->getProfile(),
@@ -112,11 +113,23 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 }
 
                 $ProductStockTotal->addTotal($product->getTotal());
+
+
+                $this->logger->info('Добавили приход продукции на склад',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]
+                );
+
             }
 
             $this->entityManager->flush();
         }
-
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
     }
 }

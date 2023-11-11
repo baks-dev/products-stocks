@@ -36,7 +36,10 @@ use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
+use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocks implements AllProductStocksInterface
 {
@@ -68,48 +71,23 @@ final class AllProductStocks implements AllProductStocksInterface
     }
 
     /** Метод возвращает полное состояние складских остатков продукции */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
+    public function fetchAllProductStocksAssociative(
+        UserUid $user,
+        UserProfileUid $profile,
+    ): PaginatorInterface
     {
         /* */
         $qb = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
-            ->bindLocal()
-        ;
+            ->bindLocal();
 
-        $qb->select('stock_product.total AS stock_total');
-        $qb->addSelect('stock_product.reserve AS stock_reserve');
-        $qb->from(ProductStockTotal::TABLE, 'stock_product');
-
-//        // Warehouse
-//        $exist = $this->DBALQueryBuilder->builder();
-//        $exist->select('1');
-//        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-//        $exist->where('tmp.event = warehouse.event');
-//
-//        $qb->addSelect('warehouse.id as warehouse_id'); //->addGroupBy('warehouse.id');
-//        $qb->addSelect('warehouse.event as warehouse_event'); //->addGroupBy('warehouse.event');
-//        $qb->join(
-//            'stock_product',
-//            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-//            'warehouse',
-//            'warehouse.const = stock_product.warehouse AND EXISTS('.$exist->getSQL().')'.($profile ? ' AND warehouse.profile = :profile' : '')
-//        );
-
-
-//        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-
-
-//        // Product Warehouse Trans
-//        $qb->addSelect('warehouse_trans.name AS warehouse_name'); //->addGroupBy('warehouse_trans.name');
-//
-//        $qb->join(
-//            'warehouse',
-//            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-//            'warehouse_trans',
-//            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-//        );
-
+        $qb
+            ->select('stock_product.total AS stock_total')
+            ->addSelect('stock_product.reserve AS stock_reserve')
+            ->from(ProductStockTotal::TABLE, 'stock_product')
+            ->andWhere('(stock_product.usr = :usr OR stock_product.profile = :profile)')
+            ->setParameter('usr', $user, UserUid::TYPE)
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
         // Product
         $qb->addSelect('product.id as product_id'); //->addGroupBy('product.id');
@@ -373,12 +351,51 @@ final class AllProductStocks implements AllProductStocksInterface
             'category_trans.event = category.event AND category_trans.local = :local'
         );
 
-//        if($filter->getWarehouse())
-//        {
-//            $qb->andWhere('warehouse.const = :warehouse_filter');
-//            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
-//        }
+        //        if($filter->getWarehouse())
+        //        {
+        //            $qb->andWhere('warehouse.const = :warehouse_filter');
+        //            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
+        //        }
 
+
+
+        // ОТВЕТСТВЕННЫЙ
+
+        // UserProfile
+        //$qb->addSelect('users_profile.event as users_profile_event');
+        $qb->join(
+            'stock_product',
+            UserProfile::TABLE,
+            'users_profile',
+            'users_profile.id = stock_product.profile'
+        );
+
+        // Info
+//        $qb->join(
+//            'event',
+//            UserProfileEntity\Info\UserProfileInfo::TABLE,
+//            'users_profile_info',
+//            'users_profile_info.profile = event.profile'
+//        );
+
+//        // Event
+//        $qb->join(
+//            'users_profile',
+//            UserProfileEvent::TABLE,
+//            'users_profile_event',
+//            'users_profile_event.id = users_profile.event'
+//        );
+
+        // Personal
+        $qb->addSelect('users_profile_personal.username AS users_profile_username');
+        $qb->addSelect('users_profile_personal.location AS users_profile_location');
+
+        $qb->join(
+            'users_profile',
+            UserProfilePersonal::TABLE,
+            'users_profile_personal',
+            'users_profile_personal.event = users_profile.event'
+        );
 
         // Поиск
         if($this->search->getQuery())
@@ -391,6 +408,8 @@ final class AllProductStocks implements AllProductStocksInterface
                 ->addSearchLike('category_trans.name');
 
         }
+
+        $qb->addOrderBy('stock_product.profile');
 
         return $this->paginator->fetchAllAssociative($qb);
 
