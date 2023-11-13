@@ -26,9 +26,6 @@ ROLE_PRODUCT_STOCK_MOVING_NEW:
 
 
 
-
-
-
 ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Закупки'
   desc: 'Закупки товаров'
@@ -38,8 +35,6 @@ ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Добавить закупку'
   desc: 'Добавить закупку товара на склад'
 
-
-
 ROLE_PRODUCT_STOCK_WAREHOUSE:
   name: 'Поступления на склад'
   desc: 'Список поступлений на склад'
@@ -47,11 +42,7 @@ ROLE_PRODUCT_STOCK_WAREHOUSE:
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Отправить на склад'
 
-
 ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Упаковка заказов'
   desc: 'Упаковка заказов на погрузку'
 
-
-ROLE_PRODUCT_STOCKS_EXTRADITION:
-  name: 'Комплектация заказов'

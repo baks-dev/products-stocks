@@ -23,9 +23,6 @@ ROLE_PRODUCT_STOCK_MOVING_NEW:
 
 
 
-
-
-
 ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Purchases'
   desc: 'Procurement of goods'
@@ -35,16 +32,12 @@ ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Add purchase'
   desc: 'Add purchase item to warehouse'
 
-
-
 ROLE_PRODUCT_STOCK_WAREHOUSE:
   name: 'Inventory Receipts'
   desc: 'Inventory List'
 
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Send to warehouse'
-
-
 
 ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Packing Orders'
