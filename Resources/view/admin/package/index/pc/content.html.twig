@@ -235,7 +235,20 @@
 
                             <div class="text-nowrap">
                                 <span class="text-muted opacity-50">Склад: </span>
-                                &nbsp; <strong>{{ item.warehouse_name }}</strong>
+                                &nbsp; <strong>{{ item.users_profile_username }}</strong>
+
+
+                                {% if item.users_profile_move %}
+                                    <br>
+                                    <span class="text-muted opacity-50">Склад перемещения: </span>
+                                    &nbsp; <strong>{{ item.users_profile_move }}</strong>
+                                {% endif %}
+
+                                {% if item.users_profile_destination %}
+                                    <br>
+                                    <span class="text-muted opacity-50">Пункт назначения: </span>
+                                    &nbsp; <strong>{{ item.users_profile_destination }}</strong>
+                                {% endif %}
 
                                 {% if item.date_package %}
                                     <br>
@@ -280,10 +293,10 @@
                                 </div>#}
 
                                 <div class="ms-0">
-                                    <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
+                                    {#<a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
                                        class="fw-bolder mb- text-decoration-none text-dark">
                                         {{ item.users_profile_username }}
-                                    </a>
+                                    </a>#}
 
                                    {# <div class="text-muted fs-7 fw-bolder">
 

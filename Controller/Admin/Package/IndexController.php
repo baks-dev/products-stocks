@@ -43,7 +43,7 @@ final class IndexController extends AbstractController
         AllProductStocksPackageInterface $allPackage,
         int $page = 0
     ): Response {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
+        //$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
         $search = new SearchDTO();
@@ -56,7 +56,9 @@ final class IndexController extends AbstractController
         $filterForm->handleRequest($request);*/
 
         // Получаем список заявок на упаковку
-        $query = $allPackage->fetchAllProductStocksAssociative($search, $this->getProfileUid());
+        $query = $allPackage
+            ->search($search)
+            ->fetchAllProductStocksAssociative($this->getProfileUid());
 
         //$allPackage->fetchAllPackageAssociative($search, $filter, $ROLE_ADMIN ? null : $this->getProfileUid());
 

@@ -48,10 +48,10 @@ ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Отправить на склад'
 
 
-
 ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Упаковка заказов'
   desc: 'Упаковка заказов на погрузку'
 
 
-
+ROLE_PRODUCT_STOCKS_EXTRADITION:
+  name: 'Комплектация заказов'

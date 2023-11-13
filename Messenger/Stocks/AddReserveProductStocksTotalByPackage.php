@@ -100,20 +100,23 @@ final class AddReserveProductStocksTotalByPackage
                         ]
                     );
 
-                $ProductStockTotal->addReserve($product->getTotal());
 
-                $this->logger->info('Добавили резерв продукции на складе при создании заявки на упаковку',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'profile' => $ProductStockEvent->getProfile(),
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
-                        'total' => $product->getTotal(),
-                    ]
-                );
+                if($ProductStockTotal)
+                {
+                    $ProductStockTotal->addReserve($product->getTotal());
 
+                    $this->logger->info('Добавили резерв продукции на складе при создании заявки на упаковку',
+                        [
+                            __FILE__.':'.__LINE__,
+                            'profile' => $ProductStockEvent->getProfile(),
+                            'product' => $product->getProduct(),
+                            'offer' => $product->getOffer(),
+                            'variation' => $product->getVariation(),
+                            'modification' => $product->getModification(),
+                            'total' => $product->getTotal(),
+                        ]
+                    );
+                }
             }
 
             $this->entityManager->flush();

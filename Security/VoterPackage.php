@@ -34,7 +34,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.security.voter')]
 final class VoterPackage implements VoterInterface, MenuAdminInterface
 {
-    /** Список перемещений между складами */
     public const VOTER = 'PACKAGE';
 
     public static function getVoter(): string

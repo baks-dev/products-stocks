@@ -46,10 +46,10 @@ final class ProductStockDTO implements ProductStockEventInterface
     #[Assert\Length(max: 36)]
     private string $number;
 
-    /** Константа Целевого склада */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private ?ContactsRegionCallConst $warehouse = null;
+//    /** Константа Целевого склада */
+//    #[Assert\NotBlank]
+//    #[Assert\Uuid]
+//    private ?ContactsRegionCallConst $warehouse = null;
 
     /** Склад назначения при перемещении */
     #[Assert\Valid]

@@ -40,7 +40,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCKS_EXTRADITION')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_PACKAGE')]
 final class ExtraditionController extends AbstractController
 {
     /**
@@ -52,8 +52,9 @@ final class ExtraditionController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         ExtraditionProductStockHandler $ExtraditionProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
-    ): Response {
-        $ExtraditionProductStockDTO = new ExtraditionProductStockDTO($this->getProfileUid());
+    ): Response
+    {
+        $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
         $ProductStockEvent->getDto($ExtraditionProductStockDTO);
 
         // Форма заявки
@@ -63,11 +64,11 @@ final class ExtraditionController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('extradition'))
+        if($form->isSubmitted() && $form->isValid() && $form->has('extradition'))
         {
             $ProductStocks = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
-            if ($ProductStocks instanceof ProductStock)
+            if($ProductStocks instanceof ProductStock)
             {
                 $this->addFlash('success', 'admin.success.extradition', 'admin.product.stock');
 

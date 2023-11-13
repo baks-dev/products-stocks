@@ -38,6 +38,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_move')]
+#[ORM\Index(columns: ['ord'])]
+#[ORM\Index(columns: ['destination'])]
 class ProductStockMove extends EntityEvent
 {
     public const TABLE = 'product_stock_move';

@@ -41,7 +41,10 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 final class AllProductStocksMove implements AllProductStocksMoveInterface
 {
     private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?SearchDTO $search = null;
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
@@ -52,16 +55,18 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
+    public function search(SearchDTO $search): self
+    {
+        $this->search = $search;
+        return $this;
+    }
+
     /** Метод возвращает все заявки, требующие перемещения между складами */
-    public function fetchAllProductStocksAssociative(
-        SearchDTO $search,
-        UserProfileUid $profile
-    ): PaginatorInterface
+    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
-            ->bindLocal()
-        ;
+            ->bindLocal();
 
         // Stock
 
@@ -81,8 +86,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             ProductStockEntity\Event\ProductStockEvent::TABLE,
             'event',
             'event.id = stock.event AND event.status = :status AND event.profile = :profile')
-
-        ->setParameter('profile', $profile, UserProfileUid::TYPE);
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
 
         $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
@@ -106,69 +110,72 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'stock_product.event = stock.event'
         );
 
-//        // Целевой склад
-//
-//        // Warehouse
+        //        // Целевой склад
+        //
+        //        // Warehouse
+        //        $exist = $this->DBALQueryBuilder->builder();
+        //        $exist->select('1');
+        //        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
+        //        $exist->where('tmp.event = warehouse.event');
+        //
+        //        // Product Warehouse
+        //        $qb->addSelect('warehouse.id as warehouse_id');
+        //        $qb->addSelect('warehouse.event as warehouse_event');
+        //
+        //        $qb->join(
+        //            'event',
+        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
+        //            'warehouse',
+        //            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
+        //        );
+        //
+        //        // Product Warehouse Trans
+        //        $qb->addSelect('warehouse_trans.name AS warehouse_name');
+        //        // $qb->addSelect('warehouse_trans.description AS warehouse_description');
+        //
+        //        $qb->join(
+        //            'warehouse',
+        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
+        //            'warehouse_trans',
+        //            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
+        //        );
+
+
+
+
+
+
+
+
+
+
 //        $exist = $this->DBALQueryBuilder->builder();
 //        $exist->select('1');
 //        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-//        $exist->where('tmp.event = warehouse.event');
+//        $exist->where('tmp.event = destination.event');
 //
 //        // Product Warehouse
-//        $qb->addSelect('warehouse.id as warehouse_id');
-//        $qb->addSelect('warehouse.event as warehouse_event');
+//        $qb->addSelect('destination.id as destination_id');
+//        $qb->addSelect('destination.event as destination_event');
 //
 //        $qb->join(
 //            'event',
 //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-//            'warehouse',
-//            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
+//            'destination',
+//            'destination.const = move.destination AND EXISTS('.$exist->getSQL().')'
 //        );
 //
 //        // Product Warehouse Trans
-//        $qb->addSelect('warehouse_trans.name AS warehouse_name');
-//        // $qb->addSelect('warehouse_trans.description AS warehouse_description');
-//
+//        $qb->addSelect('destination_trans.name AS destination_name');
 //        $qb->join(
-//            'warehouse',
+//            'destination',
 //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-//            'warehouse_trans',
-//            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
+//            'destination_trans',
+//            'destination_trans.call = destination.id AND destination_trans.local = :local'
 //        );
 
-        // Перемещение
 
-        $qb->join(
-            'stock',
-            ProductStockEntity\Move\ProductStockMove::TABLE,
-            'move',
-            'move.event = stock.event'
-        );
 
-        $exist = $this->DBALQueryBuilder->builder();
-        $exist->select('1');
-        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-        $exist->where('tmp.event = destination.event');
-
-        // Product Warehouse
-        $qb->addSelect('destination.id as destination_id');
-        $qb->addSelect('destination.event as destination_event');
-
-        $qb->join(
-            'event',
-            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-            'destination',
-            'destination.const = move.destination AND EXISTS('.$exist->getSQL().')'
-        );
-
-        // Product Warehouse Trans
-        $qb->addSelect('destination_trans.name AS destination_name');
-        $qb->join(
-            'destination',
-            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-            'destination_trans',
-            'destination_trans.call = destination.id AND destination_trans.local = :local'
-        );
 
 
         // Product
@@ -405,7 +412,14 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         );
 
 
-        // ОТВЕТСТВЕННЫЙ
+        // Пункт назначения перемещения
+
+        $qb->join(
+            'stock',
+            ProductStockEntity\Move\ProductStockMove::TABLE,
+            'move',
+            'move.event = stock.event AND move.ord IS NULL'
+        );
 
         // UserProfile
         $qb->addSelect('users_profile.event as users_profile_event');
@@ -442,30 +456,29 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'users_profile_personal.event = users_profile_event.id'
         );
 
-        // Avatar
+//        // Avatar
+//
+//        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
+//        $qb->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
+//        $qb->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
+//
+//        $qb->leftJoin(
+//            'users_profile_event',
+//            UserProfileEntity\Avatar\UserProfileAvatar::TABLE,
+//            'users_profile_avatar',
+//            'users_profile_avatar.event = users_profile_event.id'
+//        );
 
-        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
-        $qb->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
-        $qb->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
 
-        $qb->leftJoin(
-            'users_profile_event',
-            UserProfileEntity\Avatar\UserProfileAvatar::TABLE,
-            'users_profile_avatar',
-            'users_profile_avatar.event = users_profile_event.id'
-        );
-
-
-        $qb->addSelect('NULL AS group_name'); // Название группы
+        //$qb->addSelect('NULL AS group_name'); // Название группы
 
 
         // Поиск
-        if($search->getQuery())
+        if($this->search?->getQuery())
         {
             $qb
-                ->createSearchQueryBuilder($search)
-                ->addSearchLike('event.number')
-            ;
+                ->createSearchQueryBuilder($this->search)
+                ->addSearchLike('event.number');
         }
 
         $qb->orderBy('modify.mod_date', 'DESC');

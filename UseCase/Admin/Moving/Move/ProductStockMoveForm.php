@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving\Move;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -42,10 +43,10 @@ final class ProductStockMoveForm extends AbstractType
         $builder->get('destination')->addModelTransformer(
             new CallbackTransformer(
                 function ($destination) {
-                    return $destination instanceof ContactsRegionCallConst ? $destination->getValue() : $destination;
+                    return $destination instanceof UserProfileUid ? $destination->getValue() : $destination;
                 },
                 function ($destination) {
-                    return $destination ? new ContactsRegionCallConst($destination) : null;
+                    return $destination ? new UserProfileUid($destination) : null;
                 }
             ),
         );

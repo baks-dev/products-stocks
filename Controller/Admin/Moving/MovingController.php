@@ -40,8 +40,10 @@ final class MovingController extends AbstractController
         Request $request,
         MovingProductStockHandler $handler,
         // #[MapEntity] ProductStockEvent $Event,
-    ): Response {
-        $movingDTO = new MovingProductStockDTO();
+    ): Response
+    {
+        $movingDTO = new MovingProductStockDTO($this->getUsr());
+
         //$incomingDTO->setProfile($this->getProfileUid());
 
         // Форма заявки
@@ -51,25 +53,25 @@ final class MovingController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('moving'))
+        if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
             /** @var ProductStockDTO $move */
             $success = true;
-            foreach ($movingDTO->getMove() as $move)
+            foreach($movingDTO->getMove() as $move)
             {
                 $move->setProfile($this->getProfileUid());
                 $move->setComment($movingDTO->getComment());
 
                 $ProductStock = $handler->handle($move);
 
-                if (!$ProductStock instanceof ProductStock)
+                if(!$ProductStock instanceof ProductStock)
                 {
                     $success = false;
                     $this->addFlash('danger', 'admin.danger.move', 'admin.product.stock', $ProductStock);
                 }
             }
 
-            if ($success)
+            if($success)
             {
                 $this->addFlash('success', 'admin.success.move', 'admin.product.stock');
                 return $this->redirectToRoute('products-stocks:admin.moving.index');

@@ -26,6 +26,9 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockDTO;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -36,51 +39,90 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class PackageProductStockForm extends AbstractType
 {
-    private WarehouseChoiceInterface $warehouseChoice;
+//    private WarehouseChoiceInterface $warehouseChoice;
+//
+//    public function __construct(
+//        WarehouseChoiceInterface $warehouseChoice,
+//    ) {
+//        $this->warehouseChoice = $warehouseChoice;
+//    }
 
-    public function __construct(
-        WarehouseChoiceInterface $warehouseChoice,
-    ) {
-        $this->warehouseChoice = $warehouseChoice;
+    private UserProfileChoiceInterface $userProfileChoice;
+
+    public function __construct(UserProfileChoiceInterface $userProfileChoice) {
+        $this->userProfileChoice = $userProfileChoice;
     }
 
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $warehouses = $this->warehouseChoice->fetchAllWarehouse();
+//        $warehouses = $this->warehouseChoice->fetchAllWarehouse();
+//
+//        /** @var ContactsRegionCallUid $currentWarehouse */
+//        $currentWarehouse = (count($warehouses) === 1) ? current($warehouses) : null;
+//
+//        if ($currentWarehouse)
+//        {
+//            $builder->addEventListener(
+//                FormEvents::PRE_SET_DATA,
+//                function (FormEvent $event) use ($currentWarehouse): void {
+//
+//                    /** @var PackageProductStockDTO $data */
+//                    $data = $event->getData();
+//                    $data->setWarehouse($currentWarehouse);
+//                },
+//            );
+//        }
+//
+//        /* Склад назначения */
+//        $builder->add(
+//            'warehouse',
+//            ChoiceType::class,
+//            [
+//                'choices' => $warehouses,
+//                'choice_value' => function (?ContactsRegionCallConst $warehouse) {
+//                    return $warehouse?->getValue();
+//                },
+//                'choice_label' => function (ContactsRegionCallConst $warehouse) {
+//                    return $warehouse->getAttr();
+//                },
+//
+//                'label' => false,
+//                'required' => false,
+//            ]
+//        );
 
-        /** @var ContactsRegionCallUid $currentWarehouse */
-        $currentWarehouse = (count($warehouses) === 1) ? current($warehouses) : null;
 
-        if ($currentWarehouse)
-        {
-            $builder->addEventListener(
-                FormEvents::PRE_SET_DATA,
-                function (FormEvent $event) use ($currentWarehouse): void {
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event): void {
+                /** @var WarehouseProductStockDTO $data */
+                $data = $event->getData();
+                $form = $event->getForm();
 
-                    /** @var PackageProductStockDTO $data */
-                    $data = $event->getData();
-                    $data->setWarehouse($currentWarehouse);
-                },
-            );
-        }
+                /** Все профили пользователя */
+                $profiles = $this->userProfileChoice->getActiveUserProfile($data->getUsr());
 
-        /* Склад назначения */
-        $builder->add(
-            'warehouse',
-            ChoiceType::class,
-            [
-                'choices' => $warehouses,
-                'choice_value' => function (?ContactsRegionCallConst $warehouse) {
-                    return $warehouse?->getValue();
-                },
-                'choice_label' => function (ContactsRegionCallConst $warehouse) {
-                    return $warehouse->getAttr();
-                },
+                if(count($profiles) === 1)
+                {
+                    $data->setProfile(current($profiles));
+                }
 
-                'label' => false,
-                'required' => false,
-            ]
+                // Склад
+                $form
+                    ->add('profile', ChoiceType::class, [
+                        'choices' => $profiles,
+                        'choice_value' => function(?UserProfileUid $profile) {
+                            return $profile?->getValue();
+                        },
+                        'choice_label' => function(UserProfileUid $profile) {
+                            return $profile->getAttr();
+                        },
+
+                        'label' => false,
+                        'required' => true,
+                    ]);
+            }
         );
 
 

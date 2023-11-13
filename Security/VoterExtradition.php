@@ -20,21 +20,29 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage;
+namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-interface AllProductStocksPackageInterface
+#[AutoconfigureTag('baks.security.voter')]
+final class VoterExtradition implements VoterInterface
 {
+    /** Комплектация */
+    public const VOTER = 'EXTRADITION';
 
-    public function search(SearchDTO $search): self;
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
+    }
 
-    public function filter(ProductsStocksFilterInterface $filter): self;
-
-    /** Метод возвращает все заявки, требующие перемещения между складами */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;
+    public function equals(RoleInterface $role): bool
+    {
+        return $role->getRole() === Role::ROLE;
+    }
 }

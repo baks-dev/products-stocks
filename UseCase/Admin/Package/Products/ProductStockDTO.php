@@ -30,7 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @see ProductStockProduct
  * @see OrderProduct
  */
-final class ProductStockDTO implements ProductStockProductInterface, OrderProductInterface
+final class ProductStockDTO implements ProductStockProductInterface , OrderProductInterface
 {
     /** Продукт */
     #[Assert\NotBlank]
@@ -49,9 +49,9 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
     #[Assert\Uuid]
     private ?ProductModificationConst $modification = null;
 
-    /** Стоимость и количество в заказе */
-    #[Assert\Valid]
-    private Price\PackageOrderPriceDTO $price;
+//    /** Стоимость и количество в заказе */
+//    #[Assert\Valid]
+//    private Price\PackageOrderPriceDTO $price;
 
     /** Количество в заявке */
     private int $total = 0;
@@ -101,22 +101,22 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         $this->modification = $modification;
     }
 
-    /** Стоимость и количество */
-    public function getPrice() : Price\PackageOrderPriceDTO
-    {
-        return $this->price;
-    }
-
-    public function setPrice(Price\PackageOrderPriceDTO $price) : void
-    {
-        $this->price = $price;
-    }
+//    /** Стоимость и количество */
+//    public function getPrice() : Price\PackageOrderPriceDTO
+//    {
+//        return $this->price;
+//    }
+//
+//    public function setPrice(Price\PackageOrderPriceDTO $price) : void
+//    {
+//        $this->price = $price;
+//    }
 
     /** Количество в заявке */
     public function getTotal(): int
     {
         /* Присваиваем значение из заказа */
-        $this->total = $this->getPrice()->getTotal();
+        //$this->total = $this->getPrice()->getTotal();
         return $this->total;
     }
 

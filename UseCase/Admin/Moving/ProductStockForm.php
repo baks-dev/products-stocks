@@ -35,19 +35,19 @@ final class ProductStockForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        /* Константа Целевого склада */
-        $builder->add('warehouse', HiddenType::class);
-
-        $builder->get('warehouse')->addModelTransformer(
-            new CallbackTransformer(
-                function ($warehouse) {
-                    return $warehouse instanceof ContactsRegionCallConst ? $warehouse->getValue() : $warehouse;
-                },
-                function ($warehouse) {
-                    return $warehouse ? new ContactsRegionCallConst($warehouse) : null;
-                }
-            ),
-        );
+//        /* Константа Целевого склада */
+//        $builder->add('warehouse', HiddenType::class);
+//
+//        $builder->get('warehouse')->addModelTransformer(
+//            new CallbackTransformer(
+//                function ($warehouse) {
+//                    return $warehouse instanceof ContactsRegionCallConst ? $warehouse->getValue() : $warehouse;
+//                },
+//                function ($warehouse) {
+//                    return $warehouse ? new ContactsRegionCallConst($warehouse) : null;
+//                }
+//            ),
+//        );
 
 
         /** Склад назначения при перемещении */

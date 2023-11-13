@@ -21,10 +21,13 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Type\UidType\Uid;
 use BaksDev\Orders\Order\Entity\Event\OrderEventInterface;
+use BaksDev\Orders\Order\Type\Event\OrderEventUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -69,8 +72,13 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     /** Комментарий */
     private ?string $comment = null;
 
-    public function __construct()
+    /** Вспомогательные свойства */
+    private readonly UserUid $usr;
+
+
+    public function __construct(User|UserUid $usr)
     {
+        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage());
         $this->product = new ArrayCollection();
         $this->number = time() . random_int(100, 999);
@@ -82,9 +90,12 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return null;
     }
 
-    public function setId(ProductStockEventUid $id): void
+    public function setId(ProductStockEventUid|OrderEventUid $id): void
     {
-        $this->id = $id;
+        if($id instanceof ProductStockEventUid)
+        {
+            $this->id = $id;
+        }
     }
 
     public function resetId(): void
@@ -178,7 +189,13 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     }
 
 
-
+    /**
+     * Usr
+     */
+    public function getUsr(): UserUid
+    {
+        return $this->usr;
+    }
 
 
 //    /** Константа склада назначения при перемещении */

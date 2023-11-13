@@ -87,6 +87,7 @@ class ProductStockTotal
     private int $reserve = 0;
 
     public function __construct(
+        UserUid $usr,
         UserProfileUid $profile,
         ProductUid $product,
         ?ProductOfferConst $offer,
@@ -101,6 +102,7 @@ class ProductStockTotal
         $this->variation = $variation;
         $this->modification = $modification;
         $this->profile = $profile;
+        $this->usr = $usr;
     }
 
     /** Количество */

@@ -27,17 +27,18 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Users\User\Type\Id\UserUid;
 
 interface ProductWarehouseChoiceInterface
 {
 
-    /** Возвращает список складов на которых имеется данный вид продукта */
+    /** Возвращает список складов (профилей пользователя) на которых имеется данный вид продукта */
     public function fetchWarehouseByProduct(
-        ProductUid                $product,
-        ?ProductOfferConst        $offer,
-        ?ProductVariationConst    $variation,
+        UserUid $usr,
+        ProductUid $product,
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
         ?ProductModificationConst $modification,
-    )
-    : ?array;
+    ): ?array;
 
 }

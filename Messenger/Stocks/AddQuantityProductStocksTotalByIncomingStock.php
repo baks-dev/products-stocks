@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocks
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -43,6 +44,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private ProductStocksByIdInterface $productStocks;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private UserByUserProfileInterface $userByUserProfile;
 
 
     public function __construct(
@@ -50,10 +52,12 @@ final class AddQuantityProductStocksTotalByIncomingStock
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $messageDispatchLogger,
+        UserByUserProfileInterface $userByUserProfile,
     )
     {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
+        $this->userByUserProfile = $userByUserProfile;
 
         // Инициируем статусы складских остатков
         $ProductStockStatusCollection->cases();
@@ -87,6 +91,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
+                /** Получаем владельца профиля пользователя */
+
                 $ProductStockTotal = $this->entityManager
                     ->getRepository(ProductStockTotal::class)
                     ->findOneBy(
@@ -101,7 +107,23 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
                 if(!$ProductStockTotal)
                 {
+                    $User = $this->userByUserProfile->findUserByProfile($ProductStockEvent->getProfile());
+
+                    if(!$User)
+                    {
+                        $this->logger->error('Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
+                            [
+                                __FILE__.':'.__LINE__,
+                                'profile' => $ProductStockEvent->getProfile(),
+                            ]
+                        );
+
+                        return;
+                    }
+
+
                     $ProductStockTotal = new ProductStockTotal(
+                        $User->getId(),
                         $ProductStockEvent->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),

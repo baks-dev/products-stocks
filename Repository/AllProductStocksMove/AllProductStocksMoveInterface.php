@@ -30,9 +30,8 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksMoveInterface
 {
+    public function search(SearchDTO $search): self;
+
     /** Метод возвращает все заявки, требующие перемещения между складами */
-    public function fetchAllProductStocksAssociative(
-        SearchDTO $search,
-        UserProfileUid $profile
-    ): PaginatorInterface;
+    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;
 }

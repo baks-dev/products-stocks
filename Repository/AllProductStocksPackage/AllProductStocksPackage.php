@@ -52,6 +52,10 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
     private PaginatorInterface $paginator;
     private DBALQueryBuilder $DBALQueryBuilder;
 
+    private ?SearchDTO $search = null;
+
+    private ?ProductsStocksFilterInterface $filter = null;
+
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
@@ -61,16 +65,23 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
+    public function search(SearchDTO $search): self
+    {
+        $this->search = $search;
+        return $this;
+    }
+
+    public function filter(ProductsStocksFilterInterface $filter): self
+    {
+        $this->filter = $filter;
+        return $this;
+    }
+
     /** Метод возвращает все заявки на упаковку заказов */
-    public function fetchAllPackageAssociative(
-        SearchDTO $search,
-        ProductsStocksFilterInterface $filter,
-        ?UserProfileUid $profile
-    ): PaginatorInterface
+    public function fetchAllPackageAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->DBALQueryBuilder
-            ->createQueryBuilder(self::class)
-        ;
+            ->createQueryBuilder(self::class);
 
         // ProductStock
         $qb->select('stock.id');
@@ -114,15 +125,11 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
     /**
      * Метод возвращает все заявки на упаковку заказов.
      */
-    public function fetchAllProductStocksAssociative(
-        SearchDTO $search,
-        UserProfileUid $profile
-    ): PaginatorInterface
+    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
-            ->bindLocal()
-        ;
+            ->bindLocal();
 
         // Stock
 
@@ -241,30 +248,25 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         // Целевой склад (Склад погрузки)
 
-//        // Product Warehouse
-//        $qb->addSelect('warehouse.id as warehouse_id');
-//        $qb->addSelect('warehouse.event as warehouse_event');
-//
-//        $qb->join(
-//            'event',
-//            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-//            'warehouse',
-//            'warehouse.const = event.warehouse AND EXISTS(SELECT 1 FROM '.ContactsRegionEntity\ContactsRegion::TABLE.' WHERE event = warehouse.event)'
-//        );
-//
-//        $qb->addSelect('warehouse_trans.name AS warehouse_name');
-//
-//        $qb->join(
-//            'warehouse',
-//            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-//            'warehouse_trans',
-//            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-//        );
-
-
-
-
-
+        //        // Product Warehouse
+        //        $qb->addSelect('warehouse.id as warehouse_id');
+        //        $qb->addSelect('warehouse.event as warehouse_event');
+        //
+        //        $qb->join(
+        //            'event',
+        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
+        //            'warehouse',
+        //            'warehouse.const = event.warehouse AND EXISTS(SELECT 1 FROM '.ContactsRegionEntity\ContactsRegion::TABLE.' WHERE event = warehouse.event)'
+        //        );
+        //
+        //        $qb->addSelect('warehouse_trans.name AS warehouse_name');
+        //
+        //        $qb->join(
+        //            'warehouse',
+        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
+        //            'warehouse_trans',
+        //            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
+        //        );
 
 
         /* Способ доставки */
@@ -521,7 +523,6 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         );
 
         // Расширение файла
-        // Расширение файла
         $qb->addSelect(
             "
 			CASE
@@ -613,11 +614,11 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             'users_profile_personal.event = users_profile_event.id'
         );
 
-        // Avatar
-
-        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
-        $qb->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
-        $qb->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
+        //        // Avatar
+        //
+        //        $qb->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
+        //        $qb->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
+        //        $qb->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
 
         $qb->leftJoin(
             'users_profile_event',
@@ -629,9 +630,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // Группа
 
 
-
-        $qb->addSelect('NULL AS group_name'); // Название группы
-
+        //$qb->addSelect('NULL AS group_name'); // Название группы
 
         /** Проверка перемещения по заказу */
         $qbExist = $this->DBALQueryBuilder->builder();
@@ -649,6 +648,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             )'
         );
 
+
         $qbExist->join(
             'exist_move_event',
             ProductStock::TABLE,
@@ -659,6 +659,69 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $qb->addSelect(sprintf('EXISTS(%s) AS products_move', $qbExist->getSQL()));
         $qb->setParameter('incoming', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
 
+
+
+
+
+
+        /** Пункт назначения при перемещении */
+
+
+        $qb->leftJoin(
+            'event',
+            ProductStockMove::TABLE,
+            'move_stock',
+            'move_stock.event = event.id'
+        );
+
+
+        // UserProfile
+        $qb->leftJoin(
+            'move_stock',
+            UserProfileEntity\UserProfile::TABLE,
+            'users_profile_move',
+            'users_profile_move.id = move_stock.destination'
+        );
+
+        $qb
+            ->addSelect('users_profile_personal_move.username AS users_profile_destination')
+            ->leftJoin(
+                'users_profile_move',
+                UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+                'users_profile_personal_move',
+                'users_profile_personal_move.event = users_profile_move.event'
+            );
+
+
+        /** Пункт назначения при перемещении */
+
+
+        $qb->leftJoin(
+            'ord',
+            ProductStockMove::TABLE,
+            'destination_stock',
+            'destination_stock.ord = ord.ord'
+        );
+
+
+        // UserProfile
+        $qb->leftJoin(
+            'destination_stock',
+            UserProfileEntity\UserProfile::TABLE,
+            'users_profile_destination',
+            'users_profile_destination.id = destination_stock.destination'
+        );
+
+        $qb
+            ->addSelect('users_profile_personal_destination.username AS users_profile_move')
+            ->leftJoin(
+                'users_profile_destination',
+                UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+                'users_profile_personal_destination',
+                'users_profile_personal_destination.event = users_profile_destination.event'
+            );
+
+
         /*if($filter->getWarehouse())
         {
             $qb->andWhere('warehouse.const = :warehouse_filter');
@@ -666,10 +729,10 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         }*/
 
         // Поиск
-        if($search->getQuery())
+        if($this->search?->getQuery())
         {
             $qb
-                ->createSearchQueryBuilder($search)
+                ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number');
         }
 

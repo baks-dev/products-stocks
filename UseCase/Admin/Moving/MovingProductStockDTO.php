@@ -23,6 +23,9 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -30,10 +33,10 @@ final class MovingProductStockDTO
 {
 
     /** Целевой склад */
-    private ?ContactsRegionCallConst $targetWarehouse = null;
+    private ?UserProfileUid $targetWarehouse = null;
 
     /** Склад назначения */
-    private ?ContactsRegionCallConst $destinationWarehouse = null;
+    private ?UserProfileUid $destinationWarehouse = null;
 
 
     /** Продукт */
@@ -58,8 +61,11 @@ final class MovingProductStockDTO
     /** Комментарий */
     private ?string $comment = null;
 
-    public function __construct()
+    private UserUid $usr;
+
+    public function __construct(User|UserUid $usr)
     {
+        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->move = new ArrayCollection();
     }
 
@@ -67,23 +73,23 @@ final class MovingProductStockDTO
 
     // WAREHOUSE
 
-    public function getTargetWarehouse(): ?ContactsRegionCallConst
+    public function getTargetWarehouse(): ?UserProfileUid
     {
         return $this->targetWarehouse;
     }
 
-    public function setTargetWarehouse(?ContactsRegionCallConst $warehouse): void
+    public function setTargetWarehouse(?UserProfileUid $warehouse): void
     {
         $this->targetWarehouse = $warehouse;
     }
 
 
-    public function getDestinationWarehouse(): ?ContactsRegionCallConst
+    public function getDestinationWarehouse(): ?UserProfileUid
     {
         return $this->destinationWarehouse;
     }
 
-    public function setDestinationWarehouse(?ContactsRegionCallConst $warehouse): void
+    public function setDestinationWarehouse(?UserProfileUid $warehouse): void
     {
         $this->destinationWarehouse = $warehouse;
     }
@@ -180,5 +186,13 @@ final class MovingProductStockDTO
     public function removeMove(ProductStockDTO $move): void
     {
         $this->move->removeElement($move);
+    }
+
+    /**
+     * Usr
+     */
+    public function getUsr(): UserUid
+    {
+        return $this->usr;
     }
 }
