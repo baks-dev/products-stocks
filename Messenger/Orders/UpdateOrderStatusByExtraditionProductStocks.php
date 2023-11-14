@@ -95,7 +95,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         /**
          * Получаем событие заказа.
          */
-        $OrderEvent = $this->currentOrderEvent->getCurrentOrderEventOrNull($ProductStockEvent->getOrder());
+        $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($ProductStockEvent->getOrder());
 
         if($OrderEvent)
         {

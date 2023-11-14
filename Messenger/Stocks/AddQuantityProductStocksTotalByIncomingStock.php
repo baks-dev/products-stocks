@@ -35,6 +35,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -118,7 +119,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                             ]
                         );
 
-                        return;
+                        throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
                     }
 
 

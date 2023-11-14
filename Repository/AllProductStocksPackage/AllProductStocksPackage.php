@@ -704,12 +704,19 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         );
 
 
+        $qb->leftJoin(
+            'destination_stock',
+            ProductStockEvent::TABLE,
+            'destination_event',
+            'destination_event.id = destination_stock.event'
+        );
+
         // UserProfile
         $qb->leftJoin(
             'destination_stock',
             UserProfileEntity\UserProfile::TABLE,
             'users_profile_destination',
-            'users_profile_destination.id = destination_stock.destination'
+            'users_profile_destination.id = destination_event.profile'
         );
 
         $qb

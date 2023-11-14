@@ -28,7 +28,8 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 /**
  * @group products-stocks
  *
- *
+ * @depends BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests\WarehouseProductStockTest::class
+ * @see     WarehouseProductStockTest
  */
 #[When(env: 'test')]
 final class WarehouseControllerTest extends WebTestCase

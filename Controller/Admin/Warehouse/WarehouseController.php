@@ -36,7 +36,9 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_WAREHOUSE_SEND')]
 final class WarehouseController extends AbstractController
 {
-    /** Отправить закупку на склад */
+    /**
+     * Отправить закупку на указанный склад
+     */
     #[Route('/admin/product/stock/warehouse/{id}', name: 'admin.warehouse.send', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,
@@ -66,13 +68,13 @@ final class WarehouseController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.new',
+                'admin.page.warehouse',
                 $handle instanceof ProductStock ? 'admin.success.warehouse' : 'admin.danger.warehouse',
                 'admin.product.stock',
                 $handle
             );
 
-            return $this->redirectToRoute('products-stocks:admin.warehouse.index');
+            return $this->redirectToRoute('products-stocks:admin.purchase.index');
         }
 
         return $this->render(['form' => $form->createView()]);

@@ -43,7 +43,7 @@ final class IncomingController extends AbstractController
     public function incoming(
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
-        IncomingProductStockHandler $handler,
+        IncomingProductStockHandler $IncomingProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
     ): Response {
 
@@ -60,18 +60,17 @@ final class IncomingController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
-            $ProductStock = $handler->handle($IncomingProductStockDTO);
+            $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
-            if ($ProductStock instanceof ProductStock)
-            {
-                $this->addFlash('success', 'admin.success.accept', 'admin.product.stock');
-            } else
-            {
-                $this->addFlash('danger', 'admin.danger.accept', 'admin.product.stock', $ProductStock);
-            }
+            $this->addFlash
+            (
+                'admin.page.accept',
+                $handle instanceof ProductStock ? 'admin.success.accept' : 'admin.danger.accept',
+                'admin.product.stock',
+                $handle
+            );
 
-            // return $this->redirectToReferer();
-            return $this->redirectToRoute('products-stocks:admin.incoming.index');
+            return $this->redirectToRoute('products-stocks:admin.warehouse.index');
         }
 
         return $this->render([

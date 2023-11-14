@@ -38,7 +38,7 @@ final class PurchaseController extends AbstractController
     #[Route('/admin/product/stock/purchase', name: 'admin.purchase.new', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,
-        PurchaseProductStockHandler $handler
+        PurchaseProductStockHandler $PurchaseProductStockHandler
     ): Response {
 
         if (!$this->getProfileUid()) {
@@ -54,14 +54,17 @@ final class PurchaseController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('purchase')) {
-            $ProductStock = $handler->handle($purchaseDTO);
+        if ($form->isSubmitted() && $form->isValid() && $form->has('purchase'))
+        {
+            $handle = $PurchaseProductStockHandler->handle($purchaseDTO);
 
-            if ($ProductStock instanceof ProductStock) {
-                $this->addFlash('success', 'admin.success.purchase', 'admin.product.stock');
-            } else {
-                $this->addFlash('danger', 'admin.danger.purchase', 'admin.product.stock', $ProductStock);
-            }
+            $this->addFlash
+            (
+                'admin.page.purchase',
+                $handle instanceof ProductStock ? 'admin.success.purchase' : 'admin.danger.purchase',
+                'admin.product.stock',
+                $handle
+            );
 
             return $this->redirectToRoute('products-stocks:admin.purchase.index');
         }

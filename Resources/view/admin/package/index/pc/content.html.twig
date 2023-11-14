@@ -156,11 +156,11 @@
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
                 <div class="col-3">
-                    {#{{ form_start(filter) }}
+                    {# {{ form_start(filter) }}
                     <div class="w-100" style="height: 55px;">
                         {{ form_widget(filter.warehouse, { placeholder: 'Выберите склад из списка ...', attr: { 'data-select' : 'select2' } }) }}
                     </div>
-                    {{ form_end(filter) }}#}
+                    {{ form_end(filter) }} #}
                 </div>
             </div>
 
@@ -186,22 +186,19 @@
 
             <div class="card-header bg-body border-light">
 
+                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between text-secondary">
 
-                <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
-
-
-                    <button class="accordion-button collapsed btn-sm border-0 shadow-none bg-body" style="width: 20px;"
+                    <button
+                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body"
+                            style="width: 20px;"
                             type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.id }}"
                             aria-expanded="false" aria-controls="collapse{{ item.id }}">
-
                     </button>
 
 
-                    <div class="w-100">
-
+                    <div class="w-100 mt-2">
 
                         <div class="w-100 d-flex gap-5 justify-content-between">
-
 
                             <div>
                                 <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
@@ -240,7 +237,7 @@
 
                                 {% if item.users_profile_move %}
                                     <br>
-                                    <span class="text-muted opacity-50">Склад перемещения: </span>
+                                    <span class="text-muted opacity-50">Ожидание: </span>
                                     &nbsp; <strong>{{ item.users_profile_move }}</strong>
                                 {% endif %}
 
@@ -290,15 +287,15 @@
                                        class="icon rounded-circle bg-contain lazy p-1"
                                        data-bg="{{ image_path }}"
                                     > </a>
-                                </div>#}
+                                </div> #}
 
                                 <div class="ms-0">
-                                    {#<a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
+                                    {# <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
                                        class="fw-bolder mb- text-decoration-none text-dark">
                                         {{ item.users_profile_username }}
-                                    </a>#}
+                                    </a> #}
 
-                                   {# <div class="text-muted fs-7 fw-bolder">
+                                    {# <div class="text-muted fs-7 fw-bolder">
 
 											<span class="me-1 text-muted">
 												<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
@@ -311,7 +308,7 @@
 												</svg>
 											</span>
                                         {{ item.group_name }}
-                                    </div>#}
+                                    </div> #}
 
                                 </div>
                             </div>
@@ -336,8 +333,7 @@
 
                     </div>
 
-
-                    <div class="w-50">
+                    <div class="w-50 mt-2">
 
                         {% if item.status == 'error' %}
 
@@ -384,8 +380,6 @@
                         {% endif %}
 
                     </div>
-
-                    {# СКЛАД #}
 
                 </div>
 

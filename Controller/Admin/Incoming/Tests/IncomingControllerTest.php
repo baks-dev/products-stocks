@@ -25,7 +25,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/** @group products-stocks */
+/**
+ * @group products-stocks
+ */
 #[When(env: 'test')]
 final class IncomingControllerTest extends WebTestCase
 {

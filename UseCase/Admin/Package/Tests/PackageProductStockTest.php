@@ -42,6 +42,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\Price\PackageOrderPriceDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\ProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -99,7 +100,7 @@ final class PackageProductStockTest extends KernelTestCase
     public function testUseCase(): void
     {
 
-        $PackageProductStockDTO = new PackageProductStockDTO();
+        $PackageProductStockDTO = new PackageProductStockDTO(new UserUid());
 
         $UserProfileUid = new UserProfileUid();
         $PackageProductStockDTO->setProfile($UserProfileUid);
@@ -138,12 +139,15 @@ final class PackageProductStockTest extends KernelTestCase
         self::assertSame($ProductModificationConst, $ProductStockDTO->getModification());
 
 
-        $PackageOrderPriceDTO = new PackageOrderPriceDTO();
-        $PackageOrderPriceDTO->setTotal(123);
-        $ProductStockDTO->setPrice($PackageOrderPriceDTO);
-
-        self::assertEquals(123, $PackageOrderPriceDTO->getTotal());
+        $ProductStockDTO->setTotal(123);
         self::assertEquals(123, $ProductStockDTO->getTotal());
+
+        //$PackageOrderPriceDTO = new PackageOrderPriceDTO();
+        //$PackageOrderPriceDTO->setTotal(123);
+        //$ProductStockDTO->setPrice($PackageOrderPriceDTO);
+
+        //self::assertEquals(123, $PackageOrderPriceDTO->getTotal());
+
 
 
         $PackageProductStockDTO->addProduct($ProductStockDTO);
@@ -155,8 +159,6 @@ final class PackageProductStockTest extends KernelTestCase
         $handle = $PackageProductStockHandler->handle($PackageProductStockDTO);
 
         self::assertTrue(($handle instanceof ProductStock), $handle.': Ошибка ProductStock');
-
-
 
 
         /** @var ProductWarehouseTotalInterface $ProductWarehouseTotal */

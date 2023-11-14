@@ -111,6 +111,7 @@ final class IncomingProductStockTest extends KernelTestCase
         );
 
         /** Общий остаток 200 */
+        self::assertNotNull($ProductStockTotal);
         self::assertEquals(200, $ProductStockTotal->getTotal());
         self::assertEquals(0, $ProductStockTotal->getReserve());
 
