@@ -156,11 +156,20 @@ function changeObjectOffer() {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
         if (requestModalName.readyState === 4 && requestModalName.status === 200) {
 
+
+
             let result = requestModalName.response.getElementById('preVariation');
 
             document.getElementById('preVariation').replaceWith(result);
 
             let replacer = document.getElementById(replaceId);
+
+            /* Удаляем предыдущий Select2 */
+            let select2 = document.getElementById(replaceId + '_select2');
+
+            if (select2) {
+                select2.remove();
+            }
 
             if (replacer.tagName === 'SELECT') {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
