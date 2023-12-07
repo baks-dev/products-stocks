@@ -119,6 +119,12 @@ class ProductStockTotal
         $this->total -= $total;
     }
 
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
+    }
+
     public function getTotal(): int
     {
         return $this->total;
@@ -148,6 +154,5 @@ class ProductStockTotal
     {
         return $this->reserve;
     }
-
 
 }
