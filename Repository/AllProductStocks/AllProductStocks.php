@@ -402,10 +402,14 @@ final class AllProductStocks implements AllProductStocksInterface
         {
             $qb
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchEqualUid('warehouse.id')
-                ->addSearchEqualUid('warehouse.event')
-                ->addSearchLike('warehouse_trans.name')
-                ->addSearchLike('category_trans.name');
+                //->addSearchEqualUid('warehouse.id')
+                //->addSearchEqualUid('warehouse.event')
+                //->addSearchLike('warehouse_trans.name')
+                ->addSearchLike('users_profile_personal.username')
+                ->addSearchLike('users_profile_personal.location')
+                ->addSearchLike('product_trans.name')
+                ->addSearchLike('category_trans.name')
+            ;
 
         }
 
