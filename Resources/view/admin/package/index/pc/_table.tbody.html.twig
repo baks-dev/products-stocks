@@ -47,13 +47,6 @@
 
 
             <div class="ms-5">
-                {# Артикул #}
-                <div class="text-muted small">
-                    <strong>Артикул:</strong> {{ item.product_article }}
-                </div>
-
-
-
 
                 {# Название #}
                 <a href="{{ path('products-product:user.detail', {
@@ -91,21 +84,26 @@
 
                 </a>
 
+                {# Артикул #}
+                <div class="text-muted small">
+                    Артикул: <strong>{{ item.product_article }}</strong>
+                </div>
+
                 {# Описание #}
                 {# <div class="text-muted small">54654 dfgsd
 					{{ string_width(item.product_description, 150)|raw }}
 				</div> #}
                 <div>
                     {% if item.product_offer_value %}
-                        {{ item.product_offer_name }} : {{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}
+                        <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
                     {% endif %}
 
                     {% if item.product_variation_value %}
-                        , {{ item.product_variation_name }} : {{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}
+                        , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;<strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
                     {% endif %}
 
                     {% if item.product_modification_value %}
-                        , {{ item.product_modification_name }}: {{ item.product_modification_value|call_twig_func(item.product_modification_reference~'_render') }}
+                        , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference~'_render') }}</strong>
                     {% endif %}
                 </div>
             </div>
@@ -128,7 +126,10 @@
     </td>
 
     <td class="ps-5 text-center fw-bolder vertical-middle text-muted">
-        {{ item.stock_total }}
+
+        {#{{ dump( item.stock_total) }}#}
+
+        {{ item.stock_total ?: 'Нет в наличие' }}
     </td>
 
 </tr>

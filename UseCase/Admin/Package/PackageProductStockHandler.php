@@ -26,38 +26,13 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class PackageProductStockHandler extends AbstractHandler
 {
-//    private EntityManagerInterface $entityManager;
-//
-//    private ValidatorInterface $validator;
-//
-//    private LoggerInterface $logger;
-//
-//    private MessageDispatchInterface $messageDispatch;
-//
-//    public function __construct(
-//        EntityManagerInterface $entityManager,
-//        ValidatorInterface $validator,
-//        LoggerInterface $logger,
-//        MessageDispatchInterface $messageDispatch
-//    )
-//    {
-//        $this->entityManager = $entityManager;
-//        $this->validator = $validator;
-//        $this->logger = $logger;
-//        $this->messageDispatch = $messageDispatch;
-//    }
-
     public function handle(PackageProductStockDTO $command,): string|ProductStock
     {
         /** Валидация DTO  */
@@ -81,12 +56,13 @@ final class PackageProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
+
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'products-stocks'
+            transport:'products-stocks'
         );
 
         return $this->main;

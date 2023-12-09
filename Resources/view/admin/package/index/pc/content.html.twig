@@ -191,8 +191,11 @@
                     <button
                             class="accordion-button collapsed btn-sm border-0 shadow-none bg-body"
                             style="width: 20px;"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.id }}"
-                            aria-expanded="false" aria-controls="collapse{{ item.id }}">
+                            type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ item.id }}"
+                            {#aria-expanded="false" #}
+                            {#aria-controls="collapse{{ item.id }}"#}
+                    >
                     </button>
 
 
@@ -234,37 +237,47 @@
                                 <span class="text-muted opacity-50">Склад: </span>
                                 &nbsp; <strong>{{ item.users_profile_username }}</strong>
 
+                                {% if item.delivery_name %}
+                                    <div class="text-dark text-nowrap">
+                                        <span class="text-muted opacity-50">Доставка:</span>
+                                        &nbsp; {{ item.delivery_name }}
+                                    </div>
+                                {% endif %}
+
 
                                 {% if item.users_profile_move %}
-                                    <br>
-                                    <span class="text-muted opacity-50">Ожидание: </span>
-                                    &nbsp; <strong>{{ item.users_profile_move }}</strong>
+                                    <div class="text-dark text-nowrap">
+                                        <span class="text-muted opacity-50">Ожидание:</span>
+                                        &nbsp; {{ item.users_profile_move }}
+                                    </div>
                                 {% endif %}
 
                                 {% if item.users_profile_destination %}
-                                    <br>
-                                    <span class="text-muted opacity-50">Пункт назначения: </span>
-                                    &nbsp; <strong>{{ item.users_profile_destination }}</strong>
+
+                                    <div class="text-dark text-nowrap">
+                                        <span class="text-muted opacity-50">Пункт назначения:</span>
+                                        &nbsp; {{ item.users_profile_destination }}
+                                    </div>
                                 {% endif %}
 
                                 {% if item.date_package %}
-                                    <br>
-                                    <span class="text-muted opacity-50">Погрузка: </span>
-                                    &nbsp;
-                                    {% if item.date_package|date('d.m.Y') != date('now')|date('d.m.Y') %}
-                                        <strong class="text-danger pointer"
-                                                data-bs-toggle="tooltip"
-                                                data-bs-placement="bottom"
-                                                data-bs-delay='{"show":600,"hide":100}'
-                                                title="Дата погрузки не является текущей"
-                                        >
-                                            {{ item.date_package|date('d.m.Y') }}
-                                        </strong>
-                                    {% else %}
-                                        <strong>{{ item.date_package|date('d.m.Y') }}</strong>
-                                    {% endif %}
 
 
+                                    <div class="text-dark text-nowrap">
+                                        <span class="text-muted opacity-50">Погрузка:</span>
+                                        &nbsp; {% if item.date_package|date('d.m.Y') != date('now')|date('d.m.Y') %}
+                                            <strong class="text-danger pointer"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="bottom"
+                                                    data-bs-delay='{"show":600,"hide":100}'
+                                                    title="Дата погрузки не является текущей"
+                                            >
+                                                {{ item.date_package|date('d.m.Y') }}
+                                            </strong>
+                                        {% else %}
+                                            <strong>{{ item.date_package|date('d.m.Y') }}</strong>
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
 
                             </div>
@@ -349,6 +362,7 @@
 
                             {% if not item.products_move and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
 
+
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"
                                    class="btn btn-warning modal-link text-nowrap mb-3"
                                    data-bs-toggle="modal"
@@ -356,15 +370,6 @@
                                    title="Отправить в доставку">
                                     Укомплектовать
                                 </a>
-
-
-                                {% if item.delivery_name %}
-                                    <div class="text-dark text-nowrap">
-                                        <span class="text-muted opacity-50">Доставка:</span>
-                                        &nbsp; {{ item.delivery_name }}
-                                    </div>
-                                {% endif %}
-
 
                             {% elseif item.products_move %}
 
@@ -386,8 +391,9 @@
 
             </div>
 
-            <div id="collapse{{ item.id }}" class="card-body fw-normal mb-0 accordion-collapse collapse"
-                 aria-labelledby="headingTwo" data-bs-parent="#accordionPackage">
+            <div id="collapse{{ item.id }}"
+                 class="card-body fw-normal mb-0 accordion-collapse collapse"
+                 data-bs-parent="#accordionPackage">
 
                 <table>
                     <tbody>

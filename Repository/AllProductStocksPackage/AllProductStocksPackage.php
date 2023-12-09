@@ -246,6 +246,9 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             '
         );
 
+
+
+
         // Целевой склад (Склад погрузки)
 
         //        // Product Warehouse
