@@ -94,13 +94,15 @@ final class SubReserveProductStocksTotalByOrderDelivery
          */
         $UserProfileUid = $this->warehouseByOrder->getWarehouseByOrder($message->getId());
 
-        /** @var OrderProduct $product */
-        foreach ($OrderEvent->getProduct() as $product)
+        if($UserProfileUid)
         {
-            /* Снимаем резерв со склада при доставке */
-            $this->changeReserve($product, $UserProfileUid);
+            /** @var OrderProduct $product */
+            foreach ($OrderEvent->getProduct() as $product)
+            {
+                /* Снимаем резерв со склада при доставке */
+                $this->changeReserve($product, $UserProfileUid);
+            }
         }
-
     }
 
     public function changeReserve(OrderProduct $product, UserProfileUid $profile): void
