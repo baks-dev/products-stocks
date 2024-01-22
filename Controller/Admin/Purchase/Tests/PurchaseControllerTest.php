@@ -46,6 +46,8 @@ final class PurchaseControllerTest extends WebTestCase
 
             self::assertResponseIsSuccessful();
         }
+
+        self::assertTrue(true);
     }
 
     /** Доступ по роли ROLE_ADMIN */
@@ -64,6 +66,8 @@ final class PurchaseControllerTest extends WebTestCase
 
             self::assertResponseIsSuccessful();
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ по роли ROLE_USER */
@@ -82,6 +86,8 @@ final class PurchaseControllerTest extends WebTestCase
 
             self::assertResponseStatusCodeSame(403);
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ без роли */

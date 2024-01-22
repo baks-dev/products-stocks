@@ -67,10 +67,9 @@ final class IncomingControllerTest extends WebTestCase
 
                 self::assertResponseIsSuccessful();
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /**  Доступ по роли ROLE_ADMIN */
@@ -93,10 +92,9 @@ final class IncomingControllerTest extends WebTestCase
 
                 self::assertResponseIsSuccessful();
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ по роли ROLE_USER */
@@ -119,10 +117,9 @@ final class IncomingControllerTest extends WebTestCase
 
                 self::assertResponseStatusCodeSame(403);
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ по без роли */
@@ -144,9 +141,8 @@ final class IncomingControllerTest extends WebTestCase
                 // Full authentication is required to access this resource
                 self::assertResponseStatusCodeSame(401);
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 }

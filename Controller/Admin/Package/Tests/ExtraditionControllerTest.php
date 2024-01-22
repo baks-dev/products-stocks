@@ -35,7 +35,6 @@ final class ExtraditionControllerTest extends WebTestCase
 
     private const ROLE = 'ROLE_PRODUCT_STOCK_PACKAGE';
 
-
     private static ?ProductStockEventUid $identifier;
 
     public static function setUpBeforeClass(): void
@@ -66,10 +65,9 @@ final class ExtraditionControllerTest extends WebTestCase
 
                 self::assertResponseIsSuccessful();
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /**  Доступ по роли ROLE_ADMIN */
@@ -92,10 +90,9 @@ final class ExtraditionControllerTest extends WebTestCase
 
                 self::assertResponseIsSuccessful();
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ по роли ROLE_USER */
@@ -118,10 +115,9 @@ final class ExtraditionControllerTest extends WebTestCase
 
                 self::assertResponseStatusCodeSame(403);
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 
     /** Закрытый доступ по без роли */
@@ -143,9 +139,8 @@ final class ExtraditionControllerTest extends WebTestCase
                 // Full authentication is required to access this resource
                 self::assertResponseStatusCodeSame(401);
             }
-        } else
-        {
-            self::assertTrue(true);
         }
+
+        self::assertTrue(true);
     }
 }

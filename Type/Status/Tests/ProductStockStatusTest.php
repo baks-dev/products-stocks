@@ -96,5 +96,7 @@ final class ProductStockStatusTest extends KernelTestCase
 
         }
 
+        self::assertTrue(true);
+
     }
 }

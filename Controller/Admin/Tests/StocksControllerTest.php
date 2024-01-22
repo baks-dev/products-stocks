@@ -47,6 +47,8 @@ final class StocksControllerTest extends WebTestCase
 
             self::assertResponseIsSuccessful();
         }
+
+        self::assertTrue(true);
     }
 
     /** Доступ по роли ROLE_ADMIN */
@@ -65,6 +67,8 @@ final class StocksControllerTest extends WebTestCase
 
             self::assertResponseIsSuccessful();
         }
+
+        self::assertTrue(true);
 
     }
 
@@ -100,6 +104,8 @@ final class StocksControllerTest extends WebTestCase
 
             self::assertResponseStatusCodeSame(401);
         }
+
+        self::assertTrue(true);
 
     }
 }

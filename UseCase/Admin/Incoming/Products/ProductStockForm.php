@@ -59,7 +59,7 @@ final class ProductStockForm extends AbstractType
                 $product->getOffer(),
                 $product->getVariation(),
                 $product->getModification()
-            );
+            ) ?: null;
         }
     });
 
