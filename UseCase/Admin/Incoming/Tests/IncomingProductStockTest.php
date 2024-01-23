@@ -115,5 +115,8 @@ final class IncomingProductStockTest extends KernelTestCase
         self::assertEquals(200, $ProductStockTotal->getTotal());
         self::assertEquals(0, $ProductStockTotal->getReserve());
 
+        $em->clear();
+        //$em->close();
+
     }
 }

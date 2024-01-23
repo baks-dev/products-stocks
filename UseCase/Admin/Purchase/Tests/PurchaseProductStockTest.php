@@ -75,6 +75,9 @@ final class PurchaseProductStockTest extends KernelTestCase
         }
 
         $em->flush();
+
+        $em->clear();
+
     }
 
 
@@ -134,6 +137,7 @@ final class PurchaseProductStockTest extends KernelTestCase
         $handle = $PurchaseProductStockHandler->handle($PurchaseProductStockDTO);
 
         self::assertTrue(($handle instanceof ProductStock), $handle.': Ошибка ProductStock');
+
 
     }
 }

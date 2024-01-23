@@ -92,6 +92,8 @@ final class PackageProductStockTest extends KernelTestCase
 //        }
 
         $em->flush();
+        $em->clear();
+
     }
 
     /**
@@ -178,6 +180,9 @@ final class PackageProductStockTest extends KernelTestCase
         /** Общий остаток 200, резерв 123 */
         self::assertEquals(200, $ProductStockTotal->getTotal());
         self::assertEquals(123, $ProductStockTotal->getReserve());
+
+        $em->clear();
+        //$em->close();
 
     }
 }
