@@ -35,17 +35,23 @@ class BaksDevProductsStocksBundle extends AbstractBundle
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         $path = __DIR__.'/Resources/config/';
-        foreach (new DirectoryIterator($path) as $config) {
-            if ($config->isDot() || $config->isDir()) {
+
+        foreach(new DirectoryIterator($path) as $config)
+        {
+
+            if($config->isDot() || $config->isDir())
+            {
                 continue;
             }
 
-            if ($config->isFile() && 'routes.php' !== $config->getFilename()) {
+            if($config->isFile() && 'routes.php' !== $config->getFilename())
+            {
                 $container->import($config->getPathname());
 
                 $envFile = str_replace($config->getFilename(), $container->env().'/'.$config->getFilename(), $config->getPathname());
 
-                if (is_file($envFile)) {
+                if(is_file($envFile))
+                {
                     $container->import($config->getPathname());
                 }
             }

@@ -21,41 +21,57 @@
  */
 
 
-modal.addEventListener('shown.bs.modal', function () {
+/* Change PRODUCT */
+var object_product = document.getElementById('moving_product_stock_form_preProduct');
+
+if (object_product) {
+    object_product.addEventListener('change', changeObjectProduct, false);
 
 
-    /* Change PRODUCT */
-    let object_product = document.getElementById('moving_product_stock_form_preProduct');
+    let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
 
-
-    if (object_product) {
-        object_product.addEventListener('change', changeObjectProduct, false);
-
-
-        let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
-
-        if ($addButtonStock) {
-            $addButtonStock.addEventListener('click', addProductMoving, false);
-        }
-
-    } else {
-        eventEmitter.addEventListener('complete', function () {
-            let object_product = document.getElementById('moving_product_stock_form_preProduct');
-
-            if (object_product) {
-                object_product.addEventListener('change', changeObjectProduct, false);
-
-
-                let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
-
-                if ($addButtonStock) {
-                    $addButtonStock.addEventListener('click', addProductMoving, false);
-                }
-            }
-        });
+    if ($addButtonStock) {
+        $addButtonStock.addEventListener('click', addProductMoving, false);
     }
 
-});
+}
+
+
+
+// modal.addEventListener('shown.bs.modal', function () {
+//
+//
+//
+//
+//
+//     if (object_product) {
+//         object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//         let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
+//
+//         if ($addButtonStock) {
+//             $addButtonStock.addEventListener('click', addProductMoving, false);
+//         }
+//
+//     } else {
+//         eventEmitter.addEventListener('complete', function () {
+//             let object_product = document.getElementById('moving_product_stock_form_preProduct');
+//
+//             if (object_product) {
+//                 object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//                 let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
+//
+//                 if ($addButtonStock) {
+//                     $addButtonStock.addEventListener('click', addProductMoving, false);
+//                 }
+//             }
+//         });
+//     }
+//
+// });
 
 function changeObjectProduct() {
 

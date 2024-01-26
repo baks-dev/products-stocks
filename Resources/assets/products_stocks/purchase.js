@@ -16,7 +16,6 @@
  */
 
 
-
 setTimeout(function initPurchase() {
 
     object_product = document.getElementById('purchase_product_stock_form_preProduct');

@@ -35,6 +35,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class ProductStocksTotal implements ProductStocksTotalInterface
 {
+
     private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
