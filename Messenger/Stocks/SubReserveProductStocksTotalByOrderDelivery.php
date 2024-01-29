@@ -54,13 +54,13 @@ final class SubReserveProductStocksTotalByOrderDelivery
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductWarehouseByOrderInterface $warehouseByOrder,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $productsStocksLogger,
     ) {
         $this->entityManager = $entityManager;
         $this->entityManager->clear();
 
         $this->warehouseByOrder = $warehouseByOrder;
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
     }
 
     /**

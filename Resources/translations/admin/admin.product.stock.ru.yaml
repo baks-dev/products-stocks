@@ -12,6 +12,7 @@ admin:
     moving: 'Перемещения'
     package: 'Упаковка заказов'
 
+
   breadcrumb:
     orders: 'Приходные ордера'
     purchase: 'Закупка продукции'

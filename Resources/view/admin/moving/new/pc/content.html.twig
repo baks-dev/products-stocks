@@ -1,6 +1,6 @@
 {% trans_default_domain 'materials.stock' %}
 
-<div class="modal-dialog modal-dialog-centered " style="max-width: 800px;">
+<div class="modal-dialog modal-dialog-centered " style="max-width: 900px;">
     {{ form_start(form) }}
 
 
@@ -15,11 +15,15 @@
         <div class="modal-body">
 
             <div class="d-flex gap-3">
-                <div class="w-50" id="preProduct">
-                    {{ form_row(form.preProduct, { label: 'Продукт', placeholder: 'Выберите продукцию из списка...', attr: { 'data-select' : 'select2' } }) }}
+                <div class="w-100" id="preProduct">
+
+                    {{ form_row(form.preProduct, {
+                        label: 'Продукт',
+                        placeholder: 'Выберите продукцию из списка...',
+                        attr: { 'data-select' : 'select2', placeholder: form.preProduct.vars.data ?: 'Продукция на складе отстутсвует', } })
+                    }}
                 </div>
             </div>
-
 
             <div id="preOffer" class="d-flex w-100 gap-3">
 

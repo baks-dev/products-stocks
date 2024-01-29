@@ -57,9 +57,11 @@ final class MovingController extends AbstractController
         {
             /** @var ProductStockDTO $move */
             $success = true;
+
+            /** Создаем каждое отдельно перемещение */
             foreach($movingDTO->getMove() as $move)
             {
-                $move->setProfile($this->getProfileUid());
+                $move->setProfile($move->getMove()->getWarehouse());
                 $move->setComment($movingDTO->getComment());
 
                 $ProductStock = $handler->handle($move);

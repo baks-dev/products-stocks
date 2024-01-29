@@ -58,7 +58,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         CurrentOrderEventInterface $currentOrderEvent,
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $productsStocksLogger,
     )
     {
 
@@ -66,10 +66,12 @@ final class UpdateOrderStatusByExtraditionProductStocks
         $this->currentOrderEvent = $currentOrderEvent;
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
     }
 
-    /** Обновляет статус заказа при сборке на складе  */
+    /**
+     * Обновляет статус заказа при сборке на складе
+     */
     public function __invoke(ProductStockMessage $message): void
     {
 
@@ -81,7 +83,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
             ->find($message->getEvent());
 
         // Если Статус складской заявки не является "Собран"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusExtradition()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusExtradition::class))
         {
             return;
         }

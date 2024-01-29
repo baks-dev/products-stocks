@@ -28,18 +28,20 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 
 interface ProductStocksByIdInterface
 {
-
     /**
      * Метод возвращает всю продукцию с определенным статусом
      */
     public function getProductsByProductStocksStatus(ProductStockUid $id, ProductStockStatusInterface $status): array;
-
 
     /**
      * Метод возвращает всю продукцию в приходном ордере (Move)
      */
     public function getProductsIncomingStocks(ProductStockUid $id): array;
 
+    /**
+     * Метод возвращает всю продукцию отправленную на склад
+     */
+    public function getProductsWarehouseStocks(ProductStockUid $id): array;
 
     /**
      * Метод возвращает всю продукцию для сборки (Package)

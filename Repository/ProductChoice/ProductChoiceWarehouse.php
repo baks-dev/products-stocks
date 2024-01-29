@@ -31,6 +31,7 @@ use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
@@ -50,8 +51,10 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
     }
 
 
-    /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличие на данном складе */
-    public function getProductsExistWarehouse(): ?array
+    /**
+     * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличие на данном складе
+     */
+    public function getProductsExistWarehouse(UserUid $usr): ?array
     {
         $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
@@ -62,6 +65,10 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
         $qb->from(ProductStockTotal::class, 'stock');
         //$qb->where('stock.warehouse = :warehouse');
         $qb->andWhere('(stock.total - stock.reserve)  > 0');
+
+        $qb
+            ->andWhere('stock.usr = :usr')
+            ->setParameter('usr', $usr, UserUid::TYPE);
 
         $qb->groupBy('stock.product');
         $qb->addGroupBy('trans.name');

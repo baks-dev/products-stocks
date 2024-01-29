@@ -37,6 +37,21 @@ final class ProductStockMoveForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+
+        /** Склад отгрузки */
+        $builder->add('warehouse', HiddenType::class);
+
+        $builder->get('warehouse')->addModelTransformer(
+            new CallbackTransformer(
+                function ($destination) {
+                    return $destination instanceof UserProfileUid ? $destination->getValue() : $destination;
+                },
+                function ($destination) {
+                    return $destination ? new UserProfileUid($destination) : null;
+                }
+            ),
+        );
+
         /** Константа склада назначения при перемещении */
         $builder->add('destination', HiddenType::class);
 

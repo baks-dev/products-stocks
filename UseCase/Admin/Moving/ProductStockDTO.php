@@ -71,7 +71,9 @@ final class ProductStockDTO implements ProductStockEventInterface
     {
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving());
         $this->product = new ArrayCollection();
-        $this->number = time().random_int(100, 999);
+        //$this->number = time().random_int(100, 999);
+
+        $this->number = number_format(microtime(true) * 100, 0, '.', '.');
         $this->move = new Move\ProductStockMoveDTO();
     }
 

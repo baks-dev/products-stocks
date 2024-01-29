@@ -16,46 +16,49 @@
  */
 
 
-modal.addEventListener('shown.bs.modal', function () {
+// modal.addEventListener('shown.bs.modal', function () {
+//
+//
+//
+//     /* Change PRODUCT */
+//     let object_product = document.getElementById('incoming_product_stock_form_preProduct');
+//
+//
+//
+//     if (object_product) {
+//         object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//         let $addButtonStock = document.getElementById('incoming_product_stock_form_addIncoming');
+//
+//         if ($addButtonStock) {
+//             $addButtonStock.addEventListener('click', addProductIncoming, false);
+//         }
+//
+//
+//
+//     } else {
+//         eventEmitter.addEventListener('complete', function ()
+//         {
+//             let object_product = document.getElementById('incoming_product_stock_form_preProduct');
+//
+//             if (object_product) {
+//                 object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//                 let $addButtonStock = document.getElementById('incoming_product_stock_form_addIncoming');
+//
+//                 if ($addButtonStock) {
+//                     $addButtonStock.addEventListener('click', addProductIncoming, false);
+//                 }
+//             }
+//         });
+//     }
+//
+// });
 
 
 
-    /* Change PRODUCT */
-    let object_product = document.getElementById('incoming_product_stock_form_preProduct');
-
-
-
-    if (object_product) {
-        object_product.addEventListener('change', changeObjectProduct, false);
-
-
-        let $addButtonStock = document.getElementById('incoming_product_stock_form_addIncoming');
-
-        if ($addButtonStock) {
-            $addButtonStock.addEventListener('click', addProductIncoming, false);
-        }
-
-        
-
-    } else {
-        eventEmitter.addEventListener('complete', function ()
-        {
-            let object_product = document.getElementById('incoming_product_stock_form_preProduct');
-
-            if (object_product) {
-                object_product.addEventListener('change', changeObjectProduct, false);
-
-
-                let $addButtonStock = document.getElementById('incoming_product_stock_form_addIncoming');
-
-                if ($addButtonStock) {
-                    $addButtonStock.addEventListener('click', addProductIncoming, false);
-                }
-            }
-        });
-    }
-
-});
 
 
 function changeObjectProduct() {

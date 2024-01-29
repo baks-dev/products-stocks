@@ -60,10 +60,13 @@ final class ProductStockStatus
             return;
         }
 
+
         /** @var ProductStockStatusInterface $declare */
         foreach(self::getDeclared() as $declare)
         {
-            if($declare::equals($status))
+            $instance = new self($declare);
+
+            if($instance->getProductStockStatusValue() === $status)
             {
                 $this->status = new $declare;
                 return;

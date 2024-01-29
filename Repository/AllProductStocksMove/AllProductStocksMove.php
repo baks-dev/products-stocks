@@ -110,6 +110,9 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'stock_product.event = stock.event'
         );
 
+        /** Склад назначения */
+
+
         //        // Целевой склад
         //
         //        // Warehouse
@@ -228,6 +231,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
         );
 
+
         // Получаем тип торгового предложения
         $qb->addSelect('category_offer.reference as product_offer_reference');
         $qb->leftJoin(
@@ -236,6 +240,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'category_offer',
             'category_offer.id = product_offer.category_offer'
         );
+
 
         // Множественные варианты торгового предложения
 
@@ -249,6 +254,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'product_offer_variation',
             'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
         );
+
 
         // Получаем тип множественного варианта
         $qb->addSelect('category_offer_variation.reference as product_variation_reference');
@@ -357,7 +363,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         );
 
         // Расширение файла
-        // Расширение файла
         $qb->addSelect(
             "
 			CASE
@@ -412,17 +417,11 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         );
 
 
-        // Пункт назначения перемещения
-
-        $qb->join(
-            'stock',
-            ProductStockEntity\Move\ProductStockMove::TABLE,
-            'move',
-            'move.event = stock.event AND move.ord IS NULL'
-        );
+       /** Целевой склад */
 
         // UserProfile
         $qb->addSelect('users_profile.event as users_profile_event');
+
         $qb->join(
             'event',
             UserProfileEntity\UserProfile::TABLE,
@@ -454,6 +453,35 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             UserProfileEntity\Personal\UserProfilePersonal::TABLE,
             'users_profile_personal',
             'users_profile_personal.event = users_profile_event.id'
+        );
+
+
+
+        // Пункт назначения перемещения
+
+        $qb->join(
+            'stock',
+            ProductStockEntity\Move\ProductStockMove::TABLE,
+            'move',
+            'move.event = stock.event AND move.ord IS NULL'
+        );
+
+        $qb->join(
+            'move',
+            UserProfileEntity\UserProfile::TABLE,
+            'users_profile_destination',
+            'users_profile_destination.id = move.destination'
+        );
+
+
+        // Personal
+        $qb->addSelect('users_profile_personal_destination.username AS users_profile_destination');
+
+        $qb->join(
+            'users_profile_destination',
+            UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+            'users_profile_personal_destination',
+            'users_profile_personal_destination.event = users_profile_destination.event'
         );
 
 //        // Avatar

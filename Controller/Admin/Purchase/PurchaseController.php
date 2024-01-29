@@ -34,7 +34,9 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PURCHASE_NEW')]
 final class PurchaseController extends AbstractController
 {
-    /** Добавить закупку */
+    /**
+     * Добавить закупку
+     */
     #[Route('/admin/product/stock/purchase', name: 'admin.purchase.new', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,

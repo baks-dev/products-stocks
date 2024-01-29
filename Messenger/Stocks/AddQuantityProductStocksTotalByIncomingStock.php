@@ -52,7 +52,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $ProductStockStatusCollection,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $productsStocksLogger,
         UserByUserProfileInterface $userByUserProfile,
     )
     {
@@ -62,7 +62,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
         // Инициируем статусы складских остатков
         $ProductStockStatusCollection->cases();
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
 
     }
 
@@ -77,7 +77,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
             ->find($message->getEvent());
 
         // Если Статус не является "Приход на склад"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
         {
             return;
         }

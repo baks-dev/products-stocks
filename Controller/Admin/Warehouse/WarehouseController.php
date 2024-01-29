@@ -55,9 +55,18 @@ final class WarehouseController extends AbstractController
         $WarehouseProductStockDTO = new WarehouseProductStockDTO($this->getUsr());
         $Event->getDto($WarehouseProductStockDTO);
 
+        /** Если заявка на перемещение - присваиваем склад назначения */
+        if($Event->getMoveDestination())
+        {
+            $WarehouseProductStockDTO->setProfile($Event->getMoveDestination());
+        }
+
         // Форма добавления
         $form = $this->createForm(WarehouseProductStockForm::class, $WarehouseProductStockDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $WarehouseProductStockDTO->getEvent()]),
+            'action' => $this->generateUrl(
+                'products-stocks:admin.warehouse.send',
+                ['id' => $WarehouseProductStockDTO->getEvent()]
+            ),
         ]);
 
         $form->handleRequest($request);
@@ -74,7 +83,9 @@ final class WarehouseController extends AbstractController
                 $handle
             );
 
-            return $this->redirectToRoute('products-stocks:admin.purchase.index');
+            return $this->redirectToReferer();
+
+            //return $this->redirectToRoute('products-stocks:admin.purchase.index');
         }
 
         return $this->render(['form' => $form->createView()]);

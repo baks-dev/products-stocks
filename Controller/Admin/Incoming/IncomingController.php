@@ -64,7 +64,7 @@ final class IncomingController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.accept',
+                'admin.page.orders',
                 $handle instanceof ProductStock ? 'admin.success.accept' : 'admin.danger.accept',
                 'admin.product.stock',
                 $handle

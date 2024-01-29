@@ -50,14 +50,14 @@ final class SubReserveProductStockTotalByMove
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
-        LoggerInterface $messageDispatchLogger
+        LoggerInterface $productsStocksLogger
     ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
 
         // Инициируем статусы складских остатков
         $collection->cases();
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
     }
 
     /**
@@ -74,7 +74,7 @@ final class SubReserveProductStockTotalByMove
         $ProductStockEventLast = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getLast());
 
         // Если статус прошлой заявки не является "Перемещение"
-        if (!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(new ProductStockStatusMoving()))
+        if (!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
         {
             return;
         }
@@ -83,7 +83,7 @@ final class SubReserveProductStockTotalByMove
         $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
         // Если статус текущей заявки не является "Отправка на склад (Поступление)"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusWarehouse()))
+        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
         {
             return;
         }

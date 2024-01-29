@@ -46,6 +46,7 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -120,24 +121,36 @@ final class MovingProductStockForm extends AbstractType
          *
          * @var ProductUid $product
          */
+         $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
 
-        $builder->add(
-            'preProduct',
-            ChoiceType::class,
-            [
-                'choices' => $this->productChoiceWarehouse->getProductsExistWarehouse(),
-                'choice_value' => function(?ProductUid $product) {
-                    return $product?->getValue();
-                },
-                'choice_label' => function(ProductUid $product) {
-                    return $product->getAttr().' ('.$product->getOption().')';
-                },
-                'choice_attr' => function(?ProductUid $product) {
-                    return $product ? ['data-name' => $product->getAttr()] : [];
-                },
-                'label' => false,
-            ]
-        );
+
+
+
+        $productChoiceWarehouse = $this->productChoiceWarehouse->getProductsExistWarehouse($this->user);
+
+
+        if(!empty($productChoiceWarehouse))
+        {
+            $builder->add(
+                'preProduct',
+                ChoiceType::class,
+                [
+                    'choices' => $productChoiceWarehouse,
+                    'choice_value' => function(?ProductUid $product) {
+                        return $product?->getValue();
+                    },
+                    'choice_label' => function(ProductUid $product) {
+                        return $product->getAttr().' ('.$product->getOption().')';
+                    },
+                    'choice_attr' => function(?ProductUid $product) {
+                        return $product ? ['data-name' => $product->getAttr()] : [];
+                    },
+                    'label' => false,
+                ]
+            );
+        }
+
+
 
         /*
          * Торговые предложения
@@ -248,6 +261,9 @@ final class MovingProductStockForm extends AbstractType
 
                 if($product && $offer && $variation && $modification)
                 {
+
+
+
                     $this->formTargetWarehouseModifier(
                         $event->getForm()->getParent(),
                         $product,
@@ -481,7 +497,10 @@ final class MovingProductStockForm extends AbstractType
         ?ProductModificationConst $modification = null,
     ): void
     {
+
         $warehouses = $this->productWarehouseChoice->fetchWarehouseByProduct($this->user, $product, $offer, $variation, $modification);
+
+        //dd($warehouses);
 
         if(empty($warehouses))
         {

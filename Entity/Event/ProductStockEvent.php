@@ -174,13 +174,13 @@ class ProductStockEvent extends EntityEvent
     /**
      * Идентификатор целевого склада при перемещении.
      */
-    public function getMoveDestination(): ?ContactsRegionCallConst
+    public function getMoveDestination(): ?UserProfileUid
     {
         return $this->move?->getDestination();
     }
 
 
-    public function getMove(): ProductStockMove
+    public function getMove(): ?ProductStockMove
     {
         return $this->move;
     }

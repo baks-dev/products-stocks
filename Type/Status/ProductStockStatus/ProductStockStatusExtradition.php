@@ -42,12 +42,12 @@ final class ProductStockStatusExtradition implements ProductStockStatusInterface
         return self::STATUS;
     }
 
-    /**
-     * Проверяет, относится ли статус к данному объекту
-     */
-    public static function equals(string $status): bool
-    {
-        return self::STATUS === $status;
-    }
+//    /**
+//     * Проверяет, относится ли статус к данному объекту
+//     */
+//    public static function equals(string $status): bool
+//    {
+//        return self::STATUS === $status;
+//    }
 
 }

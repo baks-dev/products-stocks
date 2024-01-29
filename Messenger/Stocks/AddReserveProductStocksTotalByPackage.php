@@ -51,14 +51,14 @@ final class AddReserveProductStocksTotalByPackage
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $ProductStockStatusCollection,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $productsStocksLogger,
         CurrentProductStocksInterface $currentProductStocks,
     )
     {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
 
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
         $this->currentProductStocks = $currentProductStocks;
 
         // Инициируем статусы складских остатков
@@ -74,7 +74,7 @@ final class AddReserveProductStocksTotalByPackage
         $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
 
         // Если Статус не является "Упаковка"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusPackage()))
+        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusPackage::class))
         {
             return;
         }

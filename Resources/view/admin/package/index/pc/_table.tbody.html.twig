@@ -34,12 +34,12 @@
 
 
             <div>
-                <a href="{{ path('products-product:user.detail', {
+                <a href="{#{{ path('products-product:user.detail', {
                     url : item.product_url ,
                     offer: item.product_offer_value,
                     variation: item.product_variation_value,
                     modification: item.product_modification_value
-                }) }}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
+                }) }}#}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
                    data-bg="{{ image_path }}"
                    style="width: 60px; height: 60px;"
                 ></a>
@@ -49,12 +49,12 @@
             <div class="ms-5">
 
                 {# Название #}
-                <a href="{{ path('products-product:user.detail', {
+                <a href="{#{{ path('products-product:user.detail', {
                     url : item.product_url ,
                     offer: item.product_offer_value,
                     variation: item.product_variation_value,
                     modification: item.product_modification_value
-                }) }}"
+                }) }}#}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                         target="_detail"
                    >

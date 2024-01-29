@@ -16,65 +16,71 @@
  */
 
 
-setTimeout(function initPurchase() {
+/** Добавить лист закупки */
 
-    object_product = document.getElementById('purchase_product_stock_form_preProduct');
+var limit_NMrsJxDFr = 1000;
+
+setTimeout(function init_xXgmjezHJ()
+{
+
+    var object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
     if (object_product) {
 
         object_product.addEventListener('change', changeObjectProduct, false);
 
-
         let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
 
-        //if ($addButtonStock) {
-            $addButtonStock.addEventListener('click', addProductPurchase, false);
-       // }
+        $addButtonStock.addEventListener('click', addProductPurchase, false);
 
         return;
     }
 
-    setTimeout(initPurchase, 100);
+    if (limit_NMrsJxDFr > 1000) {
+        return;
+    }
+
+    limit_NMrsJxDFr = limit_NMrsJxDFr * 2;
+
+    setTimeout(init_xXgmjezHJ, limit_NMrsJxDFr);
 
 }, 100);
 
 
-
 //modal.addEventListener('shown.bs.modal', function () {
 
-    /* Change PRODUCT */
-    //object_product = document.getElementById('purchase_product_stock_form_preProduct');
+/* Change PRODUCT */
+//object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
 
-
-    // if (object_product) {
-    //     object_product.addEventListener('change', changeObjectProduct, false);
-    //
-    //
-    //     let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
-    //
-    //     if ($addButtonStock) {
-    //         $addButtonStock.addEventListener('click', addProductPurchase, false);
-    //     }
-    //
-    //
-    // } else {
-    //     eventEmitter.addEventListener('complete', function ()
-    //     {
-    //         let object_product = document.getElementById('purchase_product_stock_form_preProduct');
-    //
-    //         if (object_product) {
-    //             object_product.addEventListener('change', changeObjectProduct, false);
-    //
-    //
-    //             let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
-    //
-    //             if ($addButtonStock) {
-    //                 $addButtonStock.addEventListener('click', addProductPurchase, false);
-    //             }
-    //         }
-    //     });
-    // }
+// if (object_product) {
+//     object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//     let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
+//
+//     if ($addButtonStock) {
+//         $addButtonStock.addEventListener('click', addProductPurchase, false);
+//     }
+//
+//
+// } else {
+//     eventEmitter.addEventListener('complete', function ()
+//     {
+//         let object_product = document.getElementById('purchase_product_stock_form_preProduct');
+//
+//         if (object_product) {
+//             object_product.addEventListener('change', changeObjectProduct, false);
+//
+//
+//             let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
+//
+//             if ($addButtonStock) {
+//                 $addButtonStock.addEventListener('click', addProductPurchase, false);
+//             }
+//         }
+//     });
+// }
 
 //});
 
@@ -156,7 +162,6 @@ function changeObjectOffer() {
         if (requestModalName.readyState === 4 && requestModalName.status === 200) {
 
 
-
             let result = requestModalName.response.getElementById('preVariation');
 
             document.getElementById('preVariation').replaceWith(result);
@@ -190,8 +195,7 @@ function changeObjectOffer() {
 }
 
 
-function changeObjectVariation()
-{
+function changeObjectVariation() {
 
     let replaceId = 'purchase_product_stock_form_preModification';
 
@@ -234,8 +238,7 @@ function changeObjectVariation()
 }
 
 
-function addProductPurchase()
-{
+function addProductPurchase() {
 
     /* Блок для новой коллекции КАТЕГОРИИ */
     let $blockCollectionStock = document.getElementById('collectionStock');
@@ -255,7 +258,7 @@ function addProductPurchase()
     if ($TOTAL === undefined || $TOTAL < 1) {
 
         $errorFormHandler = '{ "type":"danger" , ' +
-            '"header":"'+header+'"  , ' +
+            '"header":"' + header + '"  , ' +
             '"message" : "Не заполнено количество" }';
 
     }
@@ -264,7 +267,7 @@ function addProductPurchase()
 
     if ($number.value.length === 0) {
         $errorFormHandler = '{ "type":"danger" , ' +
-            '"header":"'+header+'"  , ' +
+            '"header":"' + header + '"  , ' +
             '"message" : "Не заполнен номер закупки" }';
     }
 
@@ -282,7 +285,7 @@ function addProductPurchase()
     if ($preProduct.value.length === 0) {
 
         $errorFormHandler = '{ "type":"danger" , ' +
-            '"header":"'+header+'"  , ' +
+            '"header":"' + header + '"  , ' +
             '"message" : "' + $preProduct.options[0].textContent + '" }';
 
     }
@@ -293,7 +296,7 @@ function addProductPurchase()
         if ($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0) {
 
             $errorFormHandler = '{ "type":"danger" , ' +
-                '"header":"'+header+'"  , ' +
+                '"header":"' + header + '"  , ' +
                 '"message" : "' + $preOffer.options[0].textContent + '" }';
         }
     }
@@ -304,7 +307,7 @@ function addProductPurchase()
         if ($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0) {
 
             $errorFormHandler = '{ "type":"danger" , ' +
-                '"header":"'+header+'"  , ' +
+                '"header":"' + header + '"  , ' +
                 '"message" : "' + $preVariation.options[0].textContent + '" }';
         }
     }
@@ -314,7 +317,7 @@ function addProductPurchase()
         if ($preModification.tagName === 'SELECT' && $preModification.value.length === 0) {
 
             $errorFormHandler = '{ "type":"danger" , ' +
-                '"header":"'+header+'"  , ' +
+                '"header":"' + header + '"  , ' +
                 '"message" : "' + $preModification.options[0].textContent + '" }';
         }
     }
@@ -370,17 +373,17 @@ function addProductPurchase()
     let $productName = $preProduct.options[productIndex].textContent;
 
     let offerIndex = $preOffer.selectedIndex;
-    let $offerName = $preOffer.tagName === 'SELECT' ? document.querySelector('label[for="'+$preOffer.id+'"]').textContent +' '+$preOffer.options[offerIndex].textContent : '';
+    let $offerName = $preOffer.tagName === 'SELECT' ? document.querySelector('label[for="' + $preOffer.id + '"]').textContent + ' ' + $preOffer.options[offerIndex].textContent : '';
 
     let variationIndex = $preVariation.selectedIndex;
-    let $variationName = $preVariation.tagName === 'SELECT' ? document.querySelector('label[for="'+$preVariation.id+'"]').textContent +' '+$preVariation.options[variationIndex].textContent : '';
+    let $variationName = $preVariation.tagName === 'SELECT' ? document.querySelector('label[for="' + $preVariation.id + '"]').textContent + ' ' + $preVariation.options[variationIndex].textContent : '';
 
     let modificationIndex = $preModification.selectedIndex;
-    let $modificationName = $preModification.tagName === 'SELECT' ? document.querySelector('label[for="'+$preModification.id+'"]').textContent +' '+$preModification.options[modificationIndex].textContent : '';
+    let $modificationName = $preModification.tagName === 'SELECT' ? document.querySelector('label[for="' + $preModification.id + '"]').textContent + ' ' + $preModification.options[modificationIndex].textContent : '';
 
 
     let $productTextBlock = stockDiv.querySelector('#product-text-' + index);
-    $productTextBlock.innerHTML = $productName + ' ' + $offerName+ ' ' + $variationName+ ' ' + $modificationName + '&nbsp; : &nbsp;' + $total.value + ' шт.';
+    $productTextBlock.innerHTML = $productName + ' ' + $offerName + ' ' + $variationName + ' ' + $modificationName + '&nbsp; : &nbsp;' + $total.value + ' шт.';
 
     $preTotal.value = null;
 

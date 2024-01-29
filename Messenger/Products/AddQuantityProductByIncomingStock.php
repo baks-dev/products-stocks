@@ -58,7 +58,7 @@ final class AddQuantityProductByIncomingStock
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
-        LoggerInterface $messageDispatchLogger
+        LoggerInterface $productsStocksLogger
     ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
@@ -69,10 +69,12 @@ final class AddQuantityProductByIncomingStock
 
         // Инициируем статусы складских остатков
         $collection->cases();
-        $this->logger = $messageDispatchLogger;
+        $this->logger = $productsStocksLogger;
     }
 
-    /** Пополнение наличием продукции при поступлении на склад */
+    /**
+     * Пополнение наличием продукции при поступлении на склад
+     */
     public function __invoke(ProductStockMessage $message): void
     {
 
@@ -80,7 +82,7 @@ final class AddQuantityProductByIncomingStock
         $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
         // Если Статус не является "Приход на склад"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming())) {
+        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class)) {
             return;
         }
 
