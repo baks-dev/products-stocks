@@ -20,8 +20,7 @@
 
 var limit_NMrsJxDFr = 1000;
 
-setTimeout(function init_xXgmjezHJ()
-{
+setTimeout(function init_xXgmjezHJ() {
 
     var object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
@@ -124,6 +123,10 @@ function changeObjectProduct() {
 
                 if (offerChange) {
                     offerChange.addEventListener('change', changeObjectOffer, false);
+
+                    let focus = document.getElementById(replaceId + '_select2');
+                    focus ? focus.click() : null;
+
                 }
             }
 
@@ -184,6 +187,9 @@ function changeObjectOffer() {
                 if (offerVariation) {
                     offerVariation.addEventListener('change', changeObjectVariation, false);
                 }
+
+                let focus = document.getElementById(replaceId + '_select2');
+                focus ? focus.click() : null;
             }
 
         }
@@ -226,6 +232,23 @@ function changeObjectVariation() {
 
             if (replacer.tagName === 'SELECT') {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
+            }
+
+            let focus = document.getElementById(replaceId + '_select2');
+            focus ? focus.click() : null;
+
+
+            /** Событие на изменение множественного варианта предложения */
+            let offerModification = document.getElementById('purchase_product_stock_form_preModification');
+
+            if (offerModification) {
+
+                offerModification.addEventListener("change", (event) => {
+                    setTimeout(function initBootstrap() {
+                        document.getElementById('purchase_product_stock_form_preTotal').focus();
+                    }, 100);
+
+                });
             }
 
         }

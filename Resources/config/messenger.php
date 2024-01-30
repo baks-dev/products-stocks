@@ -33,12 +33,17 @@ return static function (FrameworkConfig $framework) {
         ->transport('products-stocks')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
         ->options(['queue_name' => 'products-stocks'])
+        ->failureTransport('failed-products-stocks')
         ->retryStrategy()
         ->maxRetries(3)
         ->delay(1000)
         ->maxDelay(0)
         ->multiplier(3) // увеличиваем задержку перед каждой повторной попыткой
         ->service(null)
+
     ;
+
+    $messenger->transport('failed-products-stocks')
+        ->dsn('%env(MESSENGER_TRANSPORT_DSN)%');
 
 };
