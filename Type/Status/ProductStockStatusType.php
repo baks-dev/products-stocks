@@ -28,16 +28,17 @@ namespace BaksDev\Products\Stocks\Type\Status;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\StringType;
+use Doctrine\DBAL\Types\Type;
 use InvalidArgumentException;
 
-final class ProductStockStatusType extends StringType
+final class ProductStockStatusType extends Type
 {
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
         return (string) $value;
     }
 
-    public function convertToPHPValue($value, AbstractPlatform $platform): mixed
+    public function convertToPHPValue($value, AbstractPlatform $platform): ?ProductStockStatus
     {
         return !empty($value) ? new ProductStockStatus($value) : null;
     }
@@ -51,6 +52,11 @@ final class ProductStockStatusType extends StringType
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
+    }
+
+    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+    {
+        return $platform->getStringTypeDeclarationSQL($column);
     }
 
 }
