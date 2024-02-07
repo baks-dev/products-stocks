@@ -81,7 +81,7 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage());
         $this->product = new ArrayCollection();
-        $this->number = time() . random_int(100, 999);
+        $this->number = number_format(microtime(true) * 100, 0, '.', '.');
         $this->ord = new Orders\ProductStockOrderDTO();
     }
 

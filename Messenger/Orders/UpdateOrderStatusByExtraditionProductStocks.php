@@ -82,8 +82,13 @@ final class UpdateOrderStatusByExtraditionProductStocks
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
-        // Если Статус складской заявки не является "Собран"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusExtradition::class))
+        if(!$ProductStockEvent)
+        {
+            return;
+        }
+
+        // Если Статус складской заявки не является "Extradition «Укомплектована, готова к выдаче»
+        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusExtradition::class))
         {
             return;
         }
@@ -99,27 +104,28 @@ final class UpdateOrderStatusByExtraditionProductStocks
          */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($ProductStockEvent->getOrder());
 
-        if($OrderEvent)
+        if(!$OrderEvent)
         {
-            /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
-            $OrderStatusDTO = new OrderStatusDTO(new OrderStatus(new OrderStatusExtradition()), $OrderEvent->getId(), $ProductStockEvent->getProfile());
-            $this->OrderStatusHandler->handle($OrderStatusDTO);
-
-            // Отправляем сокет для скрытия заказа у других менеджеров
-            $this->CentrifugoPublish
-                ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-                ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
-                ->send('orders');
-
-
-            $this->logger->info('Обновили статус заказа на "Собран, готов к отправке" (Extradition)',
-                [
-                    __FILE__.':'.__LINE__,
-                    'order' => (string) $ProductStockEvent->getOrder(),
-                    'profile' => (string) $ProductStockEvent->getProfile()
-                ]);
+            return;
         }
 
+        /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
+        $OrderStatusDTO = new OrderStatusDTO(new OrderStatus(new OrderStatusExtradition()), $OrderEvent->getId(), $ProductStockEvent->getProfile());
+        $this->OrderStatusHandler->handle($OrderStatusDTO);
+
+        // Отправляем сокет для скрытия заказа у других менеджеров
+        $this->CentrifugoPublish
+            ->addData(['order' => (string) $ProductStockEvent->getOrder()])
+            ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
+            ->send('orders');
+
+
+        $this->logger->info('Обновили статус заказа на Extradition «Готов к выдаче»',
+            [
+                __FILE__.':'.__LINE__,
+                'order' => (string) $ProductStockEvent->getOrder(),
+                'profile' => (string) $ProductStockEvent->getProfile()
+            ]);
 
     }
 }

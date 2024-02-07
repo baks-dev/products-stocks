@@ -76,9 +76,19 @@ final class AddQuantityProductStocksTotalByIncomingStock
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
-        // Если Статус не является "Приход на склад"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
+
+        if(!$ProductStockEvent)
         {
+            return;
+        }
+
+        // Если Статус заявки не является "Приход на склад"
+        if($ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class) === false)
+        {
+            $this->logger
+                ->notice('Не пополняем складские остатки: Статус заявки не является Incoming «Приход на склад»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
             return;
         }
 

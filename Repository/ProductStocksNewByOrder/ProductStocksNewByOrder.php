@@ -31,6 +31,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductStocksNewByOrder implements ProductStocksNewByOrderInterface
@@ -45,7 +46,10 @@ final class ProductStocksNewByOrder implements ProductStocksNewByOrderInterface
     /**
      * Метод получает заявку на упаковку заказа
      */
-    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, ContactsRegionCallConst $warehouse) : ?ProductStockEvent
+    public function getProductStocksEventByOrderAndWarehouse(
+        OrderUid $order,
+        UserProfileUid $profile
+    ): ?ProductStockEvent
     {
         $qb = $this->entityManager->createQueryBuilder();
 
@@ -64,14 +68,14 @@ final class ProductStocksNewByOrder implements ProductStocksNewByOrderInterface
             ProductStockEvent::class,
             'event',
             'WITH',
-            'event.id = stock.event AND event.warehouse = :warehouse AND event.status = :status '
+            'event.id = stock.event AND event.profile = :profile AND event.status = :status '
         );
 
         $qb->where('orders.ord = :ord');
 
         $qb->setParameter('ord', $order, OrderUid::TYPE);
         $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
-        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallConst::TYPE);
+        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
 
         return $qb->getQuery()->getOneOrNullResult();
     }

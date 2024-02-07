@@ -3,12 +3,17 @@
 <div class="modal-dialog modal-dialog-centered " style="max-width: 800px;">
     {{ form_start(form) }}
 
-
-    <div class="modal-content p-3 border-bottom border-5 border-primary">
+    <div class="modal-content p-3 border-bottom border-5 border-{{ order ? 'warning' : 'primary' }}">
 
         <div class="modal-header">
             <h5 class="modal-title">
-                {{ 'Добавить приход на склад'|trans }}
+                {% if order %}
+                    {{ 'Принять перемещение по заказу'|trans }}
+                {% else %}
+
+                    {{ 'Добавить приход на склад'|trans }}
+                {% endif %}
+
             </h5>
         </div>
 
@@ -17,11 +22,12 @@
             <div class="d-flex justify-content-between align-items-center gap-3 text-uppercase text-muted opacity-50">
                 <div class="w-100">Продукция</div>
                 <div class="w-25 text-center">Количество</div>
-                <div class="w-25 text-center">Место</div>
+                {% if not order %} <div class="w-25 text-center">Место</div>{% endif %}
             </div>
 
 
             {% for product in form.product %}
+
 
                 {% set detail = product.vars.data.detail %}
 
@@ -75,7 +81,7 @@
                             {{ form_widget(product.total, { attr: { placeholder : 'Количество'} }) }}
                         </div>
 
-                        <div class="ms-3 fw-bolder w-25 text-center h5">
+                        <div class="ms-3 fw-bolder w-25 text-center h5 {{ order ? 'd-none' }}">
                             {{ form_widget(product.storage, { attr: { placeholder : 'Место'} }) }}
                         </div>
 
@@ -85,14 +91,16 @@
             {% endfor %}
 
 
-            {% for product in products %}
+
+
+            {#{% for product in products %}
 
 
                 <div class="d-flex justify-content-between align-items-center gap-3">
 
                     <div class="w-100 d-flex align-items-center gap-3">
 
-                        {# Обложка #}
+                        #}{# Обложка #}{#
                         {% set image_path = '/assets/img/blank.svg' %}
 
                         {% if product.product_image_ext is defined and product.product_image_ext is not null %}
@@ -108,27 +116,27 @@
 
                         <div>
 
-                            <a href="{#{{ path('products-product:user.detail', {
+                            <a href="#}{#{{ path('products-product:user.detail', {
                                 url : product.product_url ,
                                 offer: product.product_offer_value,
                                 variation: product.product_variation_value,
                                 modification: product.product_modification_value
-                            }) }}#}" target="_detail">
+                            }) }}#}{#" target="_detail">
 
                                 {{ product.product_name }}
 
-                                {# Значение множественного варианта ТП #}
+                                #}{# Значение множественного варианта ТП #}{#
                                 {{ product.product_variation_value|call_twig_func(product.product_variation_reference~'_render')
                                 ~ product.product_modification_value|call_twig_func(product.product_modification_reference~'_render') }}
 
-                                {# Значение торгового предложения #}
+                                #}{# Значение торгового предложения #}{#
                                 {{ product.product_offer_value|call_twig_func(product.product_offer_reference~'_render') }}
 
-                                {# Постфикс торгового предложения #}
+                                #}{# Постфикс торгового предложения #}{#
                                 {{ product.product_offer_postfix }}
-                                {# Постфикс множественного варианта #}
+                                #}{# Постфикс множественного варианта #}{#
                                 {{ product.product_variation_postfix }}
-                                {# Постфикс модификации #}
+                                #}{# Постфикс модификации #}{#
                                 {{ product.product_modification_postfix }}
 
                             </a>
@@ -153,12 +161,12 @@
 
                     <div class="ms-3 fw-bolder w-25 text-center h5">
                         {{ product.total }}
-                        {# {{ product.product_price }}
-						{{ product_price_currency }} #}
+                        #}{# {{ product.product_price }}
+						{{ product_price_currency }} #}{#
                     </div>
 
                 </div>
-            {% endfor %}
+            {% endfor %}#}
 
 
             <div class="mt-3">
@@ -184,7 +192,9 @@
                 {{ form_widget(form.incoming, { label: '
                     <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
                     <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
-			    '}) }}
+			    ',
+                    attr: { class:  order ? 'btn-warning' : 'btn-primary' }
+                }) }}
             </div>
         </div>
 

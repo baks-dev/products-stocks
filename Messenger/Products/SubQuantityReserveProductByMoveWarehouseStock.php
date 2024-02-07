@@ -90,13 +90,23 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         }
 
         /** Получаем предыдущий статус заявки */
-        $ProductStockEvent = $this->entityManager
+        $lastProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getLast());
 
-        // Если предыдущий Статус не является "Перемещение"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        if(!$lastProductStockEvent)
         {
+            return;
+        }
+
+        // Если предыдущий Статус не является Moving «Перемещение»
+        if (false === $lastProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        {
+
+            $this->logger
+                ->notice('Не снимаем резерв и наличие в карточке товара: Статус предыдущего события заявки не является Moving «Перемещение»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
             return;
         }
 
@@ -108,7 +118,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $product) {
+            foreach ($products as $key => $product) {
 
                 $ProductUpdateQuantityReserve = null;
 
@@ -161,7 +171,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
 
                     $this->entityManager->flush();
 
-                    $this->logger->info('Сняли общий резерв и количество продукции в карточке при перемещении между складами',
+                    $this->logger->info('Сняли общий резерв и количество продукции '.$key.' в карточке при перемещении между складами',
                     [
                         __FILE__.':'.__LINE__,
                         'class' => $ProductUpdateQuantityReserve::class,

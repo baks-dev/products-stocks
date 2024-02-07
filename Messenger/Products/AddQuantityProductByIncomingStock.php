@@ -81,8 +81,18 @@ final class AddQuantityProductByIncomingStock
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
-        // Если Статус не является "Приход на склад"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class)) {
+        if(!$ProductStockEvent)
+        {
+            return;
+        }
+
+        // Если статус не является Incoming «Приход на склад»
+        if (false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class)) {
+
+            $this->logger
+                ->notice('Не пополняем карточку товара: Статус заявки не является Incoming «Приход на склад»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
             return;
         }
 
@@ -90,14 +100,17 @@ final class AddQuantityProductByIncomingStock
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
         if ($products) {
+
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $product) {
+            foreach ($products as $key => $product) {
+
                 $ProductUpdateQuantity = null;
 
                 // Количественный учет модификации множественного варианта торгового предложения
                 if (null === $ProductUpdateQuantity && $product->getModification()) {
+
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
@@ -143,7 +156,7 @@ final class AddQuantityProductByIncomingStock
                     $this->entityManager->flush();
 
 
-                    $this->logger->info('Пополнили общий остаток продукции в карточке',
+                    $this->logger->info('Пополнили общий остаток продукции '.$key.' в карточке',
                     [
                         __FILE__.':'.__LINE__,
                         'class' => $ProductUpdateQuantity::class,

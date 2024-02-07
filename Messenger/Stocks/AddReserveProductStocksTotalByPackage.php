@@ -32,6 +32,7 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -70,58 +71,86 @@ final class AddReserveProductStocksTotalByPackage
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
 
-        // Если Статус не является "Упаковка"
-        if(!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusPackage::class))
+        if(!$ProductStockEvent)
         {
             return;
         }
 
+        if($ProductStockEvent->getStatus()->equals(ProductStockStatusPackage::class) === false)
+        {
+            $this->logger
+                ->notice('Не создаем резерв на складе: Складская заявка не является Package «Упаковка»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+            return;
+        }
+
+
+        if($message->getLast())
+        {
+            $lastProductStockEvent = $this->entityManager->getRepository( ProductStockEvent::class)->find($message->getLast());
+
+            if($lastProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()) === true)
+            {
+                $this->logger
+                    ->notice('Не создаем резерв на складе: Складская заявка при поступлении на склад по заказу (резерв уже имеется)',
+                        [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
+                return;
+            }
+        }
+
+
+        $this->logger
+            ->info('Добавляем резерв продукции на складе статусе заявки Package «Упаковка» заказа',
+                [__FILE__.':'.__LINE__, $message]);
+
         // Получаем всю продукцию в ордере со статусом Package (УПАКОВКА)
         $products = $this->productStocks->getProductsPackageStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
-            {
-                $ProductStockTotal = $this->entityManager
-                    ->getRepository(ProductStockTotal::class)
-                    ->findOneBy(
-                        [
-                            'profile' => $ProductStockEvent->getProfile(),
-                            'product' => $product->getProduct(),
-                            'offer' => $product->getOffer(),
-                            'variation' => $product->getVariation(),
-                            'modification' => $product->getModification(),
-                        ]
-                    );
-
-
-                if($ProductStockTotal)
-                {
-                    $ProductStockTotal->addReserve($product->getTotal());
-
-                    $this->logger->info('Добавили резерв продукции на складе при создании заявки на упаковку',
-                        [
-                            __FILE__.':'.__LINE__,
-                            'profile' => $ProductStockEvent->getProfile(),
-                            'product' => $product->getProduct(),
-                            'offer' => $product->getOffer(),
-                            'variation' => $product->getVariation(),
-                            'modification' => $product->getModification(),
-                            'total' => $product->getTotal(),
-                        ]
-                    );
-                }
-            }
-
-            $this->entityManager->flush();
+            $this->logger
+                ->warning('Заявка на упаковку не имеет продукции в колекции',
+                    [__FILE__.':'.__LINE__]);
+            return;
         }
 
-        $this->logger->info('MessageHandlerSuccess', ['handler' => self::class]);
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $key => $product)
+        {
+            $ProductStockTotal = $this->entityManager
+                ->getRepository(ProductStockTotal::class)
+                ->findOneBy(
+                    [
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                    ]
+                );
+
+            if($ProductStockTotal)
+            {
+                $ProductStockTotal->addReserve($product->getTotal());
+
+                $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на упаковку',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'profile' => $ProductStockEvent->getProfile(),
+                        'product' => $product->getProduct(),
+                        'offer' => $product->getOffer(),
+                        'variation' => $product->getVariation(),
+                        'modification' => $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]
+                );
+            }
+        }
+
+        $this->entityManager->flush();
     }
 }

@@ -31,6 +31,9 @@ setTimeout(function init_YFwgubGn() {
 
     if (object_product) {
 
+        let focus = document.getElementById('moving_product_stock_form_preProduct_select2');
+        focus ? focus.click() : null;
+
         //object_product.addEventListener('change', changeObjectProduct, false);
         object_product.addEventListener('change', function (event) {
             let forms = this.closest('form');
@@ -112,6 +115,9 @@ async function changeObjectProduct(forms) {
                     if (replacer.tagName === 'SELECT') {
                         new NiceSelect(replacer, {searchable: true});
                     }
+
+                    let focus = document.getElementById('moving_product_stock_form_preOffer_select2');
+                    focus ? focus.click() : null;
 
                 }
                 else
@@ -302,6 +308,9 @@ async function changeObjectOffer(forms) {
                             return false;
                         });
 
+                        let focus = document.getElementById( 'moving_product_stock_form_preVariation_select2');
+                        focus ? focus.click() : null;
+
                     }
 
                 } else {
@@ -458,6 +467,9 @@ async function changeObjectVariation(forms) {
                             changeObjectModification(forms);
                             return false;
                         });
+
+                        let focus = document.getElementById('moving_product_stock_form_preModification_select2');
+                        focus ? focus.click() : null;
                     }
 
 
@@ -476,6 +488,10 @@ async function changeObjectVariation(forms) {
                         if (replacerWarehouse && replacerWarehouse.tagName === 'SELECT') {
                             new NiceSelect(replacerWarehouse, {searchable: true});
                         }
+
+                        // let focus = document.getElementById('moving_product_stock_form_targetWarehouse_select2');
+                        // focus ? focus.click() : null;
+
                     }
                 }
 
@@ -634,6 +650,10 @@ async function changeObjectModification(forms) {
                     if (replacer && replacer.tagName === 'SELECT') {
                         new NiceSelect(replacer, {searchable: true});
                     }
+
+                     let focus = document.getElementById('moving_product_stock_form_targetWarehouse_select2');
+                     focus ? focus.click() : null;
+
                 }
 
 
@@ -707,6 +727,12 @@ function changeObjectWarehause() {
     document.getElementById('moving_product_stock_form_preTotal')
         .setAttribute('max', this.options[index].dataset.max);
 
+    //console.log('changeObjectWarehause');
+
+        setTimeout(function() {
+            let focusDestination = document.getElementById('moving_product_stock_form_destinationWarehouse_select2');
+            focusDestination ? focusDestination.click() : null;
+        }, 100);
 }
 
 

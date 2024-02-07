@@ -70,21 +70,36 @@ final class SubReserveProductStockTotalByMove
             return;
         }
 
-        /** Получаем статус прошлой заявки */
+        /** Получаем статус прошлого события заявки */
         $ProductStockEventLast = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getLast());
 
-        // Если статус прошлой заявки не является "Перемещение"
+        // Если статус предыдущего события заявки не является Moving «Перемещение»
         if (!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
+        {
+            $this->logger
+                ->notice('Не снимаем резерв на складе: Статус предыдущего события не Moving «Перемещение»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
+            return;
+        }
+
+        /** Получаем статус активного события заявки */
+        $ProductStockEvent = $this->entityManager
+            ->getRepository(ProductStockEvent::class)->find($message->getEvent());
+
+        if(!$ProductStockEvent)
         {
             return;
         }
 
-        /** Получаем статус текущей заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
-        // Если статус текущей заявки не является "Отправка на склад (Поступление)"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
+        // Если статус текущей заявки не является Warehouse «Отправили на склад»
+        if (!$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
         {
+            $this->logger
+                ->notice('Не снимаем резерв на складе: Статус заявки не является Warehouse «Отправили на склад»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
             return;
         }
 

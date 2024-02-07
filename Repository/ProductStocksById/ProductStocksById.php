@@ -44,8 +44,12 @@ final class ProductStocksById implements ProductStocksByIdInterface
     /**
      * Метод возвращает всю продукцию заявке с определенным статусом
      */
-    public function getProductsByProductStocksStatus(ProductStockUid $id, ProductStockStatus|ProductStockStatusInterface $status): array
+    public function getProductsByProductStocksStatus(ProductStockUid $id, ProductStockStatus|ProductStockStatusInterface|string $status): array
     {
+        if(is_string($status))
+        {
+            $status = new $status;
+        }
 
         $status = $status instanceof ProductStockStatus ? $status : new ProductStockStatus($status);
         

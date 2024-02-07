@@ -405,10 +405,11 @@ final class AllProductStocks implements AllProductStocksInterface
         // Поиск
         if($this->search->getQuery())
         {
-            if($this->elasticGetIndex)
+            /** Поиск по модификации */
+            $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQuery(), 0) : false;
+
+            if($result)
             {
-                /** Поиск по модификации */
-                $result = $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQuery(), 0);
                 $counter = $result['hits']['total']['value'];
 
                 if($counter)

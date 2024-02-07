@@ -237,6 +237,10 @@
                                 <span class="text-muted opacity-50">Склад: </span>
                                 &nbsp; <strong>{{ item.users_profile_username }}</strong>
 
+
+                                {% if item.status != 'moving' %}
+
+
                                 {% if item.delivery_name %}
                                     <div class="text-dark text-nowrap">
                                         <span class="text-muted opacity-50">Доставка:</span>
@@ -245,12 +249,16 @@
                                 {% endif %}
 
 
-                                {% if item.users_profile_move %}
+
+                                {% if item.products_move %}
                                     <div class="text-dark text-nowrap">
                                         <span class="text-muted opacity-50">Ожидание:</span>
                                         &nbsp; {{ item.users_profile_move }}
                                     </div>
                                 {% endif %}
+
+                                {% endif %}
+
 
                                 {% if item.users_profile_destination %}
 
@@ -261,7 +269,6 @@
                                 {% endif %}
 
                                 {% if item.date_package %}
-
 
                                     <div class="text-dark text-nowrap">
                                         <span class="text-muted opacity-50">Погрузка:</span>
@@ -360,7 +367,7 @@
 
                         {% else %}
 
-                            {% if not item.products_move and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
+                            {% if (not item.products_move or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
 
 
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"

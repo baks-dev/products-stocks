@@ -28,12 +28,13 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
+/**
+ * Статус "Отменен".
+ */
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusCancel implements ProductStockStatusInterface
 {
-    /**
-     * Статус "Отменен".
-     */
+
     public const STATUS = 'cancel';
 
     /** Возвращает значение (value) */
@@ -41,12 +42,4 @@ class ProductStockStatusCancel implements ProductStockStatusInterface
     {
         return self::STATUS;
     }
-//
-//    /**
-//     * Проверяет, относится ли статус к данному объекту
-//     */
-//    public static function equals(string $status): bool
-//    {
-//        return self::STATUS === $status;
-//    }
 }

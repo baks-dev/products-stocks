@@ -32,6 +32,53 @@ setTimeout(function init_xXgmjezHJ() {
 
         $addButtonStock.addEventListener('click', addProductPurchase, false);
 
+        /* Имя формы */
+        let purchaseForm = document.forms.purchase_product_stock_form;
+
+
+        let forms = object_product.closest('form');
+
+
+        /* событие отправки формы */
+        // forms.addEventListener('submit', function (event) {
+        //     event.preventDefault();
+        //     return false;
+        // });
+
+        document.getElementById('purchase_product_stock_form_purchase')
+            .addEventListener('click', function (event) {
+                if (event.key !== "Enter") {
+                    submitModalForm(forms);
+                }
+                return false;
+            });
+
+        document.getElementById("purchase_product_stock_form_preTotal")
+            .addEventListener("keydown", function (event) {
+
+                if (event.key === "Enter") {
+                    addProductPurchase();
+                }
+            });
+
+
+        document.getElementById("purchase_product_stock_form_number")
+            .addEventListener("keydown", function (event) {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
+
+                    if (input_preProduct) {
+                        document.getElementById('purchase_product_stock_form_preProduct_select2').click();
+
+                    }
+                }
+            });
+
+
         return;
     }
 
@@ -354,7 +401,7 @@ function addProductPurchase() {
     }
 
     /* получаем прототип коллекции  */
-    let $addButtonStock = this;
+    let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
 
     let newForm = $addButtonStock.dataset.prototype;
     let index = $addButtonStock.dataset.index * 1;
@@ -426,6 +473,36 @@ function addProductPurchase() {
 
 
     //});
+
+
+    /* После применения сбрасываем ТП и выделяем продукцию  */
+
+    document.getElementById('preOffer').innerHTML = '';
+
+
+    var limit_faaJUfW = 1000;
+
+    setTimeout(function init_TQCmNQtx() {
+
+        var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
+
+        if (input_preProduct) {
+            document.getElementById('purchase_product_stock_form_preProduct_select2').click();
+            return;
+        }
+
+
+        if (limit_faaJUfW > 1000) {
+            return;
+        }
+
+        limit_faaJUfW = limit_faaJUfW * 2;
+
+        setTimeout(init_TQCmNQtx, limit_faaJUfW);
+
+    }, 100);
+
+
 }
 
 

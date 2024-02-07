@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ExistProductStocksMoveOrder;
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity as EntityProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -32,12 +33,14 @@ use Doctrine\DBAL\Connection;
 
 final class ExistProductStocksMoveOrder implements ExistProductStocksMoveOrderInterface
 {
-    private Connection $connection;
+
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
-        Connection $connection,
-    ) {
-        $this->connection = $connection;
+        DBALQueryBuilder $DBALQueryBuilder
+    )
+    {
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /**
@@ -45,33 +48,29 @@ final class ExistProductStocksMoveOrder implements ExistProductStocksMoveOrderIn
      */
     public function existProductMoveOrder(OrderUid $order): bool
     {
-        $qbExist = $this->connection->createQueryBuilder();
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qbExist->select('1');
-        $qbExist->from(EntityProductStock\Move\ProductStockMove::TABLE, 'move');
-        $qbExist->where('move.ord = :order');
+        $dbal
+            ->from(EntityProductStock\Move\ProductStockMove::TABLE, 'move')
+            ->where('move.ord = :order')
+            ->setParameter('order', $order, OrderUid::TYPE);
 
-        $qbExist->join(
-            'move',
-            EntityProductStock\Event\ProductStockEvent::TABLE,
-            'event',
-            'event.id = move.event AND event.status != :incoming '
-        );
+        $dbal
+            ->join(
+                'move',
+                EntityProductStock\Event\ProductStockEvent::TABLE,
+                'event',
+                'event.id = move.event AND event.status != :incoming '
+            )
+            ->setParameter('incoming', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
 
-        $qbExist->join(
+        $dbal->join(
             'event',
             EntityProductStock\ProductStock::TABLE,
             'stock',
             'stock.event = event.id'
         );
 
-        $qb = $this->connection->createQueryBuilder();
-        $qb->select(sprintf('EXISTS(%s)', $qbExist->getSQL()));
-
-        $qb->setParameter('order', $order, OrderUid::TYPE);
-
-        $qb->setParameter('incoming', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
-
-        return $qb->fetchOne();
+        return $dbal->fetchExist();
     }
 }

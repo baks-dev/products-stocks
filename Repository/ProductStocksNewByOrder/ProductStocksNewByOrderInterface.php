@@ -26,11 +26,12 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksNewByOrder;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface ProductStocksNewByOrderInterface
 {
     /**
      * Метод получает заявку на упаковку заказа
      */
-    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, ContactsRegionCallConst $warehouse): ?ProductStockEvent;
+    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, UserProfileUid $profile): ?ProductStockEvent;
 }

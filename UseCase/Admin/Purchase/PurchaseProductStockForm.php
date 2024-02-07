@@ -29,6 +29,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -420,7 +421,7 @@ final class PurchaseProductStockForm extends AbstractType
         // Сохранить
         $builder->add(
             'purchase',
-            SubmitType::class,
+            ButtonType::class,
             ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
         );
     }

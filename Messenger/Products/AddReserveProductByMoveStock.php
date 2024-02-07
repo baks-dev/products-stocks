@@ -88,9 +88,18 @@ final class AddReserveProductByMoveStock
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
-        // Если Статус не является "Перемещение"
-        if (!$ProductStockEvent || !$ProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        if(!$ProductStockEvent)
         {
+            return;
+        }
+
+        // Если Статус не является Статус Moving «Перемещение»
+        if (false === $ProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        {
+            $this->logger
+                ->notice('Не резервируем карточку товара: Статус заявки не является Moving «Перемещение»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
             return;
         }
 
@@ -102,7 +111,7 @@ final class AddReserveProductByMoveStock
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $product) {
+            foreach ($products as $key => $product) {
 
                 $ProductUpdateReserve = null;
 
@@ -153,7 +162,7 @@ final class AddReserveProductByMoveStock
                     $ProductUpdateReserve->addReserve($product->getTotal());
                     $this->entityManager->flush();
 
-                    $this->logger->info('Добавили общий резерв продукции в карточке',
+                    $this->logger->info('Добавили общий резерв продукции '.$key.' в карточке',
                     [
                         __FILE__.':'.__LINE__,
                         'class' => $ProductUpdateReserve::class,

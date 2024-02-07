@@ -229,13 +229,13 @@
 
                 <table class="mb-5">
                     <tbody>
-                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
+                        {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
                     </tbody>
 
                     {% set card = item.id %}
                     {% endif %}
 
-                    {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
+                        {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
                     {% endfor %}
                 </table>
             </div>

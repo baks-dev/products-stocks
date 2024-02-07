@@ -28,12 +28,13 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
+/**
+ * Статус Extradition «Укомплектована, готова к выдаче»
+ */
 #[AutoconfigureTag('baks.product.stock.status')]
 final class ProductStockStatusExtradition implements ProductStockStatusInterface
 {
-    /**
-     * Заявка укомплектована
-     */
+
     public const STATUS = 'extradition';
 
     /** Возвращает значение (value) */
@@ -41,13 +42,5 @@ final class ProductStockStatusExtradition implements ProductStockStatusInterface
     {
         return self::STATUS;
     }
-
-//    /**
-//     * Проверяет, относится ли статус к данному объекту
-//     */
-//    public static function equals(string $status): bool
-//    {
-//        return self::STATUS === $status;
-//    }
 
 }

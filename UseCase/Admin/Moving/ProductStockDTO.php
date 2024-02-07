@@ -67,6 +67,9 @@ final class ProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    /** Идентификатор заказа на сборку */
+    private Orders\ProductStockOrderDTO $ord;
+
     public function __construct()
     {
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving());
@@ -75,6 +78,7 @@ final class ProductStockDTO implements ProductStockEventInterface
 
         $this->number = number_format(microtime(true) * 100, 0, '.', '.');
         $this->move = new Move\ProductStockMoveDTO();
+        $this->ord = new Orders\ProductStockOrderDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -157,16 +161,16 @@ final class ProductStockDTO implements ProductStockEventInterface
         $this->number = $number;
     }
 
-    /** Константа Целевого склада */
-    public function getWarehouse(): ?ContactsRegionCallConst
-    {
-        return $this->warehouse;
-    }
-
-    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
-    {
-        $this->warehouse = $warehouse;
-    }
+//    /** Константа Целевого склада */
+//    public function getWarehouse(): ?ContactsRegionCallConst
+//    {
+//        return $this->warehouse;
+//    }
+//
+//    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
+//    {
+//        $this->warehouse = $warehouse;
+//    }
 
 //    /** Константа склада назначения при перемещении */
 //    public function getDestination(): ?ContactsRegionCallConst
@@ -188,5 +192,18 @@ final class ProductStockDTO implements ProductStockEventInterface
     public function setMove(Move\ProductStockMoveDTO $move): void
     {
         $this->move = $move;
+    }
+
+    /** Идентификатор заказа на сборку */
+
+    public function getOrd(): Orders\ProductStockOrderDTO
+    {
+        return $this->ord;
+    }
+
+
+    public function setOrd(Orders\ProductStockOrderDTO $ord): void
+    {
+        $this->ord = $ord;
     }
 }

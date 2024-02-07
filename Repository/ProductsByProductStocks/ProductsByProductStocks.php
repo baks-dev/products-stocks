@@ -61,7 +61,10 @@ use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductsByProductStocks implements ProductsByProductStocksInterface
@@ -72,7 +75,8 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
     public function __construct(
         TranslatorInterface $translator,
         DBALQueryBuilder $DBALQueryBuilder,
-    ) {
+    )
+    {
         $this->translator = $translator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
@@ -85,12 +89,11 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
         $locale = new Locale($this->translator->getLocale());
 
-       // $qb->select('*');
+        // $qb->select('*');
 
         $qb->from(ProductStock::TABLE, 'stock');
         $qb->where('stock.id = :stock');
         $qb->setParameter('stock', $stock, ProductStockUid::TYPE);
-
 
 
         $qb->addSelect('stock_event.number');//->addGroupBy('stock_event.number');
@@ -122,12 +125,13 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         );
 
 
-        $qb->leftJoin(
-            'stock_event',
-            ProductStockMove::TABLE,
-            'stock_move',
-            'stock_move.event = stock_event.id'
-        );
+        $qb
+            ->leftJoin(
+                'stock_event',
+                ProductStockMove::TABLE,
+                'stock_move',
+                'stock_move.event = stock_event.id'
+            );
 
 
         /*$qb->join(
@@ -165,30 +169,49 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         ');*/
 
 
+        $qb->addSelect('destination.id AS destination');
 
 
-
-        /** Пункт назначения при перемещении */
-
-        $qb->addSelect('destination.id AS destination');//->addGroupBy('destination.id');
         $qb->leftJoin(
             'stock_move',
-            ContactsRegionCall::TABLE,
+            UserProfile::TABLE,
             'destination',
-            'destination.const = stock_move.destination AND EXISTS(SELECT 1 FROM '.ContactsRegion::TABLE.' WHERE event = destination.event)'
+            'destination.id = stock_move.destination '
         );
 
 
+        $qb
+            ->addSelect('destination_personal.location AS destination_location')
+            ->addSelect('destination_personal.latitude AS destination_latitude')
+            ->addSelect('destination_personal.longitude AS destination_longitude')
+            ->leftJoin(
+                'destination',
+                UserProfilePersonal::TABLE,
+                'destination_personal',
+                'destination_personal.event = destination.event '
+            );
 
-        $qb->leftJoin(
-            'destination',
-            ContactsRegionCallTrans::TABLE,
-            'destination_trans',
-            'destination_trans.call = destination.id AND destination_trans.local = :local'
-        );
 
-        $qb->setParameter('local', $locale, Locale::TYPE);
-
+        //        /** Пункт назначения при перемещении */
+        //
+        //        $qb->addSelect('destination.id AS destination');//->addGroupBy('destination.id');
+        //        $qb->leftJoin(
+        //            'stock_move',
+        //            ContactsRegionCall::TABLE,
+        //            'destination',
+        //            'destination.const = stock_move.destination '
+        //        );
+        //
+        //// AND EXISTS(SELECT 1 FROM '.ContactsRegion::TABLE.' WHERE event = destination.event)
+        //
+        //        $qb->leftJoin(
+        //            'destination',
+        //            ContactsRegionCallTrans::TABLE,
+        //            'destination_trans',
+        //            'destination_trans.call = destination.id AND destination_trans.local = :local'
+        //        );
+        //
+        //        $qb->setParameter('local', $locale, Locale::TYPE);
 
 
         $qb->leftJoin(
@@ -241,7 +264,6 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         $qb->setParameter('local', $locale, Locale::TYPE);
 
 
-
         /* Информация о доставке  */
         $qb->addSelect(
             "JSON_AGG
@@ -262,14 +284,16 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
          * Продукция
          */
 
-        $qb->join(
-            'stock',
-            Product::TABLE,
-            'product',
-            'product.id = stock_product.product'
-        );
+        $qb
+            ->addSelect('product.id AS product_id')
+            ->join(
+                'stock',
+                Product::TABLE,
+                'product',
+                'product.id = stock_product.product'
+            );
 
-        
+
         $qb->addSelect('product_info.url AS product_url');//->addGroupBy('product_info.url');
         $qb->join(
             'product',
@@ -290,20 +314,18 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
         $qb->setParameter('local', $locale, Locale::TYPE);
 
 
-
         /* Торговое предложение */
 
-        $qb->addSelect('product_offer.value AS product_offer_value');//->addGroupBy('product_offer.value');
-        $qb->addSelect('product_offer.postfix AS product_offer_postfix');//->addGroupBy('product_offer.postfix');
-
-
-        $qb->leftJoin(
-            'product',
-            ProductOffer::TABLE,
-            'product_offer',
-            'product_offer.const = stock_product.offer AND product_offer.event = product.event'
-        );
-
+        $qb
+            ->addSelect('product_offer.const AS product_offer_const')
+            ->addSelect('product_offer.value AS product_offer_value')
+            ->addSelect('product_offer.postfix AS product_offer_postfix')
+            ->leftJoin(
+                'product',
+                ProductOffer::TABLE,
+                'product_offer',
+                'product_offer.const = stock_product.offer AND product_offer.event = product.event'
+            );
 
 
         /* Тип торгового предложения */
@@ -326,82 +348,78 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
 
-        
+
         /**
          * Множественный вариант
          */
 
-        $qb->addSelect('product_variation.value AS product_variation_value');//->addGroupBy('product_variation.value');
-        $qb->addSelect('product_variation.postfix AS product_variation_postfix');//->addGroupBy('product_variation.postfix');
-        $qb->addSelect('category_variation.reference AS product_variation_reference');//->addGroupBy('category_variation.reference');
-        $qb->addSelect('category_variation_trans.name AS product_variation_name');//->addGroupBy('category_variation_trans.name');
-
-
-        $qb->leftJoin(
-            'product_offer',
-            ProductVariation::TABLE,
-            'product_variation',
-            'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
-        );
+        $qb
+            ->addSelect('product_variation.const AS product_variation_const')
+            ->addSelect('product_variation.value AS product_variation_value')
+            ->addSelect('product_variation.postfix AS product_variation_postfix')
+            ->leftJoin(
+                'product_offer',
+                ProductVariation::TABLE,
+                'product_variation',
+                'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+            );
 
         /* Получаем тип множественного варианта */
 
-        $qb->leftJoin(
-            'product_variation',
-            ProductCategoryVariation::TABLE,
-            'category_variation',
-            'category_variation.id = product_variation.category_variation'
-        );
+        $qb
+            ->addSelect('category_variation.reference AS product_variation_reference')
+            ->leftJoin(
+                'product_variation',
+                ProductCategoryVariation::TABLE,
+                'category_variation',
+                'category_variation.id = product_variation.category_variation'
+            );
 
         /* Получаем название множественного варианта */
-        $qb->leftJoin(
-            'category_variation',
-            ProductCategoryVariationTrans::TABLE,
-            'category_variation_trans',
-            'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
-        );
-
-
+        $qb
+            ->addSelect('category_variation_trans.name AS product_variation_name')
+            ->leftJoin(
+                'category_variation',
+                ProductCategoryVariationTrans::TABLE,
+                'category_variation_trans',
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+            );
 
 
         /**
          * Модификация множественного варианта торгового предложения
          */
 
-        $qb->addSelect('product_modification.value AS product_modification_value'); //->addGroupBy('product_modification.value');
-        $qb->addSelect('product_modification.postfix AS product_modification_postfix'); //->addGroupBy('product_modification.postfix');
+        $qb
+            ->addSelect('product_modification.const AS product_modification_const')
+            ->addSelect('product_modification.value AS product_modification_value')
+            ->addSelect('product_modification.postfix AS product_modification_postfix')
+            ->leftJoin(
+                'product_variation',
+                ProductModification::TABLE,
+                'product_modification',
+                'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+            );
 
 
-        $qb->leftJoin(
-            'product_variation',
-            ProductModification::TABLE,
-            'product_modification',
-            'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
-        );
-
-
-
-
-        $qb->addSelect('category_modification.reference AS product_modification_reference'); //->addGroupBy('category_modification.reference');
-        $qb->addSelect('category_modification_trans.name AS product_modification_name'); //->addGroupBy('category_modification_trans.name');
-
-        $qb->leftJoin(
-            'product_modification',
-            ProductCategoryModification::TABLE,
-            'category_modification',
-            'category_modification.id = product_modification.category_modification'
-        );
+        $qb
+            ->addSelect('category_modification.reference AS product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                ProductCategoryModification::TABLE,
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
+            );
 
         /* Получаем название типа модификации */
-        $qb->leftJoin(
-            'category_modification',
-            ProductCategoryModificationTrans::TABLE,
-            'category_modification_trans',
-            'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
-        );
-
-
-
+        $qb
+            ->addSelect('category_modification_trans.name AS product_modification_name')
+            ->leftJoin(
+                'category_modification',
+                ProductCategoryModificationTrans::TABLE,
+                'category_modification_trans',
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+            );
 
 
         /* Фото продукта */
@@ -447,12 +465,10 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
                ELSE NULL
             END
            AS product_image")
-
             ->addGroupBy('product_modification_image.name')
             ->addGroupBy('product_variation_image.name')
             ->addGroupBy('product_offer_image.name')
-            ->addGroupBy('product_photo.name')
-        ;
+            ->addGroupBy('product_photo.name');
 
         $qb->addSelect('
          CASE
@@ -470,8 +486,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
             ->addGroupBy('product_modification_image.ext')
             ->addGroupBy('product_variation_image.ext')
             ->addGroupBy('product_offer_image.ext')
-            ->addGroupBy('product_photo.ext')
-        ;
+            ->addGroupBy('product_photo.ext');
 
         $qb->addSelect('
         CASE
@@ -489,9 +504,7 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
             ->addGroupBy('product_modification_image.cdn')
             ->addGroupBy('product_variation_image.cdn')
             ->addGroupBy('product_offer_image.cdn')
-            ->addGroupBy('product_photo.cdn')
-        ;
-
+            ->addGroupBy('product_photo.cdn');
 
 
         /* Категория */
@@ -520,8 +533,26 @@ final class ProductsByProductStocks implements ProductsByProductStocksInterface
                 'category_info.event = category.event'
             );
 
-        $qb->allGroupByExclude();
 
+        /** Наличие и место на складе */
+
+        $qb
+            ->addSelect('stock_total.storage AS stock_total_storage')
+            ->leftJoin(
+                'product_modification',
+                ProductStockTotal::TABLE,
+                'stock_total',
+                '
+                    stock_total.profile = stock_event.profile AND
+                    stock_total.product = product.id AND
+                    stock_total.offer = product_offer.const AND
+                    stock_total.variation = product_variation.const AND
+                    stock_total.modification = product_modification.const
+                '
+            );
+
+
+        $qb->allGroupByExclude();
 
         /* Кешируем результат DBAL */
         return $qb

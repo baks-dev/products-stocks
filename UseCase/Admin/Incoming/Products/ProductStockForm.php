@@ -38,36 +38,35 @@ final class ProductStockForm extends AbstractType
 
     private ProductDetailByConstInterface $productDetailByConst;
 
-    public function __construct(ProductDetailByConstInterface $productDetailByConst) {
+    public function __construct(ProductDetailByConstInterface $productDetailByConst)
+    {
         $this->productDetailByConst = $productDetailByConst;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
 
+            /** @var ProductStockDTO $product */
+            $product = $event->getData();
 
-    $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
-
-        /** @var ProductStockDTO $product */
-        $product = $event->getData();
-
-        if ($product) {
-
-            $product->detail = $this->productDetailByConst->fetchProductDetailByConstAssociative
-            (
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification()
-            ) ?: null;
-        }
-    });
+            if($product)
+            {
+                $product->detail = $this->productDetailByConst->fetchProductDetailByConstAssociative
+                (
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                ) ?: null;
+            }
+        });
 
         // Количество
 
         $builder->add('total', IntegerType::class);
 
-        $builder->add('storage', TextType::class);
+        $builder->add('storage', TextType::class, ['required' => false]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

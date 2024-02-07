@@ -43,7 +43,7 @@ final class ProductWarehouseByOrder implements ProductWarehouseByOrderInterface
     }
 
     /**
-     * Метод возвращает идентификатор склада, на который была отправлена заявки для сборки
+     * Метод возвращает идентификатор склада (профиля), на который была отправлена заявки для сборки
      */
     public function getWarehouseByOrder(OrderUid $order) : ?UserProfileUid
     {
@@ -57,6 +57,8 @@ final class ProductWarehouseByOrder implements ProductWarehouseByOrderInterface
 
         $qb->where('ord.ord = :order');
         $qb->setParameter('order', $order, OrderUid::TYPE);
+
+        $qb->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
     }

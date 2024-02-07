@@ -69,23 +69,29 @@ final class SubReserveProductStocksTotalByOrderDelivery
     public function __invoke(OrderMessage $message): void
     {
 
+        /* Снимаем резерв со склада при модуле доставки */
         if(!class_exists(OrderStatusDelivery::class))
         {
             return;
         }
 
-        /**
-         * Получаем активное событие.
-         *
-         * @var OrderEvent $OrderEvent
-         */
         $OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
 
-        /* Если статус заказа не "ДОСТАВКА" - завершаем обработчик */
-        if (!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusDelivery::class))
+        if(!$OrderEvent)
         {
             return;
         }
+
+        /* Если статус заказа не Delivery «Доставка (погружен в транспорт)» */
+        if (!$OrderEvent->getStatus()->equals(OrderStatusDelivery::class))
+        {
+            $this->logger
+                ->notice('Не снимаем резерв на складе: Статус заказа не Delivery «Доставка (погружен в транспорт)»',
+                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+
+            return;
+        }
+
 
         /**
          * Получаем склад, на который была отправлена заявка для сборки.
@@ -158,7 +164,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         $ProductStockTotal->subReserve($product->getTotal());
         $ProductStockTotal->subTotal($product->getTotal());
 
-        $this->logger->info('Сняли резерв и уменьшили количество на складе при доставке',
+        $this->logger->info('Сняли резерв и уменьшили количество на складе при «Доставка (погружен в транспорт)»',
             [
                 __FILE__.':'.__LINE__,
                 'profile' => $profile,

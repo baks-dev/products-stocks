@@ -51,6 +51,7 @@ final class IncomingController extends AbstractController
         $ProductStockEvent->getDto($IncomingProductStockDTO);
         $IncomingProductStockDTO->setComment(null); // обнуляем комментарий
 
+
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
             'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),
@@ -76,7 +77,8 @@ final class IncomingController extends AbstractController
         return $this->render([
             'form' => $form->createView(),
             'name' => $ProductStockEvent->getNumber(),
-            'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
+            'order' => $ProductStockEvent->getOrder() !== null
+            //'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
         ]);
     }
 }

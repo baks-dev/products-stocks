@@ -28,13 +28,13 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
+/**
+ * Статус "Принят со склада заявителю"
+ */
 
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusAccept implements ProductStockStatusInterface
 {
-    /**
-     * Статус "Принят со склада заявителю"
-     */
     public const STATUS = 'accept';
 
     /** Возвращает значение (value) */
@@ -42,13 +42,5 @@ class ProductStockStatusAccept implements ProductStockStatusInterface
     {
         return self::STATUS;
     }
-
-//    /**
-//     * Проверяет, относится ли статус к данному объекту
-//     */
-//    public static function equals(string $status): bool
-//    {
-//        return self::STATUS === $status;
-//    }
 
 }

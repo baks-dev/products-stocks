@@ -26,19 +26,19 @@
                    style="width: 45px; height: 45px;"
                 ></a>
             </div>
-            
+
             <div class="ms-5">
 
                 {# Название #}
-                <a href="{#{{ path('products-product:user.detail', {
+                <a href="{# {{ path('products-product:user.detail', {
                     url : item.product_url ,
                     offer: item.product_offer_value,
                     variation: item.product_variation_value,
                     modification: item.product_modification_value
-                }) }}#}"
+                }) }} #}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                    target="_detail"
-                   >
+                >
 
                     {{ item.product_name }}
 
@@ -56,23 +56,21 @@
                     {# Постфикс модификации #}
                     {{ item.product_modification_postfix }}
 
-
                     {# Свойства, учавствующие в названии #}
                     {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
 						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
 					{% endfor %} #}
 
-
                 </a>
 
                 {# Описание #}
-                {#<div class="text-muted small">54654 dfgsd
+                {# <div class="text-muted small">54654 dfgsd
                     {{ string_width(item.product_description, 150)|raw }}
-                </div>#}
+                </div> #}
 
                 {# Артикул #}
                 <div class="text-muted ">
-                    <strong>Артикул:</strong> {{ item.product_article }}
+                    <strong>Артикул:</strong> &nbsp;<small>{{ item.product_article }}</small>
                 </div>
             </div>
 
@@ -89,11 +87,34 @@
     </td>
 
     <td class="text-center">
-        {{ item.stock_total - item.stock_reserve }}
+
+        {% if item.stock_total >= item.stock_reserve %}
+            {{ item.stock_total - item.stock_reserve }}
+        {% else %}
+            0 <span
+                    class="pointer badge text-bg-danger"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-delay='{"show":600,"hide":100}'
+                    title='Ожидается поступление'
+            > + {{ item.stock_reserve - item.stock_total }}
+        </span>
+        {% endif %}
+
     </td>
 
     <td class="text-center">
-        {{ item.stock_reserve }}
+
+            <span
+                    class="pointer {{ item.stock_reserve > item.stock_total ? 'badge text-bg-danger' }}"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-delay='{"show":600,"hide":100}'
+                    title='Резерв превышает наличие! Требуется перемещение либо приход.'
+            >
+                {{ item.stock_reserve }}
+            </span>
+
     </td>
 
     <td class="text-center">
