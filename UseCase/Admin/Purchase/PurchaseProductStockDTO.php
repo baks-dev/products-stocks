@@ -84,7 +84,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     {
         $this->profile = $profile;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusPurchase());
-
         $this->product = new ArrayCollection();
     }
 
