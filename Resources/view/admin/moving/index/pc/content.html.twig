@@ -22,7 +22,7 @@
                 {# Добавить перемещение #}
                 {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.moving.new') }}"
-                       class="btn btn-danger modal-link"
+                       class="btn btn-danger modal-link disabled"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Добавить перемещение">
@@ -188,7 +188,7 @@
 
                             <div>
                                 <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                                   class="text-hover-primary fw-bolder text-decoration-none modal-link"
+                                   class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Детали заявки">
@@ -227,7 +227,7 @@
                                         variation: item.product_variation_value,
                                         modification: item.product_modification_value
                                     }) }} #}"
-                                       class="text-decoration-none mb-1 modal-link fw-bolder text-muted"
+                                       class="text-decoration-none mb-1 modal-link disabled fw-bolder text-muted"
                                        target="_detail"
                                     >
                                         {{ item.product_name }}
@@ -294,7 +294,7 @@
 
                                 {% if item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
                                     <a href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
-                                       class="btn btn-primary modal-link text-nowrap"
+                                       class="btn btn-primary modal-link disabled text-nowrap"
                                        data-bs-toggle="modal"
                                        data-bs-target="#modal"
                                        title="Отправить на склад"

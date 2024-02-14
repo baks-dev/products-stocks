@@ -24,7 +24,7 @@
                 {# Добавить перемещение #}
                 {# {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.moving.new') }}"
-                       class="btn btn-danger modal-link"
+                       class="btn btn-danger modal-link disabled"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Добавить перемещение">
@@ -205,7 +205,7 @@
 
                             <div>
                                 <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                                   class="text-hover-primary fw-bolder text-decoration-none modal-link  text-nowrap"
+                                   class="text-hover-primary fw-bolder text-decoration-none modal-link disabled  text-nowrap"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Детали заявки">
@@ -358,7 +358,7 @@
                         {% if item.status == 'error' %}
 
                             <a href="{{ path('delivery-transport:admin.divide', { id : item.event }) }}"
-                               class="btn btn-danger modal-link text-nowrap mb-3"
+                               class="btn btn-danger modal-link disabled text-nowrap mb-3"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
                                title="Разделить заказ эффективно распределив по транспорту">
@@ -371,7 +371,7 @@
 
 
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"
-                                   class="btn btn-warning modal-link text-nowrap mb-3"
+                                   class="btn btn-warning modal-link disabled text-nowrap mb-3"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Отправить в доставку">

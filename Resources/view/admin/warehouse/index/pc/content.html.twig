@@ -174,7 +174,7 @@
 
                     <div>
                         <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                           class="text-hover-primary fw-bolder text-decoration-none modal-link"
+                           class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                            data-bs-toggle="modal"
                            data-bs-target="#modal"
                            title="Детали заявки">
@@ -225,7 +225,7 @@
                     <div>
                         {% if is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
-                               class="btn btn-primary modal-link text-nowrap"
+                               class="btn btn-primary modal-link disabled text-nowrap"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
                                title="Принять на склад продукцию">

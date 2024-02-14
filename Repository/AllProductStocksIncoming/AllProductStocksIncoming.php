@@ -99,6 +99,9 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'stock_product.event = stock.event'
         );
 
+
+
+
         //        // Warehouse
         //        $exist = $this->DBALQueryBuilder->builder();
         //        $exist->select('1');
@@ -188,6 +191,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'category_offer.id = product_offer.category_offer'
         );
 
+
         // Множественные варианты торгового предложения
 
         $qb->addSelect('product_offer_variation.id as product_variation_uid');
@@ -210,6 +214,8 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'category_offer_variation.id = product_offer_variation.category_variation'
         );
 
+
+
         // Модификация множественного варианта торгового предложения
 
         $qb->addSelect('product_offer_modification.id as product_modification_uid');
@@ -220,8 +226,9 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'product_offer_variation',
             ProductEntity\Offers\Variation\Modification\ProductModification::TABLE,
             'product_offer_modification',
-            'product_offer_modification.variation = product_offer_variation.id'
+            'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
         );
+
 
         // Получаем тип модификации множественного варианта
         $qb->addSelect('category_offer_modification.reference as product_modification_reference');
@@ -229,7 +236,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'product_offer_modification',
             CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::TABLE,
             'category_offer_modification',
-            'category_offer_modification.id = product_offer_modification.category_modification AND product_offer_modification.const = stock_product.modification'
+            'category_offer_modification.id = product_offer_modification.category_modification'
         );
 
         // Артикул продукта
@@ -361,6 +368,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
             'category_trans',
             'category_trans.event = category.event AND category_trans.local = :local'
         );
+
 
 
         // ОТВЕТСТВЕННЫЙ
