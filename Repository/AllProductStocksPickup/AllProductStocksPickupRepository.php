@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPurchase;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
+
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-//use BaksDev\Products\Category\Entity as CategoryEntity;
-//use BaksDev\Products\Product\Entity as ProductEntity;
-//use BaksDev\Products\Stocks\Entity as ProductStockEntity;
+use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
+use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
@@ -59,60 +59,58 @@ use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class AllProductStocksPurchase implements AllProductStocksPurchaseInterface
+final class AllProductStocksPickupRepository implements AllProductStocksPickupInterface
 {
     private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?SearchDTO $search = null;
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
     )
     {
-
         $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
-    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
+    public function search(SearchDTO $search): self
     {
-        $dbal = $this->DBALQueryBuilder
-            ->createQueryBuilder(self::class)
-            ->bindLocal();
+        $this->search = $search;
+        return $this;
+    }
 
-        // Stock
+
+    public function findAll(UserProfileUid $profile): PaginatorInterface
+    {
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
         // ProductStock
         $dbal
-            ->select('stock.id')
-            ->addSelect('stock.event')
+            ->select('stock.id AS stock_id')
+            ->addSelect('stock.event AS stock_event')
             ->from(ProductStock::class, 'stock');
 
         // ProductStockEvent
         // $dbal->addSelect('event.total');
         $dbal
-            ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
+            ->addSelect('event.number')
             ->join(
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'.($profile ? ' AND event.profile = :profile' : '')
-            );
-
-
-        if($profile)
-        {
-            $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
-        }
-
-        $dbal->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPurchase()), ProductStockStatus::TYPE);
+                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+            )
+            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusExtradition()), ProductStockStatus::TYPE);
 
 
         // ProductStockModify
-        $dbal
-            ->addSelect('modify.mod_date')
+        $dbal->addSelect('modify.mod_date')
             ->join(
                 'event',
                 ProductStockModify::class,
@@ -123,6 +121,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
+            ->addSelect('stock_product.storage')
             ->join(
                 'event',
                 ProductStockProduct::class,
@@ -192,6 +191,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
                 'category_offer.id = product_offer.category_offer'
             );
 
+
         // Множественные варианты торгового предложения
 
         $dbal
@@ -215,6 +215,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
                 'category_offer_variation.id = product_offer_variation.category_variation'
             );
 
+
         // Модификация множественного варианта торгового предложения
 
         $dbal
@@ -227,6 +228,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
                 'product_offer_modification',
                 'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
             );
+
 
         // Получаем тип модификации множественного варианта
         $dbal
@@ -314,6 +316,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
         );
 
         // Расширение файла
+        // Расширение файла
         $dbal->addSelect(
             "
 			CASE
@@ -368,6 +371,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
                 'category_trans.event = category.event AND category_trans.local = :local'
             );
 
+
         // ОТВЕТСТВЕННЫЙ
 
         // UserProfile
@@ -409,7 +413,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
         // Avatar
 
         $dbal
-            ->addSelect("CONCAT ('/upload/".UserProfileAvatar::class."' , '/', users_profile_avatar.name) AS users_profile_avatar")
+            ->addSelect("CONCAT ( '/upload/".UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar")
             ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
             ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
             ->leftJoin(
@@ -419,24 +423,22 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
                 'users_profile_avatar.event = users_profile_event.id'
             );
 
-        // Группа
-        $dbal->addSelect('NULL AS group_name'); // Название группы
-
+        if(class_exists(BaksDevDeliveryTransportBundle::class))
+        {
+            /** Проверяем, чтобы не было на доставке упаковки */
+            $dbal->andWhereNotExists(DeliveryPackageStocks::class, 'tmp', 'tmp.stock = stock.id');
+        }
 
         // Поиск
-        if($search->getQuery())
+        if($this->search->getQuery())
         {
-
             $dbal
-                ->createSearchQueryBuilder($search)
+                ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number');
-
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
-        //$dbal->addOrderBy('stock.number', 'DESC');
 
         return $this->paginator->fetchAllAssociative($dbal);
-
     }
 }

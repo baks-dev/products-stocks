@@ -1,0 +1,43 @@
+{% trans_default_domain 'materials.warehouse' %}
+
+<thead class="mb-5 ">
+<tr class="text-uppercase text-muted opacity-50">
+
+    {#<th class="w-10px pe-2 sorting_disabled" rowspan="1" colspan="1" style="width: 25px;">
+        </th>#}
+
+    {# Чекбокс #}
+    {#<th class="w-25px pe-2">
+            <div class="form-check form-check-sm form-check-custom pb-5">
+                <label>
+                    <input class="form-check-input checked-item-all" type="checkbox" onchange="checkedAll(this)" value="1">
+                </label>
+            </div>
+        </th>#}
+
+    <th class="pb-5 ps-5 w-100">
+        {# Продукция #}
+        {{ 'Продукция'|trans }}
+    </th>
+
+    <th class="pb-5 ps-5 w-25">
+        {# Категория #}
+        {{ 'Категория'|trans }}
+    </th>
+
+    <th class="pb-5 ps-5 w-25">
+        {# Артикул #}
+        {{ 'Количество'|trans }}
+    </th>
+
+   {# <th class="pb-5 ps-5 w-25">
+        #}{# Артикул #}{#
+        {{ 'Наличие'|trans }}
+    </th>#}
+    {#<th class="pb-5 ps-5 w-25">
+    #}{# Статус #}{#
+    {{ 'Статус'|trans }}
+</th>#}
+
+</tr>
+</thead>

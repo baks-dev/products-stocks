@@ -1,0 +1,181 @@
+{% trans_default_domain 'products-stocks.package' %}
+
+{% set current = products|first %}
+
+<div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+    <div class="modal-content p-3 border-bottom border-5 border-primary">
+        {% if current %}
+
+        {{ form_start(form) }}
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+                Выдача заказа #{{ current.number }}
+            </h5>
+
+            <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                 aria-label="Close">
+                <span class="svg-icon svg-icon-2x"></span>
+            </div>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="w-100 text-uppercase text-muted opacity-50">Клиент</div>
+            {# Клиент #}
+            {{ user_profile(current.order_client) }}
+
+            <hr>
+
+            <div class="d-flex justify-content-between align-items-center gap-3 text-uppercase text-muted opacity-50">
+                <div class="w-100">Продукция</div>
+                <div class="w-25 text-center">Количество</div>
+            </div>
+
+            {% for product in products %}
+                <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+
+                    <div class="w-100 d-flex align-items-center gap-3">
+
+                        {# Обложка  #}
+                        {% set image_path = '/assets/img/blank.svg' %}
+
+                        {% if product.product_image_ext is defined and product.product_image_ext is not null %}
+                            {% set img_host =  product.product_image_cdn == true  ? CDN_HOST : '' %}
+                            {% set img_dir = product.product_image %}
+                            {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ product.product_image_ext %}
+                            {% set image_path = img_host ~ img_dir ~ img_file %}
+                        {% endif %}
+
+
+                        <div class="icon rounded-3 bg-cover lazy p-1" style="width: 50px; height: 50px;"
+                             data-bg="{{ image_path }}">
+                        </div>
+
+                        <div class="w-100">
+
+                            <a href="{{ path('products-product:user.detail', {
+                                category: product.category_url,
+                                url : product.product_url ,
+                                offer: product.product_offer_value,
+                                variation: product.product_variation_value,
+                                modification: product.product_modification_value
+                            }) }}" class="fw-bold text-decoration-none" target="_detail">
+
+                                {{ product.product_name }}
+
+                                {# Значение множественного варианта ТП #}
+                                {{ product.product_variation_value|call_twig_func(product.product_variation_reference~'_render')
+                                ~ product.product_modification_value|call_twig_func(product.product_modification_reference~'_render') }}
+
+                                {# Значение торгового предложения #}
+                                {{ product.product_offer_value|call_twig_func(product.product_offer_reference~'_render') }}
+
+                                {# Постфикс торгового предложения #}
+                                {{ product.product_offer_postfix }}
+                                {# Постфикс множественного варианта #}
+                                {{ product.product_variation_postfix }}
+                                {# Постфикс модификации #}
+                                {{ product.product_modification_postfix }}
+
+                            </a>
+
+                            <div class="text-muted small">
+
+                                {% if product.product_offer_value %}
+                                    {{ product.product_offer_name }} :
+                                    <strong>{{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}</strong>
+                                {% endif %}
+
+                                {% if product.product_variation_value %}
+                                    , {{ product.product_variation_name }} :
+                                    <strong>{{ product.product_variation_value|call_twig_func(product.product_variation_reference) }}</strong>
+                                {% endif %}
+
+                                {% if product.product_modification_value %}
+                                    , {{ product.product_modification_name }}:
+                                    <strong>{{ product.product_modification_value|call_twig_func(product.product_modification_reference) }}</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="ms-3 fw-bolder w-25 text-center h5">
+                        {{ product.total }}
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+            <div class="alert alert-warning" role="alert">
+                Убедитесь, что выбран именно тот заказ, который необходимо выдать клиенту, и нажмите Заказ выдан. <br>
+                Если Вы ошиблись в заказе, нажмите кнопку Отмена.
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <div class="flex-grow-1">
+                &nbsp;
+            </div>
+            <div class="d-flex gap-3">
+                {# Отмена #}
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                </button>
+
+                {% if current and current.destination %}
+
+                    {{ form_widget(form.completed_package, { label: '
+                        <span>Выдать перемещение</span>
+                        <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
+                    ', attr: { class : 'btn-success' }}) }}
+
+                {% else %}
+
+                    {{ form_widget(form.completed_package, { label: '
+                        <span>Заказ выдан клиенту</span>
+                        <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
+                    ', attr: { class : current ? 'btn-success' : ' d-none' }}) }}
+
+                {% endif %}
+            </div>
+
+            {{ form_end(form) }}
+
+
+            {% else %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{ 'Доставка заказа'|trans }}
+                    </h5>
+                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal"
+                         aria-label="Close">
+                        <span class="svg-icon svg-icon-2x"></span>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert">
+                        Продукт был удален
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    {# Отмена #}
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                    </button>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+

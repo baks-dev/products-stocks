@@ -1,24 +1,26 @@
+# Role
 ROLE_PRODUCT_STOCK:
-  name: 'Inventory'
-  desc: 'Inventory inventory'
+  name: 'Warehouse accounting'
+  desc: 'Warehouse accounting of goods'
 
+# Rules
 
 
 ROLE_PRODUCT_STOCK_INCOMING:
   name: 'Incoming orders'
-  desc: 'List of warehouse receipts'
+  desc: 'List of receipt orders for warehouse'
 
 ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
-  name: 'Add a parish'
+  name: 'Add arrival'
 
 
 
 ROLE_PRODUCT_STOCK_MOVING:
-  name: 'Movement'
+  name: 'Moves'
   desc: 'Move goods between warehouses'
 
 ROLE_PRODUCT_STOCK_MOVING_NEW:
-  name: 'Add Move'
+  name: 'Add movement'
   desc: 'Add a request to move goods from the warehouse'
 
 
@@ -30,15 +32,19 @@ ROLE_PRODUCT_STOCK_PURCHASE:
 
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Add purchase'
-  desc: 'Add purchase item to warehouse'
+  desc: 'Add purchase of goods to warehouse'
 
 ROLE_PRODUCT_STOCK_WAREHOUSE:
-  name: 'Inventory Receipts'
-  desc: 'Inventory List'
+  name: 'Receipts to warehouse'
+  desc: 'List of warehouse receipts'
 
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
   name: 'Send to warehouse'
 
 ROLE_PRODUCT_STOCK_PACKAGE:
-  name: 'Packing Orders'
-  desc: 'Packing Load Orders'
+  name: 'Packaging orders'
+  desc: 'Packaging orders for loading'
+
+ROLE_PRODUCT_STOCK_PICKUP:
+  name: 'Issuing orders'
+  desc: 'Issuing orders at the pick-up point (Pickup)'

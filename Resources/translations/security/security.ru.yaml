@@ -46,3 +46,6 @@ ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Упаковка заказов'
   desc: 'Упаковка заказов на погрузку'
 
+ROLE_PRODUCT_STOCK_PICKUP:
+  name: 'Выдача заказов'
+  desc: 'Выдача заказов в пункте выдачи (Самовывоз)'
