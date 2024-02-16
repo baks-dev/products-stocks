@@ -98,16 +98,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        // Stock
-
-        //        // ProductStock
-        //        $dbal
-        //            ->addSelect('stock.id')
-        //            ->addSelect('stock.event')
-        //            ->from(ProductStockEntity\ProductStock::TABLE, 'stock');
-        //
-        //
-
         $dbal
             ->addSelect('event.main AS id')
             ->addSelect('event.id AS event')
@@ -132,22 +122,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         );
 
 
-        // ProductStockEvent
-        // $dbal->addSelect('event.total');
-        //        $dbal
-        //            ->addSelect('event.number')
-        //            ->addSelect('event.comment')
-        //            ->addSelect('event.status')
-        //            ->join(
-        //                'stock',
-        //                ProductStockEvent::class,
-        //                'event',
-        //                'event.id = stock.event AND event.status = :status AND event.profile = :profile')
-        //            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-
-        //$dbal->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
-
         //dd($dbal->fetchAllAssociative());
 
         // ProductStockModify
@@ -170,65 +144,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
                 'stock_product',
                 'stock_product.event = event.id'
             );
-
-        /** Склад назначения */
-
-
-        //        // Целевой склад
-        //
-        //        // Warehouse
-        //        $exist = $this->DBALQueryBuilder->builder();
-        //        $exist->select('1');
-        //        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-        //        $exist->where('tmp.event = warehouse.event');
-        //
-        //        // Product Warehouse
-        //        $dbal->addSelect('warehouse.id as warehouse_id');
-        //        $dbal->addSelect('warehouse.event as warehouse_event');
-        //
-        //        $dbal->join(
-        //            'event',
-        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-        //            'warehouse',
-        //            'warehouse.const = event.warehouse AND EXISTS('.$exist->getSQL().')'
-        //        );
-        //
-        //        // Product Warehouse Trans
-        //        $dbal->addSelect('warehouse_trans.name AS warehouse_name');
-        //        // $dbal->addSelect('warehouse_trans.description AS warehouse_description');
-        //
-        //        $dbal->join(
-        //            'warehouse',
-        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-        //            'warehouse_trans',
-        //            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-        //        );
-
-
-        //        $exist = $this->DBALQueryBuilder->builder();
-        //        $exist->select('1');
-        //        $exist->from(ContactsRegionEntity\ContactsRegion::TABLE, 'tmp');
-        //        $exist->where('tmp.event = destination.event');
-        //
-        //        // Product Warehouse
-        //        $dbal->addSelect('destination.id as destination_id');
-        //        $dbal->addSelect('destination.event as destination_event');
-        //
-        //        $dbal->join(
-        //            'event',
-        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-        //            'destination',
-        //            'destination.const = move.destination AND EXISTS('.$exist->getSQL().')'
-        //        );
-        //
-        //        // Product Warehouse Trans
-        //        $dbal->addSelect('destination_trans.name AS destination_name');
-        //        $dbal->join(
-        //            'destination',
-        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-        //            'destination_trans',
-        //            'destination_trans.call = destination.id AND destination_trans.local = :local'
-        //        );
 
 
         // Product
@@ -492,13 +407,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             'users_profile_info.profile = users_profile.id'
         );
 
-        //        // Event
-        //        $dbal->join(
-        //            'users_profile',
-        //            UserProfileEvent::class,
-        //            'users_profile_event',
-        //            'users_profile_event.id = users_profile.event'
-        //        );
+
 
         // Personal
         $dbal
@@ -537,22 +446,6 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
                 'users_profile_personal_destination',
                 'users_profile_personal_destination.event = users_profile_destination.event'
             );
-
-        //        // Avatar
-        //
-        //        $dbal->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
-        //        $dbal->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
-        //        $dbal->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
-        //
-        //        $dbal->leftJoin(
-        //            'users_profile_event',
-        //            UserProfileEntity\Avatar\UserProfileAvatar::TABLE,
-        //            'users_profile_avatar',
-        //            'users_profile_avatar.event = users_profile_event.id'
-        //        );
-
-
-        //$dbal->addSelect('NULL AS group_name'); // Название группы
 
 
         // Поиск

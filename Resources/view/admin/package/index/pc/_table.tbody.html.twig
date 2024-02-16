@@ -49,12 +49,7 @@
             <div class="ms-5">
 
                 {# Название #}
-                <a href="{#{{ path('products-product:user.detail', {
-                    url : item.product_url ,
-                    offer: item.product_offer_value,
-                    variation: item.product_variation_value,
-                    modification: item.product_modification_value
-                }) }}#}"
+                <a href="#"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                         target="_detail"
                    >
@@ -89,10 +84,6 @@
                     Артикул: <strong>{{ item.product_article }}</strong>
                 </div>
 
-                {# Описание #}
-                {# <div class="text-muted small">54654 dfgsd
-					{{ string_width(item.product_description, 150)|raw }}
-				</div> #}
                 <div>
                     {% if item.product_offer_value %}
                         <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
@@ -111,23 +102,15 @@
         </div>
     </td>
 
-    {# <td class="ps-5 text-nowrap">
-
-		{{ item.article_offer_name }}: {{ reference(item.article_reference, item.offer) }}<br>
-		{{ item.variation_offer_name }}: {{ reference(item.variation_reference, item.variation) }}
-	</td> #}
-
     <td class="ps-5">
         {{ item.category_name }}
     </td>
 
-    <td class="ps-5 text-center fw-bolder vertical-middle {#{{ item.products_move ? 'text-danger' : 'text-primary' }}#} h5">
+    <td class="ps-5 text-center fw-bolder vertical-middle h5">
         {{ item.total }}
     </td>
 
     <td class="ps-5 text-center fw-bolder vertical-middle text-muted">
-
-        {#{{ dump( item.stock_total) }}#}
 
         {{ item.stock_total ?: 'Нет в наличие' }}
     </td>

@@ -31,6 +31,9 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
@@ -49,6 +52,7 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
+use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -57,6 +61,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Entity\Value\UserProfileValue;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksPickupRepository implements AllProductStocksPickupInterface
@@ -81,7 +86,6 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         $this->search = $search;
         return $this;
     }
-
 
     public function findAll(UserProfileUid $profile): PaginatorInterface
     {
@@ -316,7 +320,6 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         );
 
         // Расширение файла
-        // Расширение файла
         $dbal->addSelect(
             "
 			CASE
@@ -410,18 +413,41 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'users_profile_personal.event = users_profile_event.id'
             );
 
-        // Avatar
+
+        $dbal->join(
+            'stock',
+            ProductStockOrder::class,
+            'product_stock_order',
+            'product_stock_order.event = stock.event'
+        );
+
 
         $dbal
-            ->addSelect("CONCAT ( '/upload/".UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar")
-            ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
-            ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
-            ->leftJoin(
-                'users_profile_event',
-                UserProfileAvatar::class,
-                'users_profile_avatar',
-                'users_profile_avatar.event = users_profile_event.id'
+            ->join(
+                'product_stock_order',
+                Order::class,
+                'ord',
+                'ord.id = product_stock_order.ord'
             );
+
+        $dbal
+            ->addSelect('ord_client.profile AS client_profile_event')
+            ->leftJoin(
+                'ord',
+                OrderUser::class,
+                'ord_client',
+                'ord_client.event = ord.event'
+            );
+
+        if($this->search->getQuery())
+        {
+            $dbal->join(
+                'ord_client',
+                UserProfileValue::class,
+                'client_profile_value',
+                'client_profile_value.event = ord_client.profile'
+            );
+        }
 
         if(class_exists(BaksDevDeliveryTransportBundle::class))
         {
@@ -434,7 +460,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number');
+                ->addSearchLike('event.number')
+                ->addSearchLike('client_profile_value.value');
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');

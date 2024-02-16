@@ -87,13 +87,6 @@ final class OrderMoveDetail implements OrderMoveDetailInterface
         $qb->where('move.ord = :order');
         $qb->setParameter('order', $order, OrderUid::TYPE);
 
-        //dd($qb->fetchAssociative());
-
-
-
-
-
-
         $qb->select('orders.id AS order_id')->addGroupBy('orders.id');
         $qb->addSelect('orders.event AS order_event')->addGroupBy('orders.event');
         $qb->addSelect('orders.number AS order_number')->addGroupBy('orders.number');

@@ -185,7 +185,7 @@
 
             <div class="card-header bg-body border-light">
 
-                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between text-secondary">
+                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between">
 
                     <button
                             class="accordion-button collapsed btn-sm border-0 shadow-none bg-body"
@@ -196,7 +196,6 @@
                             {# aria-controls="collapse{{ item.stock_id }}" #}
                     >
                     </button>
-
 
                     <div class="w-100 mt-2">
 
@@ -209,19 +208,6 @@
                                    data-bs-target="#modal"
                                    title="Детали заявки">
 
-                                    {% if item.status == 'package' or item.status == 'divide' %}
-                                        <span class="badge text-bg-warning me-3">
-                                    Сборка
-                                </span>
-                                    {% endif %}
-
-
-                                    {% if item.status == 'moving' %}
-                                        <span class="badge text-bg-danger me-3">
-                                    Перемещение
-                                </span>
-                                    {% endif %}
-
                                     <span># {{ item.number }}</span>
                                 </a>
 
@@ -233,63 +219,25 @@
                             {# СКЛАД #}
 
                             <div class="text-nowrap">
-                                <span class="text-muted opacity-50">Склад: </span>
-                                &nbsp; <strong>{{ item.users_profile_username }}</strong>
+                                <div class="text-nowrap">
+                                    <span class="text-muted opacity-50">Склад: </span> &nbsp;
+                                    <strong>{{ item.users_profile_username }}</strong>
+                                </div>
 
-
-                                <div class="text-dark text-nowrap">
+                                <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Готовность:</span> &nbsp;
                                     <strong>{{ item.mod_date|date('d.m.Y H:i') }}</strong>
                                 </div>
-
-
                             </div>
 
 
-                            {# ОТВЕТСТВЕННЫЙ  #}
+                            {# Клиент  #}
                             <div class="d-flex w-50 gap-3">
-
-                                {# Обложка #}{#
-                                {% set image_path = '/assets/img/blank.svg' %}
-
-                                {% if item.users_profile_avatar_ext is defined and item.users_profile_avatar_ext is not null %}
-                                    {% set img_host =  item.users_profile_avatar_cdn == true  ? CDN_HOST : '' %}
-                                    {% set img_dir = item.users_profile_avatar %}
-                                    {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.users_profile_avatar_ext %}
-                                    {% set image_path = img_host ~ img_dir ~ img_file %}
-                                {% endif %}
-
-                                <div>
-                                    <a href="#"
-                                       class="icon rounded-circle bg-contain lazy p-1"
-                                       data-bg="{{ image_path }}"
-                                    > </a>
-                                </div> #}
-
-                                <div class="ms-0">
-                                    {# <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
-                                       class="fw-bolder mb- text-decoration-none text-dark">
-                                        {{ item.users_profile_username }}
-                                    </a> #}
-
-                                    {# <div class="text-muted fs-7 fw-bolder">
-
-											<span class="me-1 text-muted">
-												<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                                                     viewBox="0 0 24 24" fill="none">
-													<path opacity="0.3"
-                                                          d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
-                                                          fill="currentColor"></path>
-													<path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z"
-                                                          fill="currentColor"></path>
-												</svg>
-											</span>
-                                        {{ item.group_name }}
-                                    </div> #}
-
+                                <div class="text-nowrap">
+                                    <span class="text-muted opacity-50">Клиент: </span> &nbsp;
+                                    {{ user_profile(item.client_profile_event) }}
                                 </div>
                             </div>
-
                         </div>
 
                         {# Комментарий  #}
@@ -310,12 +258,9 @@
 
                     </div>
 
-                    <div class="w-50 mt-2">
+                    <div class="mt-2">
 
                         {% if item.status == 'extradition' %}
-
-                           {# {{ dump(item.product_stock_id) }}#}
-
 
                             <a href="{{ path('products-stocks:admin.pickup.completed', { id : item.stock_id }) }}"
                                class="btn btn-success modal-link disabled text-nowrap"

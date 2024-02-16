@@ -256,28 +256,6 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             );
 
 
-        // Целевой склад (Склад погрузки)
-
-        //        // Product Warehouse
-        //        $dbal->addSelect('warehouse.id as warehouse_id');
-        //        $dbal->addSelect('warehouse.event as warehouse_event');
-        //
-        //        $dbal->join(
-        //            'event',
-        //            ContactsRegionEntity\Call\ContactsRegionCall::TABLE,
-        //            'warehouse',
-        //            'warehouse.const = event.warehouse AND EXISTS(SELECT 1 FROM '.ContactsRegionEntity\ContactsRegion::TABLE.' WHERE event = warehouse.event)'
-        //        );
-        //
-        //        $dbal->addSelect('warehouse_trans.name AS warehouse_name');
-        //
-        //        $dbal->join(
-        //            'warehouse',
-        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::TABLE,
-        //            'warehouse_trans',
-        //            'warehouse_trans.call = warehouse.id AND warehouse_trans.local = :local'
-        //        );
-
 
         $dbal->join(
             'stock',
@@ -286,7 +264,6 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             'ord.event = stock.event'
         );
 
-        //dd($dbal->fetchAllAssociative());
 
 
         $dbal->leftJoin(

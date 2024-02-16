@@ -500,8 +500,6 @@ final class MovingProductStockForm extends AbstractType
 
         $warehouses = $this->productWarehouseChoice->fetchWarehouseByProduct($this->user, $product, $offer, $variation, $modification);
 
-        //dd($warehouses);
-
         if(empty($warehouses))
         {
             $form->add(
