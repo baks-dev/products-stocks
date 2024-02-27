@@ -31,10 +31,23 @@ use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Elastic\Api\Index\ElasticGetIndex;
-use BaksDev\Products\Category\Entity as CategoryEntity;
+use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
+use BaksDev\Products\Category\Entity\Trans\ProductCategoryTrans;
 use BaksDev\Products\Category\Type\Id\ProductCategoryUid;
-use BaksDev\Products\Product\Entity as ProductEntity;
+use BaksDev\Products\Product\Entity\Category\ProductCategory;
+use BaksDev\Products\Product\Entity\Event\ProductEvent;
+use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
+use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
@@ -75,150 +88,157 @@ final class AllProductStocks implements AllProductStocksInterface
         return $this;
     }
 
-    /** Метод возвращает полное состояние складских остатков продукции */
+    /**
+     * Метод возвращает полное состояние складских остатков продукции
+     */
     public function fetchAllProductStocksAssociative(
         UserUid $user,
         UserProfileUid $profile,
     ): PaginatorInterface
     {
         /* */
-        $qb = $this->DBALQueryBuilder
+        $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        $qb
+        $dbal
             ->select('stock_product.total AS stock_total')
+            ->addSelect('stock_product.storage AS stock_storage')
             ->addSelect('stock_product.reserve AS stock_reserve')
-            ->from(ProductStockTotal::TABLE, 'stock_product')
+            ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('(stock_product.usr = :usr OR stock_product.profile = :profile)')
             ->setParameter('usr', $user, UserUid::TYPE)
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
         // Product
-        $qb->addSelect('product.id as product_id'); //->addGroupBy('product.id');
-        $qb->addSelect('product.event as product_event'); //->addGroupBy('product.event');
-        $qb->join(
-            'stock_product',
-            ProductEntity\Product::TABLE,
-            'product',
-            'product.id = stock_product.product'
-        );
+        $dbal
+            ->addSelect('product.id as product_id')
+            ->addSelect('product.event as product_event')
+            ->join(
+                'stock_product',
+                Product::class,
+                'product',
+                'product.id = stock_product.product'
+            );
 
         // Product Event
-        $qb->join(
+        $dbal->join(
             'product',
-            ProductEntity\Event\ProductEvent::TABLE,
+            ProductEvent::class,
             'product_event',
             'product_event.id = product.event'
         );
 
-        $qb->addSelect('product_info.url AS product_url'); //->addGroupBy('product_info.url');
-
-        $qb->leftJoin(
-            'product_event',
-            ProductEntity\Info\ProductInfo::TABLE,
-            'product_info',
-            'product_info.product = product.id'
-        );
+        $dbal
+            ->addSelect('product_info.url AS product_url')
+            ->leftJoin(
+                'product_event',
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product.id'
+            );
 
         // Product Trans
-        $qb->addSelect('product_trans.name as product_name'); //->addGroupBy('product_trans.name');
-        //$qb->addSelect('product_trans.description as product_description'); //->addGroupBy('product_trans.description');
-        $qb->join(
-            'product_event',
-            ProductEntity\Trans\ProductTrans::TABLE,
-            'product_trans',
-            'product_trans.event = product_event.id AND product_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('product_trans.name as product_name')
+            ->join(
+                'product_event',
+                ProductTrans::class,
+                'product_trans',
+                'product_trans.event = product_event.id AND product_trans.local = :local'
+            );
 
         // Торговое предложение
 
-        $qb->addSelect('product_offer.id as product_offer_uid'); //->addGroupBy('product_offer.id');
-        $qb->addSelect('product_offer.value as product_offer_value'); //->addGroupBy('product_offer.value');
-        $qb->addSelect('product_offer.postfix as product_offer_postfix'); //->addGroupBy('product_offer.postfix');
-
-        $qb->leftJoin(
-            'product_event',
-            ProductEntity\Offers\ProductOffer::TABLE,
-            'product_offer',
-            'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
-        );
+        $dbal
+            ->addSelect('product_offer.id as product_offer_uid')
+            ->addSelect('product_offer.value as product_offer_value')
+            ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->leftJoin(
+                'product_event',
+                ProductOffer::class,
+                'product_offer',
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+            );
 
         if($this->filter?->getOffer())
         {
-            $qb->andWhere('product_offer.value = :offer');
-            $qb->setParameter('offer', $this->filter->getOffer());
+            $dbal->andWhere('product_offer.value = :offer');
+            $dbal->setParameter('offer', $this->filter->getOffer());
         }
 
 
         // Получаем тип торгового предложения
-        $qb->addSelect('category_offer.reference as product_offer_reference'); //->addGroupBy('category_offer.reference');
-        $qb->leftJoin(
-            'product_offer',
-            CategoryEntity\Offers\ProductCategoryOffers::TABLE,
-            'category_offer',
-            'category_offer.id = product_offer.category_offer'
-        );
+        $dbal
+            ->addSelect('category_offer.reference as product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                ProductCategoryOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
 
         // Множественные варианты торгового предложения
 
-        $qb->addSelect('product_variation.id as product_variation_uid'); //->addGroupBy('product_variation.id');
-        $qb->addSelect('product_variation.value as product_variation_value'); //->addGroupBy('product_variation.value');
-        $qb->addSelect('product_variation.postfix as product_variation_postfix'); //->addGroupBy('product_variation.postfix');
-
-        $qb->leftJoin(
-            'product_offer',
-            ProductEntity\Offers\Variation\ProductVariation::TABLE,
-            'product_variation',
-            'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
-        );
+        $dbal
+            ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
+            ->leftJoin(
+                'product_offer',
+                ProductVariation::class,
+                'product_variation',
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+            );
 
         if($this->filter?->getVariation())
         {
-            $qb->andWhere('product_variation.value = :variation');
-            $qb->setParameter('variation', $this->filter->getVariation());
+            $dbal->andWhere('product_variation.value = :variation');
+            $dbal->setParameter('variation', $this->filter->getVariation());
         }
 
         // Получаем тип множественного варианта
-        $qb->addSelect('category_variation.reference as product_variation_reference'); //->addGroupBy('category_variation.reference');
-        $qb->leftJoin(
-            'product_variation',
-            CategoryEntity\Offers\Variation\ProductCategoryVariation::TABLE,
-            'category_variation',
-            'category_variation.id = product_variation.category_variation'
-        );
+        $dbal
+            ->addSelect('category_variation.reference as product_variation_reference')
+            ->leftJoin(
+                'product_variation',
+                ProductCategoryVariation::class,
+                'category_variation',
+                'category_variation.id = product_variation.category_variation'
+            );
 
         // Модификация множественного варианта торгового предложения
 
-        $qb->addSelect('product_modification.id as product_modification_uid'); //->addGroupBy('product_modification.id');
-        $qb->addSelect('product_modification.value as product_modification_value'); //->addGroupBy('product_modification.value');
-        $qb->addSelect('product_modification.postfix as product_modification_postfix'); //->addGroupBy('product_modification.postfix');
-
-        $qb->leftJoin(
-            'product_variation',
-            ProductEntity\Offers\Variation\Modification\ProductModification::TABLE,
-            'product_modification',
-            'product_modification.variation = product_variation.id  AND product_modification.const = stock_product.modification'
-        );
+        $dbal
+            ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
+            ->leftJoin(
+                'product_variation',
+                ProductModification::class,
+                'product_modification',
+                'product_modification.variation = product_variation.id  AND product_modification.const = stock_product.modification'
+            );
 
         if($this->filter?->getModification())
         {
-            $qb->andWhere('product_modification.value = :modification');
-            $qb->setParameter('modification', $this->filter->getModification());
+            $dbal->andWhere('product_modification.value = :modification');
+            $dbal->setParameter('modification', $this->filter->getModification());
         }
 
         // Получаем тип модификации множественного варианта
-        $qb->addSelect('category_offer_modification.reference as product_modification_reference'); //->addGroupBy('category_offer_modification.reference');
-        $qb->leftJoin(
-            'product_modification',
-            CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::TABLE,
-            'category_offer_modification',
-            'category_offer_modification.id = product_modification.category_modification'
-        );
+        $dbal
+            ->addSelect('category_offer_modification.reference as product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                ProductCategoryModification::class,
+                'category_offer_modification',
+                'category_offer_modification.id = product_modification.category_modification'
+            );
 
         // Артикул продукта
 
-        $qb->addSelect(
+        $dbal->addSelect(
             '
 			CASE
 			   WHEN product_modification.article IS NOT NULL THEN product_modification.article
@@ -237,9 +257,9 @@ final class AllProductStocks implements AllProductStocksInterface
 
         // Фото продукта
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_modification',
-            ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE,
+            ProductModificationImage::class,
             'product_modification_image',
             '
 			product_modification_image.modification = product_modification.id AND
@@ -247,9 +267,9 @@ final class AllProductStocks implements AllProductStocksInterface
 			'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE,
+            ProductVariationImage::class,
             'product_variation_image',
             '
 			product_variation_image.variation = product_variation.id AND
@@ -257,9 +277,9 @@ final class AllProductStocks implements AllProductStocksInterface
 			'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Image\ProductOfferImage::TABLE,
+            ProductOfferImage::class,
             'product_offer_images',
             '
 			product_variation_image.name IS NULL AND
@@ -268,9 +288,9 @@ final class AllProductStocks implements AllProductStocksInterface
 			'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Photo\ProductPhoto::TABLE,
+            ProductPhoto::class,
             'product_photo',
             '
 			product_offer_images.name IS NULL AND
@@ -279,29 +299,28 @@ final class AllProductStocks implements AllProductStocksInterface
 			'
         );
 
-        $qb->addSelect(
+        $dbal->addSelect(
             "
 			CASE
 			 
 			 WHEN product_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE."' , '/', product_modification_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_modification_image.name)
 			   WHEN product_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE."' , '/', product_variation_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
 			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Image\ProductOfferImage::TABLE."' , '/', product_offer_images.name)
+					CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
 			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Photo\ProductPhoto::TABLE."' , '/', product_photo.name)
+					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
 		"
         );
 
         // Расширение файла
-        $qb->addSelect(
+        $dbal->addSelect(
             "
 			CASE
-			
-			    WHEN product_modification_image.name IS NOT NULL THEN  product_modification_image.ext
+			   WHEN product_modification_image.name IS NOT NULL THEN  product_modification_image.ext
 			   WHEN product_variation_image.name IS NOT NULL THEN product_variation_image.ext
 			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
 			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
@@ -313,7 +332,7 @@ final class AllProductStocks implements AllProductStocksInterface
         );
 
         // Флаг загрузки файла CDN
-        $qb->addSelect(
+        $dbal->addSelect(
             '
 			CASE
 			   WHEN product_variation_image.name IS NOT NULL THEN
@@ -328,82 +347,55 @@ final class AllProductStocks implements AllProductStocksInterface
         );
 
         // Категория
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_event',
-            ProductEntity\Category\ProductCategory::TABLE,
+            ProductCategory::class,
             'product_event_category',
             'product_event_category.event = product_event.id AND product_event_category.root = true'
         );
 
         if($this->filter?->getCategory())
         {
-            $qb->andWhere('product_event_category.category = :category');
-            $qb->setParameter('category', $this->filter->getCategory(), ProductCategoryUid::TYPE);
+            $dbal->andWhere('product_event_category.category = :category');
+            $dbal->setParameter('category', $this->filter->getCategory(), ProductCategoryUid::TYPE);
         }
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_event_category',
-            CategoryEntity\ProductCategory::TABLE,
+            \BaksDev\Products\Category\Entity\ProductCategory::class,
             'category',
             'category.id = product_event_category.category'
         );
 
-        $qb->addSelect('category_trans.name AS category_name'); //->addGroupBy('category_trans.name');
-        $qb->leftJoin(
-            'category',
-            CategoryEntity\Trans\ProductCategoryTrans::TABLE,
-            'category_trans',
-            'category_trans.event = category.event AND category_trans.local = :local'
-        );
-
-        //        if($filter->getWarehouse())
-        //        {
-        //            $qb->andWhere('warehouse.const = :warehouse_filter');
-        //            $qb->setParameter('warehouse_filter', $filter->getWarehouse(), ContactsRegionCallConst::TYPE);
-        //        }
+        $dbal
+            ->addSelect('category_trans.name AS category_name')
+            ->leftJoin(
+                'category',
+                ProductCategoryTrans::class,
+                'category_trans',
+                'category_trans.event = category.event AND category_trans.local = :local'
+            );
 
 
+        /** Ответственное лицо (Склад) */
 
-        // ОТВЕТСТВЕННЫЙ
-
-        // UserProfile
-        //$qb->addSelect('users_profile.event as users_profile_event');
-        $qb->join(
+        $dbal->join(
             'stock_product',
-            UserProfile::TABLE,
+            UserProfile::class,
             'users_profile',
             'users_profile.id = stock_product.profile'
         );
 
+        $dbal
+            ->addSelect('users_profile_personal.username AS users_profile_username')
+            ->addSelect('users_profile_personal.location AS users_profile_location')
+            ->join(
+                'users_profile',
+                UserProfilePersonal::class,
+                'users_profile_personal',
+                'users_profile_personal.event = users_profile.event'
+            );
 
-
-
-        // Info
-//        $qb->join(
-//            'event',
-//            UserProfileEntity\Info\UserProfileInfo::TABLE,
-//            'users_profile_info',
-//            'users_profile_info.profile = event.profile'
-//        );
-
-//        // Event
-//        $qb->join(
-//            'users_profile',
-//            UserProfileEvent::TABLE,
-//            'users_profile_event',
-//            'users_profile_event.id = users_profile.event'
-//        );
-
-        // Personal
-        $qb->addSelect('users_profile_personal.username AS users_profile_username');
-        $qb->addSelect('users_profile_personal.location AS users_profile_location');
-
-        $qb->join(
-            'users_profile',
-            UserProfilePersonal::TABLE,
-            'users_profile_personal',
-            'users_profile_personal.event = users_profile.event'
-        );
 
         // Поиск
         if($this->search->getQuery())
@@ -421,15 +413,15 @@ final class AllProductStocks implements AllProductStocksInterface
                     /** Идентификаторы */
                     $data = array_column($result['hits']['hits'], "_source");
 
-                    $qb
+                    $dbal
                         ->createSearchQueryBuilder($this->search)
                         ->addSearchInArray('product_modification.id', array_column($data, "id"));
 
-                    return $this->paginator->fetchAllAssociative($qb);
+                    return $this->paginator->fetchAllAssociative($dbal);
                 }
 
                 /** Поиск по продукции */
-                $result = $this->elasticGetIndex->handle(ProductEntity\Product::class, $this->search->getQuery(), 1);
+                $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQuery(), 1);
 
                 $counter = $result['hits']['total']['value'];
 
@@ -438,15 +430,15 @@ final class AllProductStocks implements AllProductStocksInterface
                     /** Идентификаторы */
                     $data = array_column($result['hits']['hits'], "_source");
 
-                    $qb
+                    $dbal
                         ->createSearchQueryBuilder($this->search)
                         ->addSearchInArray('product.id', array_column($data, "id"));
 
-                    return $this->paginator->fetchAllAssociative($qb);
+                    return $this->paginator->fetchAllAssociative($dbal);
                 }
             }
 
-            $qb
+            $dbal
                 ->createSearchQueryBuilder($this->search)
                 //->addSearchEqualUid('warehouse.id')
                 //->addSearchEqualUid('warehouse.event')
@@ -454,14 +446,13 @@ final class AllProductStocks implements AllProductStocksInterface
                 ->addSearchLike('users_profile_personal.username')
                 ->addSearchLike('users_profile_personal.location')
                 ->addSearchLike('product_trans.name')
-                ->addSearchLike('category_trans.name')
-            ;
+                ->addSearchLike('category_trans.name');
 
         }
 
-        $qb->addOrderBy('stock_product.profile');
+        $dbal->addOrderBy('stock_product.profile');
 
-        return $this->paginator->fetchAllAssociative($qb);
+        return $this->paginator->fetchAllAssociative($dbal);
 
     }
 }

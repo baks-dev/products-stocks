@@ -24,6 +24,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/** @see ProductStockEvent */
 final class ExtraditionProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
@@ -36,6 +37,10 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly UserProfileUid $profile;
 
+    /** Фиксация заявки пользователем  */
+    #[Assert\IsNull]
+    private readonly ?UserProfileUid $fixed;
+
     /** Статус заявки - Укомплектована для погрузки (выдачи) */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
@@ -45,7 +50,7 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
 
     public function __construct()
     {
-        //$this->profile = $profile;
+        $this->fixed = null;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusExtradition());
     }
 
@@ -75,6 +80,12 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     public function getProfile(): UserProfileUid
     {
         return $this->profile;
+    }
+
+    /** Фиксация заявки пользователем  */
+    public function getFixed(): ?UserProfileUid
+    {
+        return $this->fixed;
     }
 
     /** Статус заявки - ПРИХОД */

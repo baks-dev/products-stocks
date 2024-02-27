@@ -86,6 +86,11 @@ class ProductStockEvent extends EntityEvent
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
     private ProductStockModify $modify;
 
+    /** Фиксация заявки пользователем  */
+    #[Assert\Uuid]
+    #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
+    private ?UserProfileUid $fixed = null;
+
     /** Профиль пользователя */
     #[Assert\NotBlank]
     #[Assert\Uuid]
@@ -99,7 +104,6 @@ class ProductStockEvent extends EntityEvent
     /** ID Заказа на сборку */
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockOrder::class, cascade: ['all'])]
     private ?ProductStockOrder $ord = null;
-    
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]

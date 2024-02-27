@@ -25,26 +25,54 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage;
 
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Delivery\Entity as DeliveryEntity;
+
+use BaksDev\Delivery\Entity\Event\DeliveryEvent;
+use BaksDev\Delivery\Entity\Trans\DeliveryTrans;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackage;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackageTransport;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
 use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDivide;
-use BaksDev\Orders\Order\Entity as OrderEntity;
-use BaksDev\Products\Category\Entity as CategoryEntity;
-use BaksDev\Products\Product\Entity as ProductEntity;
-use BaksDev\Products\Stocks\Entity as ProductStockEntity;
+
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
+use BaksDev\Orders\Order\Entity\User\OrderUser;
+
+use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
+use BaksDev\Products\Category\Entity\Trans\ProductCategoryTrans;
+use BaksDev\Products\Product\Entity\Category\ProductCategory;
+use BaksDev\Products\Product\Entity\Event\ProductEvent;
+use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
+use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
+use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
+use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
+use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
+use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
+use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
+use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksPackage implements AllProductStocksPackageInterface
@@ -87,7 +115,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->select('stock.id');
         $dbal->addSelect('stock.event');
 
-        $dbal->from(ProductStockEntity\ProductStock::TABLE, 'stock');
+        $dbal->from(ProductStock::class, 'stock');
 
         // ProductStockEvent
         $dbal->addSelect('event.number');
@@ -96,7 +124,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->join(
             'stock',
-            ProductStockEntity\Event\ProductStockEvent::TABLE,
+            ProductStockEvent::class,
             'event',
             //'event.id = stock.event AND (event.status = :package OR event.status = :move) '.($profile ? ' AND event.profile = :profile' : '')
             'event.id = stock.event AND event.profile = :profile AND (event.status = :package OR event.status = :move) '
@@ -115,7 +143,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->addSelect('modify.mod_date');
         $dbal->join(
             'stock',
-            ProductStockEntity\Modify\ProductStockModify::TABLE,
+            ProductStockModify::TABLE,
             'modify',
             'modify.event = stock.event'
         );
@@ -138,7 +166,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->select('stock.id');
         $dbal->addSelect('stock.event');
 
-        $dbal->from(ProductStockEntity\ProductStock::TABLE, 'stock');
+        $dbal->from(ProductStock::TABLE, 'stock');
 
         // ProductStockEvent
         $dbal->addSelect('event.number');
@@ -147,7 +175,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->join(
             'stock',
-            ProductStockEntity\Event\ProductStockEvent::TABLE,
+            ProductStockEvent::TABLE,
             'event',
             '
             event.id = stock.event AND 
@@ -216,23 +244,22 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         }
 
 
-        // ProductStockModify
-        $dbal->addSelect('modify.mod_date');
-        $dbal->join(
-            'stock',
-            ProductStockEntity\Modify\ProductStockModify::TABLE,
-            'modify',
-            'modify.event = stock.event'
-        );
+        $dbal
+            ->addSelect('modify.mod_date')
+            ->join(
+                'stock',
+                ProductStockModify::TABLE,
+                'modify',
+                'modify.event = stock.event'
+            );
 
 
-        // ProductStockProduct
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
             ->join(
                 'event',
-                ProductStockEntity\Products\ProductStockProduct::TABLE,
+                ProductStockProduct::TABLE,
                 'stock_product',
                 'stock_product.event = stock.event'
             );
@@ -244,7 +271,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             ->addSelect('total.storage AS stock_storage')
             ->leftJoin(
                 'stock_product',
-                ProductStockEntity\ProductStockTotal::TABLE,
+                ProductStockTotal::TABLE,
                 'total',
                 '
                 total.profile = event.profile AND
@@ -256,184 +283,192 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             );
 
 
-
         $dbal->join(
             'stock',
-            ProductStockEntity\Orders\ProductStockOrder::TABLE,
+            ProductStockOrder::TABLE,
             'ord',
             'ord.event = stock.event'
         );
 
 
-
         $dbal->leftJoin(
             'ord',
-            OrderEntity\Order::TABLE,
+            Order::TABLE,
             'orders',
             'orders.id = ord.ord'
         );
 
         $dbal->leftJoin(
             'orders',
-            OrderEntity\User\OrderUser::TABLE,
+            OrderUser::TABLE,
             'order_user',
             'order_user.event = orders.event'
         );
 
         $dbal->leftJoin(
             'order_user',
-            OrderEntity\User\Delivery\OrderDelivery::TABLE,
+            OrderDelivery::TABLE,
             'order_delivery',
             'order_delivery.usr = order_user.id'
         );
 
         $dbal->leftJoin(
             'order_delivery',
-            DeliveryEntity\Event\DeliveryEvent::TABLE,
+            DeliveryEvent::TABLE,
             'delivery_event',
             'delivery_event.id = order_delivery.event AND delivery_event.main = order_delivery.delivery'
         );
 
-        $dbal->addSelect('delivery_trans.name AS delivery_name');
-        $dbal->leftJoin(
-            'delivery_event',
-            DeliveryEntity\Trans\DeliveryTrans::TABLE,
-            'delivery_trans',
-            'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('delivery_trans.name AS delivery_name')
+            ->leftJoin(
+                'delivery_event',
+                DeliveryTrans::TABLE,
+                'delivery_trans',
+                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
+            );
+
 
         // Product
-        $dbal->addSelect('product.id as product_id');
-        $dbal->addSelect('product.event as product_event');
-        $dbal->join(
-            'stock_product',
-            ProductEntity\Product::TABLE,
-            'product',
-            'product.id = stock_product.product'
-        );
+        $dbal
+            ->addSelect('product.id as product_id')
+            ->addSelect('product.event as product_event')
+            ->join(
+                'stock_product',
+                Product::TABLE,
+                'product',
+                'product.id = stock_product.product'
+            );
 
         // Product Event
         $dbal->join(
             'product',
-            ProductEntity\Event\ProductEvent::TABLE,
+            ProductEvent::TABLE,
             'product_event',
             'product_event.id = product.event'
         );
 
         // Product Info
-        $dbal->addSelect('product_info.url AS product_url');
-        $dbal->leftJoin(
-            'product_event',
-            ProductEntity\Info\ProductInfo::TABLE,
-            'product_info',
-            'product_info.product = product.id'
-        );
+        $dbal
+            ->addSelect('product_info.url AS product_url')
+            ->leftJoin(
+                'product_event',
+                ProductInfo::TABLE,
+                'product_info',
+                'product_info.product = product.id'
+            );
 
         // Product Trans
-        $dbal->addSelect('product_trans.name as product_name');
-        //$dbal->addSelect('product_trans.description as product_description');
-        $dbal->join(
-            'product_event',
-            ProductEntity\Trans\ProductTrans::TABLE,
-            'product_trans',
-            'product_trans.event = product_event.id AND product_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('product_trans.name as product_name')
+            ->join(
+                'product_event',
+                ProductTrans::TABLE,
+                'product_trans',
+                'product_trans.event = product_event.id AND product_trans.local = :local'
+            );
 
         /*
          * Торговое предложение
          */
 
-        $dbal->addSelect('product_offer.id as product_offer_uid');
-        $dbal->addSelect('product_offer.value as product_offer_value');
-        $dbal->addSelect('product_offer.postfix as product_offer_postfix');
-
-        $dbal->leftJoin(
-            'product_event',
-            ProductEntity\Offers\ProductOffer::TABLE,
-            'product_offer',
-            'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
-        );
+        $dbal
+            ->addSelect('product_offer.id as product_offer_uid')
+            ->addSelect('product_offer.value as product_offer_value')
+            ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->leftJoin(
+                'product_event',
+                ProductOffer::TABLE,
+                'product_offer',
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+            );
 
         // Получаем тип торгового предложения
-        $dbal->addSelect('category_offer.reference as product_offer_reference');
-        $dbal->leftJoin(
-            'product_offer',
-            CategoryEntity\Offers\ProductCategoryOffers::TABLE,
-            'category_offer',
-            'category_offer.id = product_offer.category_offer'
-        );
+        $dbal
+            ->addSelect('category_offer.reference as product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                ProductCategoryOffers::TABLE,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
 
-        $dbal->addSelect('category_offer_trans.name as product_offer_name');
-        $dbal->leftJoin(
-            'category_offer_variation',
-            CategoryEntity\Offers\Trans\ProductCategoryOffersTrans::TABLE,
-            'category_offer_trans',
-            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_offer_trans.name as product_offer_name')
+            ->leftJoin(
+                'category_offer',
+                ProductCategoryOffersTrans::TABLE,
+                'category_offer_trans',
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+            );
 
         /*
          * Множественные варианты торгового предложения
          */
 
-        $dbal->addSelect('product_offer_variation.id as product_variation_uid');
-        $dbal->addSelect('product_offer_variation.value as product_variation_value');
-        $dbal->addSelect('product_offer_variation.postfix as product_variation_postfix');
-
-        $dbal->leftJoin(
-            'product_offer',
-            ProductEntity\Offers\Variation\ProductVariation::TABLE,
-            'product_offer_variation',
-            'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
-        );
+        $dbal
+            ->addSelect('product_offer_variation.id as product_variation_uid')
+            ->addSelect('product_offer_variation.value as product_variation_value')
+            ->addSelect('product_offer_variation.postfix as product_variation_postfix')
+            ->leftJoin(
+                'product_offer',
+                ProductVariation::TABLE,
+                'product_offer_variation',
+                'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
+            );
 
         // Получаем тип множественного варианта
-        $dbal->addSelect('category_offer_variation.reference as product_variation_reference');
-        $dbal->leftJoin(
-            'product_offer_variation',
-            CategoryEntity\Offers\Variation\ProductCategoryVariation::TABLE,
-            'category_offer_variation',
-            'category_offer_variation.id = product_offer_variation.category_variation'
-        );
+        $dbal
+            ->addSelect('category_offer_variation.reference as product_variation_reference')
+            ->leftJoin(
+                'product_offer_variation',
+                ProductCategoryVariation::TABLE,
+                'category_offer_variation',
+                'category_offer_variation.id = product_offer_variation.category_variation'
+            );
 
-        $dbal->addSelect('category_offer_variation_trans.name as product_variation_name');
-        $dbal->leftJoin(
-            'category_offer_variation',
-            CategoryEntity\Offers\Variation\Trans\ProductCategoryVariationTrans::TABLE,
-            'category_offer_variation_trans',
-            'category_offer_variation_trans.variation = category_offer_variation.id AND category_offer_variation_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_offer_variation_trans.name as product_variation_name')
+            ->leftJoin(
+                'category_offer_variation',
+                ProductCategoryVariationTrans::TABLE,
+                'category_offer_variation_trans',
+                'category_offer_variation_trans.variation = category_offer_variation.id AND category_offer_variation_trans.local = :local'
+            );
 
         /*
          * Модификация множественного варианта торгового предложения
          */
 
-        $dbal->addSelect('product_offer_modification.id as product_modification_uid');
-        $dbal->addSelect('product_offer_modification.value as product_modification_value');
-        $dbal->addSelect('product_offer_modification.postfix as product_modification_postfix');
-
-        $dbal->leftJoin(
-            'product_offer_variation',
-            ProductEntity\Offers\Variation\Modification\ProductModification::TABLE,
-            'product_offer_modification',
-            'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
-        );
+        $dbal
+            ->addSelect('product_offer_modification.id as product_modification_uid')
+            ->addSelect('product_offer_modification.value as product_modification_value')
+            ->addSelect('product_offer_modification.postfix as product_modification_postfix')
+            ->leftJoin(
+                'product_offer_variation',
+                ProductModification::TABLE,
+                'product_offer_modification',
+                'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
+            );
 
         // Получаем тип модификации множественного варианта
-        $dbal->addSelect('category_offer_modification.reference as product_modification_reference');
-        $dbal->leftJoin(
-            'product_offer_modification',
-            CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::TABLE,
-            'category_offer_modification',
-            'category_offer_modification.id = product_offer_modification.category_modification'
-        );
+        $dbal
+            ->addSelect('category_offer_modification.reference as product_modification_reference')
+            ->leftJoin(
+                'product_offer_modification',
+                ProductCategoryModification::TABLE,
+                'category_offer_modification',
+                'category_offer_modification.id = product_offer_modification.category_modification'
+            );
 
-        $dbal->addSelect('category_offer_modification_trans.name as product_modification_name');
-        $dbal->leftJoin(
-            'category_offer_modification',
-            CategoryEntity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans::TABLE,
-            'category_offer_modification_trans',
-            'category_offer_modification_trans.modification = category_offer_modification.id AND category_offer_modification_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_offer_modification_trans.name as product_modification_name')
+            ->leftJoin(
+                'category_offer_modification',
+                ProductCategoryModificationTrans::TABLE,
+                'category_offer_modification_trans',
+                'category_offer_modification_trans.modification = category_offer_modification.id AND category_offer_modification_trans.local = :local'
+            );
 
         // Артикул продукта
 
@@ -453,7 +488,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->leftJoin(
             'product_offer_modification',
-            ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE,
+            ProductModificationImage::TABLE,
             'product_offer_modification_image',
             '
 			product_offer_modification_image.modification = product_offer_modification.id AND
@@ -463,7 +498,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE,
+            ProductVariationImage::TABLE,
             'product_offer_variation_image',
             '
 			product_offer_variation_image.variation = product_offer_variation.id AND
@@ -473,7 +508,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Offers\Image\ProductOfferImage::TABLE,
+            ProductOfferImage::TABLE,
             'product_offer_images',
             '
 			product_offer_variation_image.name IS NULL AND
@@ -484,7 +519,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->leftJoin(
             'product_offer',
-            ProductEntity\Photo\ProductPhoto::TABLE,
+            ProductPhoto::TABLE,
             'product_photo',
             '
 			product_offer_images.name IS NULL AND
@@ -498,13 +533,13 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 			CASE
 			 
 			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Modification\Image\ProductModificationImage::TABLE."' , '/', product_offer_modification_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_offer_modification_image.name)
 			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Variation\Image\ProductVariationImage::TABLE."' , '/', product_offer_variation_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_offer_variation_image.name)
 			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Offers\Image\ProductOfferImage::TABLE."' , '/', product_offer_images.name)
+					CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
 			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductEntity\Photo\ProductPhoto::TABLE."' , '/', product_photo.name)
+					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
 		"
@@ -545,14 +580,14 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // Категория
         $dbal->leftJoin(
             'product_event',
-            ProductEntity\Category\ProductCategory::TABLE,
+            ProductCategory::TABLE,
             'product_event_category',
             'product_event_category.event = product_event.id AND product_event_category.root = true'
         );
 
         $dbal->leftJoin(
             'product_event_category',
-            CategoryEntity\ProductCategory::TABLE,
+            \BaksDev\Products\Category\Entity\ProductCategory::TABLE,
             'category',
             'category.id = product_event_category.category'
         );
@@ -560,7 +595,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->addSelect('category_trans.name AS category_name');
         $dbal->leftJoin(
             'category',
-            CategoryEntity\Trans\ProductCategoryTrans::TABLE,
+            ProductCategoryTrans::TABLE,
             'category_trans',
             'category_trans.event = category.event AND category_trans.local = :local'
         );
@@ -572,7 +607,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->addSelect('users_profile.event as users_profile_event');
         $dbal->join(
             'event',
-            UserProfileEntity\UserProfile::TABLE,
+            UserProfile::TABLE,
             'users_profile',
             'users_profile.id = event.profile'
         );
@@ -580,7 +615,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // Info
         $dbal->join(
             'event',
-            UserProfileEntity\Info\UserProfileInfo::TABLE,
+            UserProfileInfo::TABLE,
             'users_profile_info',
             'users_profile_info.profile = event.profile'
         );
@@ -588,7 +623,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // Event
         $dbal->join(
             'users_profile',
-            UserProfileEntity\Event\UserProfileEvent::TABLE,
+            UserProfileEvent::TABLE,
             'users_profile_event',
             'users_profile_event.id = users_profile.event'
         );
@@ -598,7 +633,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->join(
             'users_profile_event',
-            UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+            UserProfilePersonal::TABLE,
             'users_profile_personal',
             'users_profile_personal.event = users_profile_event.id'
         );
@@ -611,7 +646,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         $dbal->leftJoin(
             'users_profile_event',
-            UserProfileEntity\Avatar\UserProfileAvatar::TABLE,
+            UserProfileAvatar::TABLE,
             'users_profile_avatar',
             'users_profile_avatar.event = users_profile_event.id'
         );
@@ -651,7 +686,6 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         /** Пункт назначения при перемещении */
 
-
         $dbal->leftJoin(
             'event',
             ProductStockMove::TABLE,
@@ -663,7 +697,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // UserProfile
         $dbal->leftJoin(
             'move_stock',
-            UserProfileEntity\UserProfile::TABLE,
+            UserProfile::TABLE,
             'users_profile_move',
             'users_profile_move.id = move_stock.destination'
         );
@@ -672,7 +706,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             ->addSelect('users_profile_personal_move.username AS users_profile_destination')
             ->leftJoin(
                 'users_profile_move',
-                UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+                UserProfilePersonal::TABLE,
                 'users_profile_personal_move',
                 'users_profile_personal_move.event = users_profile_move.event'
             );
@@ -699,7 +733,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         // UserProfile
         $dbal->leftJoin(
             'destination_stock',
-            UserProfileEntity\UserProfile::TABLE,
+            UserProfile::TABLE,
             'users_profile_destination',
             'users_profile_destination.id = destination_event.profile'
         );
@@ -708,7 +742,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
             ->addSelect('users_profile_personal_destination.username AS users_profile_move')
             ->leftJoin(
                 'users_profile_destination',
-                UserProfileEntity\Personal\UserProfilePersonal::TABLE,
+                UserProfilePersonal::TABLE,
                 'users_profile_personal_destination',
                 'users_profile_personal_destination.event = users_profile_destination.event'
             );

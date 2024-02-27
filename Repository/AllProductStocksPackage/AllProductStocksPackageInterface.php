@@ -35,6 +35,6 @@ interface AllProductStocksPackageInterface
 
     public function filter(ProductsStocksFilterInterface $filter): self;
 
-    /** Метод возвращает все заявки, требующие перемещения между складами */
+    /** Метод возвращает все заявки на упаковку заказов. */
     public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;
 }
