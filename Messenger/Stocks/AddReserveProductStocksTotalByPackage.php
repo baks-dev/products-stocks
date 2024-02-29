@@ -91,7 +91,7 @@ final class AddReserveProductStocksTotalByPackage
         {
             $lastProductStockEvent = $this->entityManager->getRepository( ProductStockEvent::class)->find($message->getLast());
 
-            if($lastProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()) === true)
+            if(!$lastProductStockEvent || $lastProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()) === true)
             {
                 $this->logger
                     ->notice('Не создаем резерв на складе: Складская заявка при поступлении на склад по заказу (резерв уже имеется)',
