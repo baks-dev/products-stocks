@@ -1,6 +1,6 @@
 # BaksDev Product Stocks
 
-[![Version](https://img.shields.io/badge/version-7.0.23-blue)](https://github.com/baks-dev/products-stocks/releases)
+[![Version](https://img.shields.io/badge/version-7.0.22-blue)](https://github.com/baks-dev/products-stocks/releases)
 ![php 8.2+](https://img.shields.io/badge/php-min%208.1-red.svg)
 
 Модуль складского учета продукции
@@ -36,4 +36,3 @@ $ php bin/phpunit --group=products-stocks
 ## Лицензия ![License](https://img.shields.io/badge/MIT-green)
 
 The MIT License (MIT). Обратитесь к [Файлу лицензии](LICENSE.md) за дополнительной информацией.
-
