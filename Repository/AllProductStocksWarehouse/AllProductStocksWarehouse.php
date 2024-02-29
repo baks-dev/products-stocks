@@ -420,7 +420,9 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         {
             $dbal
                 ->createSearchQueryBuilder($search)
-                ->addSearchLike('event.number');
+                ->addSearchLike('event.number')
+                ->addSearchLike('product_trans.name')
+            ;
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
