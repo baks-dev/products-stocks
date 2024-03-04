@@ -21,21 +21,11 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage;
+namespace BaksDev\Products\Stocks\Forms\PackageFilter;
 
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
-use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 
-interface AllProductStocksPackageInterface
+interface ProductStockPackageFilterInterface
 {
-
-    public function search(SearchDTO $search): self;
-
-    public function filter(ProductStockPackageFilterInterface $filter): self;
-
-    /** Метод возвращает все заявки на упаковку заказов. */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;
+    public function getDate(): ?DateTimeImmutable;
 }

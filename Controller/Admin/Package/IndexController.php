@@ -22,9 +22,12 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
+use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterForm;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageInterface;
+use DateInterval;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -52,15 +55,39 @@ final class IndexController extends AbstractController
         );
         $searchForm->handleRequest($request);
 
+
+
+        // Фильтр
+        $filter = new ProductStockPackageFilterDTO($request);
+        $filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
+
+        if($filterForm->isSubmitted())
+        {
+            if($filterForm->get('back')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->sub(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+
+            if($filterForm->get('next')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->add(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+        }
+
         // Получаем список заявок на упаковку
         $query = $allPackage
             ->search($search)
+            ->filter($filter)
             ->fetchAllProductStocksAssociative($this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }
