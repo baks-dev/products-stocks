@@ -25,6 +25,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockEvent */
@@ -56,16 +57,19 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-
-
     /** Вспомогательные свойства */
     private readonly UserUid $usr;
+
+    /** Коллекция перемещения  */
+    #[Assert\Valid]
+    private ?Move\ProductStockMoveDTO $move;
 
 
     public function __construct(User|UserUid $usr)
     {
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse());
+        //$this->move = new ArrayCollection();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -116,7 +120,41 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         return $this->usr;
     }
 
+    /**
+     * Move
+     */
+    public function getMove(): ?Move\ProductStockMoveDTO
+    {
+        return $this->move;
+    }
 
+    public function setMove(?Move\ProductStockMoveDTO $move): self
+    {
+        $this->move = $move;
+        return $this;
+    }
+
+
+
+
+
+
+
+//    /** Коллекция продукции  */
+//    public function getMove(): ArrayCollection
+//    {
+//        return $this->move;
+//    }
+
+//    public function setMove(ArrayCollection $move): void
+//    {
+//        $this->move = $move;
+//    }
+//
+//    public function addMove(Move\ProductStockMoveDTO $move): void
+//    {
+//        $this->move->add($move);
+//    }
 
 //    /** Склад */
 //    public function getWarehouse(): ContactsRegionCallConst

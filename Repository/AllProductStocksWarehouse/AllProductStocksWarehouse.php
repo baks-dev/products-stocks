@@ -46,6 +46,7 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
+use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -78,30 +79,78 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         UserProfileUid $profile
     ): PaginatorInterface
     {
+        dump((string) $profile);
+
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-
         $dbal
-            ->select('stock.id')
-            ->addSelect('stock.event')
-            ->from(ProductStock::class, 'stock');
-
-        // ProductStockEvent
-        // $dbal->addSelect('event.total');
-        $dbal
+            ->addSelect('event.main AS id')
+            ->addSelect('event.id AS event')
             ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->join(
-                'stock',
-                ProductStockEvent::class,
-                'event',
-                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-            )
+            ->addSelect('event.profile AS user_profile_id')
+
+            ->from(ProductStockEvent::class, 'event')
+            ->andWhere('event.status = :status ')
+
+            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE)
+
+            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
             ->setParameter('profile', $profile, UserProfileUid::TYPE)
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE);
+        ;
+
+
+        $dbal
+            ->join(
+                'event',
+                ProductStock::class,
+                'stock',
+                'stock.event = event.id'
+
+            );
+
+        $dbal
+            //->addSelect('move.destination AS move_destination')
+            ->leftJoin(
+            'event',
+            ProductStockMove::class,
+            'move',
+            'move.event = event.id'
+        );
+
+
+
+
+
+//        $dbal
+//            ->select('stock.id')
+//            ->addSelect('stock.event')
+//            ->from(ProductStock::class, 'stock');
+//
+//
+//
+//        // ProductStockEvent
+//        // $dbal->addSelect('event.total');
+//        $dbal
+//            ->addSelect('event.number')
+//            ->addSelect('event.comment')
+//            ->addSelect('event.status')
+//            ->join(
+//                'stock',
+//                ProductStockEvent::class,
+//                'event',
+//                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+//            )
+//            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+//            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE);
+
+
+
+
+
 
         // ProductStockModify
         $dbal
@@ -426,6 +475,9 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
+
+
+        dump($dbal->fetchAllAssociative());
 
         return $this->paginator->fetchAllAssociative($dbal);
 

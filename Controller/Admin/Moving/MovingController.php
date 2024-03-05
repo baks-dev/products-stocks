@@ -63,6 +63,7 @@ final class MovingController extends AbstractController
             {
                 $move->setProfile($move->getMove()->getWarehouse());
                 $move->setComment($movingDTO->getComment());
+                //$move->getMove()->setDestination($this->getProfileUid());
 
                 $ProductStock = $handler->handle($move);
 

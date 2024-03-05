@@ -53,12 +53,17 @@ final class WarehouseController extends AbstractController
         }
 
         $WarehouseProductStockDTO = new WarehouseProductStockDTO($this->getUsr());
+
         $Event->getDto($WarehouseProductStockDTO);
 
-        /** Если заявка на перемещение - присваиваем склад назначения */
+        /**
+         * Если заявка на перемещение - присваиваем склад назначения
+         * и профиль пользователя, отпарившего заявку
+         */
         if($Event->getMoveDestination())
         {
             $WarehouseProductStockDTO->setProfile($Event->getMoveDestination());
+            $WarehouseProductStockDTO->getMove()?->setDestination($this->getProfileUid());
         }
 
         // Форма добавления

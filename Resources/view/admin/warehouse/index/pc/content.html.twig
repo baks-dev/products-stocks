@@ -223,7 +223,20 @@
                     </div>
 
                     <div>
-                        {% if is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
+
+                        {% if app.user.profile != item.user_profile_id %}
+                            ыещ
+                            <button
+                                    class="btn btn-light text-nowrap opacity-25"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="left"
+                                    data-bs-delay='{"show":600,"hide":100}'
+                                    title="Ожидется приход на склад {{ item.users_profile_username }}"
+                            >
+                                {{ 'Ожидается приход'|trans({}, 'messages') }}
+                            </button>
+
+                        {% elseif is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
                                class="btn btn-primary modal-link disabled text-nowrap"
                                data-bs-toggle="modal"
@@ -232,9 +245,8 @@
                                 {{ 'Принять на склад'|trans({}, 'messages') }}
                             </a>
                         {% endif %}
+
                     </div>
-
-
                 </div>
 
             </div>

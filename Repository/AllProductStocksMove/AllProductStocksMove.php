@@ -98,6 +98,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
+
         $dbal
             ->addSelect('event.main AS id')
             ->addSelect('event.id AS event')
@@ -118,7 +119,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         $dbal
             ->addSelect('stock.event AS is_warehouse')
-            ->leftJoin(
+            ->join(
             'event',
             ProductStock::class,
             'stock',
