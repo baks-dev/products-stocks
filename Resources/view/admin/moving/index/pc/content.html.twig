@@ -72,6 +72,7 @@
 
                 {# Поступления на склад #}
                 {% if is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+
                     <a href="{{ path('products-stocks:admin.warehouse.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
@@ -107,6 +108,7 @@
                             <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
                         </svg>
                     </a>
+
                 {% endif %}
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
@@ -265,7 +267,7 @@
                                     </div>
 
                                     <div class="text-muted">
-                                        <small>Склад:</small> &nbsp;
+                                        <small>Склад отгрузки:</small> &nbsp;
                                         <strong>{{ item.users_profile_destination }}</strong>
                                     </div>
 
@@ -292,7 +294,20 @@
 
                             <div>
 
-                                {% if item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+                                {% if app.user.profile != item.user_profile_id %}
+
+                                   <button
+                                            class="btn btn-light text-nowrap opacity-25"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="left"
+                                            data-bs-delay='{"show":600,"hide":100}'
+                                            title="Ожидется перемещение со склада {{ item.users_profile_destination }}"
+                                    >
+                                        {{ 'Ожидется перемещение'|trans({}, 'messages') }}
+                                    </button>
+
+                                {% elseif item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+
                                     <a href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
                                        class="btn btn-primary modal-link disabled text-nowrap"
                                        data-bs-toggle="modal"
@@ -301,7 +316,10 @@
                                     >
                                         {{ 'Отправить на склад'|trans({}, 'messages') }}
                                     </a>
+
                                 {% endif %}
+
+
                             </div>
                         </div>
                     </div>

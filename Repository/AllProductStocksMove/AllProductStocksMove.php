@@ -104,11 +104,16 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
+            ->addSelect('event.profile AS user_profile_id')
+
             ->from(ProductStockEvent::class, 'event')
             ->andWhere('event.status = :status ')
+
             ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE)
-            ->andWhere('event.profile = :profile')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+        ;
 
 
         $dbal
