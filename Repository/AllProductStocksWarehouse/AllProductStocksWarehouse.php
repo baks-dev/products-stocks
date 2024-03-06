@@ -79,7 +79,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         UserProfileUid $profile
     ): PaginatorInterface
     {
-        dump((string) $profile);
 
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -475,9 +474,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
-
-
-        dump($dbal->fetchAllAssociative());
 
         return $this->paginator->fetchAllAssociative($dbal);
 
