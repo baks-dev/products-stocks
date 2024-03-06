@@ -64,7 +64,6 @@ final class MovingController extends AbstractController
             {
                 $move->setProfile($move->getMove()->getWarehouse());
                 $move->setComment($movingDTO->getComment());
-                //$move->getMove()->setDestination($this->getProfileUid());
 
                 $ProductStock = $handler->handle($move);
 
@@ -78,11 +77,11 @@ final class MovingController extends AbstractController
             if($success)
             {
                 $this->addFlash('success', 'admin.success.move', 'admin.product.stock');
-                return $this->redirectToRoute('products-stocks:admin.moving.index');
             }
 
-        }
+            return $this->redirectToRoute('products-stocks:admin.moving.index');
 
+        }
 
         return $this->render(['form' => $form->createView()]);
     }

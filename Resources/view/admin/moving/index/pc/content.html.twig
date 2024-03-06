@@ -256,10 +256,6 @@
 
                                     </a>
 
-                                    {# Описание #}
-                                    {# <div class="text-muted small">54654 dfgsd
-					{{ string_width(item.product_description, 150)|raw }}
-				</div> #}
 
                                     {# Артикул #}
                                     <div class="text-muted ">
@@ -267,14 +263,13 @@
                                     </div>
 
                                     <div class="text-muted">
-
                                         {% if app.user.profile == item.user_profile_id %}
                                             <small>Склад назначения:</small>
+                                            &nbsp; <strong>{{ item.users_profile_destination }}</strong>
                                         {% else %}
                                             <small>Склад отгрузки:</small>
+                                            &nbsp; <strong>{{ item.users_profile_username }}</strong>
                                         {% endif %}
-
-                                         &nbsp; <strong>{{ item.users_profile_destination }}</strong>
                                     </div>
 
                                     {% if item.comment is not null %}
