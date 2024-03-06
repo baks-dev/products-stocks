@@ -25,17 +25,20 @@
 
 var limit_nWgkuzbCRs = 1000;
 
-setTimeout(function init_YFwgubGn() {
+setTimeout(function init_YFwgubGn()
+{
 
     var object_product = document.getElementById('moving_product_stock_form_preProduct');
 
-    if (object_product) {
+    if(object_product)
+    {
 
         let focus = document.getElementById('moving_product_stock_form_preProduct_select2');
         focus ? focus.click() : null;
 
         //object_product.addEventListener('change', changeObjectProduct, false);
-        object_product.addEventListener('change', function (event) {
+        object_product.addEventListener('change', function(event)
+        {
             let forms = this.closest('form');
             changeObjectProduct(forms);
             return false;
@@ -43,14 +46,16 @@ setTimeout(function init_YFwgubGn() {
 
         let $addButtonStock = document.getElementById('moving_product_stock_form_addMoving');
 
-        if ($addButtonStock) {
+        if($addButtonStock)
+        {
             $addButtonStock.addEventListener('click', addProductMoving, false);
         }
 
         return;
     }
 
-    if (limit_nWgkuzbCRs > 1000) {
+    if(limit_nWgkuzbCRs > 1000)
+    {
         return;
     }
 
@@ -61,8 +66,8 @@ setTimeout(function init_YFwgubGn() {
 }, 100);
 
 
-
-async function changeObjectProduct(forms) {
+async function changeObjectProduct(forms)
+{
 
     const data = new FormData(forms);
     data.delete(forms.name + '[_token]');
@@ -83,9 +88,11 @@ async function changeObjectProduct(forms) {
     })
 
         //.then((response) => response)
-        .then((response) => {
+        .then((response) =>
+        {
 
-            if (response.status !== 200) {
+            if(response.status !== 200)
+            {
                 return false;
             }
 
@@ -93,9 +100,11 @@ async function changeObjectProduct(forms) {
 
         })
 
-        .then((data) => {
+        .then((data) =>
+        {
 
-            if (data) {
+            if(data)
+            {
 
                 var parser = new DOMParser();
                 var result = parser.parseFromString(data, 'text/html');
@@ -104,7 +113,8 @@ async function changeObjectProduct(forms) {
                 let preOffer = result.getElementById('preOffer');
                 preOffer ? document.getElementById('preOffer').replaceWith(preOffer) : preOffer.innerHTML = '';
 
-                if (preOffer) {
+                if(preOffer)
+                {
 
                     /** SELECT2 */
 
@@ -112,19 +122,20 @@ async function changeObjectProduct(forms) {
 
                     let replacer = document.getElementById(replaceOfferId);
 
-                    if (replacer.tagName === 'SELECT') {
+                    if(replacer.tagName === 'SELECT')
+                    {
                         new NiceSelect(replacer, {searchable: true});
                     }
 
                     let focus = document.getElementById('moving_product_stock_form_preOffer_select2');
                     focus ? focus.click() : null;
 
-                }
-                else
+                } else
                 {
                     let targetWarehouse = result.getElementById('targetWarehouse');
 
-                    if (targetWarehouse) {
+                    if(targetWarehouse)
+                    {
 
                         document.getElementById('targetWarehouse').replaceWith(targetWarehouse);
 
@@ -132,7 +143,8 @@ async function changeObjectProduct(forms) {
                         let replacerWarehouse = document.getElementById('moving_product_stock_form_targetWarehouse');
                         replacer.addEventListener('change', changeObjectWarehause, false);
 
-                        if (replacerWarehouse && replacerWarehouse.tagName === 'SELECT') {
+                        if(replacerWarehouse && replacerWarehouse.tagName === 'SELECT')
+                        {
                             new NiceSelect(replacerWarehouse, {searchable: true});
                         }
                     }
@@ -150,9 +162,11 @@ async function changeObjectProduct(forms) {
                 /** Событие на изменение торгового предложения */
                 let offerChange = document.getElementById('moving_product_stock_form_preOffer');
 
-                if (offerChange) {
+                if(offerChange)
+                {
 
-                    offerChange.addEventListener('change', function (event) {
+                    offerChange.addEventListener('change', function(event)
+                    {
                         changeObjectOffer(forms);
                         return false;
                     });
@@ -179,7 +193,8 @@ async function changeObjectProduct(forms) {
 }
 
 
-function _changeObjectProduct() {
+function _changeObjectProduct()
+{
 
     let replaceId = 'moving_product_stock_form_preOffer';
 
@@ -205,9 +220,11 @@ function _changeObjectProduct() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preOffer');
 
@@ -216,13 +233,15 @@ function _changeObjectProduct() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(replacer, {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение торгового предложения */
                 let offerChange = document.getElementById('moving_product_stock_form_preOffer');
 
-                if (offerChange) {
+                if(offerChange)
+                {
                     offerChange.addEventListener('change', changeObjectOffer, false);
                 }
             }
@@ -247,7 +266,8 @@ function _changeObjectProduct() {
 }
 
 
-async function changeObjectOffer(forms) {
+async function changeObjectOffer(forms)
+{
 
 
     const data = new FormData(forms);
@@ -269,9 +289,11 @@ async function changeObjectOffer(forms) {
     })
 
         //.then((response) => response)
-        .then((response) => {
+        .then((response) =>
+        {
 
-            if (response.status !== 200) {
+            if(response.status !== 200)
+            {
                 return false;
             }
 
@@ -279,9 +301,11 @@ async function changeObjectOffer(forms) {
 
         })
 
-        .then((data) => {
+        .then((data) =>
+        {
 
-            if (data) {
+            if(data)
+            {
 
                 var parser = new DOMParser();
                 var result = parser.parseFromString(data, 'text/html');
@@ -289,7 +313,8 @@ async function changeObjectOffer(forms) {
 
                 let preVariation = result.getElementById('preVariation');
 
-                if (preVariation) {
+                if(preVariation)
+                {
 
                     document.getElementById('preVariation').replaceWith(preVariation);
 
@@ -297,27 +322,32 @@ async function changeObjectOffer(forms) {
 
                     let replacer = document.getElementById('moving_product_stock_form_preVariation');
 
-                    if (replacer) {
+                    if(replacer)
+                    {
 
-                        if (replacer.tagName === 'SELECT') {
+                        if(replacer.tagName === 'SELECT')
+                        {
                             new NiceSelect(replacer, {searchable: true});
                         }
 
-                        replacer.addEventListener('change', function (event) {
+                        replacer.addEventListener('change', function(event)
+                        {
                             changeObjectVariation(forms);
                             return false;
                         });
 
-                        let focus = document.getElementById( 'moving_product_stock_form_preVariation_select2');
+                        let focus = document.getElementById('moving_product_stock_form_preVariation_select2');
                         focus ? focus.click() : null;
 
                     }
 
-                } else {
+                } else
+                {
 
                     let targetWarehouse = result.getElementById('targetWarehouse');
 
-                    if (targetWarehouse) {
+                    if(targetWarehouse)
+                    {
 
                         document.getElementById('targetWarehouse').replaceWith(targetWarehouse);
 
@@ -325,7 +355,8 @@ async function changeObjectOffer(forms) {
                         let replacerWarehouse = document.getElementById('moving_product_stock_form_targetWarehouse');
                         replacer.addEventListener('change', changeObjectWarehause, false);
 
-                        if (replacerWarehouse && replacerWarehouse.tagName === 'SELECT') {
+                        if(replacerWarehouse && replacerWarehouse.tagName === 'SELECT')
+                        {
                             new NiceSelect(replacerWarehouse, {searchable: true});
                         }
                     }
@@ -341,7 +372,8 @@ async function changeObjectOffer(forms) {
 }
 
 
-function _changeObjectOffer() {
+function _changeObjectOffer()
+{
 
 
     let replaceId = 'moving_product_stock_form_preVariation';
@@ -366,9 +398,11 @@ function _changeObjectOffer() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preVariation');
 
@@ -376,13 +410,15 @@ function _changeObjectOffer() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение множественного варианта предложения */
                 let offerVariation = document.getElementById('moving_product_stock_form_preVariation');
 
-                if (offerVariation) {
+                if(offerVariation)
+                {
                     offerVariation.addEventListener('change', changeObjectVariation, false);
                 }
             }
@@ -407,7 +443,8 @@ function _changeObjectOffer() {
 }
 
 
-async function changeObjectVariation(forms) {
+async function changeObjectVariation(forms)
+{
 
 
     const data = new FormData(forms);
@@ -429,9 +466,11 @@ async function changeObjectVariation(forms) {
     })
 
         //.then((response) => response)
-        .then((response) => {
+        .then((response) =>
+        {
 
-            if (response.status !== 200) {
+            if(response.status !== 200)
+            {
                 return false;
             }
 
@@ -439,9 +478,11 @@ async function changeObjectVariation(forms) {
 
         })
 
-        .then((data) => {
+        .then((data) =>
+        {
 
-            if (data) {
+            if(data)
+            {
 
                 var parser = new DOMParser();
                 var result = parser.parseFromString(data, 'text/html');
@@ -449,7 +490,8 @@ async function changeObjectVariation(forms) {
 
                 let preModification = result.getElementById('preModification');
 
-                if (preModification) {
+                if(preModification)
+                {
 
                     document.getElementById('preModification').replaceWith(preModification);
 
@@ -457,13 +499,16 @@ async function changeObjectVariation(forms) {
                     let replacer = document.getElementById('moving_product_stock_form_preModification');
 
                     /** Событие на изменение модификации */
-                    if (replacer) {
+                    if(replacer)
+                    {
 
-                        if (replacer.tagName === 'SELECT') {
+                        if(replacer.tagName === 'SELECT')
+                        {
                             new NiceSelect(replacer, {searchable: true});
                         }
 
-                        replacer.addEventListener('change', function (event) {
+                        replacer.addEventListener('change', function(event)
+                        {
                             changeObjectModification(forms);
                             return false;
                         });
@@ -473,11 +518,13 @@ async function changeObjectVariation(forms) {
                     }
 
 
-                } else {
+                } else
+                {
 
                     let targetWarehouse = result.getElementById('targetWarehouse');
 
-                    if (targetWarehouse) {
+                    if(targetWarehouse)
+                    {
 
                         document.getElementById('targetWarehouse').replaceWith(targetWarehouse);
 
@@ -485,7 +532,8 @@ async function changeObjectVariation(forms) {
                         let replacerWarehouse = document.getElementById('moving_product_stock_form_targetWarehouse');
                         replacer.addEventListener('change', changeObjectWarehause, false);
 
-                        if (replacerWarehouse && replacerWarehouse.tagName === 'SELECT') {
+                        if(replacerWarehouse && replacerWarehouse.tagName === 'SELECT')
+                        {
                             new NiceSelect(replacerWarehouse, {searchable: true});
                         }
 
@@ -528,7 +576,8 @@ async function changeObjectVariation(forms) {
 }
 
 
-function _changeObjectVariation() {
+function _changeObjectVariation()
+{
 
     let replaceId = 'moving_product_stock_form_preModification';
 
@@ -556,9 +605,11 @@ function _changeObjectVariation() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preModification');
 
@@ -566,13 +617,15 @@ function _changeObjectVariation() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение модификации множественного варианта предложения */
                 let offerModification = document.getElementById('moving_product_stock_form_preModification');
 
-                if (offerModification) {
+                if(offerModification)
+                {
                     offerModification.addEventListener('change', changeObjectModification, false);
                 }
             }
@@ -598,7 +651,8 @@ function _changeObjectVariation() {
 }
 
 
-async function changeObjectModification(forms) {
+async function changeObjectModification(forms)
+{
 
 
     const data = new FormData(forms);
@@ -620,9 +674,11 @@ async function changeObjectModification(forms) {
     })
 
         //.then((response) => response)
-        .then((response) => {
+        .then((response) =>
+        {
 
-            if (response.status !== 200) {
+            if(response.status !== 200)
+            {
                 return false;
             }
 
@@ -630,16 +686,22 @@ async function changeObjectModification(forms) {
 
         })
 
-        .then((data) => {
+        .then((data) =>
+        {
 
-            if (data) {
+            if(data)
+            {
 
                 var parser = new DOMParser();
                 var result = parser.parseFromString(data, 'text/html');
 
                 let targetWarehouse = result.getElementById('targetWarehouse');
 
-                if (targetWarehouse) {
+                targetWarehouse.querySelector('#moving_product_stock_form_targetWarehouse').classList.remove('is-invalid');
+                (targetWarehouse.querySelector('.invalid-feedback'))?.remove();
+
+                if(targetWarehouse)
+                {
 
                     document.getElementById('targetWarehouse').replaceWith(targetWarehouse);
 
@@ -647,12 +709,13 @@ async function changeObjectModification(forms) {
                     let replacer = document.getElementById('moving_product_stock_form_targetWarehouse');
                     replacer.addEventListener('change', changeObjectWarehause, false);
 
-                    if (replacer && replacer.tagName === 'SELECT') {
+                    if(replacer && replacer.tagName === 'SELECT')
+                    {
                         new NiceSelect(replacer, {searchable: true});
                     }
 
-                     let focus = document.getElementById('moving_product_stock_form_targetWarehouse_select2');
-                     focus ? focus.click() : null;
+                    let focus = document.getElementById('moving_product_stock_form_targetWarehouse_select2');
+                    focus ? focus.click() : null;
 
                 }
 
@@ -662,7 +725,8 @@ async function changeObjectModification(forms) {
 }
 
 
-function _changeObjectModification() {
+function _changeObjectModification()
+{
 
     let replaceId = 'moving_product_stock_form_targetWarehouse';
 
@@ -694,9 +758,11 @@ function _changeObjectModification() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('targetWarehouse');
 
@@ -709,9 +775,12 @@ function _changeObjectModification() {
 
             document.getElementById('moving_product_stock_form_targetWarehouse').addEventListener('change', changeObjectWarehause, false);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
             }
+
+
         }
 
         return false;
@@ -721,22 +790,35 @@ function _changeObjectModification() {
 }
 
 
-function changeObjectWarehause() {
-
+function changeObjectWarehause()
+{
     let index = this.selectedIndex;
     document.getElementById('moving_product_stock_form_preTotal')
         .setAttribute('max', this.options[index].dataset.max);
 
-    //console.log('changeObjectWarehause');
+    document.getElementById('moving_product_stock_form_destinationWarehouse').addEventListener('change', () => {
 
-        setTimeout(function() {
-            let focusDestination = document.getElementById('moving_product_stock_form_destinationWarehouse_select2');
-            focusDestination ? focusDestination.click() : null;
+        setTimeout(function()
+        {
+            let focusTotal = document.getElementById('moving_product_stock_form_preTotal');
+            focusTotal ? focusTotal.focus() : null;
         }, 100);
+
+    }, false);
+
+
+    setTimeout(function()
+    {
+        let focusDestination = document.getElementById('moving_product_stock_form_destinationWarehouse_select2');
+        focusDestination ? focusDestination.click() : null;
+    }, 100);
 }
 
 
-function addProductMoving() {
+var collectionStock = new Map();
+
+function addProductMoving()
+{
 
     /* Блок для новой коллекции КАТЕГОРИИ */
     let $blockCollectionStock = document.getElementById('collectionStock');
@@ -754,23 +836,24 @@ function addProductMoving() {
 
     let $totalMax = $preTotal.getAttribute('max');
 
-    if ($TOTAL === undefined || $TOTAL < 1 || $TOTAL > $totalMax) {
+    if($TOTAL === undefined || $TOTAL < 1 || $TOTAL > $totalMax)
+    {
 
-        if ($TOTAL === undefined)
+        if($TOTAL === undefined)
         {
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
                 '"message" : "Ошибка при заполнение количество" }';
         }
 
-        if ($TOTAL > $totalMax)
+        if($TOTAL > $totalMax)
         {
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
                 '"message" : "Недостаточное количество на складе" }';
         }
 
-        if ($TOTAL < 1)
+        if($TOTAL < 1)
         {
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -782,7 +865,8 @@ function addProductMoving() {
 
 
     let $targetWarehouse = document.getElementById('moving_product_stock_form_targetWarehouse');
-    if ($targetWarehouse.value.length === 0) {
+    if($targetWarehouse.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"Добавить лист закупки продукции"  , ' +
@@ -791,7 +875,8 @@ function addProductMoving() {
     }
 
     let $destinationWarehouse = document.getElementById('moving_product_stock_form_destinationWarehouse');
-    if ($destinationWarehouse.value.length === 0) {
+    if($destinationWarehouse.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"Добавить лист закупки продукции"  , ' +
@@ -801,7 +886,8 @@ function addProductMoving() {
 
 
     let $preProduct = document.getElementById('moving_product_stock_form_preProduct');
-    if ($preProduct.value.length === 0) {
+    if($preProduct.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +
@@ -811,8 +897,10 @@ function addProductMoving() {
 
 
     let $preOffer = document.getElementById('moving_product_stock_form_preOffer');
-    if ($preOffer) {
-        if ($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0) {
+    if($preOffer)
+    {
+        if($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -822,8 +910,10 @@ function addProductMoving() {
 
 
     let $preVariation = document.getElementById('moving_product_stock_form_preVariation');
-    if ($preVariation) {
-        if ($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0) {
+    if($preVariation)
+    {
+        if($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -832,8 +922,10 @@ function addProductMoving() {
     }
 
     let $preModification = document.getElementById('moving_product_stock_form_preModification');
-    if ($preModification) {
-        if ($preModification.tagName === 'SELECT' && $preModification.value.length === 0) {
+    if($preModification)
+    {
+        if($preModification.tagName === 'SELECT' && $preModification.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -842,13 +934,27 @@ function addProductMoving() {
     }
 
 
+    if($targetWarehouse.value === $destinationWarehouse.value)
+    {
+        $errorFormHandler = '{ "type":"danger" , ' +
+            '"header":"' + header + '"  , ' +
+            '"message" : "Внутреннее перемещение" }';
+    }
+
+    if(collectionStock.has($targetWarehouse.value + $destinationWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value))
+    {
+        $errorFormHandler = '{ "type":"danger" , ' +
+            '"header":"' + header + '"  , ' +
+            '"message" : "Продукция уже добавлена в список" }';
+    }
+
     /* Выводим сообщение об ошибке заполнения */
 
-    if ($errorFormHandler) {
+    if($errorFormHandler)
+    {
         createToast(JSON.parse($errorFormHandler));
         return false;
     }
-
 
     /* получаем прототип коллекции  */
     let $addButtonStock = this;
@@ -857,7 +963,7 @@ function addProductMoving() {
     let index = $addButtonStock.dataset.index * 1;
 
     /* Замена '__name__' в HTML-коде прототипа
-    вместо этого будет число, основанное на том, сколько коллекций */
+     вместо этого будет число, основанное на том, сколько коллекций */
     newForm = newForm.replace(/__product__/g, index);
     //newForm = newForm.replace(/__FIELD__/g, index);
 
@@ -897,33 +1003,32 @@ function addProductMoving() {
 
     /** Заполняем значения скрытых элементо */
 
-     let $warehouse = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_move_warehouse');
-     $warehouse.value = $targetWarehouse.value;
+    let $warehouse = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_move_warehouse');
 
     let $destination = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_move_destination');
-    $destination.value = $destinationWarehouse.value;
 
     let $product = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_product_' + index + '_product');
-    $product.value = $preProduct.value;
 
     let $offer = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_product_' + index + '_offer');
-    $offer.value = $preOffer.value;
 
     let $variation = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_product_' + index + '_variation');
-    $variation.value = $preVariation.value;
 
     let $modification = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_product_' + index + '_modification');
-    $modification.value = $preModification.value;
 
     let $total = stockDiv.querySelector('#moving_product_stock_form_move_' + index + '_product_' + index + '_total')
+
+
+    $warehouse.value = $targetWarehouse.value;
+    $destination.value = $destinationWarehouse.value;
+    $product.value = $preProduct.value;
+    $offer.value = $preOffer.value;
+    $variation.value = $preVariation.value;
+    $modification.value = $preModification.value;
     $total.value = $preTotal.value;
 
-    /* Обнуляем количество в перформе */
-    $preTotal.value = null;
-
-
     /* Удаляем при клике колекцию СЕКЦИЙ */
-    stockDiv.querySelector('.del-item-product').addEventListener('click', function () {
+    stockDiv.querySelector('.del-item-product').addEventListener('click', function()
+    {
         this.closest('.item-collection-product').remove();
         index = $addButtonStock.dataset.index * 1;
         $addButtonStock.dataset.index = (index - 1).toString();
@@ -932,10 +1037,29 @@ function addProductMoving() {
     /* Увеличиваем data-index на 1 после вставки новой коллекции */
     $addButtonStock.dataset.index = (index + 1).toString();
 
+    /* Обнуляем количество в перформе */
+    $preTotal.value = null;
+
+    collectionStock.set($targetWarehouse.value + $destinationWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value);
+
+    document.getElementById('moving_product_stock_form_preOffer_select2').remove();
+    //document.getElementById('moving_product_stock_form_preOffer').remove();
+
+    document.getElementById('moving_product_stock_form_preVariation_select2').remove();
+    //document.getElementById('moving_product_stock_form_preVariation').remove();
+
+    document.getElementById('moving_product_stock_form_preModification_select2').remove();
+    //document.getElementById('moving_product_stock_form_preModification').remove();
+
+
+    setTimeout(() =>
+    {
+        document.getElementById('moving_product_stock_form_preProduct_select2').click();
+    }, 100);
+
+
     /* применяем select2 */
     //new NiceSelect(div.querySelector('[data-select="select2"]'), {searchable: true});
-
-
     //});
 }
 

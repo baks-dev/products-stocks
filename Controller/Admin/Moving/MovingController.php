@@ -53,6 +53,7 @@ final class MovingController extends AbstractController
 
         $form->handleRequest($request);
 
+
         if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
             /** @var ProductStockDTO $move */

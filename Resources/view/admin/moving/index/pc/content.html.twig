@@ -267,8 +267,14 @@
                                     </div>
 
                                     <div class="text-muted">
-                                        <small>Склад отгрузки:</small> &nbsp;
-                                        <strong>{{ item.users_profile_destination }}</strong>
+
+                                        {% if app.user.profile == item.user_profile_id %}
+                                            <small>Склад назначения:</small>
+                                        {% else %}
+                                            <small>Склад отгрузки:</small>
+                                        {% endif %}
+
+                                         &nbsp; <strong>{{ item.users_profile_destination }}</strong>
                                     </div>
 
                                     {% if item.comment is not null %}
@@ -294,19 +300,7 @@
 
                             <div>
 
-                                {% if app.user.profile != item.user_profile_id %}
-
-                                   <button
-                                            class="btn btn-light text-nowrap opacity-25"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="left"
-                                            data-bs-delay='{"show":600,"hide":100}'
-                                            title="Ожидется перемещение со склада {{ item.users_profile_destination }}"
-                                    >
-                                        {{ 'Ожидется перемещение'|trans({}, 'messages') }}
-                                    </button>
-
-                                {% elseif item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+                                {% if app.user.profile == item.user_profile_id and item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
 
                                     <a href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
                                        class="btn btn-primary modal-link disabled text-nowrap"
@@ -316,6 +310,18 @@
                                     >
                                         {{ 'Отправить на склад'|trans({}, 'messages') }}
                                     </a>
+
+                                {% else %}
+
+                                    <button
+                                            class="btn btn-light text-nowrap opacity-25"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="left"
+                                            data-bs-delay='{"show":600,"hide":100}'
+                                            title="Ожидется перемещение со склада {{ item.users_profile_destination }}"
+                                    >
+                                        {{ 'Ожидется перемещение'|trans({}, 'messages') }}
+                                    </button>
 
                                 {% endif %}
 
