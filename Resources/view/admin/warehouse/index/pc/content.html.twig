@@ -245,13 +245,13 @@
 
                         {% if app.user.profile == item.user_profile_id and is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
 
-                        <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
-                           class="btn btn-primary modal-link disabled text-nowrap"
-                           data-bs-toggle="modal"
-                           data-bs-target="#modal"
-                           title="Принять на склад продукцию">
-                            {{ 'Принять на склад'|trans({}, 'messages') }}
-                        </a>
+                            <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
+                               class="btn btn-primary modal-link disabled text-nowrap"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal"
+                               title="Принять на склад продукцию">
+                                {{ 'Принять на склад'|trans({}, 'messages') }}
+                            </a>
 
                         {% else %}
 

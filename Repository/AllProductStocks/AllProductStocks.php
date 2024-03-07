@@ -400,43 +400,48 @@ final class AllProductStocks implements AllProductStocksInterface
         // Поиск
         if($this->search->getQuery())
         {
-            /** Поиск по модификации */
-            $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQuery(), 0) : false;
+            for ($i = 0; $i <= 2; $i++) {
 
-            if($result)
-            {
-                $counter = $result['hits']['total']['value'];
+                /** Поиск по модификации */
+                $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQueryFilter(), $i) : false;
 
-                if($counter)
+                if($result)
                 {
+                    $counter = $result['hits']['total']['value'];
 
-                    /** Идентификаторы */
-                    $data = array_column($result['hits']['hits'], "_source");
+                    if($counter)
+                    {
 
-                    $dbal
-                        ->createSearchQueryBuilder($this->search)
-                        ->addSearchInArray('product_modification.id', array_column($data, "id"));
+                        /** Идентификаторы */
+                        $data = array_column($result['hits']['hits'], "_source");
 
-                    return $this->paginator->fetchAllAssociative($dbal);
-                }
+                        $dbal
+                            ->createSearchQueryBuilder($this->search)
+                            ->addSearchInArray('product_modification.id', array_column($data, "id"));
 
-                /** Поиск по продукции */
-                $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQuery(), 1);
+                        return $this->paginator->fetchAllAssociative($dbal);
+                    }
 
-                $counter = $result['hits']['total']['value'];
+                    /** Поиск по продукции */
+                    $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQueryFilter(), $i);
 
-                if($counter)
-                {
-                    /** Идентификаторы */
-                    $data = array_column($result['hits']['hits'], "_source");
+                    $counter = $result['hits']['total']['value'];
 
-                    $dbal
-                        ->createSearchQueryBuilder($this->search)
-                        ->addSearchInArray('product.id', array_column($data, "id"));
+                    if($counter)
+                    {
+                        /** Идентификаторы */
+                        $data = array_column($result['hits']['hits'], "_source");
 
-                    return $this->paginator->fetchAllAssociative($dbal);
+                        $dbal
+                            ->createSearchQueryBuilder($this->search)
+                            ->addSearchInArray('product.id', array_column($data, "id"));
+
+                        return $this->paginator->fetchAllAssociative($dbal);
+                    }
                 }
             }
+
+
 
             $dbal
                 ->createSearchQueryBuilder($this->search)

@@ -41,7 +41,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK')]
 final class StocksController extends AbstractController
 {
-    /** Состояние склада ответственного лица */
+    /**
+     * Состояние склада ответственного лица
+     */
     #[Route('/admin/product/stocks/{page<\d+>}', name: 'admin.index', methods: ['GET', 'POST'])]
     public function index(
         Request $request,

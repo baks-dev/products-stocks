@@ -65,26 +65,19 @@ final class MovingProductStockForm extends AbstractType
 
     private ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse;
 
-    //    private ProductOfferChoiceInterface $productOfferChoice;
-    //    private ProductVariationChoiceInterface $productVariationChoice;
-    //    private ProductModificationChoiceInterface $modificationChoice;
     private ProductWarehouseChoiceInterface $productWarehouseChoice;
+
     private UserProfileChoiceInterface $userProfileChoice;
 
     private UserUid $user;
 
     public function __construct(
-        //WarehouseChoiceInterface $warehouseChoice,
         UserProfileChoiceInterface $userProfileChoice,
         ProductChoiceWarehouseInterface $productChoiceWarehouse,
         ProductOfferChoiceWarehouseInterface $productOfferChoiceWarehouse,
         ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse,
         ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
         ProductWarehouseChoiceInterface $productWarehouseChoice,
-
-        //        ProductOfferChoiceInterface $productOfferChoice,
-        //        ProductVariationChoiceInterface $productVariationChoice,
-        //        ProductModificationChoiceInterface $modificationChoice,
     )
     {
 
@@ -100,23 +93,8 @@ final class MovingProductStockForm extends AbstractType
     {
         $this->user = $builder->getData()->getUsr();
 
-        // Номер заявки
-        // $builder->add('number', TextType::class);
 
-        //        $builder->get('number')->addModelTransformer(
-        //            new CallbackTransformer(
-        //                function ($offer) {
-        //                    return (string) $offer;
-        //                },
-        //                function ($offer) {
-        //                    return  (string) $offer;
-        //                }
-        //            )
-        //        );
-
-        // Продукт *************************************************************************************************
-
-        /*
+        /**
          * Подукция
          *
          * @var ProductUid $product
@@ -152,7 +130,7 @@ final class MovingProductStockForm extends AbstractType
 
 
 
-        /*
+        /**
          * Торговые предложения
          *
          * @var ProductOfferConst $offer
@@ -174,7 +152,7 @@ final class MovingProductStockForm extends AbstractType
             ),
         );
 
-        /*
+        /**
          * Множественный вариант торгового предложения
          *
          * @var ProductVariationConst $variation
@@ -196,7 +174,7 @@ final class MovingProductStockForm extends AbstractType
             ),
         );
 
-        /*
+        /**
          * Модификация множественного варианта торгового предложения
          *
          * @var ProductOfferVariationModificationConst $modification
@@ -278,7 +256,6 @@ final class MovingProductStockForm extends AbstractType
 
         $profiles = $this->userProfileChoice->getActiveUserProfile($this->user);
 
-        //$warehouses = $this->warehouseChoice->fetchAllWarehouse();
 
         /** @var ?UserProfileUid $currentWarehouse */
         $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
@@ -318,20 +295,6 @@ final class MovingProductStockForm extends AbstractType
         // Количество
         $builder->add('preTotal', IntegerType::class, ['required' => false]);
 
-        // Section Collection
-        //        $builder->add(
-        //            'product',
-        //            CollectionType::class,
-        //            [
-        //                'entry_type' => Products\ProductStockForm::class,
-        //                'entry_options' => ['label' => false],
-        //                'label' => false,
-        //                'by_reference' => false,
-        //                'allow_delete' => true,
-        //                'allow_add' => true,
-        //                'prototype_name' => '__product__',
-        //            ]
-        //        );
 
 
         // Section Collection
