@@ -48,6 +48,7 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
+use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -95,26 +96,66 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
-        // ProductStock
-        $dbal
-            ->select('stock.id')
-            ->addSelect('stock.event')
-            ->from(ProductStock::class, 'stock');
+//        // ProductStock
+//        $dbal
+//            ->select('stock.id')
+//            ->addSelect('stock.event')
+//            ->from(ProductStock::class, 'stock');
+//
+//        // ProductStockEvent
+//        // $dbal->addSelect('event.total');
+//        $dbal
+//            ->addSelect('event.comment')
+//            ->addSelect('event.status')
+//            ->addSelect('event.number')
+//            ->join(
+//                'stock',
+//                ProductStockEvent::class,
+//                'event',
+//                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+//            )
+//            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+//            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+//
+//
+//
+//
 
-        // ProductStockEvent
-        // $dbal->addSelect('event.total');
+
         $dbal
+            ->addSelect('event.main AS id')
+            ->addSelect('event.id AS event')
+            ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->addSelect('event.number')
+            ->addSelect('event.profile AS user_profile_id')
+            ->from(ProductStockEvent::class, 'event')
+            ->andWhere('event.status = :status ')
+            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE)
+            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+
+        $dbal
             ->join(
-                'stock',
-                ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-            )
-            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+                ProductStock::class,
+                'stock',
+                'stock.event = event.id'
+
+            );
+
+
+        $dbal
+            //->addSelect('move.destination AS move_destination')
+            ->leftJoin(
+                'event',
+                ProductStockMove::class,
+                'move',
+                'move.event = event.id'
+            );
+
+
 
 
         // ProductStockModify
@@ -126,6 +167,7 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
                 'modify.event = stock.event'
             );
 
+
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
@@ -136,6 +178,10 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
                 'stock_product',
                 'stock_product.event = stock.event'
             );
+
+
+
+
 
 
         // Product
