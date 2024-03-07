@@ -22,6 +22,8 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
@@ -51,21 +53,27 @@ final class IndexController extends AbstractController
         );
         $searchForm->handleRequest($request);
 
-        //        // Фильтр
-        //        $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        //        $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        //        $filterForm->handleRequest($request);
+        /**
+         * Фильтр продукции по ТП
+         */
+        $filter = new ProductFilterDTO($request);
+        $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
+            'action' => $this->generateUrl('products-stocks:admin.moving.index'),
+        ]);
+        $filterForm->handleRequest($request);
+        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
 
         // Получаем список закупок ответственного лица
         $query = $allMove
             ->search($search)
+            ->filter($filter)
             ->fetchAllProductStocksAssociative($this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                /*'filter' => $filterForm->createView(),*/
+                'filter' => $filterForm->createView(),
             ]
         );
     }

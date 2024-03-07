@@ -400,47 +400,46 @@ final class AllProductStocks implements AllProductStocksInterface
         // Поиск
         if($this->search->getQuery())
         {
-            for ($i = 0; $i <= 2; $i++) {
-
-                /** Поиск по модификации */
-                $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQueryFilter(), $i) : false;
-
-                if($result)
-                {
-                    $counter = $result['hits']['total']['value'];
-
-                    if($counter)
-                    {
-
-                        /** Идентификаторы */
-                        $data = array_column($result['hits']['hits'], "_source");
-
-                        $dbal
-                            ->createSearchQueryBuilder($this->search)
-                            ->addSearchInArray('product_modification.id', array_column($data, "id"));
-
-                        return $this->paginator->fetchAllAssociative($dbal);
-                    }
-
-                    /** Поиск по продукции */
-                    $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQueryFilter(), $i);
-
-                    $counter = $result['hits']['total']['value'];
-
-                    if($counter)
-                    {
-                        /** Идентификаторы */
-                        $data = array_column($result['hits']['hits'], "_source");
-
-                        $dbal
-                            ->createSearchQueryBuilder($this->search)
-                            ->addSearchInArray('product.id', array_column($data, "id"));
-
-                        return $this->paginator->fetchAllAssociative($dbal);
-                    }
-                }
-            }
-
+//            for ($i = 0; $i <= 2; $i++) {
+//
+//                /** Поиск по модификации */
+//                $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQueryFilter(), $i) : false;
+//
+//                if($result)
+//                {
+//                    $counter = $result['hits']['total']['value'];
+//
+//                    if($counter)
+//                    {
+//
+//                        /** Идентификаторы */
+//                        $data = array_column($result['hits']['hits'], "_source");
+//
+//                        $dbal
+//                            ->createSearchQueryBuilder($this->search)
+//                            ->addSearchInArray('product_modification.id', array_column($data, "id"));
+//
+//                        return $this->paginator->fetchAllAssociative($dbal);
+//                    }
+//
+//                    /** Поиск по продукции */
+//                    $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQueryFilter(), $i);
+//
+//                    $counter = $result['hits']['total']['value'];
+//
+//                    if($counter)
+//                    {
+//                        /** Идентификаторы */
+//                        $data = array_column($result['hits']['hits'], "_source");
+//
+//                        $dbal
+//                            ->createSearchQueryBuilder($this->search)
+//                            ->addSearchInArray('product.id', array_column($data, "id"));
+//
+//                        return $this->paginator->fetchAllAssociative($dbal);
+//                    }
+//                }
+//            }
 
 
             $dbal

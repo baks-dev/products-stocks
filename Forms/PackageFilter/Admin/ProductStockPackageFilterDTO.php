@@ -32,8 +32,6 @@ final class ProductStockPackageFilterDTO implements ProductStockPackageFilterInt
 {
     public const date = 'zbJIvDNPeN';
 
-    public const status = 'vBbCItaRNB';
-
     private Request $request;
 
     /**
@@ -81,7 +79,5 @@ final class ProductStockPackageFilterDTO implements ProductStockPackageFilterInt
 
         $this->date = $date;
     }
-
-
 
 }

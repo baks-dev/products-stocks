@@ -25,12 +25,15 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
 
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksMoveInterface
 {
     public function search(SearchDTO $search): self;
+
+    public function filter(ProductFilterDTO $filter): static;
 
     /** Метод возвращает все заявки, требующие перемещения между складами */
     public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;

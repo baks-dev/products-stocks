@@ -137,12 +137,42 @@
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
-                <div class="col-3">
-                    {#{{ form_start(filter) }}
-                    <div class="w-100" style="height: 55px;">
-                        {{ form_widget(filter.warehouse, { placeholder: 'Выберите склад из списка ...', attr: { 'data-select' : 'select2' } }) }}
+                <div class="w-100">
+                    {{ form_start(filter) }}
+                    <div class="d-flex justify-content-end align-items-center my-1 gap-3">
+
+                        <div class="w-25">
+                            {{ form_widget(filter.category, { placeholder: 'Все категории ...', attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
+                        </div>
+
+                        {% if filter.vars.data.category %}
+
+                            {% if filter.offer is defined %}
+
+                                <div class="w-25">
+                                    {{ form_widget(filter.offer, { placeholder: filter.offer.vars.label~' ...' , attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
+                                </div>
+                            {% endif %}
+
+
+                            {% if filter.variation is defined %}
+                                <div class="w-25">
+                                    {{ form_widget(filter.variation, { placeholder: filter.variation.vars.label~' ...', attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
+                                </div>
+                            {% endif %}
+
+                            {% if filter.modification is defined %}
+                                <div class="w-25">
+                                    {{ form_widget(filter.modification, { placeholder:  filter.modification.vars.label~' ...', attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
+                                </div>
+                            {% endif %}
+
+                        {% endif %}
+
+
                     </div>
-                    {{ form_end(filter) }}#}
+
+                    {{ form_end(filter) }}
                 </div>
             </div>
 
