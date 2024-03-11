@@ -92,7 +92,8 @@ class ProductStockTotal
         ProductUid $product,
         ?ProductOfferConst $offer,
         ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
+        ?ProductModificationConst $modification,
+        ?string $storage
     )
     {
         $this->id = clone new ProductStockTotalUid();
@@ -103,6 +104,7 @@ class ProductStockTotal
         $this->modification = $modification;
         $this->profile = $profile;
         $this->usr = $usr;
+        $this->storage = $storage ?: null;
     }
 
     /** Количество */

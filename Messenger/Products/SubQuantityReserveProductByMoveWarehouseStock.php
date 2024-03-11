@@ -174,11 +174,11 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                     $this->logger->info('Сняли общий резерв и количество продукции '.$key.' в карточке при перемещении между складами',
                     [
                         __FILE__.':'.__LINE__,
-                        'class' => $ProductUpdateQuantityReserve::class,
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
+                        'event' => $message->getEvent()->getValue(),
+                        'product' => $product->getProduct()->getValue(),
+                        'offer' => $product->getOffer()?->getValue(),
+                        'variation' => $product->getVariation()?->getValue(),
+                        'modification' => $product->getModification()?->getValue(),
                         'total' => $product->getTotal(),
                     ]);
                 }

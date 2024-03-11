@@ -216,7 +216,7 @@
                 <div class="card mb-3 border-light">
                     <div class="card-header bg-body border-light">
 
-                        <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
+                        <div class="card-title w-100 d-flex gap-5 justify-content-between align-items-center text-secondary">
 
                             <div>
                                 <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
@@ -286,10 +286,21 @@
 
                                     </a>
 
-
                                     {# Артикул #}
                                     <div class="text-muted ">
                                         <small>Количество:</small> &nbsp; <strong>{{ item.total }}</strong>
+                                        {% if app.user.profile == item.user_profile_id %}
+
+                                            &nbsp;
+
+                                            ( <small>В наличии:</small> &nbsp; <strong>{{ item.stock_total }}</strong>
+
+                                            {% if item.stock_storage %}
+                                                &nbsp;
+                                                <small>Место:</small> &nbsp; <strong>{{ item.stock_storage }}</strong>
+                                            {% endif %})
+
+                                        {% endif %}
                                     </div>
 
                                     <div class="text-muted">
@@ -303,7 +314,6 @@
                                     </div>
 
                                     {% if item.comment is not null %}
-
                                         <div class="text-danger fs-7 fw-bolder">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                                                  xmlns="http://www.w3.org/2000/svg">
@@ -318,10 +328,10 @@
 
                                             {{ item.comment }}
                                         </div>
-
                                     {% endif %}
                                 </div>
                             </div>
+
 
                             <div>
 
@@ -335,6 +345,7 @@
                                     >
                                         {{ 'Отправить на склад'|trans({}, 'messages') }}
                                     </a>
+
 
                                 {% else %}
 

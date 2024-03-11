@@ -35,7 +35,7 @@
 
 {% block javascript %}
 
-<script async src="/plugins/nice-select2/nice-select2.min.js?v={{ version }}"></script>
+<script nonce='{{ csp_nonce() }}' async  data-src="/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
 
 
 {% endblock %}

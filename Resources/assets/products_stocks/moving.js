@@ -949,7 +949,7 @@ function addProductMoving()
     }
 
 
-    if(collectionStock.size() >= 5)
+    if(collectionStock.size >= 5)
     {
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +

@@ -123,18 +123,17 @@ final class AddReserveProductStocksTotalByMove
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на перемещение',
                     [
                         __FILE__.':'.__LINE__,
-                        'profile' => $ProductStockEvent->getProfile(),
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
+                        'event' => $message->getEvent()->getValue(),
+                        'profile' => $ProductStockEvent->getProfile()?->getValue(),
+                        'product' => $product->getProduct()?->getValue(),
+                        'offer' => $product->getOffer()?->getValue(),
+                        'variation' => $product->getVariation()?->getValue(),
+                        'modification' => $product->getModification()?->getValue(),
                         'total' => $product->getTotal(),
                     ]
                 );
 
-
                 /** Добавляем резерв продукции */
-
             }
 
             $this->entityManager->flush();

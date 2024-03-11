@@ -23,17 +23,5 @@
 
 
 {% block javascript %}
-
-<script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
-
-{#<script async nonce="{{ csp_nonce() }}" data-src="/assets/products_stocks/purchase.min.js?v={{ version }}" class="lazy"></script>#}
-
-
-{#<script defer src="{{ path(app.request.attributes.get('_route')~'.js') }}"></script>#}
-{# <script async src="/plugins/nice-select2/nice-select2.min.js"></script> #}
-{# <script>
-    window.addEventListener('load', function () {
-    jsRequire('/js/countup.min.js');
-});
-</script> #}
+<script nonce='{{ csp_nonce() }}' async  data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
 {% endblock %}

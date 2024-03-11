@@ -113,6 +113,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                             'offer' => $product->getOffer(),
                             'variation' => $product->getVariation(),
                             'modification' => $product->getModification(),
+                            'storage' => $product->getStorage()
                         ]
                     );
 
@@ -132,14 +133,14 @@ final class AddQuantityProductStocksTotalByIncomingStock
                         throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
                     }
 
-
                     $ProductStockTotal = new ProductStockTotal(
                         $User->getId(),
                         $ProductStockEvent->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),
-                        $product->getModification()
+                        $product->getModification(),
+                        $product->getStorage()
                     );
 
                     $this->entityManager->persist($ProductStockTotal);
@@ -147,19 +148,19 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
                 $ProductStockTotal->addTotal($product->getTotal());
 
-
                 $this->logger->info('Добавили приход продукции на склад',
                     [
                         __FILE__.':'.__LINE__,
-                        'profile' => $ProductStockEvent->getProfile(),
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
+                        'event' => $message->getEvent()->getValue(),
+                        'profile' => $ProductStockEvent->getProfile()->getValue(),
+                        'product' => $product->getProduct()->getValue(),
+                        'offer' => $product->getOffer()?->getValue(),
+                        'variation' => $product->getVariation()?->getValue(),
+                        'modification' => $product->getModification()?->getValue(),
+                        'storage' => $product->getStorage(),
                         'total' => $product->getTotal(),
                     ]
                 );
-
             }
 
             $this->entityManager->flush();

@@ -64,6 +64,7 @@ final class IncomingController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
+
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
             $this->addFlash

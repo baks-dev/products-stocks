@@ -184,11 +184,11 @@ final class SubReserveProductStocksTotalByOrderComplete
         $this->logger->info('Сняли резерв и уменьшили количество на складе при самовывозе',
             [
                 __FILE__.':'.__LINE__,
-                'profile' => $profile,
-                'product' => $product->getProduct(),
-                'offer' => $product->getOffer(),
-                'variation' => $product->getVariation(),
-                'modification' => $product->getModification(),
+                'profile' => $profile->getValue(),
+                'product' => $product->getProduct()->getValue(),
+                'offer' => $product->getOffer()?->getValue(),
+                'variation' => $product->getVariation()?->getValue(),
+                'modification' => $product->getModification()?->getValue(),
                 'total' => $product->getTotal(),
             ]);
 

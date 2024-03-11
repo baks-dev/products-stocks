@@ -159,11 +159,11 @@ final class AddQuantityProductByIncomingStock
                     $this->logger->info('Пополнили общий остаток продукции '.$key.' в карточке',
                     [
                         __FILE__.':'.__LINE__,
-                        'class' => $ProductUpdateQuantity::class,
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
+                        'event' => $message->getEvent()->getValue(),
+                        'product' => $product->getProduct()?->getValue(),
+                        'offer' => $product->getOffer()?->getValue(),
+                        'variation' => $product->getVariation()?->getValue(),
+                        'modification' => $product->getModification()->getValue(),
                         'total' => $product->getTotal(),
                     ]);
                 }

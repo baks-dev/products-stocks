@@ -152,6 +152,11 @@ class ProductStockProduct extends EntityEvent
         return $this->total;
     }
 
+    public function getStorage(): ?string
+    {
+        return $this->storage;
+    }
+
     public function getEvent(): ProductStockEvent
     {
         return $this->event;

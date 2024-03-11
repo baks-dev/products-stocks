@@ -162,14 +162,14 @@ final class AddReserveProductByMoveStock
                     $ProductUpdateReserve->addReserve($product->getTotal());
                     $this->entityManager->flush();
 
-                    $this->logger->info('Добавили общий резерв продукции '.$key.' в карточке',
+                    $this->logger->info('Добавили общий резерв продукции с key:'.$key.' в карточке',
                     [
                         __FILE__.':'.__LINE__,
-                        'class' => $ProductUpdateReserve::class,
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
+                        'event' => $message->getEvent()->getValue(),
+                        'product' => $product->getProduct()->getValue(),
+                        'offer' => $product->getOffer()?->getValue(),
+                        'variation' => $product->getVariation()?->getValue(),
+                        'modification' => $product->getModification()?->getValue(),
                         'total' => $product->getTotal(),
                     ]);
                 }

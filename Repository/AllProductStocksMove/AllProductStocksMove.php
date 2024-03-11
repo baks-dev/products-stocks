@@ -58,6 +58,7 @@ use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
@@ -128,6 +129,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
 
         $dbal
+
             ->addSelect('stock.event AS is_warehouse')
             ->join(
             'event',
@@ -490,6 +492,27 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             );
 
 
+        /** Место хранения и количество */
+
+
+        /* Получаем наличие на указанном складе */
+        $dbal
+            ->addSelect('SUM(total.total) AS stock_total')
+            ->addSelect("STRING_AGG(total.storage, ',') AS stock_storage")
+            ->leftJoin(
+                'stock_product',
+                ProductStockTotal::TABLE,
+                'total',
+                '
+                total.profile = :profile AND
+                total.product = stock_product.product AND 
+                (total.offer IS NULL OR total.offer = stock_product.offer) AND 
+                (total.variation IS NULL OR total.variation = stock_product.variation) AND 
+                (total.modification IS NULL OR total.modification = stock_product.modification)
+            ');
+
+
+
         // Поиск
         if($this->search?->getQuery())
         {
@@ -502,7 +525,9 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         $dbal->orderBy('modify.mod_date', 'DESC');
 
-        // dd($dbal->fetchAllAssociative());
+        $dbal->allGroupByExclude();
+
+         dump($dbal->fetchAllAssociative());
 
         return $this->paginator->fetchAllAssociative($dbal);
 
