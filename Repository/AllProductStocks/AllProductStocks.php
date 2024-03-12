@@ -107,6 +107,7 @@ final class AllProductStocks implements AllProductStocksInterface
             ->addSelect('stock_product.reserve AS stock_reserve')
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('(stock_product.usr = :usr OR stock_product.profile = :profile)')
+            ->andWhere('(stock_product.total - stock_product.reserve) != 0')
             ->setParameter('usr', $user, UserUid::TYPE)
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 

@@ -134,9 +134,7 @@ final class ProductModificationChoiceWarehouse implements ProductModificationCho
 
 
         /* Кешируем результат ORM */
-        return $qb
-            //->enableCache('products-stocks', 86400)
-            ->getResult();
+        return $qb->enableCache('products-stocks', 86400)->getResult();
 
     }
 }
