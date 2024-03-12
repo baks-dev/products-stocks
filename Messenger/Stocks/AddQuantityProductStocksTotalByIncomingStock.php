@@ -31,6 +31,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
@@ -46,6 +47,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private UserByUserProfileInterface $userByUserProfile;
+    private ProductStocksTotalInterface $productStocksTotal;
 
 
     public function __construct(
@@ -54,6 +56,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $productsStocksLogger,
         UserByUserProfileInterface $userByUserProfile,
+        ProductStocksTotalInterface $productStocksTotal
     )
     {
         $this->productStocks = $productStocks;
@@ -64,6 +67,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $ProductStockStatusCollection->cases();
         $this->logger = $productsStocksLogger;
 
+        $this->productStocksTotal = $productStocksTotal;
     }
 
     /**
@@ -104,18 +108,27 @@ final class AddQuantityProductStocksTotalByIncomingStock
             {
                 /** Получаем владельца профиля пользователя */
 
-                $ProductStockTotal = $this->entityManager
-                    ->getRepository(ProductStockTotal::class)
-                    ->findOneBy(
-                        [
-                            'profile' => $ProductStockEvent->getProfile(),
-                            'product' => $product->getProduct(),
-                            'offer' => $product->getOffer(),
-                            'variation' => $product->getVariation(),
-                            'modification' => $product->getModification(),
-                            'storage' => $product->getStorage()
-                        ]
-                    );
+                $ProductStockTotal = $this->productStocksTotal->getProductStocksTotalByStorage(
+                    $ProductStockEvent->getProfile(),
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification(),
+                    $product->getStorage()
+                );
+
+//                $ProductStockTotal = $this->entityManager
+//                    ->getRepository(ProductStockTotal::class)
+//                    ->findOneBy(
+//                        [
+//                            'profile' => $ProductStockEvent->getProfile(),
+//                            'product' => $product->getProduct(),
+//                            'offer' => $product->getOffer(),
+//                            'variation' => $product->getVariation(),
+//                            'modification' => $product->getModification(),
+//                            'storage' => $product->getStorage()
+//                        ]
+//                    );
 
                 if(!$ProductStockTotal)
                 {

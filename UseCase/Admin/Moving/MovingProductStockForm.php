@@ -239,9 +239,6 @@ final class MovingProductStockForm extends AbstractType
 
                 if($product && $offer && $variation && $modification)
                 {
-
-
-
                     $this->formTargetWarehouseModifier(
                         $event->getForm()->getParent(),
                         $product,
@@ -333,6 +330,7 @@ final class MovingProductStockForm extends AbstractType
             ],
         );
     }
+
 
     private function formOfferModifier(FormInterface $form, ProductUid $product): void
     {
