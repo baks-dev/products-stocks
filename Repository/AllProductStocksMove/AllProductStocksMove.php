@@ -527,7 +527,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         $dbal->allGroupByExclude();
 
-         dump($dbal->fetchAllAssociative());
+         /*dump($dbal->fetchAllAssociative());*/
 
         return $this->paginator->fetchAllAssociative($dbal);
 
