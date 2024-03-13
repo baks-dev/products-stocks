@@ -177,7 +177,7 @@ final class MovingProductStockForm extends AbstractType
         /**
          * Модификация множественного варианта торгового предложения
          *
-         * @var ProductOfferVariationModificationConst $modification
+         * @var ProductModificationConst $modification
          */
 
         $builder->add(
@@ -334,7 +334,7 @@ final class MovingProductStockForm extends AbstractType
 
     private function formOfferModifier(FormInterface $form, ProductUid $product): void
     {
-        $offer = $this->productOfferChoiceWarehouse->getProductsOfferExistWarehouse($product);
+        $offer = $this->productOfferChoiceWarehouse->getProductsOfferExistWarehouse($this->user, $product);
 
         // Если у продукта нет ТП
         if(empty($offer))
@@ -374,7 +374,7 @@ final class MovingProductStockForm extends AbstractType
 
     private function formVariationModifier(FormInterface $form, ProductUid $product, ProductOfferConst $offer): void
     {
-        $variations = $this->productVariationChoiceWarehouse->getProductsVariationExistWarehouse($product, $offer);
+        $variations = $this->productVariationChoiceWarehouse->getProductsVariationExistWarehouse($this->user, $product, $offer);
 
         // Если у продукта нет множественных вариантов
         if(empty($variations))
@@ -416,7 +416,7 @@ final class MovingProductStockForm extends AbstractType
     ): void
     {
         $modifications = $this->productModificationChoiceWarehouse
-            ->getProductsModificationExistWarehouse($product, $offer, $variation);
+            ->getProductsModificationExistWarehouse($this->user, $product, $offer, $variation);
 
         // Если у продукта нет множественных вариантов
         if(empty($modifications))

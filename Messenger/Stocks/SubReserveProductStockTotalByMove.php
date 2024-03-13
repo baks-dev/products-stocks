@@ -25,10 +25,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
@@ -45,19 +47,22 @@ final class SubReserveProductStockTotalByMove
 
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private MessageDispatchInterface $messageDispatch;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        MessageDispatchInterface $messageDispatch
     ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
+        $this->logger = $productsStocksLogger;
+        $this->messageDispatch = $messageDispatch;
 
         // Инициируем статусы складских остатков
         $collection->cases();
-        $this->logger = $productsStocksLogger;
     }
 
     /**
@@ -127,7 +132,7 @@ final class SubReserveProductStockTotalByMove
                 {
                     $throw = sprintf(
                         'Невозможно снять резерв с продукции, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                        $ProductStockEvent->getProfile(),
+                        $ProductStockEventLast->getProfile(),
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),
@@ -137,8 +142,23 @@ final class SubReserveProductStockTotalByMove
                     throw new DomainException($throw);
                 }
 
-                $ProductStockTotal->subReserve($product->getTotal());
-                $ProductStockTotal->subTotal($product->getTotal());
+                /** Снимаем резерв и остаток продукции на складе */
+                for($i = 1; $i <= $product->getTotal(); $i++)
+                {
+                    $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
+                        $ProductStockEventLast->getProfile(),
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification()
+                    );
+
+                    $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
+                }
+
+                //$ProductStockTotal->subReserve($product->getTotal());
+                //$ProductStockTotal->subTotal($product->getTotal());
+                //$this->entityManager->flush();
 
 
                 $this->logger->info('Сняли резерв и уменьшили количество на складе при перемещении продукции',
@@ -154,8 +174,6 @@ final class SubReserveProductStockTotalByMove
                     ]);
 
             }
-
-            $this->entityManager->flush();
         }
     }
 }

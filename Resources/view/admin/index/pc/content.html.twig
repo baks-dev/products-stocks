@@ -204,30 +204,75 @@
 
             </div>
 
+            {% if query.data %}
 
             <table class="table table-striped table-borderless mt-3"
                    style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
                 <thead>
                 <tr>
+
                     <th>#</th>
-                    <th class="w-50">Продукция</th>
-                    <th class="w-50">Склад</th>
                     <th class="text-center">Категория</th>
+                    <th class="w-75">Продукция</th>
+                    <th>Склад</th>
+
                     <th class="text-center">Наличие</th>
+                    <th class="w-50">Место</th>
+
                     <th class="text-center">Резерв</th>
-                    <th class="text-center">Итого</th>
-                    <th class="text-center">Место</th>
+                    <th class="text-center">Доступно</th>
+
                 </tr>
                 </thead>
                 <tbody>
 
+                {% set exist = 0 %}
+                {% set reserve = 0 %}
+                {% set access = 0 %}
+
                 {% for item in query.data %}
                     {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+
+                    {% set exist = exist + item.stock_total %}
+                    {% set reserve = reserve + item.stock_reserve %}
+
                 {% endfor %}
 
 
                 </tbody>
+
+                <tfoot>
+                <tr >
+                    <td colspan="4"></td>
+                    <td class="text-center text-primary fw-bolder">{{ exist }}</td>
+                    <td></td>
+
+                    <td class="text-center text-primary fw-bolder">{{ reserve ?: '-' }}</td>
+                    <td class="text-center text-primary fw-bolder">
+
+                        {% if exist >= reserve %}
+                            {{ (exist - reserve) ?: '-' }}
+                        {% else %}
+                            0 <span
+                                class="pointer badge text-bg-danger text-white"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="bottom"
+                                data-bs-delay='{"show":600,"hide":100}'
+                                title='Ожидается поступление'
+                        > + {{ exist - reserve }}
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                </tfoot>
             </table>
+
+            {% else %}
+                <div class="alert alert-warning m-3" role="alert">
+                    Информация о складских остатках отстутствует
+                </div>
+            {% endif %}
 
             {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 

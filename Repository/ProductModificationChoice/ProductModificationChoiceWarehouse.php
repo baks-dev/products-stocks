@@ -34,6 +34,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductModificationChoiceWarehouse implements ProductModificationChoiceWarehouseInterface
@@ -56,6 +57,7 @@ final class ProductModificationChoiceWarehouse implements ProductModificationCho
      * Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличие на склад
      */
     public function getProductsModificationExistWarehouse(
+        UserUid $usr,
         ProductUid $product,
         ProductOfferConst $offer,
         ProductVariationConst $variation,
@@ -68,6 +70,11 @@ final class ProductModificationChoiceWarehouse implements ProductModificationCho
         $qb->select($select);
 
         $qb->from(ProductStockTotal::class, 'stock');
+
+        $qb
+            ->andWhere('stock.usr = :usr')
+            ->setParameter('usr', $usr, UserUid::TYPE);
+
         // $qb->where('stock.warehouse = :warehouse');
         $qb->andWhere('(stock.total - stock.reserve) > 0');
         $qb->andWhere('stock.product = :product');
@@ -134,7 +141,9 @@ final class ProductModificationChoiceWarehouse implements ProductModificationCho
 
 
         /* Кешируем результат ORM */
-        return $qb->enableCache('products-stocks', 86400)->getResult();
+        return $qb
+            //->enableCache('products-stocks', 86400)
+            ->getResult();
 
     }
 }

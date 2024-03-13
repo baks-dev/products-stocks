@@ -204,11 +204,10 @@
 
                     <div>
 
-
-                        {% if app.user.profile == item.user_profile_id and is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
+                        {% if app.user.profile == item.user_profile_id and (is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN')) %}
 
                             <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
-                               class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
+                               class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
                                title="Принять на склад продукцию">
@@ -273,7 +272,7 @@
 
                     <div>
 
-                        {% if app.user.profile == item.user_profile_id and is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
+                        {% if app.user.profile == item.user_profile_id and (is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN')) %}
 
                             <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
                                class="btn btn-primary modal-link disabled text-nowrap"

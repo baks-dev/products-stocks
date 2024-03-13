@@ -6,6 +6,9 @@
         {# {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }} #}
     </td>
 
+    <td class="text-center">
+        {{ item.category_name }}
+    </td>
 
     <td class="align-middle">
         <div class="d-flex">
@@ -27,7 +30,7 @@
                 ></a>
             </div>
 
-            <div class="ms-5">
+            <div class="ms-3">
 
                 {# Название #}
                 <a href="{# {{ path('products-product:user.detail', {
@@ -78,13 +81,46 @@
     </td>
 
     <td>
-        <div>{{ item.users_profile_username }}</div>
-        <smal class="small text-muted">{{ item.users_profile_location }}</smal>
+        <div
+                {{ item.users_profile_location ? 'style="cursor: help;"'  }}
+                class="p-1"
+                data-bs-toggle="tooltip"
+                data-bs-placement="bottom"
+                data-bs-delay='{"show":300,"hide":600}'
+                title="{{ item.users_profile_location }}"
+        >
+            {{ item.users_profile_username }}
+        </div>
     </td>
 
     <td class="text-center">
-        {{ item.category_name }}
+        {{ item.stock_total }}
     </td>
+
+    <td class="">
+        {{ item.stock_storage ?: '-' }}
+    </td>
+
+    <td class="text-center">
+
+        {% if item.stock_reserve %}
+            <span
+                    class="pointer {{ item.stock_reserve > item.stock_total ? 'badge text-bg-danger' }}"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-delay='{"show":600,"hide":100}'
+                    title='Резерв превышает наличие! Требуется перемещение либо приход.'
+            >
+                {{ item.stock_reserve }}
+            </span>
+        {% else %}
+            -
+        {% endif %}
+
+
+
+    </td>
+
 
     <td class="text-center">
 
@@ -103,26 +139,9 @@
 
     </td>
 
-    <td class="text-center">
 
-            <span
-                    class="pointer {{ item.stock_reserve > item.stock_total ? 'badge text-bg-danger' }}"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-delay='{"show":600,"hide":100}'
-                    title='Резерв превышает наличие! Требуется перемещение либо приход.'
-            >
-                {{ item.stock_reserve }}
-            </span>
 
-    </td>
 
-    <td class="text-center">
-        {{ item.stock_total }}
-    </td>
 
-    <td class="text-center">
-        {{ item.stock_storage ?: '-' }}
-    </td>
 
 </tr>

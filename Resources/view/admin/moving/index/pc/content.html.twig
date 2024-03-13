@@ -219,14 +219,32 @@
                         <div class="card-title w-100 d-flex gap-5 justify-content-between align-items-center text-secondary">
 
                             <div>
-                                <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                                   class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#modal"
-                                   title="Детали заявки">
-                                    <span class="badge text-bg-danger me-3">Перемещение</span>
-                                    <div class="text-nowrap"># {{ item.number }}</div>
-                                </a>
+
+                                {% if app.user.profile == item.user_profile_id and item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+
+                                    <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
+                                       class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal"
+                                       title="Детали заявки">
+                                        <span class="badge text-bg-danger me-3">Перемещение</span>
+                                        <div class="text-nowrap"># {{ item.number }}</div>
+                                    </a>
+
+                                {% else %}
+
+                                    <button
+                                       class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal"
+                                       title="Детали заявки">
+                                        <span class="badge text-bg-danger me-3">Перемещение</span>
+                                        <div class="text-nowrap"># {{ item.number }}</div>
+                                    </button>
+
+                                {% endif %}
+
+
                                 <span class="fw-normal text-nowrap">{{ item.mod_date|date('d.m.Y H:i') }}</span>
                             </div>
 

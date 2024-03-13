@@ -510,7 +510,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             ;
         }
 
-        $dbal->orderBy('modify.mod_date', 'DESC');
+        $dbal->orderBy('modify.mod_date');
 
         return $this->paginator->fetchAllAssociative($dbal);
 

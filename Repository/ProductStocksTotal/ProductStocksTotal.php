@@ -103,7 +103,6 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
         return $dbal->fetchOne() ?: 0;
     }
 
-
     public function getProductStocksTotalByStorage(
         UserProfileUid $profile,
         ProductUid $product,
@@ -113,6 +112,7 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
         string $storage
     ): ?ProductStockTotal
     {
+
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
         $orm->select('stock');
@@ -126,6 +126,9 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
         $orm
             ->andWhere('stock.product = :product')
             ->setParameter('product', $product, ProductUid::TYPE);
+
+
+        $storage = mb_strtolower($storage);
 
         $orm
             ->andWhere('LOWER(stock.storage) = :storage')
@@ -164,6 +167,7 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
             $orm->andWhere('stock.modification IS NULL');
         }
 
+        $orm->setMaxResults(1);
 
         return $orm->getOneOrNullResult();
     }

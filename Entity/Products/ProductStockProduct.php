@@ -154,7 +154,7 @@ class ProductStockProduct extends EntityEvent
 
     public function getStorage(): ?string
     {
-        return $this->storage;
+        return trim($this->storage);
     }
 
     public function getEvent(): ProductStockEvent

@@ -25,10 +25,13 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal\AddProductStocksReserve;
+use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
@@ -44,12 +47,14 @@ final class AddReserveProductStocksTotalByMove
 
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private MessageDispatchInterface $messageDispatch;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        MessageDispatchInterface $messageDispatch
     ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
@@ -57,6 +62,7 @@ final class AddReserveProductStocksTotalByMove
         // Инициируем статусы складских остатков
         $collection->cases();
         $this->logger = $productsStocksLogger;
+        $this->messageDispatch = $messageDispatch;
     }
 
     /**
@@ -118,7 +124,22 @@ final class AddReserveProductStocksTotalByMove
                     throw new DomainException($throw);
                 }
 
-                $ProductStockTotal->addReserve($product->getTotal());
+
+                /**
+                 * Создаем резерв на единицу продукции
+                 */
+                for ($i = 1; $i <= $product->getTotal(); $i++) {
+
+                    $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                        $ProductStockEvent->getProfile(),
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification()
+                    );
+
+                    $this->messageDispatch->dispatch($AddProductStocksReserve, transport: 'products-stocks');
+                }
 
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на перемещение',
                     [
@@ -132,13 +153,7 @@ final class AddReserveProductStocksTotalByMove
                         'total' => $product->getTotal(),
                     ]
                 );
-
-                /** Добавляем резерв продукции */
             }
-
-            $this->entityManager->flush();
         }
-
-
     }
 }

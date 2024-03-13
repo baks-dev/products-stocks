@@ -91,7 +91,12 @@ final class AddQuantityProductStocksTotalByIncomingStock
         {
             $this->logger
                 ->notice('Не пополняем складские остатки: Статус заявки не является Incoming «Приход на склад»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                    [
+                        __FILE__.':'.__LINE__,
+                        'ProductStockUid' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()
+                    ]);
 
             return;
         }
@@ -106,29 +111,17 @@ final class AddQuantityProductStocksTotalByIncomingStock
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
-                /** Получаем владельца профиля пользователя */
+                /** Получаем владельца профиля пользователя и место для хранения */
 
-                $ProductStockTotal = $this->productStocksTotal->getProductStocksTotalByStorage(
-                    $ProductStockEvent->getProfile(),
-                    $product->getProduct(),
-                    $product->getOffer(),
-                    $product->getVariation(),
-                    $product->getModification(),
-                    $product->getStorage()
-                );
-
-//                $ProductStockTotal = $this->entityManager
-//                    ->getRepository(ProductStockTotal::class)
-//                    ->findOneBy(
-//                        [
-//                            'profile' => $ProductStockEvent->getProfile(),
-//                            'product' => $product->getProduct(),
-//                            'offer' => $product->getOffer(),
-//                            'variation' => $product->getVariation(),
-//                            'modification' => $product->getModification(),
-//                            'storage' => $product->getStorage()
-//                        ]
-//                    );
+                $ProductStockTotal = $this->productStocksTotal
+                    ->getProductStocksTotalByStorage(
+                        $ProductStockEvent->getProfile(),
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification(),
+                        $product->getStorage()
+                    );
 
                 if(!$ProductStockTotal)
                 {
@@ -145,6 +138,19 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
                         throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
                     }
+
+                    $this->logger->info('Место складирования не найдено!',
+                        [
+                            __FILE__.':'.__LINE__,
+                            'profile' => (string) $ProductStockEvent->getProfile(),
+                            'product' => (string) $product->getProduct(),
+                            'offer' => (string) $product->getOffer(),
+                            'variation' => (string) $product->getVariation(),
+                            'modification' => (string) $product->getModification(),
+                            'storage' => $product->getStorage(),
+                        ]
+                    );
+
 
                     $ProductStockTotal = new ProductStockTotal(
                         $User->getId(),
@@ -164,12 +170,12 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 $this->logger->info('Добавили приход продукции на склад',
                     [
                         __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'profile' => $ProductStockEvent->getProfile()->getValue(),
-                        'product' => $product->getProduct()->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
+                        'event' => (string) $message->getEvent(),
+                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification(),
                         'storage' => $product->getStorage(),
                         'total' => $product->getTotal(),
                     ]

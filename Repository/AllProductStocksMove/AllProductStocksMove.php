@@ -492,13 +492,12 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             );
 
 
-        /** Место хранения и количество */
-
+        /** Место хранения на складе и количество */
 
         /* Получаем наличие на указанном складе */
         $dbal
             ->addSelect('SUM(total.total) AS stock_total')
-            ->addSelect("STRING_AGG(total.storage, ',') AS stock_storage")
+            ->addSelect("STRING_AGG(total.storage, ', ' ORDER BY total.total) AS stock_storage")
             ->leftJoin(
                 'stock_product',
                 ProductStockTotal::TABLE,
@@ -508,7 +507,8 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
                 total.product = stock_product.product AND 
                 (total.offer IS NULL OR total.offer = stock_product.offer) AND 
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
-                (total.modification IS NULL OR total.modification = stock_product.modification)
+                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+                total.total > 0
             ');
 
 
@@ -523,7 +523,8 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             ;
         }
 
-        $dbal->orderBy('modify.mod_date', 'DESC');
+        /** Сортируем по дате, в первую очередь закрываем все старые заявки */
+        $dbal->orderBy('modify.mod_date');
 
         $dbal->allGroupByExclude();
 

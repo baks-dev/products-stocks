@@ -157,4 +157,12 @@ class ProductStockTotal
         return $this->reserve;
     }
 
+    /**
+     * Storage
+     */
+    public function getStorage(): ?string
+    {
+        return $this->storage;
+    }
+
 }

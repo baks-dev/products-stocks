@@ -107,7 +107,10 @@ final class AllProductStocks implements AllProductStocksInterface
             ->addSelect('stock_product.reserve AS stock_reserve')
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('(stock_product.usr = :usr OR stock_product.profile = :profile)')
-            ->andWhere('(stock_product.total - stock_product.reserve) != 0')
+
+            ->andWhere('stock_product.total != 0')
+            ->andWhere('stock_product.reserve >= 0')
+
             ->setParameter('usr', $user, UserUid::TYPE)
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
@@ -456,6 +459,7 @@ final class AllProductStocks implements AllProductStocksInterface
         }
 
         $dbal->addOrderBy('stock_product.profile');
+        $dbal->addOrderBy('stock_product.total');
 
         return $this->paginator->fetchAllAssociative($dbal);
 

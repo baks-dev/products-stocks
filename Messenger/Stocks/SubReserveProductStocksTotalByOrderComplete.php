@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\Type\OrderStatus\OrderStatusDelivery;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
@@ -38,6 +39,7 @@ use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
@@ -53,17 +55,20 @@ final class SubReserveProductStocksTotalByOrderComplete
     private ProductWarehouseByOrderInterface $warehouseByOrder;
 
     private LoggerInterface $logger;
+    private MessageDispatchInterface $messageDispatch;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductWarehouseByOrderInterface $warehouseByOrder,
         LoggerInterface $productsStocksLogger,
+        MessageDispatchInterface $messageDispatch
     ) {
         $this->entityManager = $entityManager;
         $this->entityManager->clear();
 
         $this->warehouseByOrder = $warehouseByOrder;
         $this->logger = $productsStocksLogger;
+        $this->messageDispatch = $messageDispatch;
     }
 
     /**
@@ -169,17 +174,32 @@ final class SubReserveProductStocksTotalByOrderComplete
             $throw = sprintf(
                 'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
                 $profile,
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification(),
+                $ProductUid,
+                $ProductOfferConst,
+                $ProductVariationConst,
+                $ProductModificationConst,
             );
 
             throw new DomainException($throw);
         }
 
-        $ProductStockTotal->subReserve($product->getTotal());
-        $ProductStockTotal->subTotal($product->getTotal());
+        /** Снимаем резерв и остаток продукции на складе */
+        for($i = 1; $i <= $product->getTotal(); $i++)
+        {
+            $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
+                $profile,
+                $ProductUid,
+                $ProductOfferConst,
+                $ProductVariationConst,
+                $ProductModificationConst
+            );
+
+            $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
+        }
+
+        //$ProductStockTotal->subReserve($product->getTotal());
+        //$ProductStockTotal->subTotal($product->getTotal());
+        //$this->entityManager->flush();
 
         $this->logger->info('Сняли резерв и уменьшили количество на складе при самовывозе',
             [
@@ -192,7 +212,6 @@ final class SubReserveProductStocksTotalByOrderComplete
                 'total' => $product->getTotal(),
             ]);
 
-        $this->entityManager->flush();
 
     }
 }

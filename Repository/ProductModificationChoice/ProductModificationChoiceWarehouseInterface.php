@@ -26,9 +26,15 @@ namespace BaksDev\Products\Stocks\Repository\ProductModificationChoice;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Users\User\Type\Id\UserUid;
 
 interface ProductModificationChoiceWarehouseInterface
 {
     /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличие на склад */
-    public function getProductsModificationExistWarehouse(ProductUid $product, ProductOfferConst $offer, ProductVariationConst $variation): ?array;
+    public function getProductsModificationExistWarehouse(
+        UserUid $usr,
+        ProductUid $product,
+        ProductOfferConst $offer,
+        ProductVariationConst $variation
+    ): ?array;
 }

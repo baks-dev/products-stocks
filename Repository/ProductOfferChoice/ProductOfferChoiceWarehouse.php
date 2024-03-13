@@ -32,6 +32,7 @@ use BaksDev\Products\Product\Entity as ProductEntity;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseInterface
@@ -53,7 +54,10 @@ final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseIn
     /**
      * Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличие на складе
      */
-    public function getProductsOfferExistWarehouse(ProductUid $product): ?array
+    public function getProductsOfferExistWarehouse(
+        UserUid $usr,
+        ProductUid $product
+    ): ?array
     {
         $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
@@ -62,6 +66,10 @@ final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseIn
         $qb->select($select);
 
         $qb->from(ProductStockTotal::class, 'stock');
+
+        $qb
+            ->andWhere('stock.usr = :usr')
+            ->setParameter('usr', $usr, UserUid::TYPE);
 
         $qb->andWhere('(stock.total - stock.reserve) > 0');
         $qb->andWhere('stock.product = :product');

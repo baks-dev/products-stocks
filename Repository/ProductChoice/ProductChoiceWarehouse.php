@@ -63,6 +63,11 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
         $qb->select($select);
 
         $qb->from(ProductStockTotal::class, 'stock');
+
+        $qb
+            ->andWhere('stock.usr = :usr')
+            ->setParameter('usr', $usr, UserUid::TYPE);
+
         //$qb->where('stock.warehouse = :warehouse');
         $qb->andWhere('(stock.total - stock.reserve)  > 0');
 
@@ -94,6 +99,10 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
         return $qb->enableCache('products-stocks', 86400)->getResult();
 
     }
+
+
+
+
 
 
     /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличие на данном складе */

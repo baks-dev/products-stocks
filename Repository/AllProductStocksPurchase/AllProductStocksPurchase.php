@@ -433,7 +433,7 @@ final class AllProductStocksPurchase implements AllProductStocksPurchaseInterfac
 
         }
 
-        $dbal->orderBy('modify.mod_date', 'DESC');
+        $dbal->orderBy('modify.mod_date');
         //$dbal->addOrderBy('stock.number', 'DESC');
 
         return $this->paginator->fetchAllAssociative($dbal);

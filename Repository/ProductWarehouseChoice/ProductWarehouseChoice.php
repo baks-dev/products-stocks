@@ -76,15 +76,14 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
 
         $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $select = sprintf('new %s(stock.profile, profile_personal.username, stock.profile, (stock.total - stock.reserve) )', UserProfileUid::class);
+        $select = sprintf('new %s(stock.profile, profile_personal.username, stock.profile, (SUM(stock.total) - SUM(stock.reserve)) )', UserProfileUid::class);
 
         $qb->select($select);
 
         $qb->from(ProductStockTotal::class, 'stock');
-        //        $qb->addGroupBy('stock.warehouse');
-        //        $qb->addGroupBy('stock.total');
-        //        $qb->addGroupBy('stock.reserve');
 
+        $qb->addGroupBy('stock.profile');
+        $qb->addGroupBy('profile_personal.username');
 
         $qb
             ->andWhere('stock.usr = :usr')
@@ -94,11 +93,14 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
 
         $qb->andWhere('stock.product = :product');
         $qb->setParameter('product', $product, ProductUid::TYPE);
+        $qb->addGroupBy('stock.product');
+
 
         if($offer)
         {
             $qb->andWhere('stock.offer = :offer');
             $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+            $qb->addGroupBy('stock.offer');
         }
         else
         {
@@ -109,6 +111,8 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
         {
             $qb->andWhere('stock.variation = :variation');
             $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+
+            $qb->addGroupBy('stock.variation');
         }
         else
         {
@@ -119,12 +123,14 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
         {
             $qb->andWhere('stock.modification = :modification');
             $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+
+            $qb->addGroupBy('stock.modification');
+
         }
         else
         {
             $qb->andWhere('stock.modification IS NULL');
         }
-
 
         $qb->join(
             UserProfile::class,
@@ -140,47 +146,8 @@ final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
             'profile_personal.event = profile.event',
         );
 
-
-        //        // Warehouse
-        //        $exist = $this->entityManager->createQueryBuilder();
-        //        $exist->select('1');
-        //        $exist->from(ContactsRegionEntity\ContactsRegion::class, 'tmp');
-        //        $exist->where('tmp.event = warehouse.event');
-        //
-        //        $qb->join(
-        //            ContactsRegionEntity\Call\ContactsRegionCall::class,
-        //            'warehouse',
-        //            'WITH',
-        //            'warehouse.const = stock.warehouse AND warehouse.stock = true AND '.$qb->expr()->exists($exist->getDQL()),
-        //        );
-        //
-        //
-        //        $qb->join(
-        //            ContactsRegionEntity\Event\ContactsRegionEvent::class,
-        //            'event',
-        //            'WITH',
-        //            'event.id = warehouse.event',
-        //        );
-        //
-        ////        $qb->join(
-        ////            ContactsRegionEntity\ContactsRegion::class,
-        ////            'contacts',
-        ////            'WITH',
-        ////            'contacts.event = event.id',
-        ////        );
-        //
-        //        $qb->leftJoin(
-        //            ContactsRegionEntity\Call\Trans\ContactsRegionCallTrans::class,
-        //            'trans',
-        //            'WITH',
-        //            'trans.call = warehouse.id AND trans.local = :local',
-        //        );
-        //        //$qb->addGroupBy('trans.name');
-
-        //$qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
-
         /** Не кешируем результат! Необходима актуальная информация о наличии */
-        return $qb->getQuery()->getResult();
+        return $qb->getResult();
 
     }
 }

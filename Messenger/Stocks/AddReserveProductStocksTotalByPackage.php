@@ -25,10 +25,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
@@ -46,6 +48,7 @@ final class AddReserveProductStocksTotalByPackage
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private CurrentProductStocksInterface $currentProductStocks;
+    private MessageDispatchInterface $messageDispatch;
 
     public function __construct(
 
@@ -54,6 +57,7 @@ final class AddReserveProductStocksTotalByPackage
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $productsStocksLogger,
         CurrentProductStocksInterface $currentProductStocks,
+        MessageDispatchInterface $messageDispatch
     )
     {
         $this->productStocks = $productStocks;
@@ -61,9 +65,11 @@ final class AddReserveProductStocksTotalByPackage
 
         $this->logger = $productsStocksLogger;
         $this->currentProductStocks = $currentProductStocks;
+        $this->messageDispatch = $messageDispatch;
 
         // Инициируем статусы складских остатков
         $ProductStockStatusCollection->cases();
+
     }
 
     /**
@@ -71,6 +77,8 @@ final class AddReserveProductStocksTotalByPackage
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        $this->entityManager->clear();
+
         $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
 
         if(!$ProductStockEvent)
@@ -89,7 +97,7 @@ final class AddReserveProductStocksTotalByPackage
 
         if($message->getLast())
         {
-            $lastProductStockEvent = $this->entityManager->getRepository( ProductStockEvent::class)->find($message->getLast());
+            $lastProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getLast());
 
             if(!$lastProductStockEvent || $lastProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()) === true)
             {
@@ -135,7 +143,24 @@ final class AddReserveProductStocksTotalByPackage
 
             if($ProductStockTotal)
             {
-                $ProductStockTotal->addReserve($product->getTotal());
+                /**
+                 * Создаем резерв на единицу продукции
+                 */
+                for($i = 1; $i <= $product->getTotal(); $i++)
+                {
+                    $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                        $ProductStockEvent->getProfile(),
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification()
+                    );
+
+                    $this->messageDispatch->dispatch($AddProductStocksReserve, transport: 'products-stocks');
+                }
+
+                //$ProductStockTotal->addReserve($product->getTotal());
+                //$this->entityManager->flush();
 
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на упаковку',
                     [
@@ -152,6 +177,6 @@ final class AddReserveProductStocksTotalByPackage
             }
         }
 
-        $this->entityManager->flush();
+
     }
 }
