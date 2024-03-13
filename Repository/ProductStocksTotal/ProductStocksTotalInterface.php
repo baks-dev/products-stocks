@@ -44,10 +44,10 @@ interface ProductStocksTotalInterface
     public function getProductStocksTotalByStorage(
         UserProfileUid $profile,
         ProductUid $product,
-        ProductOfferConst $offer,
-        ProductVariationConst $variation,
-        ProductModificationConst $modification,
-        string $storage
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
+        ?ProductModificationConst $modification,
+        ?string $storage
     ): ?ProductStockTotal;
 
 }

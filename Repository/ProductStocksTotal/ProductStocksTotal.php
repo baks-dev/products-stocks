@@ -106,10 +106,10 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
     public function getProductStocksTotalByStorage(
         UserProfileUid $profile,
         ProductUid $product,
-        ProductOfferConst $offer,
-        ProductVariationConst $variation,
-        ProductModificationConst $modification,
-        string $storage
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
+        ?ProductModificationConst $modification,
+        ?string $storage
     ): ?ProductStockTotal
     {
 
@@ -128,11 +128,20 @@ final class ProductStocksTotal implements ProductStocksTotalInterface
             ->setParameter('product', $product, ProductUid::TYPE);
 
 
-        $storage = mb_strtolower($storage);
+        if($storage)
+        {
+            $storage = trim($storage);
+            $storage = mb_strtolower($storage);
 
-        $orm
-            ->andWhere('LOWER(stock.storage) = :storage')
-            ->setParameter('storage', $storage);
+            $orm
+                ->andWhere('LOWER(stock.storage) = :storage')
+                ->setParameter('storage', $storage);
+
+        }
+        else
+        {
+            $orm->andWhere('stock.storage IS NULL');
+        }
 
         if($offer)
         {
