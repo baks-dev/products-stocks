@@ -497,7 +497,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         /* Получаем наличие на указанном складе */
         $dbal
             ->addSelect('SUM(total.total) AS stock_total')
-            ->addSelect("STRING_AGG(CONCAT(total.storage, ': ', total.total), ', ' ORDER BY total.total) AS stock_storage")
+            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
             ->leftJoin(
                 'stock_product',
                 ProductStockTotal::TABLE,
