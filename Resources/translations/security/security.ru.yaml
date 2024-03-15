@@ -4,6 +4,10 @@ ROLE_PRODUCT_STOCK:
   name: 'Складской учет'
   desc: 'Складской учет товаров'
 
+ROLE_PRODUCT_STOCK_EDIT:
+  name: 'Редактировать остатки'
+  desc: 'Редактировать складские остатки и резерв'
+
 # Правила
 
 
@@ -23,6 +27,10 @@ ROLE_PRODUCT_STOCK_MOVING:
 ROLE_PRODUCT_STOCK_MOVING_NEW:
   name: 'Добавить перемещение'
   desc: 'Добавить заявку на перемещение товаров с со склада'
+
+ROLE_PRODUCT_STOCK_MOVING_CANCEL:
+  name: 'Отменить пеермещение'
+  desc: 'Отменить заявку на перемещение товаров с со склада'
 
 
 

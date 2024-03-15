@@ -3,6 +3,10 @@ ROLE_PRODUCT_STOCK:
   name: 'Warehouse accounting'
   desc: 'Warehouse accounting of goods'
 
+ROLE_PRODUCT_STOCK_EDIT:
+  name: 'Edit balances'
+  desc: 'Edit warehouse balances and reserve'
+
 # Rules
 
 
@@ -22,6 +26,10 @@ ROLE_PRODUCT_STOCK_MOVING:
 ROLE_PRODUCT_STOCK_MOVING_NEW:
   name: 'Add movement'
   desc: 'Add a request to move goods from the warehouse'
+
+ROLE_PRODUCT_STOCK_MOVING_CANCEL:
+  name: 'Cancel move'
+  desc: 'Cancel the request to move goods from the warehouse'
 
 
 
