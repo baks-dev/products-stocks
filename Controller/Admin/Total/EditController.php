@@ -87,7 +87,6 @@ final class EditController extends AbstractController
             $ProductStocksDTO->getOffer(),
             $ProductStocksDTO->getVariation(),
             $ProductStocksDTO->getModification()
-
         );
 
         return $this->render([
