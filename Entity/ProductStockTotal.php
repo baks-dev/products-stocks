@@ -26,22 +26,26 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Entity;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Entity\EntityState;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Users\UsersTable\Entity\UsersTableDayInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 
 // ProductStockTotal
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_total')]
 #[ORM\Index(columns: ['usr', 'profile'])]
-class ProductStockTotal
+class ProductStockTotal extends EntityState
 {
     public const TABLE = 'product_stock_total';
 
@@ -107,6 +111,8 @@ class ProductStockTotal
         $this->storage = $storage ?: null;
     }
 
+
+
     /** Количество */
 
     // Увеличиваем количество
@@ -164,5 +170,33 @@ class ProductStockTotal
     {
         return $this->storage;
     }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
+    }
+
+    public function getDto($dto): mixed
+    {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
+        if ($dto instanceof ProductStockTotalEditDTO)
+        {
+            return parent::getDto($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    public function setEntity($dto): mixed
+    {
+        if ($dto instanceof ProductStockTotalEditDTO || $dto instanceof self)
+        {
+            return parent::setEntity($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
 
 }

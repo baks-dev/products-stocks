@@ -59,7 +59,8 @@ final class AddQuantityProductByIncomingStock
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger
-    ) {
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -87,11 +88,16 @@ final class AddQuantityProductByIncomingStock
         }
 
         // Если статус не является Incoming «Приход на склад»
-        if (false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class)) {
+        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
+        {
 
-            $this->logger
-                ->notice('Не пополняем карточку товара: Статус заявки не является Incoming «Приход на склад»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+            $this->logger->notice('Не пополняем карточку товара: Статус заявки не является Incoming «Приход на склад»',
+                [
+                    __FILE__.':'.__LINE__,
+                    'ProductStockUid' => (string) $message->getId(),
+                    'event' => (string) $message->getEvent(),
+                    'last' => (string) $message->getLast()]
+            );
 
             return;
         }
@@ -99,17 +105,20 @@ final class AddQuantityProductByIncomingStock
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
-        if ($products) {
+        if($products)
+        {
 
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $key => $product) {
+            foreach($products as $key => $product)
+            {
 
                 $ProductUpdateQuantity = null;
 
                 // Количественный учет модификации множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantity && $product->getModification()) {
+                if(null === $ProductUpdateQuantity && $product->getModification())
+                {
 
                     $this->entityManager->clear();
 
@@ -122,7 +131,8 @@ final class AddQuantityProductByIncomingStock
                 }
 
                 // Количественный учет множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantity && $product->getVariation()) {
+                if(null === $ProductUpdateQuantity && $product->getVariation())
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantity = $this->variationQuantity->getProductVariationQuantity(
@@ -133,7 +143,8 @@ final class AddQuantityProductByIncomingStock
                 }
 
                 // Количественный учет торгового предложения
-                if (null === $ProductUpdateQuantity && $product->getOffer()) {
+                if(null === $ProductUpdateQuantity && $product->getOffer())
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantity = $this->offerQuantity->getProductOfferQuantity(
@@ -143,7 +154,8 @@ final class AddQuantityProductByIncomingStock
                 }
 
                 // Количественный учет продукта
-                if (null === $ProductUpdateQuantity) {
+                if(null === $ProductUpdateQuantity)
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
@@ -151,21 +163,22 @@ final class AddQuantityProductByIncomingStock
                     );
                 }
 
-                if ($ProductUpdateQuantity) {
+                if($ProductUpdateQuantity)
+                {
                     $ProductUpdateQuantity->addQuantity($product->getTotal());
                     $this->entityManager->flush();
 
 
                     $this->logger->info('Пополнили общий остаток продукции '.$key.' в карточке',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'product' => $product->getProduct()?->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()->getValue(),
-                        'total' => $product->getTotal(),
-                    ]);
+                        [
+                            __FILE__.':'.__LINE__,
+                            'event' => (string) $message->getEvent(),
+                            'product' => (string) $product->getProduct(),
+                            'offer' => (string) $product->getOffer(),
+                            'variation' => (string) $product->getVariation(),
+                            'modification' => (string) $product->getModification(),
+                            'total' => $product->getTotal(),
+                        ]);
                 }
             }
         }

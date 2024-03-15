@@ -43,7 +43,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Снимает резерв и отнимает количество продукции при перемещении между складами
  */
-
 #[AsMessageHandler(priority: 1)]
 final class SubQuantityReserveProductByMoveWarehouseStock
 {
@@ -64,7 +63,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger
-    ) {
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -83,7 +83,6 @@ final class SubQuantityReserveProductByMoveWarehouseStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         if(!$message->getLast())
         {
             return;
@@ -100,30 +99,39 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         }
 
         // Если предыдущий Статус не является Moving «Перемещение»
-        if (false === $lastProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        if(false === $lastProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
         {
 
-            $this->logger
-                ->notice('Не снимаем резерв и наличие в карточке товара: Статус предыдущего события заявки не является Moving «Перемещение»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+            $this->logger->notice('Не снимаем резерв и наличие в карточке товара: Статус предыдущего события заявки не является Moving «Перемещение»',
+                [
+                    __FILE__.':'.__LINE__,
+                    'ProductStockUid' => (string) $message->getId(),
+                    'event' => (string) $message->getEvent(),
+                    'last' => (string) $message->getLast()
+                ]);
 
             return;
         }
 
         // Получаем всю продукцию в ордере которая перемещается со склада
+        // Если поступила отмена заявки - массив продукции будет NULL
+        /** @see SubReserveProductStockTotalByCancel */
         $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
 
-        if ($products) {
+        if($products)
+        {
 
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $key => $product) {
+            foreach($products as $key => $product)
+            {
 
                 $ProductUpdateQuantityReserve = null;
 
                 // Количественный учет модификации множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getModification()) {
+                if(null === $ProductUpdateQuantityReserve && $product->getModification())
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantityReserve = $this->modificationQuantity->getProductModificationQuantity(
@@ -135,7 +143,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                 }
 
                 // Количественный учет множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getVariation()) {
+                if(null === $ProductUpdateQuantityReserve && $product->getVariation())
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantityReserve = $this->variationQuantity->getProductVariationQuantity(
@@ -146,7 +155,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                 }
 
                 // Количественный учет торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getOffer()) {
+                if(null === $ProductUpdateQuantityReserve && $product->getOffer())
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantityReserve = $this->offerQuantity->getProductOfferQuantity(
@@ -156,7 +166,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                 }
 
                 // Количественный учет продукта
-                if (null === $ProductUpdateQuantityReserve) {
+                if(null === $ProductUpdateQuantityReserve)
+                {
                     $this->entityManager->clear();
 
                     $ProductUpdateQuantityReserve = $this->productQuantity->getProductQuantity(
@@ -164,7 +175,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                     );
                 }
 
-                if ($ProductUpdateQuantityReserve)
+                if($ProductUpdateQuantityReserve)
                 {
                     $ProductUpdateQuantityReserve->subQuantity($product->getTotal());
                     $ProductUpdateQuantityReserve->subReserve($product->getTotal());
@@ -172,15 +183,15 @@ final class SubQuantityReserveProductByMoveWarehouseStock
                     $this->entityManager->flush();
 
                     $this->logger->info('Сняли общий резерв и количество продукции '.$key.' в карточке при перемещении между складами',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'product' => $product->getProduct()->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
-                        'total' => $product->getTotal(),
-                    ]);
+                        [
+                            __FILE__.':'.__LINE__,
+                            'event' => (string) $message->getEvent(),
+                            'product' => (string) $product->getProduct(),
+                            'offer' => (string) $product->getOffer(),
+                            'variation' => (string) $product->getVariation(),
+                            'modification' => (string) $product->getModification(),
+                            'total' => $product->getTotal(),
+                        ]);
                 }
             }
         }

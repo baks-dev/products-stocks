@@ -32,7 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see SubProductStocksTotalMessage */
+/** @see SubProductStocksTotalCancelMessage */
 final class SubProductStocksTotalMessage
 {
     private UserProfileUid $profile;

@@ -55,7 +55,8 @@ final class SubReserveProductStockTotalByMove
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger,
         MessageDispatchInterface $messageDispatch
-    ) {
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
@@ -70,7 +71,7 @@ final class SubReserveProductStockTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        if ($message->getLast() === null)
+        if($message->getLast() === null)
         {
             return;
         }
@@ -79,11 +80,16 @@ final class SubReserveProductStockTotalByMove
         $ProductStockEventLast = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getLast());
 
         // Если статус предыдущего события заявки не является Moving «Перемещение»
-        if (!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
+        if(!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
         {
             $this->logger
                 ->notice('Не снимаем резерв на складе: Статус предыдущего события не Moving «Перемещение»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                    [
+                        __FILE__.':'.__LINE__,
+                        'ProductStockUid' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()]
+                );
 
             return;
         }
@@ -97,13 +103,16 @@ final class SubReserveProductStockTotalByMove
             return;
         }
 
-
         // Если статус текущей заявки не является Warehouse «Отправили на склад»
-        if (!$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
+        if(!$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
         {
             $this->logger
-                ->notice('Не снимаем резерв на складе: Статус заявки не является Warehouse «Отправили на склад»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                ->notice('Не снимаем резерв и наличие на складе: Статус заявки не является Warehouse «Отправили на склад»',
+                    [__FILE__.':'.__LINE__, [
+                        'ProductStock' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()
+                    ]]);
 
             return;
         }
@@ -111,10 +120,10 @@ final class SubReserveProductStockTotalByMove
         // Получаем всю продукцию в ордере которая перемещается со склада
         $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
 
-        if ($products)
+        if($products)
         {
             /** @var ProductStockProduct $product */
-            foreach ($products as $product)
+            foreach($products as $product)
             {
                 $ProductStockTotal = $this->entityManager
                     ->getRepository(ProductStockTotal::class)
@@ -128,7 +137,7 @@ final class SubReserveProductStockTotalByMove
                         ]
                     );
 
-                if (!$ProductStockTotal)
+                if(!$ProductStockTotal)
                 {
                     $throw = sprintf(
                         'Невозможно снять резерв с продукции, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
@@ -164,12 +173,12 @@ final class SubReserveProductStockTotalByMove
                 $this->logger->info('Сняли резерв и уменьшили количество на складе при перемещении продукции',
                     [
                         __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'profile' => $ProductStockEvent->getProfile()->getValue(),
-                        'product' => $product->getProduct()->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
+                        'event' => (string) $message->getEvent(),
+                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification(),
                         'total' => $product->getTotal(),
                     ]);
 

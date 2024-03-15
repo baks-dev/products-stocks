@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
 
 
-use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockMinQuantityInterface;
+use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -35,13 +35,13 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 1)]
 final class SubProductStocksTotal
 {
-    private ProductStockMinQuantityInterface $productStockMinQuantity;
+    private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ProductStockMinQuantityInterface $productStockMinQuantity,
+        ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger
     ) {
         $this->productStockMinQuantity = $productStockMinQuantity;
@@ -62,7 +62,7 @@ final class SubProductStocksTotal
             ->offerConst($message->getOffer())
             ->variationConst($message->getVariation())
             ->modificationConst($message->getModification())
-            ->findOneBy();
+            ->findOneByTotalMin();
 
 
 
@@ -87,11 +87,11 @@ final class SubProductStocksTotal
             $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирован',
                 [
                     __FILE__.':'.__LINE__,
-                    'profile' => $message->getProfile()->getValue(),
-                    'product' => $message->getProduct()->getValue(),
-                    'offer' => $message->getOffer()?->getValue(),
-                    'variation' => $message->getVariation()?->getValue(),
-                    'modification' => $message->getModification()?->getValue()
+                    'profile' => (string) $message->getProfile(),
+                    'product' => (string) $message->getProduct(),
+                    'offer' => (string) $message->getOffer(),
+                    'variation' => (string) $message->getVariation(),
+                    'modification' => (string) $message->getModification()
                 ]);
 
             throw new DomainException('Невозможно снять резерв с продукции, которая заранее не зарезервирована');
@@ -105,11 +105,11 @@ final class SubProductStocksTotal
         $this->logger->info(sprintf('%s : Сняли резерв и уменьшили количество на складе на единицу продукции', $ProductStockTotal->getStorage()) ,
             [
                 __FILE__.':'.__LINE__,
-                'profile' => $message->getProfile()->getValue(),
-                'product' => $message->getProduct()->getValue(),
-                'offer' => $message->getOffer()?->getValue(),
-                'variation' => $message->getVariation()?->getValue(),
-                'modification' => $message->getModification()?->getValue()
+                'profile' => (string) $message->getProfile(),
+                'product' => (string) $message->getProduct(),
+                'offer' => (string) $message->getOffer(),
+                'variation' => (string) $message->getVariation(),
+                'modification' => (string) $message->getModification()
             ]);
 
     }

@@ -35,7 +35,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
 
-                    <a href="{{ path('products-stocks:admin.index') }}"
+                    <a href="{{ path('products-stocks:admin.total.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -150,6 +150,7 @@
 
 
         <div class="border border-light rounded-4 p-3">
+
             <div class="d-flex justify-content-between mb-3">
 
                 {# Форма поиска по разделу #}
@@ -195,213 +196,56 @@
 
             </div>
 
+            <div class="d-flex gap-3 mb-3">
 
-            {# Контент > #}
+                {% if filter.category.vars.data %}
+                    <div><small class="text-muted">Категория:</small>&nbsp;
+                        <strong>{{ filter.category.vars.data.options }}</strong>
+                    </div>
+                {% endif %}
 
-            {# <div class="fw-bold mt-3">
-                {% set card = null %}
+                {% if filter.offer is defined and filter.offer.vars.data %}
+                    <div><small class="text-muted small">{{ filter.offer.vars.label }}:</small>&nbsp;
+                        <strong> {{ filter.offer.vars.data|trans({}, 'reference.color') }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if filter.variation is defined and filter.variation.vars.data %}
+                    <div><small class="text-muted small">{{ filter.variation.vars.label }}:</small>&nbsp;
+                        <strong>{{ filter.variation.vars.data }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if filter.modification is defined and filter.modification.vars.data %}
+                    <div><small class="text-muted small">{{ filter.modification.vars.label }}:</small>&nbsp;
+                        <strong>{{ filter.modification.vars.data }}</strong>
+                    </div>
+                {% endif %}
 
 
+                {# {% if filter.status is defined and filter.status.vars.data %}
+                        <div><small class="text-muted small">Статус заказа:</small>&nbsp;
+                            <strong>{{ wb_order_status(filter.status.vars.data.value) }}</strong>
+                        </div>
+                    {% endif %}
 
-                {% if card != item.id %}
+                    {% if filter.wildberries is defined and filter.wildberries.vars.data %}
+                        <div><small class="text-muted small">Статус Wildberries:</small>&nbsp;
+                            <strong>{{ wb_order_status(filter.wildberries.vars.data.value) }}</strong>
+                        </div>
+                    {% endif %}#}
 
-                {% if card is not null %}
-                </table></div>
-        </div>
-        {% endif %} #}
+            </div>
+
 
             {% for item in query.data %}
-
-
-                <div class="card mb-3 border-light">
-                    <div class="card-header bg-body border-light">
-
-                        <div class="card-title w-100 d-flex gap-5 justify-content-between align-items-center text-secondary">
-
-                            <div>
-
-                                {% if app.user.profile == item.user_profile_id and item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
-
-                                    <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                                       class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal"
-                                       title="Детали заявки">
-                                        <span class="badge text-bg-danger me-3">Перемещение</span>
-                                        <div class="text-nowrap"># {{ item.number }}</div>
-                                    </a>
-
-                                {% else %}
-
-                                    <button
-                                       class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal"
-                                       title="Детали заявки">
-                                        <span class="badge text-bg-danger me-3">Перемещение</span>
-                                        <div class="text-nowrap"># {{ item.number }}</div>
-                                    </button>
-
-                                {% endif %}
-
-
-                                <span class="fw-normal text-nowrap">{{ item.mod_date|date('d.m.Y H:i') }}</span>
-                            </div>
-
-                            <div class="d-flex w-75">
-
-                                {# Обложка #}
-                                {% set image_path = '/assets/img/blank.svg' %}
-
-                                {% if item.product_image_ext is defined and item.product_image_ext is not null %}
-                                    {% set img_host =  item.product_image_cdn == true  ? CDN_HOST : '' %}
-                                    {% set img_dir = item.product_image %}
-                                    {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.product_image_ext %}
-                                    {% set image_path = img_host ~ img_dir ~ img_file %}
-                                {% endif %}
-
-                                <div>
-                                    <a href="#" class="icon rounded-3 mb-2 lazy bg-contain p-1"
-                                       data-bg="{{ image_path }}"
-                                       style="width: 65px; height: 65px;"
-                                    ></a>
-                                </div>
-
-
-                                <div class="ms-3">
-
-                                    {# Название #}
-                                    <a href="{# {{ path('products-product:user.detail', {
-                                        url : item.product_url ,
-                                        offer: item.product_offer_value,
-                                        variation: item.product_variation_value,
-                                        modification: item.product_modification_value
-                                    }) }} #}"
-                                       class="text-decoration-none mb-1 modal-link disabled fw-bolder text-muted"
-                                       target="_detail"
-                                    >
-                                        {{ item.product_name }}
-
-                                        {# Значение множественного варианта ТП #}
-                                        {{ item.product_variation_value|call_twig_func(item.product_variation_reference~'_render')
-                                        ~ item.product_modification_value|call_twig_func(item.product_modification_reference~'_render') }}
-
-                                        {# Значение торгового предложения #}
-                                        {{ item.product_offer_value|call_twig_func(item.product_offer_reference~'_render') }}
-
-                                        {# Постфикс торгового предложения #}
-                                        {{ item.product_offer_postfix }}
-                                        {# Постфикс множественного варианта #}
-                                        {{ item.product_variation_postfix }}
-                                        {# Постфикс модификации #}
-                                        {{ item.product_modification_postfix }}
-
-                                        {# Свойства, учавствующие в названии #}
-                                        {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
-						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
-					{% endfor %} #}
-
-
-                                    </a>
-
-                                    {# Артикул #}
-                                    <div class="text-muted ">
-                                        <small>Количество:</small> &nbsp; <strong>{{ item.total }}</strong>
-                                        {% if app.user.profile == item.user_profile_id %}
-
-                                            &nbsp;
-
-                                            ( <small>В наличии:</small> &nbsp; <strong>{{ item.stock_total }}</strong>
-
-                                            {% if item.stock_storage %}
-                                                &nbsp;
-                                                <small>Место:</small> &nbsp; <strong>{{ item.stock_storage }}</strong>
-                                            {% endif %})
-
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="text-muted">
-                                        {% if app.user.profile == item.user_profile_id %}
-                                            <small>Склад назначения:</small>
-                                            &nbsp; <strong>{{ item.users_profile_destination }}</strong>
-                                        {% else %}
-                                            <small>Склад отгрузки:</small>
-                                            &nbsp; <strong>{{ item.users_profile_username }}</strong>
-                                        {% endif %}
-                                    </div>
-
-                                    {% if item.comment is not null %}
-                                        <div class="text-danger fs-7 fw-bolder">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path opacity="0.3"
-                                                      d="M20 3H4C2.89543 3 2 3.89543 2 5V16C2 17.1046 2.89543 18 4 18H4.5C5.05228 18 5.5 18.4477 5.5 19V21.5052C5.5 22.1441 6.21212 22.5253 6.74376 22.1708L11.4885 19.0077C12.4741 18.3506 13.6321 18 14.8167 18H20C21.1046 18 22 17.1046 22 16V5C22 3.89543 21.1046 3 20 3Z"
-                                                      fill="currentColor"></path>
-                                                <rect x="6" y="12" width="7" height="2" rx="1"
-                                                      fill="currentColor"></rect>
-                                                <rect x="6" y="7" width="12" height="2" rx="1"
-                                                      fill="currentColor"></rect>
-                                            </svg>
-
-                                            {{ item.comment }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-
-                            <div>
-
-                                {% if app.user.profile == item.user_profile_id and item.is_warehouse is not null and is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
-
-                                    <a href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
-                                       class="btn btn-primary modal-link disabled text-nowrap"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal"
-                                       title="Отправить на склад"
-                                    >
-                                        {{ 'Отправить на склад'|trans({}, 'messages') }}
-                                    </a>
-
-
-                                {% else %}
-
-                                    <button
-                                            class="btn btn-light text-nowrap opacity-25"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="left"
-                                            data-bs-delay='{"show":600,"hide":100}'
-                                            title="Ожидется перемещение со склада {{ item.users_profile_destination }}"
-                                    >
-                                        {{ 'Ожидется перемещение'|trans({}, 'messages') }}
-                                    </button>
-
-                                {% endif %}
-
-
-                            </div>
-                        </div>
-                    </div>
+                {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+            {% else %}
+                <div class="alert alert-warning m-3" role="alert">
+                    Информация перемещении отстутствует
                 </div>
-
-                {# <div class="card-body fw-normal mb-0">
-
-                    <table>
-                #}{# <tbody>
-                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
-                    </tbody> #}{#
-            #}{# {% set card = item.id %}
-                    {% endif %} #}{#
-            {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
-
-        </table>
-    </div> #}
-
-
-
             {% endfor %}
-            {# < Контент #}
+
 
             {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 

@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksIncoming;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Products\Category\Entity\Info\ProductCategoryInfo;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
@@ -451,6 +452,15 @@ final class AllProductStocksIncoming implements AllProductStocksIncomingInterfac
                 ProductCategoryTrans::class,
                 'category_trans',
                 'category_trans.event = category.event AND category_trans.local = :local'
+            );
+
+        $dbal
+            ->addSelect('category_info.url AS category_url')
+            ->leftJoin(
+                'category',
+                ProductCategoryInfo::class,
+                'category_info',
+                'category_info.event = category.event'
             );
 
 

@@ -88,9 +88,13 @@ final class AddReserveProductStocksTotalByPackage
 
         if($ProductStockEvent->getStatus()->equals(ProductStockStatusPackage::class) === false)
         {
-            $this->logger
-                ->notice('Не создаем резерв на складе: Складская заявка не является Package «Упаковка»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+            $this->logger->notice('Не создаем резерв на складе: Складская заявка не является Package «Упаковка»',
+                [
+                    __FILE__.':'.__LINE__,
+                    'ProductStockUid' => (string) $message->getId(),
+                    'event' => (string) $message->getEvent(),
+                    'last' => (string) $message->getLast()
+                ]);
             return;
         }
 
@@ -101,9 +105,13 @@ final class AddReserveProductStocksTotalByPackage
 
             if(!$lastProductStockEvent || $lastProductStockEvent->getStatus()->equals(new ProductStockStatusIncoming()) === true)
             {
-                $this->logger
-                    ->notice('Не создаем резерв на складе: Складская заявка при поступлении на склад по заказу (резерв уже имеется)',
-                        [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                $this->logger->notice('Не создаем резерв на складе: Складская заявка при поступлении на склад по заказу (резерв уже имеется)',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'ProductStockUid' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()
+                    ]);
 
                 return;
             }
@@ -112,16 +120,19 @@ final class AddReserveProductStocksTotalByPackage
 
         $this->logger
             ->info('Добавляем резерв продукции на складе статусе заявки Package «Упаковка» заказа',
-                [__FILE__.':'.__LINE__, $message]);
+                [
+                    __FILE__.':'.__LINE__,
+                    'ProductStockUid' => (string) $message->getId(),
+                    'event' => (string) $message->getEvent(),
+                    'last' => (string) $message->getLast()
+                ]);
 
         // Получаем всю продукцию в ордере со статусом Package (УПАКОВКА)
         $products = $this->productStocks->getProductsPackageStocks($message->getId());
 
         if(empty($products))
         {
-            $this->logger
-                ->warning('Заявка на упаковку не имеет продукции в колекции',
-                    [__FILE__.':'.__LINE__]);
+            $this->logger->warning('Заявка на упаковку не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
             return;
         }
 
@@ -165,12 +176,12 @@ final class AddReserveProductStocksTotalByPackage
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на упаковку',
                     [
                         __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'profile' => $ProductStockEvent->getProfile()->getValue(),
-                        'product' => $product->getProduct()->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
+                        'event' => (string) $message->getEvent(),
+                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification(),
                         'total' => $product->getTotal(),
                     ]
                 );

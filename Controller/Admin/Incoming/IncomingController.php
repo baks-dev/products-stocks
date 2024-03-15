@@ -51,10 +51,6 @@ final class IncomingController extends AbstractController
         $ProductStockEvent->getDto($IncomingProductStockDTO);
         $IncomingProductStockDTO->setComment(null); // обнуляем комментарий
 
-
-        // replace all special characters in a string
-
-
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
             'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),

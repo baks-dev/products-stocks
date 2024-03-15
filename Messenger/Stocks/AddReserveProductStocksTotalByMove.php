@@ -83,9 +83,13 @@ final class AddReserveProductStocksTotalByMove
         // Если Статус не является Статус Moving «Перемещение»
         if ($ProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class) === false)
         {
-            $this->logger
-                ->notice('Не добавляем резерв на склад: Статус заявки не является Moving «Перемещение»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+            $this->logger->notice('Не добавляем резерв на склад: Статус заявки не является Moving «Перемещение»',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'ProductStockUid' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()
+                    ]);
 
             return;
         }
@@ -144,12 +148,12 @@ final class AddReserveProductStocksTotalByMove
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на перемещение',
                     [
                         __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'profile' => $ProductStockEvent->getProfile()?->getValue(),
-                        'product' => $product->getProduct()?->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
+                        'event' => (string) $message->getEvent(),
+                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification(),
                         'total' => $product->getTotal(),
                     ]
                 );

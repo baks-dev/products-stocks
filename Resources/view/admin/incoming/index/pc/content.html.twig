@@ -20,7 +20,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
 
-                    <a href="{{ path('products-stocks:admin.index') }}"
+                    <a href="{{ path('products-stocks:admin.total.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
@@ -78,12 +78,12 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
 
-                    <button {#href="{{ path('products-stocks:admin.incoming.index') }}"#}
-                       class="btn btn-light opacity-25"
-                       data-bs-toggle="tooltip"
-                       data-bs-placement="bottom"
-                       data-bs-delay='{"show":600,"hide":100}'
-                       title="Приходные ордера"
+                    <button {# href="{{ path('products-stocks:admin.incoming.index') }}" #}
+                            class="btn btn-light opacity-25"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-delay='{"show":600,"hide":100}'
+                            title="Приходные ордера"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                              class="bi bi-card-checklist" viewBox="0 0 16 16">
@@ -101,7 +101,8 @@
                        data-bs-delay='{"show":600,"hide":100}'
                        title="Упаковка заказов"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-box-seam" viewBox="0 0 16 16">
                             <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
                         </svg>
                     </a>
@@ -132,7 +133,7 @@
 
         <div class="border border-light rounded-4 p-3">
 
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mb-3">
 
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
@@ -174,12 +175,41 @@
 
                     {{ form_end(filter) }}
                 </div>
+
+
             </div>
 
+            <div class="d-flex gap-3 mb-3">
+
+                {% if filter.category.vars.data %}
+                    <div><small class="text-muted">Категория:</small>&nbsp;
+                        <strong>{{ filter.category.vars.data.options }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if filter.offer is defined and filter.offer.vars.data %}
+                    <div><small class="text-muted small">{{ filter.offer.vars.label }}:</small>&nbsp;
+                        <strong> {{ filter.offer.vars.data|trans({}, 'reference.color') }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if filter.variation is defined and filter.variation.vars.data %}
+                    <div><small class="text-muted small">{{ filter.variation.vars.label }}:</small>&nbsp;
+                        <strong>{{ filter.variation.vars.data }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if filter.modification is defined and filter.modification.vars.data %}
+                    <div><small class="text-muted small">{{ filter.modification.vars.label }}:</small>&nbsp;
+                        <strong>{{ filter.modification.vars.data }}</strong>
+                    </div>
+                {% endif %}
+
+            </div>
 
             {# Контент > #}
 
-            <div class="fw-bold mt-3">
+            <div class="fw-bold mt-2">
                 {% set card = null %}
 
                 {% for item in query.data %}
@@ -201,45 +231,33 @@
 
                         {% if app.user.profile == item.user_profile_id %}
 
-                            <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                               class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
-                               title="Детали заявки">
-                                <span class="badge text-bg-success me-3">Приход на склад</span>
-                            </a>
+                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none" title="Приход на склад">
+                                <span class="badge text-bg-success me-3">Приход на склад</span> # {{ item.number }}
+                            </button>
 
                         {% else %}
 
-                            <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                               class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
-                               title="Детали заявки">
-                                <span class="badge text-bg-danger me-3">Отгрузка</span>
-                            </a>
+                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none" title="Отгрузка">
+                                <span class="badge text-bg-danger me-3">Отгрузка</span> # {{ item.number }}
+                            </button>
 
                         {% endif %}
 
-                        # {{ item.number }}
 
-                        <span class="fw-normal text-nowrap">
-							{{ item.mod_date|date('d.m.Y H:i') }}
-						</span>
+                        <small class="text-nowrap fw-normal">
+                            {{ item.mod_date|date('d.m.Y H:i') }}
+                        </small>
                     </div>
 
                     {# СКЛАД #}
-                    {#<div class="text-dark text-nowrap">
+                    {# <div class="text-dark text-nowrap">
                         <div class="text-muted opacity-50">Склад:</div>
                         {{ item.warehouse_name }}
-                    </div>#}
+                    </div> #}
 
 
                     {# ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ #}
                     <div class="d-flex w-75 gap-3">
-
-
-
 
                         <div class="ms-0">
                             <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
@@ -275,16 +293,17 @@
 
             <div class="card-body fw-normal">
 
-                <table class="mb-5">
-                    <tbody>
-                        {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
-                    </tbody>
+                <table class="">
 
+                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
+
+                    <tbody>
                     {% set card = item.id %}
                     {% endif %}
 
-                        {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
+                    {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
                     {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </div>

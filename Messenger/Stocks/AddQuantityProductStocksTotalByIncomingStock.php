@@ -132,7 +132,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                         $this->logger->error('Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
                             [
                                 __FILE__.':'.__LINE__,
-                                'profile' => $ProductStockEvent->getProfile(),
+                                'profile' => (string) $ProductStockEvent->getProfile(),
                             ]
                         );
 

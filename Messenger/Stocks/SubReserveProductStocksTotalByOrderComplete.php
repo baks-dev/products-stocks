@@ -62,7 +62,8 @@ final class SubReserveProductStocksTotalByOrderComplete
         ProductWarehouseByOrderInterface $warehouseByOrder,
         LoggerInterface $productsStocksLogger,
         MessageDispatchInterface $messageDispatch
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->entityManager->clear();
 
@@ -88,11 +89,16 @@ final class SubReserveProductStocksTotalByOrderComplete
         }
 
         /* Если статус заказа не Completed «Выполнен» */
-        if (!$OrderEvent->getStatus()->equals(OrderStatusCompleted::class))
+        if(!$OrderEvent->getStatus()->equals(OrderStatusCompleted::class))
         {
             $this->logger
                 ->notice('Не снимаем резерв на складе: Статус заказа не Completed «Выполнен»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                    [
+                        __FILE__.':'.__LINE__,
+                        'OrderUid' => $message->getId(),
+                        'event' => $message->getEvent(),
+                        'last' => $message->getLast()
+                    ]);
 
             return;
         }
@@ -106,11 +112,16 @@ final class SubReserveProductStocksTotalByOrderComplete
         }
 
         /* Если статус предыдущего события заказа не Extradition «Готов к выдаче» */
-        if (!$lastOrderEvent->getStatus()->equals(OrderStatusExtradition::class))
+        if(!$lastOrderEvent->getStatus()->equals(OrderStatusExtradition::class))
         {
             $this->logger
                 ->notice('Не снимаем резерв на складе: Статус предыдущего события не Extradition «Готов к выдаче»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                    [
+                        __FILE__.':'.__LINE__,
+                        'OrderUid' => $message->getId(),
+                        'event' => $message->getEvent(),
+                        'last' => $message->getLast()
+                    ]);
 
             return;
         }
@@ -125,7 +136,7 @@ final class SubReserveProductStocksTotalByOrderComplete
         if($UserProfileUid)
         {
             /** @var OrderProduct $product */
-            foreach ($OrderEvent->getProduct() as $product)
+            foreach($OrderEvent->getProduct() as $product)
             {
                 /* Снимаем резерв со склада при доставке */
                 $this->changeReserve($product, $UserProfileUid);
@@ -169,7 +180,7 @@ final class SubReserveProductStocksTotalByOrderComplete
                 ]
             );
 
-        if (!$ProductStockTotal)
+        if(!$ProductStockTotal)
         {
             $throw = sprintf(
                 'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
@@ -204,11 +215,11 @@ final class SubReserveProductStocksTotalByOrderComplete
         $this->logger->info('Сняли резерв и уменьшили количество на складе при самовывозе',
             [
                 __FILE__.':'.__LINE__,
-                'profile' => $profile->getValue(),
-                'product' => $product->getProduct()->getValue(),
-                'offer' => $product->getOffer()?->getValue(),
-                'variation' => $product->getVariation()?->getValue(),
-                'modification' => $product->getModification()?->getValue(),
+                'profile' => (string) $profile,
+                'product' => (string) $product->getProduct(),
+                'offer' => (string) $product->getOffer(),
+                'variation' => (string) $product->getVariation(),
+                'modification' => (string) $product->getModification(),
                 'total' => $product->getTotal(),
             ]);
 

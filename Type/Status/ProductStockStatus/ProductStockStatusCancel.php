@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
 /**
- * Статус "Отменен".
+ * Статус Cancel «Отменен».
  */
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusCancel implements ProductStockStatusInterface

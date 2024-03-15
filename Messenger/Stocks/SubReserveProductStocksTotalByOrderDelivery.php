@@ -59,7 +59,8 @@ final class SubReserveProductStocksTotalByOrderDelivery
         ProductWarehouseByOrderInterface $warehouseByOrder,
         LoggerInterface $productsStocksLogger,
         MessageDispatchInterface $messageDispatch
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->entityManager->clear();
 
@@ -89,11 +90,16 @@ final class SubReserveProductStocksTotalByOrderDelivery
         }
 
         /* Если статус заказа не Delivery «Доставка (погружен в транспорт)» */
-        if (!$OrderEvent->getStatus()->equals(OrderStatusDelivery::class))
+        if(!$OrderEvent->getStatus()->equals(OrderStatusDelivery::class))
         {
             $this->logger
                 ->notice('Не снимаем резерв на складе: Статус заказа не Delivery «Доставка (погружен в транспорт)»',
-                    [__FILE__.':'.__LINE__, [$message->getId(), $message->getEvent(), $message->getLast()]]);
+                    [
+                        __FILE__.':'.__LINE__,
+                        'OrderUid' => (string) $message->getId(),
+                        'event' => (string) $message->getEvent(),
+                        'last' => (string) $message->getLast()
+                    ]);
 
             return;
         }
@@ -109,7 +115,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         if($UserProfileUid)
         {
             /** @var OrderProduct $product */
-            foreach ($OrderEvent->getProduct() as $product)
+            foreach($OrderEvent->getProduct() as $product)
             {
                 /* Снимаем резерв со склада при доставке */
                 $this->changeReserve($product, $UserProfileUid);
@@ -153,7 +159,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
                 ]
             );
 
-        if (!$ProductStockTotal)
+        if(!$ProductStockTotal)
         {
             $throw = sprintf(
                 'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
@@ -189,11 +195,11 @@ final class SubReserveProductStocksTotalByOrderDelivery
         $this->logger->info('Сняли резерв и уменьшили количество на складе при «Доставка (погружен в транспорт)»',
             [
                 __FILE__.':'.__LINE__,
-                'profile' => $profile->getValue(),
-                'product' => $ProductUid?->getValue(),
-                'offer' => $ProductOfferConst?->getValue(),
-                'variation' => $ProductVariationConst?->getValue(),
-                'modification' => $ProductModificationConst?->getValue(),
+                'profile' => (string) $profile,
+                'product' => (string) $ProductUid,
+                'offer_const' => (string) $ProductOfferConst,
+                'variation_const' => (string) $ProductVariationConst,
+                'modification_const' => (string) $ProductModificationConst,
                 'total' => $product->getTotal(),
             ]);
 

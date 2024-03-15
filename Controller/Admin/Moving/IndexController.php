@@ -37,7 +37,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class IndexController extends AbstractController
 {
     /** Перемещения продукции на другой склад */
-    #[Route('/admin/product/stocks/moving/{page<\d+>}', name: 'admin.moving.index', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stocks/movings/{page<\d+>}', name: 'admin.moving.index', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,
         AllProductStocksMoveInterface $allMove,

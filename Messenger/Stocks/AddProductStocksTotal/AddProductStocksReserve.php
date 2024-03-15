@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal;
 
 
-use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockMinQuantityInterface;
+use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -35,13 +35,13 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 1)]
 final class AddProductStocksReserve
 {
-    private ProductStockMinQuantityInterface $productStockMinQuantity;
+    private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ProductStockMinQuantityInterface $productStockMinQuantity,
+        ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger
     )
     {
@@ -70,11 +70,11 @@ final class AddProductStocksReserve
             $this->logger->critical('Не найдено продукции на складе для резервирования',
                 [
                     __FILE__.':'.__LINE__,
-                    'profile' => $message->getProfile()->getValue(),
-                    'product' => $message->getProduct()->getValue(),
-                    'offer' => $message->getOffer()?->getValue(),
-                    'variation' => $message->getVariation()?->getValue(),
-                    'modification' => $message->getModification()?->getValue()
+                    'profile' => (string) $message->getProfile(),
+                    'product' => (string) $message->getProduct(),
+                    'offer' => (string) $message->getOffer(),
+                    'variation' => (string) $message->getVariation(),
+                    'modification' => (string) $message->getModification()
                 ]);
 
             throw new DomainException('Невозможно добавить резерв на продукцию');
@@ -87,11 +87,11 @@ final class AddProductStocksReserve
         $this->logger->info(sprintf('%s : Добавили резерв на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
-                'profile' => $message->getProfile()->getValue(),
-                'product' => $message->getProduct()->getValue(),
-                'offer' => $message->getOffer()?->getValue(),
-                'variation' => $message->getVariation()?->getValue(),
-                'modification' => $message->getModification()?->getValue()
+                'profile' => (string) $message->getProfile(),
+                'product' => (string) $message->getProduct(),
+                'offer' => (string) $message->getOffer(),
+                'variation' => (string) $message->getVariation(),
+                'modification' => (string) $message->getModification()
             ]);
     }
 }

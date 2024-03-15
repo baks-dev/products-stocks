@@ -41,9 +41,9 @@ final class ProductStockMessage
 
     public function __construct(ProductStockUid $id, ProductStockEventUid $event, ?ProductStockEventUid $last = null)
     {
-        $this->last = $last;
         $this->id = $id;
         $this->event = $event;
+        $this->last = $last;
     }
 
     /** Идентификатор */

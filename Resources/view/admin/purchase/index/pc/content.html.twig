@@ -33,7 +33,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
 
-                    <a href="{{ path('products-stocks:admin.index') }}"
+                    <a href="{{ path('products-stocks:admin.total.index') }}"
                        class="btn btn-light"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
