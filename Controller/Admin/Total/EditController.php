@@ -46,7 +46,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCKS_EDIT')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_EDIT')]
 final class EditController extends AbstractController
 {
     #[Route('/admin/product/stocks/total/{id}', name: 'admin.total.edit', methods: ['GET', 'POST'])]
