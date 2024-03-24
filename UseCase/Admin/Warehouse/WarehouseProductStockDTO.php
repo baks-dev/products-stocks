@@ -57,19 +57,23 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    /** Вспомогательные свойства */
+    /** Вспомогательные свойства - для выбора доступных профилей */
     private readonly UserUid $usr;
 
     /** Коллекция перемещения  */
     #[Assert\Valid]
     private ?Move\ProductStockMoveDTO $move;
 
+    /** Фиксация заявки пользователем  */
+    #[Assert\IsNull]
+    private readonly ?UserProfileUid $fixed;
+
 
     public function __construct(User|UserUid $usr)
     {
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse());
-        //$this->move = new ArrayCollection();
+        $this->fixed = null;
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -135,53 +139,9 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     }
 
 
-
-
-
-
-
-//    /** Коллекция продукции  */
-//    public function getMove(): ArrayCollection
-//    {
-//        return $this->move;
-//    }
-
-//    public function setMove(ArrayCollection $move): void
-//    {
-//        $this->move = $move;
-//    }
-//
-//    public function addMove(Move\ProductStockMoveDTO $move): void
-//    {
-//        $this->move->add($move);
-//    }
-
-//    /** Склад */
-//    public function getWarehouse(): ContactsRegionCallConst
-//    {
-//        /* Если перемещение между складами - перемещаем */
-//        if ($this->destination !== null)
-//        {
-//            $this->profile = $this->destination;
-//            $this->destination = null;
-//        }
-//
-//        return $this->profile;
-//    }
-
-//    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
-//    {
-//        $this->warehouse = $warehouse;
-//    }
-
-//    /** Целевой склад при перемещении */
-//    public function getDestination(): ?UserProfileUid
-//    {
-//        return $this->destination;
-//    }
-//
-//    public function setDestination(?UserProfileUid $destination): void
-//    {
-//        $this->destination = $destination;
-//    }
+    /** Фиксация заявки пользователем  */
+    public function getFixed(): ?UserProfileUid
+    {
+        return $this->fixed;
+    }
 }

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Edit;
 
 
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -35,12 +36,22 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class ProductStockTotalEditForm extends AbstractType
 {
+    private Security $security;
+
+    public function __construct(Security $security) {
+        $this->security = $security;
+    }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+
+        if($this->security->isGranted('ROLE_ADMIN'))
+        {
+            $builder->add('total', IntegerType::class);
+            $builder->add('reserve', IntegerType::class);
+        }
+
         $builder->add('storage', TextType::class, ['required' => false]);
-        $builder->add('total', IntegerType::class);
-        $builder->add('reserve', IntegerType::class);
 
         /* Сохранить ******************************************************/
         $builder->add(

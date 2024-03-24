@@ -270,20 +270,20 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
 
         /* Получаем наличие на указанном складе */
         $dbal
-            ->addSelect('total.total AS stock_total')
-            ->addSelect('total.storage AS stock_storage')
+            ->addSelect('SUM(total.total) AS stock_total')
+            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
             ->leftJoin(
                 'stock_product',
-                ProductStockTotal::class,
+                ProductStockTotal::TABLE,
                 'total',
                 '
-                total.profile = event.profile AND
+                total.profile = :profile AND
                 total.product = stock_product.product AND 
                 (total.offer IS NULL OR total.offer = stock_product.offer) AND 
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
-                (total.modification IS NULL OR total.modification = stock_product.modification)
-            '
-            );
+                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+                total.total > 0
+            ');
 
 
         $dbal->join(
@@ -790,7 +790,7 @@ final class AllProductStocksPackage implements AllProductStocksPackageInterface
         $dbal->addOrderBy('stock.id', 'ASC');
 
 
-        // dd($dbal->fetchAllAssociative());
+         dd($dbal->fetchAllAssociative());
 
         return $this->paginator->fetchAllAssociative($dbal);
 

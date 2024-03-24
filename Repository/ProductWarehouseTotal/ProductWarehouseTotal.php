@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductWarehouseTotal;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -36,26 +37,29 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
 {
-    private EntityManagerInterface $entityManager;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
     {
-        $this->entityManager = $entityManager;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
-    /** Метод возвращает количество данной продукции на указанном складе */
+    /**
+     * Метод возвращает количество данной продукции на указанном складе
+     */
     public function getProductProfileTotal(
         UserProfileUid $profile,
         ProductUid $product,
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ) : int {
-        $qb = $this->entityManager->getConnection()->createQueryBuilder();
+    ) : int
+    {
+        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb->select('(stock.total - stock.reserve)');
+        $qb->select('(SUM(stock.total) - SUM(stock.reserve))');
 
-        $qb->from(ProductStockTotal::TABLE, 'stock');
+        $qb->from(ProductStockTotal::class, 'stock');
 
         $qb->andWhere('stock.profile = :profile');
         $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
@@ -94,21 +98,5 @@ final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
         }
 
         return $qb->fetchOne() ?: 0;
-
-        /* Кешируем результат DBAL */
-
-//        $cacheFilesystem = new FilesystemAdapter('products-stocks');
-//
-//        $config = $this->entityManager->getConnection()->getConfiguration();
-//        $config?->setResultCache($cacheFilesystem);
-//
-//        return $this->entityManager->getConnection()->executeCacheQuery(
-//            $qb->getSQL(),
-//            $qb->getParameters(),
-//            $qb->getParameterTypes(),
-//            new QueryCacheProfile(60 * 60)
-//        )->fetchOne();
-
-        //return $qb->fetchOne();
     }
 }

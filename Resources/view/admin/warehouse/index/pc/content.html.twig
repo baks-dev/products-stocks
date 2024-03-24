@@ -278,13 +278,13 @@
 
                     <div class="d-flex w-75 gap-3">
 
-
-
-
                         <div class="ms-0">
+
+                            <span>Склад: &nbsp;</span>
+
                             <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
                                class="fw-bolder mb- text-decoration-none text-dark">
-                                {{ item.users_profile_username }}
+                                 {{ item.users_profile_username }}
                             </a>
 
                             {% if item.comment is not null %}

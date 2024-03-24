@@ -66,8 +66,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
     private DBALQueryBuilder $DBALQueryBuilder;
 
-
-
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,

@@ -96,13 +96,24 @@
                 </div>
             </div>
 
-            {{ form_row(form.total, { label: 'Наличие', attr: { min : 0 } }) }}
-            {{ form_row(form.reserve, {label: 'Резерв', attr: { min : 0 }}) }}
+            {% if is_granted('ROLE_ADMIN') %}
+                {{ form_row(form.total, { label: 'Наличие', attr: { min : 0 } }) }}
+                {{ form_row(form.reserve, {label: 'Резерв', attr: { min : 0 }}) }}
+            {% endif %}
+
             {{ form_row(form.storage, { label: 'Место' }) }}
 
         </div>
 
         <div class="modal-footer ">
+            {% if not is_granted('ROLE_ADMIN') %}
+                <div class="flex-grow-1 d-flex align-items-center gap-2">
+                    <small class="text-muted">Наличие:</small> <strong>{{ form.vars.data.total }}</strong>
+                    <small class="text-muted">Резерв:</small> <strong>{{ form.vars.data.reserve }}</strong>
+                    <small class="text-muted">Доступно</small> <strong>{{ (form.vars.data.total - form.vars.data.reserve) }}</strong>
+                </div>
+            {% endif %}
+
             <div class="mt-3 gap-3 d-flex">
                 {# Отмена #}
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">
