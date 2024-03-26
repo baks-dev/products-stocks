@@ -17,7 +17,12 @@
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Детали заявки">
-                        <span class="badge text-bg-danger">Перемещение</span>
+                        {%  if item.fixed is null %}
+                            <span class="badge text-bg-danger">Перемещение</span>
+                        {% else %}
+                            <span class="badge text-bg-warning">Сборка</span>
+                        {% endif %}
+
                         <div class="text-nowrap"># {{ item.number }}</div>
                     </a>
 
