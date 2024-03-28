@@ -25,8 +25,10 @@
 {% endblock %}
 
 {% block javascript %}
-<script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
-<script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/plugins/qrcode/qrcode.min.js?v={{ version }}" class="lazy"></script>
+<script nonce="{{ csp_nonce() }}" async data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
+
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener("DOMContentLoaded", (event) => {
 	const form = document.forms.product_filter_form;
@@ -42,6 +44,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     });
 
     form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+
 
 });
 </script>

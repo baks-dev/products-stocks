@@ -147,7 +147,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         // ProductStockModify
         $dbal
             ->addSelect('modify.mod_date')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockModify::class,
                 'modify',
@@ -158,7 +158,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
@@ -170,7 +170,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         $dbal
             ->addSelect('product.id as product_id')
             ->addSelect('product.event as product_event')
-            ->join(
+            ->leftJoin(
                 'stock_product',
                 Product::class,
                 'product',
@@ -178,7 +178,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             );
 
         // Product Event
-        $dbal->join(
+        $dbal->leftJoin(
             'product',
             ProductEvent::class,
             'product_event',
@@ -197,7 +197,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
-            ->join(
+            ->leftJoin(
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
@@ -449,7 +449,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         // UserProfile
         $dbal->addSelect('users_profile.event as users_profile_event')
-            ->join(
+            ->leftJoin(
                 'event',
                 UserProfile::class,
                 'users_profile',
@@ -457,7 +457,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
             );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
@@ -469,7 +469,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         // Personal
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
-            ->join(
+            ->leftJoin(
                 'users_profile',
                 UserProfilePersonal::class,
                 'users_profile_personal',
@@ -479,14 +479,14 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
 
         // Пункт назначения перемещения
 
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             ProductStockMove::class,
             'move',
             'move.event = event.id AND move.ord IS NULL'
         );
 
-        $dbal->join(
+        $dbal->leftJoin(
             'move',
             UserProfile::class,
             'users_profile_destination',
@@ -497,7 +497,7 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         // Personal
         $dbal
             ->addSelect('users_profile_personal_destination.username AS users_profile_destination')
-            ->join(
+            ->leftJoin(
                 'users_profile_destination',
                 UserProfilePersonal::class,
                 'users_profile_personal_destination',
@@ -539,6 +539,8 @@ final class AllProductStocksMove implements AllProductStocksMoveInterface
         $dbal->orderBy('modify.mod_date');
 
         $dbal->allGroupByExclude();
+
+        //dump($dbal->analyze());
 
          /*dump($dbal->fetchAllAssociative());*/
 

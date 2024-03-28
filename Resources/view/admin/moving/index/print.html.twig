@@ -8,8 +8,8 @@
 
         <div class="d-flex align-items-center w-100">
 
-            <div class="w-25">
-                <img src='{{ qrcode(item.id) }}' alt='QR Code' class="w-100"/>
+            <div data-qrcode="{{ item.id }}" class="w-25">
+                {#<img src='{{ qrcode(item.id) }}' alt='QR Code' class="w-100"/>#}
             </div>
 
             <div class="ms-3">
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-       
+
 
         {% if print is divisible by(5) %}
             {# Вставляем разрыв страницы #}
@@ -87,5 +87,7 @@
             Информация перемещении отсутствует
         </div>
     {% endfor %}
+
+    {#{% endcache %}#}
 
 </div>
