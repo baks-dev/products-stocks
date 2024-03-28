@@ -2,15 +2,15 @@
 
 <div class="d-none d-print-block p-0" style="width: 850px">
 
+    {% set print = 1 %}
 
-    {# <img width="15" src="./ПРИХОДНЫЙ КАССОВЫЙ ОРДЕР_files/cut.png"> #}
+    {% for item in query.data|filter(v => v.user_profile_id == app.user.profile) %}
 
-    {% for item in query.data %}
+        <div class="d-flex align-items-center w-100">
 
-
-
-
-        <div class="d-flex w-100">
+            <div class="w-25">
+                <img src='{{ qrcode(item.id) }}' alt='QR Code' class="w-100"/>
+            </div>
 
             <div class="ms-3">
                 <div># {{ item.number }}</div>
@@ -52,6 +52,16 @@
                     {% endif %}
                 </div>
 
+                <div class="text-muted">
+                    {% if app.user.profile == item.user_profile_id %}
+                        <small>Склад назначения:</small>
+                        &nbsp; <strong>{{ item.users_profile_destination }}</strong>
+                    {% else %}
+                        <small>Склад отгрузки:</small>
+                        &nbsp; <strong>{{ item.users_profile_username }}</strong>
+                    {% endif %}
+                </div>
+
                 {% if item.comment is not null %}
                     <div class="fw-bolder">
                         <small>Комментарий:</small> &nbsp; <strong>{{ item.comment }}</strong>
@@ -61,19 +71,21 @@
             </div>
         </div>
 
-        {% if loop.index is divisible by(11) %}
+       
+
+        {% if print is divisible by(5) %}
             {# Вставляем разрыв страницы #}
             <div style="page-break-after: always;"></div>
         {% else %}
             <hr>
         {% endif %}
 
+        {% set print = print + 1 %}
 
     {% else %}
-        <div class="alert alert-warning m-3" role="alert">
+        <div class="alert alert-warning m-3 w-100" role="alert">
             Информация перемещении отсутствует
         </div>
     {% endfor %}
-
 
 </div>

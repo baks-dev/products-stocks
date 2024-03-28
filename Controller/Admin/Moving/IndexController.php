@@ -27,6 +27,7 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
+use chillerlan\QRCode\QRCode;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -69,6 +70,7 @@ final class IndexController extends AbstractController
             ->search($search)
             ->filter($filter)
             ->fetchAllProductStocksAssociative($this->getProfileUid());
+
 
         return $this->render(
             [

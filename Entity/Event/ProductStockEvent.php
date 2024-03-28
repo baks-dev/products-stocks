@@ -151,6 +151,16 @@ class ProductStockEvent extends EntityEvent
         return $this->status;
     }
 
+    /**
+     * Fixed
+     */
+    public function isFixed(): bool
+    {
+        return $this->fixed === null;
+    }
+
+
+
 //    /**
 //     * Идентификатор склада.
 //     */
