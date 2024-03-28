@@ -19,11 +19,13 @@
 {# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
 {% block content %}
     {{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
+
 {% endblock %}
 
 
 {% block javascript %}
 <script async nonce="{{ csp_nonce() }}" data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener("DOMContentLoaded", (event) => {
 	const form = document.forms.product_filter_form;

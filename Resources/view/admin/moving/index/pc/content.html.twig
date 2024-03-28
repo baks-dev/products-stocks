@@ -112,6 +112,7 @@
                 {% endif %}
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
+
                     <a href="{{ path('products-stocks:admin.package.index') }}"
                        class="btn btn-light bold"
                        data-bs-toggle="tooltip"
@@ -254,3 +255,6 @@
     </section>
 
 </main>
+
+
+{{ include(_self|replace({ "content.html.twig" : "print.html.twig" })) }}
