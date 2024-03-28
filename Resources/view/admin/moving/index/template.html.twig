@@ -21,7 +21,7 @@
 {% endblock %}
 
 {% block footer %}
-    {{ include(_self|replace({ "template.html.twig": baks_settings.device~"/print.html.twig" })) }}
+    {{ include(_self|replace({ "template.html.twig": "print.html.twig" })) }}
 {% endblock %}
 
 {% block javascript %}
