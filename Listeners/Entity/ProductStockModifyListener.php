@@ -25,11 +25,13 @@ namespace BaksDev\Products\Stocks\Listeners\Entity;
 
 use BaksDev\Core\Type\Ip\IpAddress;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
+use BaksDev\Users\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 
 #[AsEntityListener(event: Events::prePersist, method: 'prePersist', entity: ProductStockModify::class)]
 final class ProductStockModifyListener
@@ -50,7 +52,15 @@ final class ProductStockModifyListener
         $token = $this->token->getToken();
 
         if ($token) {
+
             $data->setUsr($token->getUser());
+
+            if($token instanceof SwitchUserToken)
+            {
+                /** @var User $originalUser */
+                $originalUser = $token->getOriginalToken()->getUser();
+                $data->setUsr($originalUser);
+            }
         }
 
         // Если пользователь не из консоли

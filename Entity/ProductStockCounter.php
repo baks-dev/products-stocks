@@ -29,7 +29,7 @@ use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-// ProductStockincoming
+// Информация о количестве типов (badge)
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_counter')]
