@@ -201,4 +201,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
         return $orm->getOneOrNullResult();
     }
+
+
+
 }

@@ -20,11 +20,16 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Moving;
 
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Move\ProductStockMoveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockHandler;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
+
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -39,6 +44,8 @@ final class MovingController extends AbstractController
     public function moving(
         Request $request,
         MovingProductStockHandler $handler,
+        ProductWarehouseTotalInterface $productWarehouseTotal,
+        ProductDetailByConstInterface $productDetailByConst
         // #[MapEntity] ProductStockEvent $Event,
     ): Response
     {
@@ -56,12 +63,66 @@ final class MovingController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
-            /** @var ProductStockDTO $move */
             $success = true;
 
             /** Создаем каждое отдельно перемещение */
             foreach($movingDTO->getMove() as $move)
             {
+                /** Проверяем, что на складе не изменилось доступное количество */
+
+                /** @var ProductStockDTO $product */
+                foreach($move->getProduct() as $product)
+                {
+                    $ProductStockTotal = $productWarehouseTotal->getProductProfileTotal(
+                        $move->getMove()->getWarehouse(),
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification()
+                    );
+
+                    if($product->getTotal() > $ProductStockTotal)
+                    {
+                        $success = false;
+
+                        $productDetail = $productDetailByConst->fetchProductDetailByConstAssociative(
+                            $product->getProduct(),
+                            $product->getOffer(),
+                            $product->getVariation(),
+                            $product->getModification()
+                        );
+
+
+                        $msg = '<b>'.$productDetail['product_name'].'</b>';
+                        $msg .= ' ('.$productDetail['product_article'].')';
+
+                        if($productDetail['product_offer_value'])
+                        {
+                            $msg .= '<br>'.$productDetail['product_offer_name'].': ';
+                            $msg .= '<b>'.$productDetail['product_offer_value'].'</b>';
+                        }
+
+                        if($productDetail['product_variation_name'])
+                        {
+                            $msg .= ' '.$productDetail['product_variation_name'].': ';
+                            $msg .= '<b>'.$productDetail['product_variation_value'].'</b>';
+                        }
+
+                        if($productDetail['product_modification_value'])
+                        {
+                            $msg .= ' '.$productDetail['product_modification_name'].': ';
+                            $msg .= '<b>'.$productDetail['product_modification_value'].'</b>';
+                        }
+
+
+                        $msg .= '<br>Доступно: <b>'.$ProductStockTotal.'</b>';
+
+
+                        $this->addFlash('Недостаточное количество продукции', $msg, 'admin.product.stock');
+                        continue 2;
+                    }
+                }
+
                 $move->setProfile($move->getMove()->getWarehouse());
                 $move->setComment($movingDTO->getComment());
 
