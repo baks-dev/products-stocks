@@ -44,11 +44,11 @@ final class IndexController extends AbstractController
         Request $request,
         AllProductStocksWarehouseInterface $allPurchase,
         int $page = 0
-    ): Response {
-        //$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
+    ): Response
+    {
 
         // Поиск
-        $search = new SearchDTO();
+        $search = new SearchDTO($request);
         $searchForm = $this->createForm(SearchForm::class, $search,
             ['action' => $this->generateUrl('products-stocks:admin.warehouse.index')]
         );
@@ -63,7 +63,6 @@ final class IndexController extends AbstractController
         ]);
         $filterForm->handleRequest($request);
         !$filterForm->isSubmitted() ?: $this->redirectToReferer();
-
 
 
         /* Получаем список поступлений на склад */

@@ -46,12 +46,9 @@ final class MovingController extends AbstractController
         MovingProductStockHandler $handler,
         ProductWarehouseTotalInterface $productWarehouseTotal,
         ProductDetailByConstInterface $productDetailByConst
-        // #[MapEntity] ProductStockEvent $Event,
     ): Response
     {
         $movingDTO = new MovingProductStockDTO($this->getUsr());
-
-        //$incomingDTO->setProfile($this->getProfileUid());
 
         // Форма заявки
         $form = $this->createForm(MovingProductStockForm::class, $movingDTO, [
@@ -83,8 +80,6 @@ final class MovingController extends AbstractController
 
                     if($product->getTotal() > $ProductStockTotal)
                     {
-                        $success = false;
-
                         $productDetail = $productDetailByConst->fetchProductDetailByConstAssociative(
                             $product->getProduct(),
                             $product->getOffer(),

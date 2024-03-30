@@ -46,7 +46,7 @@ final class IndexController extends AbstractController
         /*$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');*/
 
         // Поиск
-        $search = new SearchDTO();
+        $search = new SearchDTO($request);
         $searchForm = $this->createForm(SearchForm::class, $search,
             ['action' => $this->generateUrl('products-stocks:admin.incoming.index')]
         );
