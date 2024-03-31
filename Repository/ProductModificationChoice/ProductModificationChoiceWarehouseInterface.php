@@ -30,7 +30,7 @@ use BaksDev\Users\User\Type\Id\UserUid;
 
 interface ProductModificationChoiceWarehouseInterface
 {
-    /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличие на склад */
+    /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад */
     public function getProductsModificationExistWarehouse(
         UserUid $usr,
         ProductUid $product,

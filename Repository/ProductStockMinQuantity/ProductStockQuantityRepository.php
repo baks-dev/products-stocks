@@ -154,7 +154,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
     }
 
     /**
-     * Метод возвращает место складирования продукции с минимальным количеством в наличие без учета резерва
+     * Метод возвращает место складирования продукции с минимальным количеством в наличии без учета резерва
      */
     public function findOneByTotalMin(): ?ProductStockTotal
     {
@@ -171,7 +171,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
 
     /**
-     * Метод возвращает место складирования продукции с минимальным количеством в наличие без учета резерва
+     * Метод возвращает место складирования продукции с минимальным количеством в наличии без учета резерва
      */
     public function findOneByReserveMax(): ?ProductStockTotal
     {
@@ -187,7 +187,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
 
     /**
-     * Метод возвращает место складирования продукции с минимальным количеством в наличие с учетом резерва
+     * Метод возвращает место складирования продукции с минимальным количеством в наличии с учетом резерва
      */
     public function findOneBySubReserve(): ?ProductStockTotal
     {

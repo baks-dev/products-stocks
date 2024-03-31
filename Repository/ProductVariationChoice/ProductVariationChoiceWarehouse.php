@@ -52,7 +52,7 @@ final class ProductVariationChoiceWarehouse implements ProductVariationChoiceWar
         $this->ORMQueryBuilder = $ORMQueryBuilder;
     }
 
-    /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличие на склад */
+    /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад */
     public function getProductsVariationExistWarehouse(
         UserUid $usr,
         ProductUid $product,

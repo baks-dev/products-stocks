@@ -29,7 +29,7 @@ use BaksDev\Users\User\Type\Id\UserUid;
 
 interface ProductOfferChoiceWarehouseInterface
 {
-    /** Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличие на данном складе */
+    /** Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличии на данном складе */
     public function getProductsOfferExistWarehouse(
         UserUid $usr,
         ProductUid $product

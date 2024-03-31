@@ -52,7 +52,7 @@ final class ProductOfferChoiceWarehouse implements ProductOfferChoiceWarehouseIn
     }
 
     /**
-     * Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличие на складе
+     * Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличии на складе
      */
     public function getProductsOfferExistWarehouse(
         UserUid $usr,

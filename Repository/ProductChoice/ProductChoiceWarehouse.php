@@ -52,7 +52,7 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
 
 
     /**
-     * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличие на данном складе
+     * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
      */
     public function getProductsExistWarehouse(UserUid $usr): ?array
     {
@@ -105,7 +105,7 @@ final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
 
 
 
-    /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличие на данном складе */
+    /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе */
     public function getProductsByWarehouse(ContactsRegionCallUid $warehouse): ?array
     {
         $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
