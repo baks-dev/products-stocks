@@ -21,9 +21,11 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Purchase;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Products\ProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockHandler;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -41,9 +43,11 @@ final class PurchaseController extends AbstractController
     public function incoming(
         Request $request,
         PurchaseProductStockHandler $PurchaseProductStockHandler
-    ): Response {
+    ): Response
+    {
 
-        if (!$this->getProfileUid()) {
+        if(!$this->getProfileUid())
+        {
             throw new UserNotFoundException('User Profile not found');
         }
 
@@ -56,16 +60,34 @@ final class PurchaseController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('purchase'))
+        if($form->isSubmitted() && $form->isValid() && $form->has('purchase'))
         {
-            $handle = $PurchaseProductStockHandler->handle($purchaseDTO);
+            $purchase = clone $purchaseDTO;
+
+            /** @var ProductStockDTO $product */
+            foreach($purchase->getProduct() as $product)
+            {
+                $purchaseDTO->setProduct(new ArrayCollection());
+                $purchaseDTO->addProduct($product);
+                $handle = $PurchaseProductStockHandler->handle($purchaseDTO);
+
+                if(!$handle instanceof ProductStock)
+                {
+                    $this->addFlash
+                    (
+                        'admin.page.purchase',
+                        'admin.danger.purchase',
+                        'admin.product.stock',
+                        $handle
+                    );
+                }
+            }
 
             $this->addFlash
             (
                 'admin.page.purchase',
-                $handle instanceof ProductStock ? 'admin.success.purchase' : 'admin.danger.purchase',
-                'admin.product.stock',
-                $handle
+                'admin.success.purchase',
+                'admin.product.stock'
             );
 
             return $this->redirectToRoute('products-stocks:admin.purchase.index');

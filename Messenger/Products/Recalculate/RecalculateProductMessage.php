@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,41 +21,76 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotal;
+declare(strict_types=1);
+
+namespace BaksDev\Products\Stocks\Messenger\Products\Recalculate;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Symfony\Component\Validator\Constraints as Assert;
 
-interface ProductStocksTotalInterface
+final class RecalculateProductMessage
 {
-    /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
-    public function getProductStocksTotal(
-        ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null
-    ): int;
 
-    /** Метод возвращает общее количество резерва на всех складах */
-    public function getProductStocksReserve(
-        ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null
-    ): int;
+    /** Идентификатор */
+    #[Assert\Uuid]
+    private ProductUid $product;
+
+    #[Assert\Uuid]
+    private ?ProductOfferConst $offer;
+
+    #[Assert\Uuid]
+    private ?ProductVariationConst $variation;
+
+    #[Assert\Uuid]
+    private ?ProductModificationConst $modification;
 
 
-    public function getProductStocksTotalByStorage(
-        UserProfileUid $profile,
+    public function __construct(
         ProductUid $product,
         ?ProductOfferConst $offer,
         ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification,
-        ?string $storage
-    ): ?ProductStockTotal;
+        ?ProductModificationConst $modification
+    )
+    {
+        $this->product = $product;
+        $this->offer = $offer;
+        $this->variation = $variation;
+        $this->modification = $modification;
+    }
+
+    /**
+     * Product
+     */
+    public function getProduct(): ProductUid
+    {
+        return $this->product;
+    }
+
+    /**
+     * Offer
+     */
+    public function getOffer(): ?ProductOfferConst
+    {
+        return $this->offer;
+    }
+
+    /**
+     * Variation
+     */
+    public function getVariation(): ?ProductVariationConst
+    {
+        return $this->variation;
+    }
+
+    /**
+     * Modification
+     */
+    public function getModification(): ?ProductModificationConst
+    {
+        return $this->modification;
+    }
 
 }

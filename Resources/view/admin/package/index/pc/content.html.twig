@@ -240,8 +240,8 @@
                         <div class="w-100 d-flex gap-5 justify-content-between">
 
                             <div>
-                                <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
-                                   class="text-hover-primary fw-bolder text-decoration-none modal-link disabled  text-nowrap"
+                                <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+                                   class="text-hover-primary fw-bolder text-decoration-none text-nowrapmodal-link disabled"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Детали заявки">

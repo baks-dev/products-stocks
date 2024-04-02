@@ -169,7 +169,7 @@
                 <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
 
                     <div>
-                        <a href="{# {{ path('ProductStock:admin.detail', { id : item.id }) }} #}"
+                        <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
                            class="text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                            data-bs-toggle="modal"
                            data-bs-target="#modal"

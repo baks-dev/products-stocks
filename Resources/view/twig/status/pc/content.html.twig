@@ -1,0 +1,87 @@
+{% trans_default_domain 'status.product.stock' %}
+
+    {# Статус "Принят со склада заявителю" #}
+{% if status == 'accept' %}
+
+    <span class="badge bg-warning shadow">
+	    {{ status|trans }}
+    </span>
+    {# Статус Cancel «Отменен». #}
+{% elseif status == 'incoming' %}
+
+    <span class="badge bg-success shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Статус Cancel «Отменен». #}
+{% elseif status == 'cancel' %}
+
+    <span class="badge bg-light text-dark shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Статус Ошибка #}
+{% elseif status == 'error' %}
+
+    <span class="badge bg-danger shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Extradition «Укомплектована, готова к выдаче» #}
+{% elseif status == 'extradition' %}
+
+    <span class="badge bg-warning shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Moving «Перемещение» #}
+{% elseif status == 'moving' %}
+
+    <span class="badge bg-danger shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# "Новая заявка (Закупка)"  #}
+{% elseif status == 'new' %}
+
+    <span class="badge bg-primary shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Package «Упаковка» #}
+{% elseif status == 'package' %}
+
+    <span class="badge bg-light text-dark shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Purchase «Закупка» #}
+{% elseif status == 'purchase' %}
+
+    <span class="badge bg-danger shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Shipment «Укомплектован и готов к выдаче» #}
+{% elseif status == 'shipment' %}
+
+    <span class="badge bg-warning shadow">
+	    {{ status|trans }}
+    </span>
+
+    {# Warehouse «Отправили на склад» #}
+{% elseif status == 'warehouse' %}
+
+    <span class="badge bg-light text-dark shadow">
+	    {{ status|trans }}
+    </span>
+
+
+{% else %}
+
+    {{ status }}
+{% endif %}
+
+   {#{{ status }}#}
+
+

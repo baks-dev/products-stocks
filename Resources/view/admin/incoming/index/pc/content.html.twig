@@ -229,15 +229,38 @@
 
                     <div>
 
+
+
                         {% if app.user.profile == item.user_profile_id %}
 
-                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none" title="Приход на склад">
+
+                        <button
+                                class="btn btn-sm btn-light rounded-circle modal-link disabled add-basket"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modal"
+                                title="Купить"
+                                aria-label="Купить"
+                                disabled="disabled"
+                        >
+
+                            <button
+                                    class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+                                    title="Приход на склад"
+                            >
                                 <span class="badge text-bg-success me-3">Приход на склад</span> # {{ item.number }}
                             </button>
 
                         {% else %}
 
-                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none" title="Отгрузка">
+                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+                                    title="Отгрузка"
+                            >
                                 <span class="badge text-bg-danger me-3">Отгрузка</span> # {{ item.number }}
                             </button>
 

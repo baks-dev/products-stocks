@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,26 +21,14 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Products\Stocks\Repository\ProductsStocksAction;
 
-namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
-/**
- * Статус Shipment «Укомплектован и готов к выдаче»
- */
-#[AutoconfigureTag('baks.product.stock.status')]
-class ProductStockStatusShipment implements ProductStockStatusInterface
+interface ProductsStocksActionInterface
 {
+    public function main(ProductStock|ProductStockUid|string $main): self;
 
-	public const STATUS = 'shipment';
-	
-
-	/** Возвращает значение (value) */
-	public function getValue(): string
-	{
-		return self::STATUS;
-	}
+    public function findAll(): array|bool;
 }

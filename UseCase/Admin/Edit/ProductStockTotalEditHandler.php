@@ -27,9 +27,11 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Edit;
 
 
 use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductStockTotalEditHandler
@@ -37,13 +39,16 @@ final class ProductStockTotalEditHandler
 
     private EntityManagerInterface $entityManager;
     private ValidatorCollectionInterface $validatorCollection;
+    private MessageDispatchInterface $messageDispatch;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ValidatorCollectionInterface $validatorCollection
+        ValidatorCollectionInterface $validatorCollection,
+        MessageDispatchInterface $messageDispatch
     ) {
         $this->entityManager = $entityManager;
         $this->validatorCollection = $validatorCollection;
+        $this->messageDispatch = $messageDispatch;
     }
 
     /** @see ProductStock */
@@ -69,6 +74,9 @@ final class ProductStockTotalEditHandler
 
         $ProductStockTotal->setEntity($command);
 
+
+
+
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
         {
@@ -76,6 +84,15 @@ final class ProductStockTotalEditHandler
         }
 
         $this->entityManager->flush();
+
+        /** Отправляем сообщение в шину для пересчета продукции */
+        $this->messageDispatch->dispatch(new RecalculateProductMessage(
+            $command->getProduct(),
+            $command->getOffer(),
+            $command->getVariation(),
+            $command->getModification(),
+        ), transport: 'products-stocks');
+
         return $ProductStockTotal;
     }
 }

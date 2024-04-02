@@ -74,7 +74,7 @@ final class EditController extends AbstractController
             (
                 'admin.page.total',
                 $handle instanceof ProductStockTotal ? 'admin.success.total' : 'admin.danger.total',
-                'admin.product.stocks',
+                'admin.product.stock',
                 $handle
             );
 

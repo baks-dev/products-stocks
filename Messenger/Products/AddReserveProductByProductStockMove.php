@@ -25,10 +25,10 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityRepositoryInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityRepositoryInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
@@ -48,16 +48,16 @@ final class AddReserveProductByProductStockMove
 {
     private ProductStocksByIdInterface $productStocks;
     private EntityManagerInterface $entityManager;
-    private ProductModificationQuantityRepositoryInterface $modificationQuantity;
-    private ProductVariationQuantityRepositoryInterface $variationQuantity;
+    private ProductModificationQuantityInterface $modificationQuantity;
+    private ProductVariationQuantityInterface $variationQuantity;
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
-        ProductModificationQuantityRepositoryInterface $modificationQuantity,
-        ProductVariationQuantityRepositoryInterface $variationQuantity,
+        ProductModificationQuantityInterface $modificationQuantity,
+        ProductVariationQuantityInterface $variationQuantity,
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
@@ -82,7 +82,6 @@ final class AddReserveProductByProductStockMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)

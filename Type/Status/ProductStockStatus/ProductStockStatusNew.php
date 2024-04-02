@@ -29,7 +29,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
- * Статус "Новая заявка (Закупка)"
+ * Статус New «Закупка»
  */
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusNew implements ProductStockStatusInterface

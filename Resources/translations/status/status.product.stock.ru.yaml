@@ -1,7 +1,12 @@
-new: 'Новые'
-completed: 'Выполнен'
-canceled: 'Отменен'
-extradition: 'Собран'
 
-
-
+accept: 'Принят'
+cancel: 'Отменен'
+error: 'Ошибка'
+extradition: 'Укомплектована'
+incoming: 'Приход'
+moving: 'Перемещение'
+new: 'Новый'
+package: 'Упаковка'
+purchase: 'В пути'
+shipment: 'Готов к выдаче'
+warehouse: 'Отправили на склад'
