@@ -34,6 +34,7 @@ use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use InvalidArgumentException;
 
 final class ProductsStocksActionRepository implements ProductsStocksActionInterface
@@ -96,29 +97,8 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'modify.event = event.id'
         );
 
-
-        /** Аккаунт пользователя */
-
-//        $dbal->leftJoin(
-//            'info',
-//            Account::class,
-//            'account',
-//            'account.id = modify.usr'
-//        );
-//
-//        $dbal
-//            //->addSelect('account_event.id as account_id')
-//            ->addSelect('account_event.email AS account_email')
-//            ->leftJoin(
-//                'account',
-//                AccountEvent::class,
-//                'account_event',
-//                'account_event.id = account.event'
-//            );
-
-
         $dbal
-            ->join(
+            ->leftJoin(
                 'modify',
                 UserProfileInfo::class,
                 'info',
@@ -127,12 +107,20 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
 
 
         $dbal
+            ->leftJoin(
+                'info',
+                UserProfile::class,
+                'profile',
+                'profile.id = info.profile'
+            );
+
+        $dbal
             ->addSelect('personal.username AS profile_username')
-            ->join(
+            ->leftJoin(
                 'info',
                 UserProfilePersonal::class,
                 'personal',
-                'personal.event = info.event'
+                'personal.event = profile.event'
             );
 
 
