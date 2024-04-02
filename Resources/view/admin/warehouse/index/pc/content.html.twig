@@ -256,15 +256,13 @@
 
                         {% else %}
 
-                            <button
-                                    class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="left"
-                                    data-bs-delay='{"show":600,"hide":100}'
-                                    title="Ожидется приход на склад {{ item.users_profile_username }}"
-                            >
+                            <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
+                               class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal"
+                               title="Ожидется приход на склад {{ item.users_profile_username }}">
                                 <span class="badge text-bg-danger me-3">Отгрузка</span> # {{ item.number }}
-                            </button>
+                            </a>
 
                         {% endif %}
 
