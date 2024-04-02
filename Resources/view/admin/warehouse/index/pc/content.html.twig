@@ -246,7 +246,7 @@
 
                         {% if app.user.profile == item.user_profile_id and (is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN')) %}
 
-                            <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
+                            <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
                                class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
@@ -256,7 +256,7 @@
 
                         {% else %}
 
-                            <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
+                            <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
                                class="btn btn-sm btn-link p-0 text-hover-primary fw-bolder text-decoration-none modal-link disabled"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
