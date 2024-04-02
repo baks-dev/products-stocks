@@ -34,7 +34,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class ProductChoiceWarehouse implements ProductChoiceWarehouseInterface
+final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseInterface
 {
 
     private TranslatorInterface $translator;

@@ -23,18 +23,25 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksWarehouse;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
 
+use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+
+//use BaksDev\Products\Category\Entity as CategoryEntity;
+//use BaksDev\Products\Product\Entity as ProductEntity;
+//use BaksDev\Products\Stocks\Entity as ProductStockEntity;
 use BaksDev\Products\Category\Entity\Info\ProductCategoryInfo;
 use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
+use BaksDev\Products\Category\Entity\ProductCategory;
 use BaksDev\Products\Category\Entity\Trans\ProductCategoryTrans;
 use BaksDev\Products\Category\Type\Id\ProductCategoryUid;
-use BaksDev\Products\Product\Entity\Category\ProductCategory;
+use BaksDev\Products\Product\Entity\Category\ProductCategory as ProductCategoryRoot;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
@@ -52,15 +59,18 @@ use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
+use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
+
+//use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterface
+final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
 {
     private PaginatorInterface $paginator;
 
@@ -74,7 +84,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
-
 
     private ?ProductFilterDTO $filter = null;
 
@@ -92,16 +101,15 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         return $this;
     }
 
-
     /**
-     * Метод возвращает список всех поступлений на склад
+     * Метод возвращает все заявки, требующие перемещения между складами
      */
     public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
     {
-
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
+
 
         $dbal
             ->addSelect('event.main AS id')
@@ -109,75 +117,52 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
+            ->addSelect('event.fixed')
             ->addSelect('event.profile AS user_profile_id')
+
             ->from(ProductStockEvent::class, 'event')
             ->andWhere('event.status = :status ')
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE)
+
+            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE)
+
             ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+        ;
 
 
         $dbal
+
+            ->addSelect('stock.event AS is_warehouse')
             ->join(
-                'event',
-                ProductStock::class,
-                'stock',
-                'stock.event = event.id'
+            'event',
+            ProductStock::class,
+            'stock',
+            'stock.event = event.id'
 
-            );
-
-        $dbal
-            //->addSelect('move.destination AS move_destination')
-            ->leftJoin(
-                'event',
-                ProductStockMove::class,
-                'move',
-                'move.event = event.id'
-            );
+        );
 
 
-        //        $dbal
-        //            ->select('stock.id')
-        //            ->addSelect('stock.event')
-        //            ->from(ProductStock::class, 'stock');
-        //
-        //
-        //
-        //        // ProductStockEvent
-        //        // $dbal->addSelect('event.total');
-        //        $dbal
-        //            ->addSelect('event.number')
-        //            ->addSelect('event.comment')
-        //            ->addSelect('event.status')
-        //            ->join(
-        //                'stock',
-        //                ProductStockEvent::class,
-        //                'event',
-        //                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-        //            )
-        //            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-        //            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE);
-
+        //dd($dbal->fetchAllAssociative());
 
         // ProductStockModify
         $dbal
             ->addSelect('modify.mod_date')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = stock.event'
+                'modify.event = event.id'
             );
 
 
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = event.id'
             );
 
 
@@ -185,7 +170,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         $dbal
             ->addSelect('product.id as product_id')
             ->addSelect('product.event as product_event')
-            ->join(
+            ->leftJoin(
                 'stock_product',
                 Product::class,
                 'product',
@@ -193,7 +178,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             );
 
         // Product Event
-        $dbal->join(
+        $dbal->leftJoin(
             'product',
             ProductEvent::class,
             'product_event',
@@ -212,7 +197,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
-            ->join(
+            ->leftJoin(
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
@@ -238,7 +223,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             $dbal->setParameter('offer', $this->filter->getOffer());
         }
 
-
         // Получаем тип торгового предложения
         $dbal
             ->addSelect('category_offer.reference as product_offer_reference')
@@ -248,6 +232,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
                 'category_offer',
                 'category_offer.id = product_offer.category_offer'
             );
+
 
         // Множественные варианты торгового предложения
 
@@ -261,6 +246,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
                 'product_variation',
                 'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
             );
+
 
         if($this->filter?->getVariation())
         {
@@ -278,7 +264,6 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
                 'category_offer_variation.id = product_variation.category_variation'
             );
 
-
         // Модификация множественного варианта торгового предложения
 
         $dbal
@@ -292,12 +277,14 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
                 'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
             );
 
-
         if($this->filter?->getModification())
         {
             $dbal->andWhere('product_modification.value = :modification');
             $dbal->setParameter('modification', $this->filter->getModification());
         }
+
+        
+        
 
         // Получаем тип модификации множественного варианта
         $dbal
@@ -393,6 +380,7 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 			   WHEN product_variation_image.name IS NOT NULL THEN product_variation_image.ext
 			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
 			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
+				
 			   ELSE NULL
 			   
 			END AS product_image_ext
@@ -417,16 +405,9 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
         // Категория
         $dbal->leftJoin(
             'product_event',
-            ProductCategory::class,
+            ProductCategoryRoot::class,
             'product_event_category',
             'product_event_category.event = product_event.id AND product_event_category.root = true'
-        );
-
-        $dbal->leftJoin(
-            'product_event_category',
-            \BaksDev\Products\Category\Entity\ProductCategory::class,
-            'category',
-            'category.id = product_event_category.category'
         );
 
         if($this->filter?->getCategory())
@@ -434,6 +415,14 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             $dbal->andWhere('product_event_category.category = :category');
             $dbal->setParameter('category', $this->filter->getCategory(), ProductCategoryUid::TYPE);
         }
+
+        $dbal->leftJoin(
+            'product_event_category',
+            ProductCategory::class,
+            'category',
+            'category.id = product_event_category.category'
+        );
+
 
         $dbal
             ->addSelect('category_trans.name AS category_name')
@@ -456,12 +445,11 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
 
 
 
-        // ОТВЕТСТВЕННЫЙ
+        /** Целевой склад */
 
         // UserProfile
-        $dbal
-            ->addSelect('users_profile.event as users_profile_event')
-            ->join(
+        $dbal->addSelect('users_profile.event as users_profile_event')
+            ->leftJoin(
                 'event',
                 UserProfile::class,
                 'users_profile',
@@ -469,46 +457,73 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
-            UserProfileInfo::TABLE,
+            UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = users_profile.id'
         );
 
-        // Event
-        $dbal->join(
-            'users_profile',
-            UserProfileEvent::TABLE,
-            'users_profile_event',
-            'users_profile_event.id = users_profile.event'
-        );
+
 
         // Personal
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
-            ->join(
-                'users_profile_event',
-                UserProfilePersonal::TABLE,
-                'users_profile_personal',
-                'users_profile_personal.event = users_profile_event.id'
-            );
-
-        // Avatar
-
-        $dbal
-            ->addSelect("CONCAT ( '/upload/".UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar")
-            ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
-            ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
             ->leftJoin(
-                'users_profile_event',
-                UserProfileAvatar::class,
-                'users_profile_avatar',
-                'users_profile_avatar.event = users_profile_event.id'
+                'users_profile',
+                UserProfilePersonal::class,
+                'users_profile_personal',
+                'users_profile_personal.event = users_profile.event'
             );
 
-        // Группа
-        $dbal->addSelect('NULL AS group_name'); // Название группы
+
+        // Пункт назначения перемещения
+
+        $dbal->leftJoin(
+            'event',
+            ProductStockMove::class,
+            'move',
+            'move.event = event.id AND move.ord IS NULL'
+        );
+
+        $dbal->leftJoin(
+            'move',
+            UserProfile::class,
+            'users_profile_destination',
+            'users_profile_destination.id = move.destination'
+        );
+
+
+        // Personal
+        $dbal
+            ->addSelect('users_profile_personal_destination.username AS users_profile_destination')
+            ->leftJoin(
+                'users_profile_destination',
+                UserProfilePersonal::class,
+                'users_profile_personal_destination',
+                'users_profile_personal_destination.event = users_profile_destination.event'
+            );
+
+
+        /** Место хранения на складе и количество */
+
+        /* Получаем наличие на указанном складе */
+        $dbal
+            ->addSelect('SUM(total.total) AS stock_total')
+            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
+            ->leftJoin(
+                'stock_product',
+                ProductStockTotal::TABLE,
+                'total',
+                '
+                total.profile = :profile AND
+                total.product = stock_product.product AND 
+                (total.offer IS NULL OR total.offer = stock_product.offer) AND 
+                (total.variation IS NULL OR total.variation = stock_product.variation) AND 
+                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+                total.total > 0
+            ');
+
 
         // Поиск
         if($this->search?->getQuery())
@@ -520,7 +535,14 @@ final class AllProductStocksWarehouse implements AllProductStocksWarehouseInterf
             ;
         }
 
+        /** Сортируем по дате, в первую очередь закрываем все старые заявки */
         $dbal->orderBy('modify.mod_date');
+
+        $dbal->allGroupByExclude();
+
+        //dump($dbal->analyze());
+
+         /*dump($dbal->fetchAllAssociative());*/
 
         return $this->paginator->fetchAllAssociative($dbal);
 

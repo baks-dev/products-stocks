@@ -23,42 +23,42 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\CurrentProductStocks;
+namespace BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder;
 
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\ProductStock;
-use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\ORM\EntityManagerInterface;
 
-final class CurrentProductStocks implements CurrentProductStocksInterface
+final class ProductWarehouseByOrderRepository implements ProductWarehouseByOrderInterface
 {
-    private ORMQueryBuilder $ORMQueryBuilder;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
+        $this->entityManager = $entityManager;
     }
 
     /**
-     * Метод возвращает активное событие
+     * Метод возвращает идентификатор склада (профиля), на который была отправлена заявки для сборки
      */
-    public function getCurrentEvent(ProductStockUid $stock): ?ProductStockEvent
+    public function getWarehouseByOrder(OrderUid $order) : ?UserProfileUid
     {
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this->entityManager->createQueryBuilder();
+        $select = sprintf('new %s(event.profile)', UserProfileUid::class);
 
-        $qb
-            ->from(ProductStock::class, 'main')
-            ->where('main.id = :stock')
-            ->setParameter('stock', $stock, ProductStockUid::TYPE);
+        $qb->select($select);
+        $qb->from(ProductStockOrder::class, 'ord');
+        $qb->join(ProductStock::class, 'stock', 'WITH', 'stock.event = ord.event');
+        $qb->join(ProductStockEvent::class, 'event', 'WITH', 'event.id = stock.event');
 
-        $qb
-            ->select('event')
-            ->leftJoin(
-                ProductStockEvent::class,
-                'event',
-                'WITH',
-                'event.id = main.event'
-            );
+        $qb->where('ord.ord = :order');
+        $qb->setParameter('order', $order, OrderUid::TYPE);
+
+        $qb->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
     }

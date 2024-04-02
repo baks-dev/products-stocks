@@ -67,7 +67,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class ProductsByProductStocks implements ProductsByProductStocksInterface
+final class ProductsByProductStocksRepository implements ProductsByProductStocksInterface
 {
     private TranslatorInterface $translator;
     private DBALQueryBuilder $DBALQueryBuilder;

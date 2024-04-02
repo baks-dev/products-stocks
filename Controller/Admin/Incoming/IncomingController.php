@@ -49,7 +49,7 @@ final class IncomingController extends AbstractController
 
         $IncomingProductStockDTO = new IncomingProductStockDTO(); // $this->getProfileUid()
         $ProductStockEvent->getDto($IncomingProductStockDTO);
-        $IncomingProductStockDTO->setComment(null); // обнуляем комментарий
+        //$IncomingProductStockDTO->setComment(null); // обнуляем комментарий
 
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
@@ -60,6 +60,7 @@ final class IncomingController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
+
 
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 

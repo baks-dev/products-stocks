@@ -23,17 +23,17 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksMoveByOrder;
 
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
+use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\ProductStock;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProductWarehouseByOrder implements ProductWarehouseByOrderInterface
+final class ProductStocksMoveByOrderRepository implements ProductStocksMoveByOrderInterface
 {
     private EntityManagerInterface $entityManager;
 
@@ -43,22 +43,35 @@ final class ProductWarehouseByOrder implements ProductWarehouseByOrderInterface
     }
 
     /**
-     * Метод возвращает идентификатор склада (профиля), на который была отправлена заявки для сборки
+     * Метод получает заявку на перемещение заказа на указанный склад
      */
-    public function getWarehouseByOrder(OrderUid $order) : ?UserProfileUid
+    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, ContactsRegionCallConst $warehouse) : ?ProductStockEvent
     {
         $qb = $this->entityManager->createQueryBuilder();
-        $select = sprintf('new %s(event.profile)', UserProfileUid::class);
 
-        $qb->select($select);
-        $qb->from(ProductStockOrder::class, 'ord');
-        $qb->join(ProductStock::class, 'stock', 'WITH', 'stock.event = ord.event');
-        $qb->join(ProductStockEvent::class, 'event', 'WITH', 'event.id = stock.event');
+        $qb->select('event');
 
-        $qb->where('ord.ord = :order');
-        $qb->setParameter('order', $order, OrderUid::TYPE);
+        $qb->from(ProductStockMove::class, 'move');
 
-        $qb->setMaxResults(1);
+        $qb->join(
+            ProductStock::class,
+            'stock',
+            'WITH',
+            'stock.event = move.event'
+        );
+
+        $qb->join(
+            ProductStockEvent::class,
+            'event',
+            'WITH',
+            'event.id = stock.event AND event.warehouse = :warehouse AND event.status = :status '
+        );
+
+        $qb->where('move.ord = :ord');
+
+        $qb->setParameter('ord', $order, OrderUid::TYPE);
+        $qb->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallConst::TYPE);
 
         return $qb->getQuery()->getOneOrNullResult();
     }

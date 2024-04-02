@@ -31,7 +31,7 @@ use BaksDev\Products\Stocks\Entity as EntityProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use Doctrine\DBAL\Connection;
 
-final class ExistProductStocksMoveOrder implements ExistProductStocksMoveOrderInterface
+final class ExistProductStocksMoveOrderRepository implements ExistProductStocksMoveOrderInterface
 {
 
     private DBALQueryBuilder $DBALQueryBuilder;

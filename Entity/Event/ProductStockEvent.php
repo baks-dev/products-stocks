@@ -79,11 +79,11 @@ class ProductStockEvent extends EntityEvent
     /** Коллекция продукции в заявке */
     #[Assert\Valid]
     #[Assert\Count(min: 1)]
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: ProductStockProduct::class, cascade: ['all'])]
+    #[ORM\OneToMany(targetEntity: ProductStockProduct::class, mappedBy: 'event', cascade: ['all'])]
     protected Collection $product;
 
     /** Модификатор */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockModify::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: ProductStockModify::class, mappedBy: 'event', cascade: ['all'])]
     private ProductStockModify $modify;
 
     /** Фиксация заявки пользователем  */
@@ -98,11 +98,11 @@ class ProductStockEvent extends EntityEvent
     private UserProfileUid $profile;
 
     /** Профиль назначения (при перемещении) */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockMove::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: ProductStockMove::class, mappedBy: 'event', cascade: ['all'])]
     private ?ProductStockMove $move = null;
 
     /** ID Заказа на сборку */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: ProductStockOrder::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: ProductStockOrder::class, mappedBy: 'event', cascade: ['all'])]
     private ?ProductStockOrder $ord = null;
 
     /** Комментарий */

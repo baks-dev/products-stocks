@@ -34,7 +34,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class ProductStocksTotal implements ProductStocksTotalInterface
+final class ProductStocksTotalRepository implements ProductStocksTotalInterface
 {
 
     private DBALQueryBuilder $DBALQueryBuilder;

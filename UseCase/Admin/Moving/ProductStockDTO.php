@@ -94,6 +94,8 @@ final class ProductStockDTO implements ProductStockEventInterface
     /** Коллекция продукции  */
     public function getProduct(): ArrayCollection
     {
+        /** Сбрасываем идентификатор заявки */
+        $this->number = number_format(microtime(true) * 100, 0, '.', '.');
         return $this->product;
     }
 

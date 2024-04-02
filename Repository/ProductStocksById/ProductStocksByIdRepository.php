@@ -39,7 +39,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWar
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProductStocksById implements ProductStocksByIdInterface
+final class ProductStocksByIdRepository implements ProductStocksByIdInterface
 {
     //    private EntityManagerInterface $entityManager;
     //

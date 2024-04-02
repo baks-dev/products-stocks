@@ -41,7 +41,7 @@ use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class ProductWarehouseChoice implements ProductWarehouseChoiceInterface
+final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceInterface
 {
     //    private EntityManagerInterface $entityManager;
     //

@@ -78,7 +78,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 
-final class AllProductStocksPackage implements AllProductStocksPackageInterface
+final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
 {
     private PaginatorInterface $paginator;
     private DBALQueryBuilder $DBALQueryBuilder;

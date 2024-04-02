@@ -63,6 +63,8 @@ final class MovingController extends AbstractController
             $success = true;
 
             /** Создаем каждое отдельно перемещение */
+
+            /** @var \BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO $move */
             foreach($movingDTO->getMove() as $move)
             {
                 /** Проверяем, что на складе не изменилось доступное количество */

@@ -35,7 +35,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProductWarehouseTotal implements ProductWarehouseTotalInterface
+final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 

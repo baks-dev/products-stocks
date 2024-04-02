@@ -54,7 +54,7 @@ use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class OrderMoveDetail implements OrderMoveDetailInterface
+final class OrderMoveDetailRepository implements OrderMoveDetailInterface
 {
     private EntityManagerInterface $entityManager;
 
