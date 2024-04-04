@@ -42,4 +42,6 @@ interface ProductWarehouseTotalInterface
         ?ProductVariationConst $variation,
         ?ProductModificationConst $modification
     ): int;
+
+
 }

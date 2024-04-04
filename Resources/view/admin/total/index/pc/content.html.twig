@@ -1,5 +1,5 @@
 {% trans_default_domain('admin.product.stock') %}
-<main class="main d-print-none ">
+<main class="main d-print-none">
 
     <section class="container px-4 mb-5">
 
@@ -116,7 +116,8 @@
                        data-bs-delay='{"show":600,"hide":100}'
                        title="Упаковка заказов"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-box-seam" viewBox="0 0 16 16">
                             <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
                         </svg>
                     </a>
@@ -142,10 +143,6 @@
                 {% endif %}
 
 
-
-
-
-
             </div>
 
             {# Добавить #}
@@ -169,8 +166,32 @@
                     {{ form_start(filter) }}
                     <div class="d-flex justify-content-end align-items-center my-1 gap-3">
 
+                        {% if filter.all is defined %}
+                            <div >
+
+                                <div class="d-flex justify-content-around radio-buttons clearfix"
+                                     data-buttons="true" style='clear: both'>
+                                    <label class="btn p-1 border-dotted rounded-3 w-100 {{ filter.all.vars.data ? 'active' }}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+
+                                                    <div class="d-flex align-items-center">
+                                                        {{ form_widget(filter.all, { label: false }) }}
+                                                        <div class="form-check ps-0">
+                                                            {# Продукт активный #}
+                                                            {{ 'Все'|trans }}
+                                                        </div>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                            </div>
+                        {% endif %}
+
                         <div class="w-25">
-                            {{ form_widget(filter.category, { placeholder: 'Все категории ...', attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
+                            {{ form_widget(filter.category, { placeholder: 'Все категории ...', attr: { 'data-select' : 'select2', class: 'mb-0  w-100' } }) }}
                         </div>
 
                         {% if filter.vars.data.category %}
@@ -194,6 +215,9 @@
                                     {{ form_widget(filter.modification, { placeholder:  filter.modification.vars.label~' ...', attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
                                 </div>
                             {% endif %}
+
+
+
 
                         {% endif %}
 
@@ -242,74 +266,74 @@
                         <div><small class="text-muted small">Статус Wildberries:</small>&nbsp;
                             <strong>{{ wb_order_status(filter.wildberries.vars.data.value) }}</strong>
                         </div>
-                    {% endif %}#}
+                    {% endif %} #}
 
             </div>
 
             {% if query.data %}
 
-            <table class="table table-striped table-borderless"
-                   style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
-                <thead>
-                <tr>
+                <table class="table table-striped table-borderless"
+                       style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
+                    <thead>
+                    <tr>
 
-                    <th>#</th>
-                    <th class="text-center">Категория</th>
-                    <th class="w-75">Продукция</th>
-                    <th>Склад</th>
+                        <th>#</th>
+                        <th class="text-center">Категория</th>
+                        <th class="w-75">Продукция</th>
+                        <th>Склад</th>
 
-                    <th class="text-center">Наличие</th>
-                    <th class="w-50">Место</th>
+                        <th class="text-center">Наличие</th>
+                        <th class="w-50">Место</th>
 
-                    <th class="text-center">Резерв</th>
-                    <th class="text-center">Доступно</th>
+                        <th class="text-center">Резерв</th>
+                        <th class="text-center">Доступно</th>
 
-                </tr>
-                </thead>
-                <tbody>
+                    </tr>
+                    </thead>
+                    <tbody>
 
-                {% set exist = 0 %}
-                {% set reserve = 0 %}
-                {% set access = 0 %}
+                    {% set exist = 0 %}
+                    {% set reserve = 0 %}
+                    {% set access = 0 %}
 
-                {% for item in query.data %}
+                    {% for item in query.data %}
 
-                    {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+                        {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
 
-                    {% set exist = exist + item.stock_total %}
-                    {% set reserve = reserve + item.stock_reserve %}
+                        {% set exist = exist + item.stock_total %}
+                        {% set reserve = reserve + item.stock_reserve %}
 
-                {% endfor %}
+                    {% endfor %}
 
 
-                </tbody>
+                    </tbody>
 
-                <tfoot>
-                <tr >
-                    <td colspan="4"></td>
-                    <td class="text-center text-primary fw-bolder">{{ exist }}</td>
-                    <td></td>
+                    <tfoot>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="text-center text-primary fw-bolder">{{ exist }}</td>
+                        <td></td>
 
-                    <td class="text-center text-primary fw-bolder">{{ reserve ?: '-' }}</td>
-                    <td class="text-center text-primary fw-bolder">
+                        <td class="text-center text-primary fw-bolder">{{ reserve ?: '-' }}</td>
+                        <td class="text-center text-primary fw-bolder">
 
-                        {% if exist >= reserve %}
-                            {{ (exist - reserve) ?: '-' }}
-                        {% else %}
-                            0 <span
-                                class="pointer badge text-bg-danger text-white"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                data-bs-delay='{"show":600,"hide":100}'
-                                title='Ожидается поступление'
-                        > + {{ exist - reserve }}
+                            {% if exist >= reserve %}
+                                {{ (exist - reserve) ?: '-' }}
+                            {% else %}
+                                0 <span
+                                    class="pointer badge text-bg-danger text-white"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="bottom"
+                                    data-bs-delay='{"show":600,"hide":100}'
+                                    title='Ожидается поступление'
+                            > + {{ exist - reserve }}
                             </span>
-                        {% endif %}
+                            {% endif %}
 
-                    </td>
-                </tr>
-                </tfoot>
-            </table>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
 
             {% else %}
                 <div class="alert alert-warning m-3" role="alert">

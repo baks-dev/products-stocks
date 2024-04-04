@@ -65,6 +65,8 @@ final class IndexController extends AbstractController
          * Фильтр продукции по ТП
          */
         $filter = new ProductFilterDTO($request);
+        $filter->allVisible();
+
         $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
             'action' => $this->generateUrl('products-stocks:admin.total.index'),
         ]);

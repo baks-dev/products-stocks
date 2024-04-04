@@ -49,7 +49,9 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         $this->ORMQueryBuilder = $ORMQueryBuilder;
     }
 
-    /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
+    /**
+     * Метод возвращает общее количество продукции на всех складах (без учета резерва)
+     */
     public function getProductStocksTotal(
         ProductUid $product,
         ?ProductOfferConst $offer = null,

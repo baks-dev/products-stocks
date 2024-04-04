@@ -24,6 +24,7 @@
 {% block javascript %}
 <script nonce='{{ csp_nonce() }}' async  data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async  data-src="/assets/products_stocks/purchase.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async  data-src='/assets/js/radio.input.min.js?v={{ version }}' class='lazy'></script>
 
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener("DOMContentLoaded", (event) => {

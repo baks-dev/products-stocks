@@ -44,6 +44,10 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
+
+
+
+
     /**
      * Метод возвращает количество данной продукции на указанном складе
      */
@@ -55,6 +59,9 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductModificationConst $modification = null
     ) : int
     {
+
+
+
         $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb->select('(SUM(stock.total) - SUM(stock.reserve))');
