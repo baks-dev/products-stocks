@@ -83,6 +83,12 @@ final class MovingProductStockCancelDTO implements ProductStockEventInterface
         return $this->status;
     }
 
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
     /**
      * Comment
      */
