@@ -77,7 +77,7 @@ final class IndexController extends AbstractController
             ->search($search)
             ->filter($filter)
             ->fetchAllProductStocksAssociative(
-                $this->getCurrentUsr(),
+                $this->getUsr()?->getId(),
                 $this->getProfileUid()
             );
 

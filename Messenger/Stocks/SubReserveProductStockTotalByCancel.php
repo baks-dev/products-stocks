@@ -147,6 +147,7 @@ final class SubReserveProductStockTotalByCancel
                 $this->logger->info('Отменили резерв на складе при при отмене заявки',
                     [
                         __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
                         'profile' => (string) $ProductStockEvent->getProfile(),
                         'product' => (string) $product->getProduct(),

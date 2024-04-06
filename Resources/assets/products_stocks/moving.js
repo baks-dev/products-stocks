@@ -938,7 +938,7 @@ function addProductMoving()
     {
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +
-            '"message" : "Внутренее перемещение! Выберите другой назначения либо отгрузки" }';
+            '"message" : "Внутренее перемещение! Выберите другой склад назначения либо отгрузки" }';
     }
 
     if(collectionStock.has($targetWarehouse.value + $destinationWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value))

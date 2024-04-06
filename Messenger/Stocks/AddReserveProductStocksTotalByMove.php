@@ -148,6 +148,7 @@ final class AddReserveProductStocksTotalByMove
                 $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на перемещение',
                     [
                         __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
                         'profile' => (string) $ProductStockEvent->getProfile(),
                         'product' => (string) $product->getProduct(),

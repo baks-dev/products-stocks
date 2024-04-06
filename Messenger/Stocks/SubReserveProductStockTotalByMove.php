@@ -173,6 +173,7 @@ final class SubReserveProductStockTotalByMove
                 $this->logger->info('Сняли резерв и уменьшили количество на складе при перемещении продукции',
                     [
                         __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
                         'profile' => (string) $ProductStockEvent->getProfile(),
                         'product' => (string) $product->getProduct(),

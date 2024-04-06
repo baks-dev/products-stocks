@@ -37,6 +37,7 @@ use BaksDev\Products\Stocks\Repository\ProductVariationChoice\ProductVariationCh
 use BaksDev\Products\Stocks\Repository\ProductWarehouseChoice\ProductWarehouseChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -52,6 +53,8 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 
 final class MovingProductStockForm extends AbstractType
 {
@@ -71,6 +74,8 @@ final class MovingProductStockForm extends AbstractType
 
     private UserUid $user;
 
+    private TokenStorageInterface $tokenStorage;
+
     public function __construct(
         UserProfileChoiceInterface $userProfileChoice,
         ProductChoiceWarehouseInterface $productChoiceWarehouse,
@@ -78,6 +83,8 @@ final class MovingProductStockForm extends AbstractType
         ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse,
         ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
         ProductWarehouseChoiceInterface $productWarehouseChoice,
+        TokenStorageInterface $tokenStorage,
+
     )
     {
 
@@ -87,11 +94,35 @@ final class MovingProductStockForm extends AbstractType
         $this->productModificationChoiceWarehouse = $productModificationChoiceWarehouse;
         $this->productWarehouseChoice = $productWarehouseChoice;
         $this->userProfileChoice = $userProfileChoice;
+
+        $this->tokenStorage = $tokenStorage;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $this->user = $builder->getData()->getUsr();
+
+
+        $token = $this->tokenStorage->getToken();
+
+        /** @var User $usr */
+        $usr = $token?->getUser();
+
+        $UserUid = $usr->getId();
+
+        if($usr && $token instanceof SwitchUserToken)
+        {
+            /** @var User $originalUser */
+            $originalUser = $token->getOriginalToken()->getUser();
+
+            if($originalUser?->getUserIdentifier() !== $usr?->getUserIdentifier())
+            {
+                $UserUid = $originalUser->getId();
+            }
+        }
+
+        $this->user = $usr->getId();  //$builder->getData()->getUsr();
+
+
 
 
         /**
@@ -100,8 +131,6 @@ final class MovingProductStockForm extends AbstractType
          * @var ProductUid $product
          */
          $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
-
-
 
 
         $productChoiceWarehouse = $this->productChoiceWarehouse->getProductsExistWarehouse($this->user);
@@ -127,7 +156,6 @@ final class MovingProductStockForm extends AbstractType
                 ]
             );
         }
-
 
 
         /**
@@ -250,26 +278,38 @@ final class MovingProductStockForm extends AbstractType
         );
 
 
-
-        $profiles = $this->userProfileChoice->getActiveUserProfile($this->user);
-
-
-        /** @var ?UserProfileUid $currentWarehouse */
-        $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
-
-        if($currentWarehouse)
+        /**
+         * Если пользователь не по доверенности - получаем список собственных профилей
+         */
+        if($this->user->equals($UserUid))
         {
-            $builder->addEventListener(
-                FormEvents::PRE_SET_DATA,
-                function(FormEvent $event) use ($currentWarehouse): void {
-                    /** @var MovingProductStockDTO $data */
-                    $data = $event->getData();
-
-                    $data->setTargetWarehouse($currentWarehouse);
-                    $data->setDestinationWarehouse($currentWarehouse);
-                },
-            );
+            $profiles = $this->userProfileChoice->getActiveUserProfile($this->user);
         }
+        else
+        {
+            /** Получаем список профилей, имеющих доступ по доверенности текущего пользователя */
+            $profiles = $this->userProfileChoice->getActiveProfileAuthority($this->user, $UserUid);
+        }
+
+
+
+//        /** @var ?UserProfileUid $currentWarehouse */
+//        $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
+//
+//        if($currentWarehouse)
+//        {
+//            $builder->addEventListener(
+//                FormEvents::PRE_SET_DATA,
+//                function(FormEvent $event) use ($currentWarehouse): void {
+//                    /** @var MovingProductStockDTO $data */
+//                    $data = $event->getData();
+//
+//                    $data->setTargetWarehouse($currentWarehouse);
+//                    $data->setDestinationWarehouse($currentWarehouse);
+//                },
+//            );
+//        }
+
 
         /* Склад назначения */
         $builder->add(

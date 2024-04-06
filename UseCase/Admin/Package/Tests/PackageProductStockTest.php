@@ -141,15 +141,14 @@ final class PackageProductStockTest extends KernelTestCase
         self::assertSame($ProductModificationConst, $ProductStockDTO->getModification());
 
 
-        $ProductStockDTO->setTotal(123);
-        self::assertEquals(123, $ProductStockDTO->getTotal());
+        $ProductStockDTO->setTotal(15);
+        self::assertEquals(15, $ProductStockDTO->getTotal());
 
         //$PackageOrderPriceDTO = new PackageOrderPriceDTO();
         //$PackageOrderPriceDTO->setTotal(123);
         //$ProductStockDTO->setPrice($PackageOrderPriceDTO);
 
         //self::assertEquals(123, $PackageOrderPriceDTO->getTotal());
-
 
 
         $PackageProductStockDTO->addProduct($ProductStockDTO);
@@ -178,8 +177,8 @@ final class PackageProductStockTest extends KernelTestCase
         );
 
         /** Общий остаток 200, резерв 123 */
-        self::assertEquals(200, $ProductStockTotal->getTotal());
-        self::assertEquals(123, $ProductStockTotal->getReserve());
+        self::assertEquals(100, $ProductStockTotal->getTotal());
+        self::assertEquals(15, $ProductStockTotal->getReserve());
 
         $em->clear();
         //$em->close();

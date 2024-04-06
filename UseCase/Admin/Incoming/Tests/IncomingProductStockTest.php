@@ -85,8 +85,10 @@ final class IncomingProductStockTest extends KernelTestCase
         $ProductModificationConst = new ProductModificationConst();
         self::assertTrue($ProductModificationConst->equals($ProductStockDTO->getModification()));
 
+
         self::assertEquals(100, $ProductStockDTO->getTotal());
-        $ProductStockDTO->setTotal(200);
+        /** TODO: Временно блокируем изменение прихода */
+        //$ProductStockDTO->setTotal(200);
 
 
         /** @var IncomingProductStockHandler $IncomingProductStockHandler */
@@ -110,9 +112,15 @@ final class IncomingProductStockTest extends KernelTestCase
             ]
         );
 
-        /** Общий остаток 200 */
+
         self::assertNotNull($ProductStockTotal);
-        self::assertEquals(200, $ProductStockTotal->getTotal());
+
+        /** Общий остаток 200 */
+        /** TODO: Временно блокируем изменение прихода */
+        //self::assertEquals(200, $ProductStockTotal->getTotal());
+        self::assertEquals(100, $ProductStockTotal->getTotal());
+
+
         self::assertEquals(0, $ProductStockTotal->getReserve());
 
         $em->clear();

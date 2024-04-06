@@ -142,6 +142,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                     $this->logger->info('Место складирования не найдено!',
                         [
                             __FILE__.':'.__LINE__,
+                            'number' => $ProductStockEvent->getNumber(),
                             'profile' => (string) $ProductStockEvent->getProfile(),
                             'product' => (string) $product->getProduct(),
                             'offer' => (string) $product->getOffer(),
@@ -170,6 +171,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 $this->logger->info('Добавили приход продукции на склад',
                     [
                         __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
                         'profile' => (string) $ProductStockEvent->getProfile(),
                         'product' => (string) $product->getProduct(),

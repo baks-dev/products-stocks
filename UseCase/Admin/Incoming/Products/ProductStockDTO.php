@@ -29,7 +29,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** @see ProductStockProduct */
 final class ProductStockDTO implements ProductStockProductInterface
 {
-
     /** Продукт */
     #[Assert\NotBlank]
     #[Assert\Uuid]
@@ -50,7 +49,7 @@ final class ProductStockDTO implements ProductStockProductInterface
     /** Количество */
     #[Assert\NotBlank]
     #[Assert\Range(min: 1)]
-    private int $total;
+    private readonly int $total;
 
     /** Место складирования */
     private ?string $storage = null;

@@ -66,6 +66,7 @@ final class MovingProductStockDTO
     public function __construct(User|UserUid $usr)
     {
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
+
         $this->move = new ArrayCollection();
     }
 

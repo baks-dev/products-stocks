@@ -64,7 +64,7 @@ final class ProductStockForm extends AbstractType
 
         // Количество
 
-        $builder->add('total', IntegerType::class);
+        $builder->add('total', IntegerType::class, ['disabled' => true]);
 
         $builder->add('storage', TextType::class, ['required' => false]);
     }

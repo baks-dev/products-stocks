@@ -64,8 +64,6 @@ final class SubProductStocksTotal
             ->modificationConst($message->getModification())
             ->findOneByTotalMin();
 
-
-
         if(!$ProductStockTotal)
         {
             $this->logger->critical('Не найдено продукции на складе для списания',
