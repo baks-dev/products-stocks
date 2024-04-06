@@ -151,6 +151,7 @@ final class PackageProductStockTest extends KernelTestCase
         //self::assertEquals(123, $PackageOrderPriceDTO->getTotal());
 
 
+
         $PackageProductStockDTO->addProduct($ProductStockDTO);
         self::assertCount(1, $PackageProductStockDTO->getProduct());
 

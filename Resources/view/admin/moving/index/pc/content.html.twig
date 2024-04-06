@@ -21,15 +21,15 @@
 
                 {# Добавить перемещение #}
                 {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('products-stocks:admin.moving.new') }}"
-                       class="btn btn-danger modal-link disabled"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal"
-                       title="Добавить перемещение">
+                    <button
+                            data-href="{{ path('products-stocks:admin.moving.new') }}"
+                            class="btn btn-danger modal-link disabled"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal"
+                            title="Добавить перемещение">
                         {{ 'Добавить перемещение'|trans({}, 'messages') }}
-                    </a>
+                    </button>
                 {% endif %}
-
 
                 {# Складской учет #}
 
@@ -234,7 +234,7 @@
                         <div><small class="text-muted small">Статус Wildberries:</small>&nbsp;
                             <strong>{{ wb_order_status(filter.wildberries.vars.data.value) }}</strong>
                         </div>
-                    {% endif %}#}
+                    {% endif %} #}
 
             </div>
 

@@ -473,6 +473,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
         }
 
+        $dbal->addOrderBy('product.id');
         $dbal->addOrderBy('stock_product.profile');
         $dbal->addOrderBy('stock_product.total');
 

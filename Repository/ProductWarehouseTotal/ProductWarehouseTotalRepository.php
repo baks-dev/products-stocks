@@ -45,11 +45,8 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
     }
 
 
-
-
-
     /**
-     * Метод возвращает количество данной продукции на указанном складе
+     * Метод возвращает доступное количество данной продукции на указанном складе
      */
     public function getProductProfileTotal(
         UserProfileUid $profile,
@@ -60,11 +57,123 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
     ) : int
     {
 
-
-
         $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb->select('(SUM(stock.total) - SUM(stock.reserve))');
+
+        $qb->from(ProductStockTotal::class, 'stock');
+
+        $qb->andWhere('stock.profile = :profile');
+        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+        $qb->andWhere('stock.product = :product');
+        $qb->setParameter('product', $product, ProductUid::TYPE);
+
+        if ($offer)
+        {
+            $qb->andWhere('stock.offer = :offer');
+            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.offer IS NULL');
+        }
+
+        if ($variation)
+        {
+            $qb->andWhere('stock.variation = :variation');
+            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.variation IS NULL');
+        }
+
+        if ($modification)
+        {
+            $qb->andWhere('stock.modification = :modification');
+            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.modification IS NULL');
+        }
+
+        return $qb->fetchOne() ?: 0;
+    }
+
+    /**
+     * Метод возвращает весь резерв данной продукции на указанном складе
+     */
+    public function getProductProfileReserve(
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
+    ) : int
+    {
+
+        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $qb->select('SUM(stock.reserve)');
+
+        $qb->from(ProductStockTotal::class, 'stock');
+
+        $qb->andWhere('stock.profile = :profile');
+        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+        $qb->andWhere('stock.product = :product');
+        $qb->setParameter('product', $product, ProductUid::TYPE);
+
+        if ($offer)
+        {
+            $qb->andWhere('stock.offer = :offer');
+            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.offer IS NULL');
+        }
+
+        if ($variation)
+        {
+            $qb->andWhere('stock.variation = :variation');
+            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.variation IS NULL');
+        }
+
+        if ($modification)
+        {
+            $qb->andWhere('stock.modification = :modification');
+            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+        }
+        else
+        {
+            $qb->andWhere('stock.modification IS NULL');
+        }
+
+        return $qb->fetchOne() ?: 0;
+    }
+
+    /**
+     * Метод возвращает количество данной продукции на указанном складе без резерва
+     */
+    public function getProductProfileTotalNotReserve(
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
+    ) : int
+    {
+
+        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $qb->select('SUM(stock.total)');
 
         $qb->from(ProductStockTotal::class, 'stock');
 

@@ -212,7 +212,7 @@ final class SubReserveProductStocksTotalByOrderComplete
         //$ProductStockTotal->subTotal($product->getTotal());
         //$this->entityManager->flush();
 
-        $this->logger->info('Сняли резерв и уменьшили количество на складе при самовывозе',
+        $this->logger->info('Снимаем резерв и уменьшаем количество на складе при самовывозе',
             [
                 __FILE__.':'.__LINE__,
                 'profile' => (string) $profile,

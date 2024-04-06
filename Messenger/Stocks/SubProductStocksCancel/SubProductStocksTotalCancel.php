@@ -26,7 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksCancel;
 
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -38,8 +41,10 @@ final class SubProductStocksTotalCancel
     private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
+        DBALQueryBuilder $DBALQueryBuilder,
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger
@@ -47,6 +52,7 @@ final class SubProductStocksTotalCancel
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /**
@@ -56,6 +62,7 @@ final class SubProductStocksTotalCancel
     {
         $this->entityManager->clear();
 
+        /* Получаем одно место складирования с максимальным количеством продукции и резервом > 0 */
         $ProductStockTotal =  $this->productStockMinQuantity
             ->profile($message->getProfile())
             ->product($message->getProduct())
@@ -80,24 +87,36 @@ final class SubProductStocksTotalCancel
 
         }
 
-        if($ProductStockTotal->getReserve() <= 0)
+        /**
+         * Снимаем резерв на единицу продукции
+         */
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal->update(ProductStockTotal::class);
+        $dbal->set('reserve', 'reserve - 1');
+
+        $dbal
+            ->where('id = :identifier')
+            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE)
+        ;
+
+        $dbal->andWhere('reserve != 0');
+        $rows = $dbal->executeStatement();
+
+        if(empty($rows))
         {
-            $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирован',
+            $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
                     __FILE__.':'.__LINE__,
-                    'profile' => $message->getProfile()->getValue(),
-                    'product' => $message->getProduct()->getValue(),
-                    'offer' => $message->getOffer()?->getValue(),
-                    'variation' => $message->getVariation()?->getValue(),
-                    'modification' => $message->getModification()?->getValue()
+                    'identifier' => (string) $ProductStockTotal->getId()
                 ]);
 
-            throw new DomainException('Невозможно снять резерв с продукции, которая заранее не зарезервирована');
+            throw new DomainException('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована');
         }
 
-        $ProductStockTotal->subReserve(1);
 
-        $this->entityManager->flush();
+//        $ProductStockTotal->subReserve(1);
+//        $this->entityManager->flush();
 
         $this->logger->info(sprintf('%s : Сняли резерв на складе на единицу продукции при отмене', $ProductStockTotal->getStorage()) ,
             [

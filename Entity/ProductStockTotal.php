@@ -111,6 +111,13 @@ class ProductStockTotal extends EntityState
         $this->storage = $storage ?: null;
     }
 
+    /**
+     * Id
+     */
+    public function getId(): ProductStockTotalUid
+    {
+        return $this->id;
+    }
 
 
     /** Количество */

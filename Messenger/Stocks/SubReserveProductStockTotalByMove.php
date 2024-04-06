@@ -32,6 +32,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
@@ -48,13 +49,15 @@ final class SubReserveProductStockTotalByMove
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private ProductWarehouseTotalInterface $productWarehouseTotal;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        ProductWarehouseTotalInterface $productWarehouseTotal
     )
     {
         $this->productStocks = $productStocks;
@@ -64,10 +67,11 @@ final class SubReserveProductStockTotalByMove
 
         // Инициируем статусы складских остатков
         $collection->cases();
+        $this->productWarehouseTotal = $productWarehouseTotal;
     }
 
     /**
-     * Снимаем резерв со склада при статусе "ПЕРЕМЕЩЕНИЕ"
+     * Снимаем резерв и наличие со склада отгрузки при статусе "ПЕРЕМЕЩЕНИЕ"
      */
     public function __invoke(ProductStockMessage $message): void
     {
@@ -77,13 +81,15 @@ final class SubReserveProductStockTotalByMove
         }
 
         /** Получаем статус прошлого события заявки */
-        $ProductStockEventLast = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getLast());
+        $ProductStockEventLast = $this->entityManager
+            ->getRepository(ProductStockEvent::class)
+            ->find($message->getLast());
 
         // Если статус предыдущего события заявки не является Moving «Перемещение»
-        if(!$ProductStockEventLast || !$ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
+        if(!$ProductStockEventLast || false === $ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
         {
             $this->logger
-                ->notice('Не снимаем резерв на складе: Статус предыдущего события не Moving «Перемещение»',
+                ->notice('Не снимаем резерв и наличие на складе отгрузки: Статус предыдущего события не Moving «Перемещение»',
                     [
                         __FILE__.':'.__LINE__,
                         'ProductStockUid' => (string) $message->getId(),
@@ -94,20 +100,18 @@ final class SubReserveProductStockTotalByMove
             return;
         }
 
+
         /** Получаем статус активного события заявки */
         $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)->find($message->getEvent());
+            ->getRepository(ProductStockEvent::class)
+            ->find($message->getEvent());
 
-        if(!$ProductStockEvent)
-        {
-            return;
-        }
 
         // Если статус текущей заявки не является Warehouse «Отправили на склад»
-        if(!$ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
+        if(!$ProductStockEvent || false === $ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
         {
             $this->logger
-                ->notice('Не снимаем резерв и наличие на складе: Статус заявки не является Warehouse «Отправили на склад»',
+                ->notice('Не снимаем резерв и наличие на складе отгрузки: Статус заявки не является Warehouse «Отправили на склад»',
                     [__FILE__.':'.__LINE__, [
                         'ProductStock' => (string) $message->getId(),
                         'event' => (string) $message->getEvent(),
@@ -117,73 +121,115 @@ final class SubReserveProductStockTotalByMove
             return;
         }
 
+
         // Получаем всю продукцию в ордере которая перемещается со склада
         $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
+            $this->logger->warning('Заявка на перемещение не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            return;
+        }
+
+        /** Идентификатор профиля склада отгрузки (из прошлого события!) */
+        $UserProfileUid = $ProductStockEventLast->getProfile();
+
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+
+            /* общее количество данной продукции на указанном складе */
+            $ProductStockTotal = $this->productWarehouseTotal
+                ->getProductProfileTotalNotReserve(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                );
+
+            if($product->getTotal() > $ProductStockTotal)
             {
-                $ProductStockTotal = $this->entityManager
-                    ->getRepository(ProductStockTotal::class)
-                    ->findOneBy(
-                        [
-                            'profile' => $ProductStockEventLast->getProfile(), // Склад, с которого переместилась продукция
-                            'product' => $product->getProduct(),
-                            'offer' => $product->getOffer(),
-                            'variation' => $product->getVariation(),
-                            'modification' => $product->getModification(),
-                        ]
-                    );
-
-                if(!$ProductStockTotal)
-                {
-                    $throw = sprintf(
-                        'Невозможно снять резерв с продукции, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                        $ProductStockEventLast->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification(),
-                    );
-
-                    throw new DomainException($throw);
-                }
-
-                /** Снимаем резерв и остаток продукции на складе */
-                for($i = 1; $i <= $product->getTotal(); $i++)
-                {
-                    $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
-                        $ProductStockEventLast->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification()
-                    );
-
-                    $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
-                }
-
-                //$ProductStockTotal->subReserve($product->getTotal());
-                //$ProductStockTotal->subTotal($product->getTotal());
-                //$this->entityManager->flush();
-
-
-                $this->logger->info('Сняли резерв и уменьшили количество на складе при перемещении продукции',
+                $this->logger->critical('Невозможно снять наличие продукции, которой недостаточно на складе',
                     [
                         __FILE__.':'.__LINE__,
-                        'number' => $ProductStockEvent->getNumber(),
+                        'number' => $ProductStockEventLast->getNumber(),
                         'event' => (string) $message->getEvent(),
-                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'profile' => (string) $UserProfileUid,
                         'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
                         'total' => $product->getTotal(),
-                    ]);
+                    ]
+                );
 
+                throw new DomainException('Невозможно снять резерв с продукции');
             }
+
+
+            /* весь резерв данной продукции на указанном складе */
+            $ProductStockReserve = $this->productWarehouseTotal
+                ->getProductProfileReserve(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                );
+
+            if($product->getTotal() > $ProductStockReserve)
+            {
+                $this->logger->critical('Невозможно снять резерв с продукции, которой недостаточно в резерве',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
+                        'event' => (string) $message->getEvent(),
+                        'profile' => (string) $UserProfileUid,
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification(),
+                        'total' => $product->getTotal(),
+                    ]
+                );
+
+                throw new DomainException('Невозможно снять резерв с продукции');
+            }
+
+            /** Снимаем резерв и остаток продукции на складе */
+            for($i = 1; $i <= $product->getTotal(); $i++)
+            {
+                $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                );
+
+                $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
+            }
+
+            //$ProductStockTotal->subReserve($product->getTotal());
+            //$ProductStockTotal->subTotal($product->getTotal());
+            //$this->entityManager->flush();
+
+            $this->logger->info('Снимаем резерв и наличие складе отгрузки при перемещении продукции',
+                [
+                    __FILE__.':'.__LINE__,
+                    'number' => $ProductStockEvent->getNumber(),
+                    'event' => (string) $message->getEvent(),
+                    'profile' => (string) $ProductStockEvent->getProfile(),
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
+                    'modification' => (string) $product->getModification(),
+                    'total' => $product->getTotal(),
+                ]);
+
         }
+
     }
 }

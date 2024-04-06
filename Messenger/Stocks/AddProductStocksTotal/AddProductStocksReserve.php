@@ -26,7 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal;
 
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -38,8 +41,10 @@ final class AddProductStocksReserve
     private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
+        DBALQueryBuilder $DBALQueryBuilder,
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger
@@ -48,6 +53,7 @@ final class AddProductStocksReserve
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /**
@@ -81,17 +87,49 @@ final class AddProductStocksReserve
 
         }
 
-        $ProductStockTotal->addReserve(1);
-        $this->entityManager->flush();
+
+        /**
+         * Добавляем в резерв единицу продукции
+         */
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal->update(ProductStockTotal::class);
+        $dbal->set('reserve', 'reserve + 1');
+
+        $dbal
+            ->where('id = :identifier')
+            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE)
+        ;
+
+        $dbal->andWhere('(total - reserve) > 0');
+        $rows = $dbal->executeStatement();
+
+        if(empty($rows))
+        {
+            $this->logger->critical('Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
+                [
+                    __FILE__.':'.__LINE__,
+                    'identifier' => (string) $ProductStockTotal->getId()
+                ]);
+
+            throw new DomainException('Невозможно добавить резерв на продукцию');
+        }
+
+
+        //$ProductStockTotal->addReserve(1);
+        //$this->entityManager->flush();
+
 
         $this->logger->info(sprintf('%s : Добавили резерв на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
+                'identifier' => (string) $ProductStockTotal->getId(),
                 'profile' => (string) $message->getProfile(),
                 'product' => (string) $message->getProduct(),
                 'offer' => (string) $message->getOffer(),
                 'variation' => (string) $message->getVariation(),
                 'modification' => (string) $message->getModification()
             ]);
+
     }
 }

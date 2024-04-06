@@ -295,8 +295,21 @@
                     {% set exist = 0 %}
                     {% set reserve = 0 %}
                     {% set access = 0 %}
+                    {% set name = null %}
 
                     {% for item in query.data %}
+
+                        {% if name != item.product_name %}
+                            {% set name = item.product_name %}
+                            <tr>
+                                <th colspan="8">
+                                    <span class="badge text-bg-primary">
+                                        {{  item.product_name }}
+                                    </span>
+
+                                    </th>
+                            </tr>
+                        {% endif %}
 
                         {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
 

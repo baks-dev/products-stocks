@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
@@ -34,8 +35,11 @@ use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterf
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManagerInterface;
+use DomainException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -48,9 +52,11 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private LoggerInterface $logger;
     private UserByUserProfileInterface $userByUserProfile;
     private ProductStocksTotalInterface $productStocksTotal;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
 
     public function __construct(
+        DBALQueryBuilder $DBALQueryBuilder,
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $ProductStockStatusCollection,
@@ -68,6 +74,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $this->logger = $productsStocksLogger;
 
         $this->productStocksTotal = $productStocksTotal;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
     /**
@@ -79,6 +86,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
+
+        $this->entityManager->clear();
 
 
         if(!$ProductStockEvent)
@@ -101,90 +110,133 @@ final class AddQuantityProductStocksTotalByIncomingStock
             return;
         }
 
+
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
-        if($products)
+
+        if(empty($products))
         {
-            $this->entityManager->clear();
+            $this->logger->warning('Заявка на приход не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            return;
+        }
 
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
+
+        /** Идентификатор профиля склада при поступлении */
+        $UserProfileUid = $ProductStockEvent->getProfile();
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+            /** Получаем место для хранения указанной продукции данного профиля */
+            $ProductStockTotal = $this->productStocksTotal
+                ->getProductStocksTotalByStorage(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification(),
+                    $product->getStorage()
+                );
+
+            if(!$ProductStockTotal)
             {
-                /** Получаем владельца профиля пользователя и место для хранения */
+                /* получаем пользователя профиля, для присвоения новому месту складирования */
+                $User = $this->userByUserProfile->findUserByProfile($UserProfileUid);
 
-                $ProductStockTotal = $this->productStocksTotal
-                    ->getProductStocksTotalByStorage(
-                        $ProductStockEvent->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification(),
-                        $product->getStorage()
-                    );
-
-                if(!$ProductStockTotal)
+                if(!$User)
                 {
-                    $User = $this->userByUserProfile->findUserByProfile($ProductStockEvent->getProfile());
-
-                    if(!$User)
-                    {
-                        $this->logger->error('Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
-                            [
-                                __FILE__.':'.__LINE__,
-                                'profile' => (string) $ProductStockEvent->getProfile(),
-                            ]
-                        );
-
-                        throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
-                    }
-
-                    $this->logger->info('Место складирования не найдено!',
+                    $this->logger->error('Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
                         [
                             __FILE__.':'.__LINE__,
-                            'number' => $ProductStockEvent->getNumber(),
-                            'profile' => (string) $ProductStockEvent->getProfile(),
-                            'product' => (string) $product->getProduct(),
-                            'offer' => (string) $product->getOffer(),
-                            'variation' => (string) $product->getVariation(),
-                            'modification' => (string) $product->getModification(),
-                            'storage' => $product->getStorage(),
+                            'profile' => (string) $UserProfileUid,
                         ]
                     );
 
-
-                    $ProductStockTotal = new ProductStockTotal(
-                        $User->getId(),
-                        $ProductStockEvent->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification(),
-                        $product->getStorage()
-                    );
-
-                    $this->entityManager->persist($ProductStockTotal);
+                    throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
                 }
 
-                $ProductStockTotal->addTotal($product->getTotal());
+                /* Создаем новое место складирования на указанный профиль и пользовтаеля  */
+                $ProductStockTotal = new ProductStockTotal(
+                    $User->getId(),
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification(),
+                    $product->getStorage()
+                );
 
-                $this->logger->info('Добавили приход продукции на склад',
+                $this->entityManager->persist($ProductStockTotal);
+                $this->entityManager->flush();
+
+                $this->logger->info('Место складирования не найдено! Создали новое место для указанной продукции',
                     [
                         __FILE__.':'.__LINE__,
-                        'number' => $ProductStockEvent->getNumber(),
-                        'event' => (string) $message->getEvent(),
-                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'storage' => $product->getStorage(),
+                        'profile' => (string) $UserProfileUid,
                         'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
-                        'storage' => $product->getStorage(),
-                        'total' => $product->getTotal(),
                     ]
                 );
             }
 
-            $this->entityManager->flush();
+
+            /**
+             * Добавляем приход на указанный профиль (склад)
+             */
+
+
+            $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+            $dbal->update(ProductStockTotal::class);
+
+            $dbal
+                ->set('total', 'total + :total')
+                ->setParameter('total', $product->getTotal(), ParameterType::INTEGER);
+
+            $dbal
+                ->where('id = :identifier')
+                ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE);
+
+            $rows = $dbal->executeStatement();
+
+            if(empty($rows))
+            {
+                $this->logger->critical('Ошибка при обновлении складских остатков.',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'identifier' => (string) $ProductStockTotal->getId()
+                    ]);
+
+                throw new DomainException('Ошибка при обновлении складских остатков.');
+            }
+
+
+            //                $ProductStockTotal->getId();
+            //                $product->getTotal();
+            //                $ProductStockTotal->addTotal($product->getTotal());
+
+
+            $this->logger->info('Добавили приход продукции на склад',
+                [
+                    __FILE__.':'.__LINE__,
+                    'number' => $ProductStockEvent->getNumber(),
+                    'event' => (string) $message->getEvent(),
+                    'profile' => (string) $UserProfileUid,
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
+                    'modification' => (string) $product->getModification(),
+                    'storage' => $product->getStorage(),
+                    'total' => $product->getTotal(),
+                ]
+            );
         }
+
+        //$this->entityManager->flush();
+
     }
 }

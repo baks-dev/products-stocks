@@ -106,7 +106,8 @@
                        data-bs-delay='{"show":600,"hide":100}'
                        title="Упаковка заказов"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-box-seam" viewBox="0 0 16 16">
                             <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
                         </svg>
                     </a>
@@ -129,7 +130,6 @@
                         </svg>
                     </a>
                 {% endif %}
-
 
             </div>
 
@@ -218,7 +218,7 @@
                         <div><small class="text-muted small">Статус Wildberries:</small>&nbsp;
                             <strong>{{ wb_order_status(filter.wildberries.vars.data.value) }}</strong>
                         </div>
-                    {% endif %}#}
+                    {% endif %} #}
 
             </div>
 
@@ -269,10 +269,10 @@
                         <small class="text-nowrap fw-normal">{{ item.mod_date|date('d.m.Y H:i') }}</small>
                     </div>
 
-                    {#<div class="text-dark text-nowrap">
+                    {# <div class="text-dark text-nowrap">
                         <div class="text-muted opacity-50">Склад:</div>
-                        #}{#{{ item.warehouse_name }}#}{#
-                    </div>#}
+                    #}{# {{ item.warehouse_name }} #}{#
+                    </div> #}
 
                     <div class="d-flex w-75 gap-3">
 
@@ -282,7 +282,7 @@
 
                             <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
                                class="fw-bolder mb- text-decoration-none text-dark">
-                                 {{ item.users_profile_username }}
+                                {{ item.users_profile_username }}
                             </a>
 
                             {% if item.comment is not null %}
@@ -312,13 +312,14 @@
 
                         {% if app.user.profile == item.user_profile_id and (is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN')) %}
 
-                            <a href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
-                               class="btn btn-primary modal-link disabled text-nowrap"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
-                               title="Принять на склад продукцию">
+                            <button
+                                    data-href="{{ path('products-stocks:admin.incoming.accept', { id : item.event }) }}"
+                                    class="btn btn-primary modal-link disabled text-nowrap"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+                                    title="Принять на склад продукцию">
                                 {{ 'Принять на склад'|trans({}, 'messages') }}
-                            </a>
+                            </button>
 
                         {% else %}
 

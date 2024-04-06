@@ -33,7 +33,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 interface ProductWarehouseTotalInterface
 {
     /**
-     * Метод возвращает количество данной продукции на указанном складе
+     * Метод возвращает доступное количество (с учетом резерва!!!) данной продукции на указанном складе
      */
     public function getProductProfileTotal(
         UserProfileUid $profile,
@@ -43,5 +43,27 @@ interface ProductWarehouseTotalInterface
         ?ProductModificationConst $modification
     ): int;
 
+
+    /**
+     * Метод возвращает весь резерв данной продукции на указанном складе
+     */
+    public function getProductProfileReserve(
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
+        ?ProductModificationConst $modification
+    ): int;
+
+    /**
+     * Метод возвращает общее количество (без резерва!!!) данной продукции на указанном складе
+     */
+    public function getProductProfileTotalNotReserve(
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
+    ) : int;
 
 }

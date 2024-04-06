@@ -11,10 +11,31 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
 
-            <div class="w-100">
+            <div class="w-100 d-flex align-items-center">
                 <h1 class="h4 text-uppercase fw-bolder mb-0">
                     {{ 'admin.page.orders'|trans }}
                 </h1>
+
+                {# Сумма транзакций #}
+
+                {% if query.data %}
+                    {% set total = 0 %}
+
+                    {% for item in query.data %}
+                        {# приход #}
+                        {% if app.user.profile == item.user_profile_id %}
+                            {% set total = total + item.total %}
+                        {% else %}
+                            {% set total = total - item.total %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <span class="badge badge text-bg-primary ms-3">
+                        Сумма транзакций: {{ total }}
+                    </span>
+                {% endif %}
+
+
             </div>
             <div class="w-100 d-flex align-items-center gap-3 justify-content-end">
 
@@ -230,18 +251,7 @@
                     <div>
 
 
-
                         {% if app.user.profile == item.user_profile_id %}
-
-
-                        <button
-                                class="btn btn-sm btn-light rounded-circle modal-link disabled add-basket"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal"
-                                title="Купить"
-                                aria-label="Купить"
-                                disabled="disabled"
-                        >
 
                             <button
                                     class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
@@ -250,7 +260,7 @@
                                     data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
                                     title="Приход на склад"
                             >
-                                <span class="badge text-bg-success me-3">Приход на склад</span> # {{ item.number }}
+                                <span class="badge text-bg-success me-3">Приход</span> # {{ item.number }}
                             </button>
 
                         {% else %}
@@ -266,10 +276,9 @@
 
                         {% endif %}
 
-
-                        <small class="text-nowrap fw-normal">
+                        <div class="text-nowrap fw-normal small">
                             {{ item.mod_date|date('d.m.Y H:i') }}
-                        </small>
+                        </div>
                     </div>
 
                     {# СКЛАД #}
@@ -283,10 +292,24 @@
                     <div class="d-flex w-75 gap-3">
 
                         <div class="ms-0">
-                            <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
-                               class="fw-bolder mb- text-decoration-none text-dark">
-                                {{ item.users_profile_username }}
-                            </a>
+
+                            {% if app.user.profile == item.user_profile_id %}
+
+                                <small>Склад: &nbsp;</small>
+                                <div
+                                        class="fw-bolder mb- text-decoration-none text-dark">
+                                    {{ item.users_profile_username }}
+                                </div>
+
+                            {% else %}
+
+                                <small>Склад назначения: &nbsp;</small>
+                                <div
+                                        class="fw-bolder mb- text-decoration-none text-dark">
+                                    {{ item.users_profile_username }}
+                                </div>
+
+                            {% endif %}
 
                             {% if item.comment is not null %}
 
@@ -327,15 +350,12 @@
                     {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
                     {% endfor %}
                     </tbody>
+
                 </table>
             </div>
         </div>
 
         {# < Контент #}
-
-
-
-
 
         {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 

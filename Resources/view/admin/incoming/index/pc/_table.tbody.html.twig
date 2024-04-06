@@ -18,6 +18,12 @@
 		</div>
 	</td> #}
 
+    <td class="ps-5">
+        <a href="{{ path('products-product:user.catalog.category', {
+            category: item.category_url
+        }) }}" class="text-decoration-none" target="_detail" >{{ item.category_name }}</a>
+    </td>
+
     <td class="ps-5 align-middle">
         <div class="d-flex">
 
@@ -93,18 +99,13 @@
     </td>
 
 
-    <td class="ps-5">
-        <a href="{{ path('products-product:user.catalog.category', {
-            category: item.category_url
-        }) }}" class="text-decoration-none" target="_detail" >{{ item.category_name }}</a>
-    </td>
+    {% if app.user.profile == item.user_profile_id %}
+        <td class="ps-5 text-center fw-bolder vertical-middle">
+            {{ item.storage }}
+        </td>
+    {% endif %}
 
-    <td class="ps-5 text-center fw-bolder vertical-middle">
+    <td class="ps-5 text-center fw-bolder vertical-middle {{ app.user.profile == item.user_profile_id ? 'text-success' : 'text-danger'  }}">
         {{ item.total }}
     </td>
-
-    <td class="ps-5 text-center fw-bolder vertical-middle">
-        {{ item.storage }}
-    </td>
-
 </tr>

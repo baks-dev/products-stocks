@@ -33,10 +33,14 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksTotal\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
+use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksHandler;
 use Doctrine\ORM\EntityManagerInterface;
+use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -49,6 +53,8 @@ final class AddReserveProductStocksTotalByPackage
     private LoggerInterface $logger;
     private CurrentProductStocksInterface $currentProductStocks;
     private MessageDispatchInterface $messageDispatch;
+    private ProductWarehouseTotalInterface $productWarehouseTotal;
+    private DeleteProductStocksHandler $deleteProductStocksHandler;
 
     public function __construct(
 
@@ -57,7 +63,9 @@ final class AddReserveProductStocksTotalByPackage
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $productsStocksLogger,
         CurrentProductStocksInterface $currentProductStocks,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        ProductWarehouseTotalInterface $productWarehouseTotal,
+        DeleteProductStocksHandler $deleteProductStocksHandler
     )
     {
         $this->productStocks = $productStocks;
@@ -70,6 +78,8 @@ final class AddReserveProductStocksTotalByPackage
         // Инициируем статусы складских остатков
         $ProductStockStatusCollection->cases();
 
+        $this->productWarehouseTotal = $productWarehouseTotal;
+        $this->deleteProductStocksHandler = $deleteProductStocksHandler;
     }
 
     /**
@@ -137,47 +147,39 @@ final class AddReserveProductStocksTotalByPackage
         }
 
 
+        /** Идентификатор профиля, куда была отправлена заявка на упаковку */
+        $UserProfileUid = $ProductStockEvent->getProfile();
+
+
         /** @var ProductStockProduct $product */
         foreach($products as $key => $product)
         {
-            $ProductStockTotal = $this->entityManager
-                ->getRepository(ProductStockTotal::class)
-                ->findOneBy(
-                    [
-                        'profile' => $ProductStockEvent->getProfile(),
-                        'product' => $product->getProduct(),
-                        'offer' => $product->getOffer(),
-                        'variation' => $product->getVariation(),
-                        'modification' => $product->getModification(),
-                    ]
+
+            /** Получаем общее количество на указанном профиле (складе) c учетом резерва */
+
+            $ProductStockTotal = $this->productWarehouseTotal
+                ->getProductProfileTotal(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
                 );
 
-            if($ProductStockTotal)
+
+            if(empty($ProductStockTotal) || $product->getTotal() > $ProductStockTotal)
             {
-                /**
-                 * Создаем резерв на единицу продукции
-                 */
-                for($i = 1; $i <= $product->getTotal(); $i++)
-                {
-                    $AddProductStocksReserve = new AddProductStocksReserveMessage(
-                        $ProductStockEvent->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification()
-                    );
+                // Удаляем заявку
+                $DeleteProductStocksDTO = new DeleteProductStocksDTO();
+                $ProductStockEvent->getDto($DeleteProductStocksDTO);
+                $this->deleteProductStocksHandler->handle($DeleteProductStocksDTO);
 
-                    $this->messageDispatch->dispatch($AddProductStocksReserve, transport: 'products-stocks');
-                }
-
-                //$ProductStockTotal->addReserve($product->getTotal());
-                //$this->entityManager->flush();
-
-                $this->logger->info('Добавили резерв продукции '.$key.' на складе при создании заявки на упаковку',
+                $this->logger->critical('Невозможно зарезервировать продукцию, которой нет на складе',
                     [
                         __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
-                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'profile' => (string) $UserProfileUid,
                         'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
@@ -185,7 +187,41 @@ final class AddReserveProductStocksTotalByPackage
                         'total' => $product->getTotal(),
                     ]
                 );
+
+                throw new DomainException('Невозможно зарезервировать продукцию, которой нет на складе');
             }
+
+
+            /**
+             * Создаем резерв на единицу продукции
+             */
+            for($i = 1; $i <= $product->getTotal(); $i++)
+            {
+                $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                );
+
+                $this->messageDispatch->dispatch($AddProductStocksReserve, transport: 'products-stocks');
+            }
+
+
+            $this->logger->info('Добавляем резерв продукции на складе при создании заявки на упаковку',
+                [
+                    __FILE__.':'.__LINE__,
+                    'event' => (string) $message->getEvent(),
+                    'profile' => (string) $UserProfileUid,
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
+                    'modification' => (string) $product->getModification(),
+                    'total' => $product->getTotal(),
+                ]
+            );
+
         }
 
 

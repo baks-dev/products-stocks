@@ -219,7 +219,7 @@ class ProductStocksVerify extends Command
 
         foreach($dbal->fetchAllAssociative() as $item)
         {
-            $total = $this->productWarehouseTotal->getProductProfileTotal(
+            $total = $this->productWarehouseTotal->getProductProfileTotalNotReserve(
                 $UserProfileUid,
                 new ProductUid($item['product']),
                 new ProductOfferConst($item['offer']),
@@ -238,6 +238,18 @@ class ProductStocksVerify extends Command
                     .' '.$item['product_variation_value']
                     .'/'.$item['product_modification_value']
                     .' : '.$sum.' != '.$total;
+
+                if($sum > $total)
+                {
+                    $error .= ' ( остаток указан меньше на '.($sum - $total).', проверить приход! )';
+                }
+
+                elseif($sum < $total)
+                {
+                    $error .= ' ( отсутствует ТРАНЗАКЦИЯ на '.($total - $sum).' единиц )';
+                }
+
+                $error .= ' '.$item['modification'];
 
                 if(!$item['sum_incoming'])
                 {
@@ -261,8 +273,12 @@ class ProductStocksVerify extends Command
             }
         }
 
-        $error .= $error;
-        $io->error($error);
+        if(!empty($error))
+        {
+            $io->error($error);
+        }
+
+
 
         return Command::SUCCESS;
     }

@@ -173,7 +173,6 @@ final class SubReserveProductStocksTotalByOrderDelivery
             throw new DomainException($throw);
         }
 
-
         /** Снимаем резерв и остаток продукции на складе */
         for($i = 1; $i <= $product->getTotal(); $i++)
         {
@@ -192,7 +191,7 @@ final class SubReserveProductStocksTotalByOrderDelivery
         //$ProductStockTotal->subTotal($product->getTotal());
         //$this->entityManager->flush();
 
-        $this->logger->info('Сняли резерв и уменьшили количество на складе при «Доставка (погружен в транспорт)»',
+        $this->logger->info('Снимаем резерв и уменьшили количество на складе при «Доставка (погружен в транспорт)»',
             [
                 __FILE__.':'.__LINE__,
                 'profile' => (string) $profile,

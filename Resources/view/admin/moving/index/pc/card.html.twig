@@ -202,17 +202,16 @@
 
             <div>
 
-
                 {% if app.user.profile == item.user_profile_id and item.is_warehouse is not null and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
 
-                    <a href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
+                    <button data-href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
                        class="btn btn-primary modal-link disabled text-nowrap"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Отправить на склад"
                     >
                         {{ 'Отправить на склад'|trans({}, 'messages') }}
-                    </a>
+                    </button>
 
                 {% else %}
 

@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksCancel\SubProductStocksTotalCancelMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
@@ -50,13 +51,15 @@ final class SubReserveProductStockTotalByCancel
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private ProductWarehouseTotalInterface $productWarehouseTotal;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        ProductWarehouseTotalInterface $productWarehouseTotal,
     )
     {
         $this->productStocks = $productStocks;
@@ -66,6 +69,7 @@ final class SubReserveProductStockTotalByCancel
 
         // Инициируем статусы складских остатков
         $collection->cases();
+        $this->productWarehouseTotal = $productWarehouseTotal;
     }
 
     /**
@@ -99,64 +103,76 @@ final class SubReserveProductStockTotalByCancel
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $this->productStocks->getProductsCancelStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
+            $this->logger->warning('Заявка на отмену не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            return;
+        }
+
+
+        /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
+        $UserProfileUid = $ProductStockEvent->getProfile();
+
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+            /* весь резерв данной продукции на указанном складе */
+            $ProductStockReserve = $this->productWarehouseTotal->getProductProfileReserve(
+                $UserProfileUid,
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation(),
+                $product->getModification()
+            );
+
+
+            if($product->getTotal() > $ProductStockReserve)
             {
-                $ProductStockTotal = $this->entityManager
-                    ->getRepository(ProductStockTotal::class)
-                    ->findOneBy(
-                        [
-                            'profile' => $ProductStockEvent->getProfile(), // Склад, с которого перемещается
-                            'product' => $product->getProduct(),
-                            'offer' => $product->getOffer(),
-                            'variation' => $product->getVariation(),
-                            'modification' => $product->getModification(),
-                        ]
-                    );
-
-                if(!$ProductStockTotal)
-                {
-                    $throw = sprintf(
-                        'Невозможно снять резерв с продукции, которой нет на складе (profile: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                        $ProductStockEvent->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification(),
-                    );
-
-                    throw new DomainException($throw);
-                }
-
-                /** Снимаем ТОЛЬКО резерв продукции на складе */
-                for($i = 1; $i <= $product->getTotal(); $i++)
-                {
-                    $SubProductStocksTotalCancelMessage = new SubProductStocksTotalCancelMessage(
-                        $ProductStockEvent->getProfile(),
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification()
-                    );
-
-                    $this->messageDispatch->dispatch($SubProductStocksTotalCancelMessage, transport: 'products-stocks');
-                }
-
-                $this->logger->info('Отменили резерв на складе при при отмене заявки',
+                $this->logger->critical('Невозможно снять резерв с продукции, которой недостаточно в резерве',
                     [
                         __FILE__.':'.__LINE__,
                         'number' => $ProductStockEvent->getNumber(),
                         'event' => (string) $message->getEvent(),
-                        'profile' => (string) $ProductStockEvent->getProfile(),
+                        'profile' => (string) $UserProfileUid,
                         'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
                         'total' => $product->getTotal(),
-                    ]);
+                    ]
+                );
+
+                throw new DomainException('Невозможно снять резерв с продукции');
             }
+
+            /** Снимаем ТОЛЬКО резерв продукции на складе */
+            for($i = 1; $i <= $product->getTotal(); $i++)
+            {
+                $SubProductStocksTotalCancelMessage = new SubProductStocksTotalCancelMessage(
+                    $UserProfileUid,
+                    $product->getProduct(),
+                    $product->getOffer(),
+                    $product->getVariation(),
+                    $product->getModification()
+                );
+
+                $this->messageDispatch->dispatch($SubProductStocksTotalCancelMessage, transport: 'products-stocks');
+            }
+
+            $this->logger->info('Отменяем резерв на складе при при отмене заявки',
+                [
+                    __FILE__.':'.__LINE__,
+                    'number' => $ProductStockEvent->getNumber(),
+                    'event' => (string) $message->getEvent(),
+                    'profile' => (string) $UserProfileUid,
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
+                    'modification' => (string) $product->getModification(),
+                    'total' => $product->getTotal(),
+                ]);
         }
+
     }
 }

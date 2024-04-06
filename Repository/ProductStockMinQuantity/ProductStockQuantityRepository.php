@@ -171,7 +171,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
 
     /**
-     * Метод возвращает место складирования продукции с минимальным количеством в наличии без учета резерва
+     * Метод возвращает место складирования продукции с максимальным количеством в наличии и резервом > 0
      */
     public function findOneByReserveMax(): ?ProductStockTotal
     {
