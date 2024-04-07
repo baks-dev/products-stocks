@@ -167,7 +167,7 @@
                     <div class="d-flex justify-content-end align-items-center my-1 gap-3">
 
                         {% if filter.all is defined %}
-                            <div >
+                            <div>
 
                                 <div class="d-flex justify-content-around radio-buttons clearfix"
                                      data-buttons="true" style='clear: both'>
@@ -175,13 +175,13 @@
                                         <div class="d-flex align-items-center">
                                             <div class="flex-grow-1">
 
-                                                    <div class="d-flex align-items-center">
-                                                        {{ form_widget(filter.all, { label: false }) }}
-                                                        <div class="form-check ps-0">
-                                                            {# Продукт активный #}
-                                                            {{ 'Все'|trans }}
-                                                        </div>
+                                                <div class="d-flex align-items-center">
+                                                    {{ form_widget(filter.all, { label: false }) }}
+                                                    <div class="form-check ps-0">
+                                                        {# Продукт активный #}
+                                                        {{ 'Все'|trans }}
                                                     </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </label>
@@ -295,23 +295,52 @@
                     {% set exist = 0 %}
                     {% set reserve = 0 %}
                     {% set access = 0 %}
+
+
+
                     {% set name = null %}
+                    {% set product_exist = 0 %}
+                    {% set product_reserve = 0 %}
+
 
                     {% for item in query.data %}
 
                         {% if name != item.product_name %}
+
+                            {% if name is not null %}
+                                {# Остатки указанной продукции #}
+                                {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
+
+                                {% set product_exist = 0 %}
+                                {% set product_reserve = 0 %}
+
+                            {% endif %}
+
+
+
                             {% set name = item.product_name %}
+
                             <tr>
                                 <th colspan="8">
                                     <span class="badge text-bg-primary">
-                                        {{  item.product_name }}
+                                        {{ item.product_name }}
                                     </span>
 
-                                    </th>
+                                </th>
                             </tr>
                         {% endif %}
 
+
+
+
                         {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+
+
+
+                        {% set product_exist = product_exist + item.stock_total %}
+                        {% set product_reserve = product_reserve + item.stock_reserve %}
+
+
 
                         {% set exist = exist + item.stock_total %}
                         {% set reserve = reserve + item.stock_reserve %}
@@ -319,33 +348,15 @@
                     {% endfor %}
 
 
+
+                    {# Остатки указанной продукции #}
+                    {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
+
+                    {% set product_exist = 0 %}
+                    {% set product_reserve = 0 %}
+
                     </tbody>
 
-                    <tfoot>
-                    <tr>
-                        <td colspan="4"></td>
-                        <td class="text-center text-primary fw-bolder">{{ exist }}</td>
-                        <td></td>
-
-                        <td class="text-center text-primary fw-bolder">{{ reserve ?: '-' }}</td>
-                        <td class="text-center text-primary fw-bolder">
-
-                            {% if exist >= reserve %}
-                                {{ (exist - reserve) ?: '-' }}
-                            {% else %}
-                                0 <span
-                                    class="pointer badge text-bg-danger text-white"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom"
-                                    data-bs-delay='{"show":600,"hide":100}'
-                                    title='Ожидается поступление'
-                            > + {{ exist - reserve }}
-                            </span>
-                            {% endif %}
-
-                        </td>
-                    </tr>
-                    </tfoot>
                 </table>
 
             {% else %}

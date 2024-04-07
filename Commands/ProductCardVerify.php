@@ -7,7 +7,7 @@ namespace BaksDev\Products\Stocks\Commands;
 
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Products\Product\Entity\Event\ProductEvent;
+use BaksDev\Elastic\BaksDevElasticBundle;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Quantity\ProductOfferQuantity;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
@@ -21,17 +21,10 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
-use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
-use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -187,8 +180,8 @@ class ProductCardVerify extends Command
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].' '.
-                        $product['product_modification_value'].' '.
-                        $product['product_modification_quantity'].' != '.$total;
+                        $product['product_modification_value'].': '.
+                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
 
                     $errorTotal .= PHP_EOL;
 
@@ -202,8 +195,8 @@ class ProductCardVerify extends Command
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].' '.
-                        $product['product_modification_value'].' '.
-                        $product['product_modification_reserve'].' != '.$reserve;
+                        $product['product_modification_value'].': '.
+                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
 
                     $errorReserve .= PHP_EOL;
                 }
@@ -217,8 +210,8 @@ class ProductCardVerify extends Command
                     $errorTotal .=
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
-                        $product['product_variation_value'].' '.
-                        $product['product_modification_quantity'].' != '.$total;
+                        $product['product_variation_value'].': '.
+                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
 
                     $errorTotal .= PHP_EOL;
                 }
@@ -228,8 +221,8 @@ class ProductCardVerify extends Command
                     $errorReserve .=
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
-                        $product['product_variation_value'].' '.
-                        $product['product_modification_reserve'].' != '.$reserve;
+                        $product['product_variation_value'].': '.
+                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
 
                     $errorReserve .= PHP_EOL;
                 }
@@ -243,8 +236,8 @@ class ProductCardVerify extends Command
                 {
                     $errorTotal .=
                         $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_modification_quantity'].' != '.$total;
+                        $product['product_offer_value'].': '.
+                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
 
                     $errorTotal .= PHP_EOL;
                 }
@@ -253,13 +246,11 @@ class ProductCardVerify extends Command
                 {
                     $errorReserve .=
                         $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_modification_reserve'].' != '.$reserve;
+                        $product['product_offer_value'].': '.
+                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
 
                     $errorReserve .= PHP_EOL;
                 }
-
-
             }
 
             else
@@ -267,8 +258,8 @@ class ProductCardVerify extends Command
                 if($product['product_quantity'] !== $total)
                 {
                     $errorTotal .=
-                        $product['product_name'].' '.
-                        $product['product_modification_quantity'].' != '.$total;
+                        $product['product_name'].': '.
+                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
 
                     $errorTotal .= PHP_EOL;
                 }
@@ -276,8 +267,8 @@ class ProductCardVerify extends Command
                 if($product['product_reserve'] !== $reserve)
                 {
                     $errorReserve .=
-                        $product['product_name'].' '.
-                        $product['product_modification_reserve'].' != '.$reserve;
+                        $product['product_name'].': '.
+                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
 
                     $errorReserve .= PHP_EOL;
                 }
@@ -287,14 +278,19 @@ class ProductCardVerify extends Command
 
         if($errorTotal)
         {
-            $io->success('Количественный учет');
+            $io->note('Различие наличие');
             $io->error($errorTotal);
         }
 
         if($errorReserve)
         {
-            $io->success('Резерв');
+            $io->note('Различие резервов');
             $io->error($errorReserve);
+        }
+
+        if(class_exists(BaksDevElasticBundle::class))
+        {
+            $io->warning('После изменений переиндексируйте ELASTIC SEARCH : sudo php bin/console baks:elastic:index');
         }
 
         return Command::SUCCESS;

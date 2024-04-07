@@ -242,16 +242,18 @@ class ProductStocksVerify extends Command
 
                 if($sum > $total)
                 {
-                    $warning .= PHP_EOL.$name.PHP_EOL;
+                    $warning .= PHP_EOL;
+                    $warning .= $name.PHP_EOL;
                     $warning .= $item['modification'].PHP_EOL;
-                    $warning .= 'остаток указан меньше! сумма транзакций БОЛЬШЕ на '.($sum - $total).'. шт.'.PHP_EOL;
+                    $warning .= 'остаток указан меньше! сумма транзакций БОЛЬШЕ на '.($sum - $total).'. шт. (ожидается остаток '.$sum.')'.PHP_EOL;
                 }
 
-                if($sum < $total)
+                if($total > $sum )
                 {
-                    $error .= PHP_EOL.$name.PHP_EOL;
+                    $error .= PHP_EOL;
+                    $error .= $name.PHP_EOL;
                     $error .= $item['modification'].PHP_EOL;
-                    $error .= 'отсутствует ТРАНЗАКЦИЯ! Остаток БОЛЬШЕ на '.($total - $sum).' шт.'.PHP_EOL;
+                    $error .= 'отсутствует ТРАНЗАКЦИЯ! Остаток БОЛЬШЕ на '.($total - $sum).' шт. (ожидается остаток '.$sum.')'.PHP_EOL;
                 }
 
                 if(!$item['sum_incoming'])
