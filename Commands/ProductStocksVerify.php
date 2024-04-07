@@ -216,6 +216,7 @@ class ProductStocksVerify extends Command
         $dbal->orderBy('sum_incoming', 'DESC');
 
         $error = '';
+        $warning = '';
 
         foreach($dbal->fetchAllAssociative() as $item)
         {
@@ -233,7 +234,7 @@ class ProductStocksVerify extends Command
 
             if($sum != $total && $item['modification'])
             {
-                $error .= $item['product_name']
+                $name = $item['product_name']
                     .' R'.$item['product_offer_value']
                     .' '.$item['product_variation_value']
                     .'/'.$item['product_modification_value']
@@ -241,18 +242,22 @@ class ProductStocksVerify extends Command
 
                 if($sum > $total)
                 {
-                    $error .= ' ( остаток указан меньше на '.($sum - $total).', проверить приход! )';
+                    $warning .= PHP_EOL.$name.PHP_EOL;
+                    $warning .= $item['modification'].PHP_EOL;
+                    $warning .= 'остаток указан меньше! сумма транзакций БОЛЬШЕ на '.($sum - $total).'. шт.'.PHP_EOL;
                 }
 
-                elseif($sum < $total)
+                if($sum < $total)
                 {
-                    $error .= ' ( отсутствует ТРАНЗАКЦИЯ на '.($total - $sum).' единиц )';
+                    $error .= PHP_EOL.$name.PHP_EOL;
+                    $error .= $item['modification'].PHP_EOL;
+                    $error .= 'отсутствует ТРАНЗАКЦИЯ! Остаток БОЛЬШЕ на '.($total - $sum).' шт.'.PHP_EOL;
                 }
-
-                $error .= ' '.$item['modification'];
 
                 if(!$item['sum_incoming'])
                 {
+                    $error .= PHP_EOL;
+                    $error .= $name;
                     $error .= ' Не найдено прихода! (Приход !0) ';
                 }
 
@@ -278,7 +283,15 @@ class ProductStocksVerify extends Command
             $io->error($error);
         }
 
+        if(!empty($warning))
+        {
+            $io->warning($warning);
+        }
 
+        if(!empty($error) || !empty($warning))
+        {
+            $io->note('Обязательно проверьте все приходы!');
+        }
 
         return Command::SUCCESS;
     }
