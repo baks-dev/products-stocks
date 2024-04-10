@@ -115,12 +115,15 @@
     <td class="text-center">
 
         {% if item.stock_reserve %}
+
+            {% set alert = item.stock_reserve > item.stock_total %}
+
             <span
-                    class="pointer {{ item.stock_reserve > item.stock_total ? 'badge text-bg-danger' }}"
+                    class="pointer {{ alert ? 'badge text-bg-danger' }}"
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-delay='{"show":600,"hide":100}'
-                    title='Резерв превышает наличие! Требуется перемещение либо приход.'
+                    title='{{ alert ? 'Резерв превышает наличие! Требуется перемещение либо приход.' }}'
             >
                 {{ item.stock_reserve }}
             </span>

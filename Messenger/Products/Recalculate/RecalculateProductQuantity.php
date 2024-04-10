@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products\Recalculate;
 
+use BaksDev\Core\Cache\AppCacheInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
@@ -34,7 +35,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler(priority: 1)]
+#[AsMessageHandler(priority: 0)]
 final class RecalculateProductQuantity
 {
     private EntityManagerInterface $entityManager;
@@ -44,6 +45,7 @@ final class RecalculateProductQuantity
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
     private ProductStocksTotalInterface $productStocksTotal;
+    private AppCacheInterface $cache;
 
     public function __construct(
         ProductModificationQuantityInterface $modificationQuantity,
@@ -53,7 +55,8 @@ final class RecalculateProductQuantity
         ProductStocksTotalInterface $productStocksTotal,
 
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        AppCacheInterface $cache
     ) {
 
         $this->modificationQuantity = $modificationQuantity;
@@ -64,6 +67,7 @@ final class RecalculateProductQuantity
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->productStocksTotal = $productStocksTotal;
+        $this->cache = $cache;
     }
 
     /**
@@ -143,5 +147,10 @@ final class RecalculateProductQuantity
                     'modification' => (string) $product->getModification(),
                 ]);
         }
+
+        /* Чистим кеш модуля продукции */
+        $cache = $this->cache->init('products-product');
+        $cache->clear();
+
     }
 }

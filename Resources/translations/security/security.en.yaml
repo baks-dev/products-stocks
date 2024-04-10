@@ -3,6 +3,11 @@ ROLE_PRODUCT_STOCK:
   name: 'Warehouse accounting'
   desc: 'Warehouse accounting of goods'
 
+# Роль
+ROLE_PRODUCT_STOCK_INDEX:
+  name: 'Просмотр'
+
+
 ROLE_PRODUCT_STOCK_EDIT:
   name: 'Edit balances'
   desc: 'Edit warehouse balances and reserve'

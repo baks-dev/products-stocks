@@ -330,23 +330,17 @@
                             </tr>
                         {% endif %}
 
-
-
-
                         {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
-
 
 
                         {% set product_exist = product_exist + item.stock_total %}
                         {% set product_reserve = product_reserve + item.stock_reserve %}
 
 
-
                         {% set exist = exist + item.stock_total %}
                         {% set reserve = reserve + item.stock_reserve %}
 
                     {% endfor %}
-
 
 
                     {# Остатки указанной продукции #}

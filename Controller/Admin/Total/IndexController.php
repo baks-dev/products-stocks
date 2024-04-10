@@ -38,7 +38,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCK')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_INDEX')]
 final class IndexController extends AbstractController
 {
     /**

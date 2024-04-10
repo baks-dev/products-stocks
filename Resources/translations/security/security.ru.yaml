@@ -4,6 +4,12 @@ ROLE_PRODUCT_STOCK:
   name: 'Складской учет'
   desc: 'Складской учет товаров'
 
+
+# Роль
+ROLE_PRODUCT_STOCK_INDEX:
+  name: 'Просмотр'
+
+
 ROLE_PRODUCT_STOCK_EDIT:
   name: 'Редактировать остатки'
   desc: 'Редактировать складские остатки и резерв'
