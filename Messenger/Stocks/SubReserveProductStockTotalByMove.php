@@ -30,6 +30,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksCancel\SubProductStocksTotalCancelMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
@@ -122,8 +123,12 @@ final class SubReserveProductStockTotalByMove
         }
 
 
-        // Получаем всю продукцию в ордере которая перемещается со склада
+        // decline
+
+
+        // Получаем всю продукцию в заявке которая перемещается со склада
         $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
+
 
         if(empty($products))
         {
@@ -148,6 +153,7 @@ final class SubReserveProductStockTotalByMove
                     $product->getVariation(),
                     $product->getModification()
                 );
+
 
             if($product->getTotal() > $ProductStockTotal)
             {
@@ -198,7 +204,7 @@ final class SubReserveProductStockTotalByMove
                 throw new DomainException('Невозможно снять резерв с продукции');
             }
 
-            /** Снимаем резерв и остаток продукции на складе */
+            /** Снимаем резерв и остаток продукции на складе отправленной продукции */
             for($i = 1; $i <= $product->getTotal(); $i++)
             {
                 $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
@@ -211,10 +217,6 @@ final class SubReserveProductStockTotalByMove
 
                 $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
             }
-
-            //$ProductStockTotal->subReserve($product->getTotal());
-            //$ProductStockTotal->subTotal($product->getTotal());
-            //$this->entityManager->flush();
 
             $this->logger->info('Снимаем резерв и наличие складе отгрузки при перемещении продукции',
                 [
@@ -229,7 +231,59 @@ final class SubReserveProductStockTotalByMove
                     'total' => $product->getTotal(),
                 ]);
 
-        }
 
+            /**
+             * Получаем количество в заявке, проверка на изменение
+             * Если в заявке указано больше, чем переместилось - снимаем разницу с резерва
+             */
+
+            /** @var ProductStockProduct $ProductStockLastTotal */
+            $ProductStockLastTotal = $this->entityManager
+                ->getRepository(ProductStockProduct::class)
+                ->findOneBy([
+                    'event' => $message->getLast(),
+                    'product' => $product->getProduct(),
+                    'offer' => $product->getOffer(),
+                    'variation' => $product->getVariation(),
+                    'modification' => $product->getModification()
+                ]);
+
+            if(!$ProductStockLastTotal)
+            {
+                $this->logger->critical('Не найдена продукция в заявке на перемещение',
+                    [
+                        __FILE__.':'.__LINE__,
+                        'number' => $ProductStockEventLast->getNumber(),
+                        'last_event' => (string) $message->getLast(),
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
+                        'modification' => (string) $product->getModification()
+                    ]
+                );
+
+                throw new DomainException('Не найдена продукция в заявке на перемещение');
+            }
+
+            /** Если в заявке указано больше, чем переместилось - снимаем разницу с резерва */
+            $totalDifference = ($ProductStockLastTotal->getTotal() - $product->getTotal());
+
+            if($totalDifference > 0)
+            {
+                /** Снимаем ТОЛЬКО резерв продукции на складе */
+                for($i = 1; $i <= $totalDifference; $i++)
+                {
+                    $SubProductStocksTotalCancelMessage = new SubProductStocksTotalCancelMessage(
+                        $UserProfileUid,
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification()
+                    );
+
+                    $this->messageDispatch->dispatch($SubProductStocksTotalCancelMessage, transport: 'products-stocks');
+                }
+            }
+        }
     }
 }

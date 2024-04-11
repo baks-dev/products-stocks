@@ -20,6 +20,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
@@ -98,6 +99,17 @@ final class WarehouseProductStockForm extends AbstractType
                     ]);
             }
         );
+
+        // Section Collection
+        $builder->add('product', CollectionType::class, [
+            'entry_type' => Products\ProductStockForm::class,
+            'entry_options' => ['label' => false],
+            'label' => false,
+            'by_reference' => false,
+            'allow_delete' => true,
+            'allow_add' => true,
+            'prototype_name' => '__product__',
+        ]);
 
         $builder->add('comment', TextareaType::class, ['required' => false]);
 

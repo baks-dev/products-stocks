@@ -68,12 +68,17 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\IsNull]
     private readonly ?UserProfileUid $fixed;
 
+    /** Коллекция продукции  */
+    #[Assert\Valid]
+    private ArrayCollection $product;
+
 
     public function __construct(User|UserUid $usr)
     {
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse());
         $this->fixed = null;
+        $this->product = new ArrayCollection();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -143,5 +148,22 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function getFixed(): ?UserProfileUid
     {
         return $this->fixed;
+    }
+
+
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
+    {
+        return $this->product;
+    }
+
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
+    }
+
+    public function addProduct(Products\ProductStockDTO $product): void
+    {
+        $this->product->add($product);
     }
 }

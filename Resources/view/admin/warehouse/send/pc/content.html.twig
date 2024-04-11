@@ -14,13 +14,89 @@
 
         <div class="modal-body">
 
+            <div class="d-flex justify-content-between align-items-center gap-3 text-uppercase text-muted opacity-50">
+                <div class="w-100">Продукция</div>
+                <div class="w-25 text-center">Количество</div>
+                {# {% if not order %} <div class="w-25 text-center">Место</div>{% endif %} #}
+            </div>
+
+
+            {% for product in form.product %}
+
+                {% set detail = product.vars.data.detail %}
+
+                {% if detail %}
+
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+
+                        <div class="w-100 d-flex align-items-center gap-3">
+
+                            {# Обложка #}
+                            {% set image_path = '/assets/img/blank.svg' %}
+
+                            {% if detail.product_image_ext is defined and detail.product_image_ext is not null %}
+                                {% set img_host = detail.product_image_cdn  == true  ? CDN_HOST : '' %}
+                                {% set img_dir = detail.product_image %}
+                                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ detail.product_image_ext %}
+                                {% set image_path = img_host ~ img_dir ~ img_file %}
+                            {% endif %}
+
+                            <div class="rounded-circle bg-contain lazy p-1" style="width: 50px; height: 50px;"
+                                 data-bg="{{ image_path }}">
+                            </div>
+
+                            <div>
+
+                                <strong>{{ detail.product_name }}</strong>
+
+                                <div class="text-muted small">
+
+                                    {% if detail.product_offer_value %}
+                                        {{ detail.product_offer_name }}:
+                                        <strong>{{ detail.product_offer_value|call_twig_func(detail.product_offer_reference) }}</strong>
+                                    {% endif %}
+
+                                    {% if detail.product_variation_value %}
+                                        &nbsp;  {{ detail.product_variation_name }}:
+                                        <strong>{{ detail.product_variation_value|call_twig_func(detail.product_variation_reference) }}</strong>
+                                    {% endif %}
+
+                                    {% if detail.product_modification_value %}
+                                        &nbsp;  {{ detail.product_modification_name }}:
+                                        <strong>{{ detail.product_modification_value|call_twig_func(detail.product_modification_reference) }}</strong>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ms-3 fw-bolder w-25 text-center h5">
+                            {{ form_widget(product.total, {
+                                attr: {
+                                    placeholder : 'Количество'
+                                }
+                            }) }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+            {% endfor %}
+
+            <div class="alert alert-warning mt-3" role="alert">
+                Указать перемещаемое количество можно не менее 1 и не более чем было в заявке. Если требуется
+                переместить большее - создайте новую заявку на перемещение.
+            </div>
+
+            <hr>
+
             {% if form.profile is defined %}
                 {{ form_row(form.profile, {
-                    label: 'Склад (профиль)', placeholder: 'Выберите склад для прихода из списка...', attr: { 'data-select' : 'select2' }
+                    label: 'Склад значения', placeholder: 'Выберите склад из списка...', attr: { 'data-select' : 'select2' }
                 }) }}
             {% endif %}
 
             {{ form_row(form.comment, { label: form.comment.vars.data ? 'Комментарий'|trans : false , attr: { placeholder : 'Комментарий' } }) }}
+
         </div>
 
 
