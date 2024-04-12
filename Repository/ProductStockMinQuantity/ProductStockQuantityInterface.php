@@ -50,6 +50,11 @@ interface ProductStockQuantityInterface
     public function findOneByTotalMin(): ?ProductStockTotal;
 
     /**
+     * Метод возвращает место складирования продукции с максимальным количеством в наличии без учета резерва
+     */
+    public function findOneByTotalMax(): ?ProductStockTotal;
+
+    /**
      * Метод возвращает место складирования продукции с максимальным количеством в наличии и резервом > 0
      */
     public function findOneByReserveMax(): ?ProductStockTotal;

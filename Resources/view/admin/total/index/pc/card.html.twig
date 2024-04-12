@@ -3,7 +3,12 @@
 
     <td class="text-nowrap">
         {# Пользовательское меню #}
-         {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
+        {% if app.user.profile == item.users_profile_id %}
+            {# Пользовательское меню #}
+            {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
+        {% else %}
+            &nbsp;
+        {% endif %}
     </td>
 
     <td class="text-center">

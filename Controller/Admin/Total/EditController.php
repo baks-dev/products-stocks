@@ -39,6 +39,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditHandler;
+use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -59,6 +60,11 @@ final class EditController extends AbstractController
     {
         $ProductStocksDTO = new ProductStockTotalEditDTO();
         $ProductStocksTotal->getDto($ProductStocksDTO);
+
+        if(!$ProductStocksDTO->getProfile()->equals($this->getProfileUid()))
+        {
+            throw new InvalidArgumentException('Invalid profile');
+        }
 
         // Форма
         $form = $this->createForm(ProductStockTotalEditForm::class, $ProductStocksDTO, [

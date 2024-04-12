@@ -31,6 +31,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockTotal */
@@ -40,6 +41,10 @@ final class ProductStockTotalEditDTO
     /** ID  */
     #[Assert\NotBlank]
     private readonly ProductStockTotalUid $id;
+
+    /** ID профиля (склад) */
+    #[Assert\NotBlank]
+    private readonly UserProfileUid $profile;
 
     /** ID продукта */
     private readonly ProductUid $product;
@@ -149,6 +154,14 @@ final class ProductStockTotalEditDTO
     public function getModification(): ?ProductModificationConst
     {
         return $this->modification;
+    }
+
+    /**
+     * Profile
+     */
+    public function getProfile(): UserProfileUid
+    {
+        return $this->profile;
     }
 
 }

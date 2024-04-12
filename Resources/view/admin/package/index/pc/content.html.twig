@@ -416,13 +416,9 @@
 
                         {% if item.status == 'error' %}
 
-                            <a href="{{ path('delivery-transport:admin.divide', { id : item.event }) }}"
-                               class="btn btn-danger modal-link disabled text-nowrap mb-3"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
-                               title="Разделить заказ эффективно распределив по транспорту">
-                                Разделить заявку на заказы
-                            </a>
+                            <button class="btn btn-danger disabled text-nowrap mb-3" title="Ошибка заказа">
+                                Ошибка заказа
+                            </button>
 
                         {% else %}
 

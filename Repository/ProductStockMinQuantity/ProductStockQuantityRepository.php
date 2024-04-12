@@ -169,6 +169,23 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
         return $orm->getOneOrNullResult();
     }
 
+    /**
+     * Метод возвращает место складирования продукции с максимальным количеством в наличии без учета резерва
+     */
+    public function findOneByTotalMax(): ?ProductStockTotal
+    {
+
+        $orm = $this->builder();
+
+        $orm->orderBy('stock.total', 'DESC');
+
+        /* складские места только с наличием */
+        $orm->andWhere('stock.total > 0');
+
+        return $orm->getOneOrNullResult();
+    }
+
+
 
     /**
      * Метод возвращает место складирования продукции с максимальным количеством в наличии и резервом > 0

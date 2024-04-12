@@ -23,9 +23,11 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
+use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Incoming\Products\ProductStockDTO;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,12 +46,14 @@ final class IncomingController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
         IncomingProductStockHandler $IncomingProductStockHandler,
-        ProductsByProductStocksInterface $productDetail,
+        //ProductsByProductStocksInterface $productDetail,
+        ProductStockQuantityInterface $productStockQuantity
     ): Response {
 
         $IncomingProductStockDTO = new IncomingProductStockDTO(); // $this->getProfileUid()
         $ProductStockEvent->getDto($IncomingProductStockDTO);
         //$IncomingProductStockDTO->setComment(null); // обнуляем комментарий
+
 
         // Форма добавления
         $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
@@ -75,10 +79,30 @@ final class IncomingController extends AbstractController
             return $this->redirectToRoute('products-stocks:admin.warehouse.index');
         }
 
+
+        /** Рекомендуемое место складирвоания */
+
+        /** @var ProductStockDTO $ProductStockDTO */
+
+        $ProductStockDTO = $IncomingProductStockDTO->getProduct()->current();
+
+        $productStorage = $productStockQuantity
+            ->profile($IncomingProductStockDTO->getProfile())
+            ->product($ProductStockDTO->getProduct())
+            ->offerConst($ProductStockDTO->getOffer())
+            ->variationConst($ProductStockDTO->getVariation())
+            ->modificationConst($ProductStockDTO->getModification())
+            ->findOneByTotalMax()
+
+        ;
+
+
+
         return $this->render([
             'form' => $form->createView(),
             'name' => $ProductStockEvent->getNumber(),
-            'order' => $ProductStockEvent->getOrder() !== null
+            'order' => $ProductStockEvent->getOrder() !== null,
+            'recommender' => $productStorage
             //'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
         ]);
     }

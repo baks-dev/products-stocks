@@ -19,6 +19,16 @@
 
         <div class="modal-body">
 
+            {% if recommender %}
+                <div class="alert alert-light mb-3" role="alert">
+                    Рекомендуемое место складировния « <strong>{{ recommender.storage }}</strong> »
+                </div>
+            {% else %}
+                <div class="alert alert-warning mb-3" role="alert">
+                    Место складирвоания указанной продукции не найдено
+                </div>
+            {% endif %}
+
             <div class="d-flex justify-content-between align-items-center gap-3 text-uppercase text-muted opacity-50">
                 <div class="w-100">Продукция</div>
                 <div class="w-25 text-center">Количество</div>
@@ -89,8 +99,6 @@
 
                 {% endif %}
             {% endfor %}
-
-
 
 
             {#{% for product in products %}
