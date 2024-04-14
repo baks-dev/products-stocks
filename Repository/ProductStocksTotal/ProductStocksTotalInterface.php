@@ -40,6 +40,16 @@ interface ProductStocksTotalInterface
         ?ProductModificationConst $modification = null
     ): int;
 
+    /**
+     * Метод возвращает общее количество продукции на всех складах c учетом резерва
+     */
+    public function getProductStocksTotalByReserve(
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
+    ): int;
+
     /** Метод возвращает общее количество резерва на всех складах */
     public function getProductStocksReserve(
         ProductUid $product,

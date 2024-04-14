@@ -803,10 +803,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         $dbal->addOrderBy('products_move', 'ASC');
-        $dbal->addOrderBy('modify.mod_date', 'ASC');
+        $dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
         $dbal->addOrderBy('stock.id', 'ASC');
-
-
 
 
         return $this->paginator->fetchAllAssociative($dbal);

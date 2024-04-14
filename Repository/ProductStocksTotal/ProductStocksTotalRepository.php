@@ -157,6 +157,63 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
     }
 
 
+
+    /**
+     * Метод возвращает общее количество продукции на всех складах c учетом резерва
+     */
+    public function getProductStocksTotalByReserve(
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null
+    ): int
+    {
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal
+            ->select('(SUM(stock.total) - SUM(stock.reserve))')
+            ->from(ProductStockTotal::class, 'stock')
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $product, ProductUid::TYPE);
+
+        if($offer)
+        {
+            $dbal
+                ->andWhere('stock.offer = :offer')
+                ->setParameter('offer', $offer, ProductOfferConst::TYPE);
+        }
+        else
+        {
+            $dbal->andWhere('stock.offer IS NULL');
+        }
+
+        if($variation)
+        {
+            $dbal
+                ->andWhere('stock.variation = :variation')
+                ->setParameter('variation', $variation, ProductVariationConst::TYPE);
+        }
+        else
+        {
+            $dbal->andWhere('stock.variation IS NULL');
+        }
+
+        if($modification)
+        {
+            $dbal
+                ->andWhere('stock.modification = :modification')
+                ->setParameter('modification', $modification, ProductModificationConst::TYPE);
+        }
+        else
+        {
+            $dbal->andWhere('stock.modification IS NULL');
+        }
+
+        return $dbal->fetchOne() ?: 0;
+    }
+
+
+
     public function getProductStocksTotalByStorage(
         UserProfileUid $profile,
         ProductUid $product,

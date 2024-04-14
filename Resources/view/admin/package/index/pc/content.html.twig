@@ -156,7 +156,7 @@
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
                 <div class="col-3">
-                     {{ form_start(filter) }}
+                    {{ form_start(filter) }}
 
                     <div class="w-100 d-flex gap-3 justify-content-end" style="height: 55px;">
 
@@ -259,7 +259,7 @@
                                 </span>
                                     {% endif %}
 
-                                    <span># {{ item.number }}</span>
+                                    <span class="text-nowrap"># {{ item.number }}</span>
                                 </a>
 
                                 <div class="fw-normal text-nowrap">
@@ -327,21 +327,30 @@
                                     </div>
                                 {% else %}
 
-                                    {% if item.delivery_date|date('YmdH') < date('now')|date('YmdH') %}
+
+
+
+                                    {% if item.delivery_date|date('Ymd') < date('now')|date('Ymd') %}
 
                                         <span class="badge text-bg-danger">Опоздание:</span>
                                         &nbsp;
                                         <strong class="text-danger pointer">
-                                            {{ item.delivery_date|date('d.m.Y') }}
+                                            {{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
                                         </strong>
 
                                     {% else %}
 
                                         <span class="text-muted opacity-50">Дата выдачи:</span> &nbsp;
-                                        <strong>{{ item.delivery_date|date('d.m.Y') }}</strong>
+
+                                        {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                            <strong class="text-success">Сегодня
+                                                ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+                                                )</strong>
+                                        {% else %}
+                                            <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                        {% endif %}
 
                                     {% endif %}
-
 
 
                                 {% endif %}
