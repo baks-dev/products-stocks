@@ -39,6 +39,8 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusInc
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Error\ErrorProductStocksDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Error\ErrorProductStocksHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
 use Psr\Log\LoggerInterface;
@@ -54,7 +56,7 @@ final class AddReserveProductStocksTotalByPackage
     private CurrentProductStocksInterface $currentProductStocks;
     private MessageDispatchInterface $messageDispatch;
     private ProductWarehouseTotalInterface $productWarehouseTotal;
-    private DeleteProductStocksHandler $deleteProductStocksHandler;
+    private ErrorProductStocksHandler $errorProductStocksHandler;
 
     public function __construct(
 
@@ -65,7 +67,7 @@ final class AddReserveProductStocksTotalByPackage
         CurrentProductStocksInterface $currentProductStocks,
         MessageDispatchInterface $messageDispatch,
         ProductWarehouseTotalInterface $productWarehouseTotal,
-        DeleteProductStocksHandler $deleteProductStocksHandler
+        ErrorProductStocksHandler $errorProductStocksHandler
     )
     {
         $this->productStocks = $productStocks;
@@ -79,7 +81,8 @@ final class AddReserveProductStocksTotalByPackage
         $ProductStockStatusCollection->cases();
 
         $this->productWarehouseTotal = $productWarehouseTotal;
-        $this->deleteProductStocksHandler = $deleteProductStocksHandler;
+
+        $this->errorProductStocksHandler = $errorProductStocksHandler;
     }
 
     /**
@@ -169,10 +172,10 @@ final class AddReserveProductStocksTotalByPackage
 
             if(empty($ProductStockTotal) || $product->getTotal() > $ProductStockTotal)
             {
-                // Удаляем заявку
-                $DeleteProductStocksDTO = new DeleteProductStocksDTO();
-                $ProductStockEvent->getDto($DeleteProductStocksDTO);
-                $this->deleteProductStocksHandler->handle($DeleteProductStocksDTO);
+                // Присваиваем ошибку заявке
+                $ErrorProductStocksDTO = new ErrorProductStocksDTO();
+                $ProductStockEvent->getDto($ErrorProductStocksDTO);
+                $this->errorProductStocksHandler->handle($ErrorProductStocksDTO);
 
                 $this->logger->critical('Невозможно зарезервировать продукцию, которой нет на складе',
                     [

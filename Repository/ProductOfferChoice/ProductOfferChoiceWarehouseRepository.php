@@ -102,14 +102,14 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
         // Тип торгового предложения
 
         $qb->join(
-            CategoryEntity\Offers\ProductCategoryOffers::class,
+            CategoryEntity\Offers\CategoryProductOffers::class,
             'category_offer',
             'WITH',
             'category_offer.id = offer.categoryOffer'
         );
 
         $qb->leftJoin(
-            CategoryEntity\Offers\Trans\ProductCategoryOffersTrans::class,
+            CategoryEntity\Offers\Trans\CategoryProductOffersTrans::class,
             'trans',
             'WITH',
             'trans.offer = category_offer.id AND trans.local = :local'

@@ -120,14 +120,14 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
         // Тип торгового предложения
 
         $qb->join(
-            CategoryEntity\Offers\Variation\Modification\ProductCategoryModification::class,
+            CategoryEntity\Offers\Variation\Modification\CategoryProductModification::class,
             'category_modification',
             'WITH',
             'category_modification.id = modification.categoryModification'
         );
 
         $qb->leftJoin(
-            CategoryEntity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans::class,
+            CategoryEntity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans::class,
             'trans',
             'WITH',
             'trans.modification = category_modification.id AND trans.local = :local'

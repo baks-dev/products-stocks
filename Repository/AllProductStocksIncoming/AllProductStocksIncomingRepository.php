@@ -28,12 +28,13 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksIncoming;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Category\Entity\Info\ProductCategoryInfo;
-use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
-use BaksDev\Products\Category\Entity\Trans\ProductCategoryTrans;
-use BaksDev\Products\Category\Type\Id\ProductCategoryUid;
+use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
@@ -247,7 +248,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('category_offer.reference as product_offer_reference')
             ->leftJoin(
                 'product_offer',
-                ProductCategoryOffers::class,
+                CategoryProductOffers::class,
                 'category_offer',
                 'category_offer.id = product_offer.category_offer'
             );
@@ -278,7 +279,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('category_offer_variation.reference as product_variation_reference')
             ->leftJoin(
                 'product_variation',
-                ProductCategoryVariation::class,
+                CategoryProductVariation::class,
                 'category_offer_variation',
                 'category_offer_variation.id = product_variation.category_variation'
             );
@@ -310,7 +311,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('category_offer_modification.reference as product_modification_reference')
             ->leftJoin(
                 'product_modification',
-                ProductCategoryModification::class,
+                CategoryProductModification::class,
                 'category_offer_modification',
                 'category_offer_modification.id = product_modification.category_modification'
             );
@@ -435,12 +436,12 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         if($this->filter?->getCategory())
         {
             $dbal->andWhere('product_event_category.category = :category');
-            $dbal->setParameter('category', $this->filter->getCategory(), ProductCategoryUid::TYPE);
+            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
         }
 
         $dbal->leftJoin(
             'product_event_category',
-            \BaksDev\Products\Category\Entity\ProductCategory::class,
+            CategoryProduct::class,
             'category',
             'category.id = product_event_category.category'
         );
@@ -449,7 +450,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('category_trans.name AS category_name')
             ->leftJoin(
                 'category',
-                ProductCategoryTrans::class,
+                CategoryProductTrans::class,
                 'category_trans',
                 'category_trans.event = category.event AND category_trans.local = :local'
             );
@@ -458,7 +459,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('category_info.url AS category_url')
             ->leftJoin(
                 'category',
-                ProductCategoryInfo::class,
+                CategoryProductInfo::class,
                 'category_info',
                 'category_info.event = category.event'
             );

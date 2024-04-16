@@ -37,13 +37,14 @@ use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\Field\OrderDeliveryField;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
-use BaksDev\Products\Category\Entity\Info\ProductCategoryInfo;
-use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
-use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
+use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
@@ -335,7 +336,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         $qb->leftJoin(
             'product_offer',
-            ProductCategoryOffers::TABLE,
+            CategoryProductOffers::TABLE,
             'category_offer',
             'category_offer.id = product_offer.category_offer'
         );
@@ -343,7 +344,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
         /* Название торгового предложения */
         $qb->leftJoin(
             'category_offer',
-            ProductCategoryOffersTrans::TABLE,
+            CategoryProductOffersTrans::TABLE,
             'category_offer_trans',
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
@@ -370,7 +371,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addSelect('category_variation.reference AS product_variation_reference')
             ->leftJoin(
                 'product_variation',
-                ProductCategoryVariation::TABLE,
+                CategoryProductVariation::TABLE,
                 'category_variation',
                 'category_variation.id = product_variation.category_variation'
             );
@@ -380,7 +381,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addSelect('category_variation_trans.name AS product_variation_name')
             ->leftJoin(
                 'category_variation',
-                ProductCategoryVariationTrans::TABLE,
+                CategoryProductVariationTrans::TABLE,
                 'category_variation_trans',
                 'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
             );
@@ -406,7 +407,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addSelect('category_modification.reference AS product_modification_reference')
             ->leftJoin(
                 'product_modification',
-                ProductCategoryModification::TABLE,
+                CategoryProductModification::TABLE,
                 'category_modification',
                 'category_modification.id = product_modification.category_modification'
             );
@@ -416,7 +417,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addSelect('category_modification_trans.name AS product_modification_name')
             ->leftJoin(
                 'category_modification',
-                ProductCategoryModificationTrans::TABLE,
+                CategoryProductModificationTrans::TABLE,
                 'category_modification_trans',
                 'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
             );
@@ -518,7 +519,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         $qb->join(
             'product_category',
-            \BaksDev\Products\Category\Entity\ProductCategory::TABLE,
+            CategoryProduct::TABLE,
             'category',
             'category.id = product_category.category'
         );
@@ -528,7 +529,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addSelect('category_info.url AS category_url')
             ->leftJoin(
                 'category',
-                ProductCategoryInfo::TABLE,
+                CategoryProductInfo::TABLE,
                 'category_info',
                 'category_info.event = category.event'
             );

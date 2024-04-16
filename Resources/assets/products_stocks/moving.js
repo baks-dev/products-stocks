@@ -857,7 +857,7 @@ function addProductMoving()
         {
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
-                '"message" : "Не указано количетсво для перемещения" }';
+                '"message" : "Не указано количество для перемещения" }';
         }
 
 

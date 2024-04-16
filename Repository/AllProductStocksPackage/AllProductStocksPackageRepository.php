@@ -40,13 +40,14 @@ use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 
-use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
-use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
-use BaksDev\Products\Category\Entity\Trans\ProductCategoryTrans;
+use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
+use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
@@ -430,7 +431,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer.reference as product_offer_reference')
             ->leftJoin(
                 'product_offer',
-                ProductCategoryOffers::class,
+                CategoryProductOffers::class,
                 'category_offer',
                 'category_offer.id = product_offer.category_offer'
             );
@@ -439,7 +440,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer_trans.name as product_offer_name')
             ->leftJoin(
                 'category_offer',
-                ProductCategoryOffersTrans::class,
+                CategoryProductOffersTrans::class,
                 'category_offer_trans',
                 'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
             );
@@ -464,7 +465,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer_variation.reference as product_variation_reference')
             ->leftJoin(
                 'product_offer_variation',
-                ProductCategoryVariation::class,
+                CategoryProductVariation::class,
                 'category_offer_variation',
                 'category_offer_variation.id = product_offer_variation.category_variation'
             );
@@ -473,7 +474,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer_variation_trans.name as product_variation_name')
             ->leftJoin(
                 'category_offer_variation',
-                ProductCategoryVariationTrans::class,
+                CategoryProductVariationTrans::class,
                 'category_offer_variation_trans',
                 'category_offer_variation_trans.variation = category_offer_variation.id AND category_offer_variation_trans.local = :local'
             );
@@ -498,7 +499,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer_modification.reference as product_modification_reference')
             ->leftJoin(
                 'product_offer_modification',
-                ProductCategoryModification::class,
+                CategoryProductModification::class,
                 'category_offer_modification',
                 'category_offer_modification.id = product_offer_modification.category_modification'
             );
@@ -507,7 +508,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('category_offer_modification_trans.name as product_modification_name')
             ->leftJoin(
                 'category_offer_modification',
-                ProductCategoryModificationTrans::class,
+                CategoryProductModificationTrans::class,
                 'category_offer_modification_trans',
                 'category_offer_modification_trans.modification = category_offer_modification.id AND category_offer_modification_trans.local = :local'
             );
@@ -629,7 +630,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal->leftJoin(
             'product_event_category',
-            \BaksDev\Products\Category\Entity\ProductCategory::class,
+            CategoryProduct::class,
             'category',
             'category.id = product_event_category.category'
         );
@@ -637,7 +638,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addSelect('category_trans.name AS category_name');
         $dbal->leftJoin(
             'category',
-            ProductCategoryTrans::class,
+            CategoryProductTrans::class,
             'category_trans',
             'category_trans.event = category.event AND category_trans.local = :local'
         );

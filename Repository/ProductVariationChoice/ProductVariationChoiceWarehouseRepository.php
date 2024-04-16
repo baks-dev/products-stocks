@@ -105,14 +105,14 @@ final class ProductVariationChoiceWarehouseRepository implements ProductVariatio
         // Тип торгового предложения
 
         $qb->join(
-            CategoryEntity\Offers\Variation\ProductCategoryVariation::class,
+            CategoryEntity\Offers\Variation\CategoryProductVariation::class,
             'category_variation',
             'WITH',
             'category_variation.id = variation.categoryVariation'
         );
 
         $qb->leftJoin(
-            CategoryEntity\Offers\Variation\Trans\ProductCategoryVariationTrans::class,
+            CategoryEntity\Offers\Variation\Trans\CategoryProductVariationTrans::class,
             'trans',
             'WITH',
             'trans.variation = category_variation.id AND trans.local = :local'

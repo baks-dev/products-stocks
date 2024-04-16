@@ -29,12 +29,12 @@ use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Delivery\Entity as DeliveryEntity;
 use BaksDev\Orders\Order\Entity as OrderEntity;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
-use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
@@ -169,7 +169,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         /** Тип торгового предложения */
         $qb->leftJoin(
             'product_offer',
-            ProductCategoryOffers::TABLE,
+            CategoryProductOffers::TABLE,
             'category_offer',
             'category_offer.id = product_offer.category_offer'
         );
@@ -177,7 +177,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         /** Название торгового предложения */
         $qb->leftJoin(
             'category_offer',
-            ProductCategoryOffersTrans::TABLE,
+            CategoryProductOffersTrans::TABLE,
             'category_offer_trans',
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
@@ -199,7 +199,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_variation',
-            ProductCategoryVariation::TABLE,
+            CategoryProductVariation::TABLE,
             'category_variation',
             'category_variation.id = product_variation.category_variation'
         );
@@ -207,7 +207,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         /* Получаем название множественного варианта */
         $qb->leftJoin(
             'category_variation',
-            ProductCategoryVariationTrans::TABLE,
+            CategoryProductVariationTrans::TABLE,
             'category_variation_trans',
             'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
         );
@@ -226,7 +226,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
 
         $qb->leftJoin(
             'product_modification',
-            ProductCategoryModification::TABLE,
+            CategoryProductModification::TABLE,
             'category_modification',
             'category_modification.id = product_modification.category_modification'
         );
@@ -234,7 +234,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         /* Получаем название типа модификации */
         $qb->leftJoin(
             'category_modification',
-            ProductCategoryModificationTrans::TABLE,
+            CategoryProductModificationTrans::TABLE,
             'category_modification_trans',
             'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
