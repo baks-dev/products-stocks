@@ -1,0 +1,5 @@
+
+{{ include(_self|replace({ "content.html.twig": "pc/content.html.twig" })) }}
+
+<script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
+
