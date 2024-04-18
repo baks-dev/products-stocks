@@ -538,7 +538,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
         /** Наличие и место на складе */
 
         $qb
-            ->addSelect('stock_total.storage AS stock_total_storage')
+            ->addSelect("STRING_AGG(stock_total.storage, ', ') AS stock_total_storage")
             ->leftJoin(
                 'product_modification',
                 ProductStockTotal::TABLE,
