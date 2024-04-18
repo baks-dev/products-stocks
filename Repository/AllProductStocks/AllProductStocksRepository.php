@@ -60,10 +60,15 @@ use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
 {
+
+    private ?int $limit = null;
+
     private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
 
     private ?ProductFilterDTO $filter = null;
+
     private ?SearchDTO $search = null;
 
     public function __construct(
@@ -89,6 +94,13 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         return $this;
     }
 
+    public function setLimit(int $limit): self
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+
     /**
      * Метод возвращает полное состояние складских остатков продукции
      */
@@ -108,7 +120,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('stock_product.storage AS stock_storage')
             ->addSelect('stock_product.reserve AS stock_reserve')
             ->addSelect('stock_product.profile AS users_profile_id')
-
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('stock_product.total != 0')
             ->andWhere('stock_product.reserve >= 0');
@@ -403,11 +414,11 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
         $dbal
             ->join(
-            'stock_product',
-            UserProfile::class,
-            'users_profile',
-            'users_profile.id = stock_product.profile'
-        );
+                'stock_product',
+                UserProfile::class,
+                'users_profile',
+                'users_profile.id = stock_product.profile'
+            );
 
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
@@ -421,7 +432,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
 
         // Поиск
-        if($this->search->getQuery())
+        if($this->search?->getQuery())
         {
             //            for ($i = 0; $i <= 2; $i++) {
             //
@@ -481,7 +492,14 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         $dbal->addOrderBy('stock_product.profile');
         $dbal->addOrderBy('stock_product.total');
 
-        return $this->paginator->fetchAllAssociative($dbal);
+        if($this->limit)
+        {
+            $this->paginator->setLimit($this->limit);
+        }
+
+        return $this
+            ->paginator
+            ->fetchAllAssociative($dbal);
 
     }
 }
