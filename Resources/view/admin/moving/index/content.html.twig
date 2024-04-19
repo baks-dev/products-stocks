@@ -1,15 +1,15 @@
 {% trans_default_domain('admin.product.stock') %}
 
-<div class="d-none d-print-block p-0" style="width: 850px">
+{# ПЕЧАТЬ  #}
 
-    {% set print = 1 %}
+<div style="max-width: 850px">
 
     {% for item in query.data|filter(v => v.user_profile_id == app.user.profile) %}
 
         <div class="d-flex align-items-center w-100">
 
-            <div data-qrcode="{{ item.id }}" class="w-25">
-                {#<img src='{{ qrcode(item.id) }}' alt='QR Code' class="w-100"/>#}
+            <div  class="w-25">
+                <img src='{{ qrcode(item.id) }}' alt='QR Code' class="w-100"/>
             </div>
 
             <div class="ms-3">
@@ -72,15 +72,12 @@
         </div>
 
 
-
-        {% if print is divisible by(5) %}
+        {% if loop.index is divisible by(5) %}
             {# Вставляем разрыв страницы #}
-            <div style="page-break-after: always;"></div>
+            <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
         {% else %}
             <hr>
         {% endif %}
-
-        {% set print = print + 1 %}
 
     {% else %}
         <div class="alert alert-warning m-3 w-100" role="alert">

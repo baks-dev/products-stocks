@@ -73,6 +73,13 @@ final class IndexController extends AbstractController
         $filterForm->handleRequest($request);
         !$filterForm->isSubmitted() ?: $this->redirectToReferer();
 
+        /** Если ajax (печать) - показываем только свой склад */
+        if($request->isXmlHttpRequest())
+        {
+            $filter->setAll(false);
+            $allProductStocks->setLimit(1000);
+        }
+
         $query = $allProductStocks
             ->search($search)
             ->filter($filter)

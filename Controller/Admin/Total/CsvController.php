@@ -58,10 +58,10 @@ final class CsvController extends AbstractController
          * Фильтр продукции по ТП
          */
         $filter = new ProductFilterDTO($request);
-        $filter->allVisible();
-
         $filterForm = $this->createForm(ProductFilterForm::class, $filter);
         $filterForm->handleRequest($request);
+
+        $filter->setAll(false);
 
         $query = $allProductStocks
             ->filter($filter)
