@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\MovingCancel;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Cancel;
 
 
 use BaksDev\Core\Entity\AbstractHandler;
@@ -32,11 +32,11 @@ use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use DomainException;
 
-final class MovingProductStockCancelHandler extends AbstractHandler
+final class CancelProductStockHandler extends AbstractHandler
 {
     /** @see ProductStock */
     public function handle(
-        MovingProductStockCancelDTO $command
+        CancelProductStockDTO $command
     ): string|ProductStock
     {
         /** Валидация DTO  */

@@ -30,18 +30,24 @@ use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCanceled;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
+use BaksDev\Orders\Order\UseCase\Admin\Canceled\OrderCanceledDTO;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Quantity\ProductModificationQuantity;
 use BaksDev\Products\Product\Entity\Offers\Variation\Quantity\ProductVariationQuantity;
 use BaksDev\Products\Product\Repository\CurrentQuantity\CurrentQuantityByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentQuantity\Modification\CurrentQuantityByModificationInterface;
 use BaksDev\Products\Product\Repository\CurrentQuantity\Offer\CurrentQuantityByOfferInterface;
 use BaksDev\Products\Product\Repository\CurrentQuantity\Variation\CurrentQuantityByVariationInterface;
+use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class CancelMoveByOrderCancel
+final class CancelProductStocksByOrderCancel
 {
 	private EntityManagerInterface $entityManager;
 	
@@ -52,8 +58,9 @@ final class CancelMoveByOrderCancel
 	private CurrentQuantityByOfferInterface $quantityByOffer;
 	
 	private CurrentQuantityByEventInterface $quantityByEvent;
-
     private LoggerInterface $logger;
+    private ProductStocksByOrderInterface $productStocksByOrder;
+    private CancelProductStockHandler $cancelProductStockHandler;
 
 
     public function __construct(
@@ -62,7 +69,13 @@ final class CancelMoveByOrderCancel
 		CurrentQuantityByVariationInterface $quantityByVariation,
 		CurrentQuantityByOfferInterface $quantityByOffer,
 		CurrentQuantityByEventInterface $quantityByEvent,
-        LoggerInterface $ordersOrderLogger
+        LoggerInterface $ordersOrderLogger,
+
+        ProductStocksByOrderInterface $productStocksByOrder,
+        CancelProductStockHandler $cancelProductStockHandler,
+
+
+
 	)
 	{
 		$this->entityManager = $entityManager;
@@ -73,24 +86,23 @@ final class CancelMoveByOrderCancel
 		$this->quantityByOffer = $quantityByOffer;
 		$this->quantityByEvent = $quantityByEvent;
         $this->logger = $ordersOrderLogger;
+        $this->productStocksByOrder = $productStocksByOrder;
+        $this->cancelProductStockHandler = $cancelProductStockHandler;
     }
 	
 	
-	/**
-     * Удаляет заявку на перемещения, если была отмена заказа
-     */
+	/** Снимаем резерв с продукции при отмене заказа  */
 	public function __invoke(OrderMessage $message) : void
 	{
-
 		/**
-		 * Текущее событие заказа
+		 * Событие заказа
 		 *
 		 * @var OrderEvent $OrderEvent
 		 */
 		$OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
 		
-		/** Если статус не "ОТМЕНА" - завершаем обработчик */
-		if(!$OrderEvent || false === $OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+		/** Если статус не Canceled «Отменен» - завершаем обработчик */
+		if(!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
 		{
 			return;
 		}
@@ -104,20 +116,35 @@ final class CancelMoveByOrderCancel
 			 */
 			$OrderEventLast = $this->entityManager->getRepository(OrderEvent::class)->find($message->getLast());
 			
-			/** Если статус предыдущего события "ВЫПОЛНЕН" - не снимаем резерв или наличие (просто удаляем)  */
+			/** Если статус предыдущего события Completed «Выполнен» - завершаем обработчик  */
 			if($OrderEventLast->getStatus()->equals(OrderStatusCompleted::class))
 			{
 				return;
 			}
 		}
 
-        $this->handle($message);
+
+        $OrderCanceledDTO = new OrderCanceledDTO(new UserProfileUid());
+        $OrderEvent->getDto($OrderCanceledDTO);
+
+
+        /** Получаем складскую заявку по заказу и делаем отмену */
+
+        $productStocks = $this->productStocksByOrder->findByOrder($OrderEvent->getMain());
+
+        if($productStocks)
+        {
+            /** @var ProductStockEvent $ProductStockEvent */
+            foreach($productStocks as $ProductStockEvent)
+            {
+                $CancelProductStockDTO = new CancelProductStockDTO();
+                $ProductStockEvent->getDto($CancelProductStockDTO);
+
+                $CancelProductStockDTO->setComment($OrderCanceledDTO->getComment());
+                $this->cancelProductStockHandler->handle($CancelProductStockDTO);
+            }
+        }
 
 	}
-	
-	private function handle(OrderMessage $message): void
-    {
-        return;
-    }
 
 }

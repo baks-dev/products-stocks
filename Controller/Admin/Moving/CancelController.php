@@ -26,9 +26,9 @@ use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\MovingCancel\MovingProductStockCancelDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\MovingCancel\MovingProductStockCancelForm;
-use BaksDev\Products\Stocks\UseCase\Admin\MovingCancel\MovingProductStockCancelHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockForm;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,14 +44,14 @@ final class CancelController extends AbstractController
     public function cancel(
         #[MapEntity] ProductStockEvent $Event,
         Request $request,
-        MovingProductStockCancelHandler $MovingProductStockCancelHandler,
+        CancelProductStockHandler $MovingProductStockCancelHandler,
     ): Response
     {
-        $MovingProductStockCancelDTO = new MovingProductStockCancelDTO();
+        $MovingProductStockCancelDTO = new CancelProductStockDTO();
         $Event->getDto($MovingProductStockCancelDTO);
 
         // Форма заявки
-        $form = $this->createForm(MovingProductStockCancelForm::class, $MovingProductStockCancelDTO, [
+        $form = $this->createForm(CancelProductStockForm::class, $MovingProductStockCancelDTO, [
             'action' => $this->generateUrl('products-stocks:admin.moving.cancel', ['id' => (string) $Event ]),
         ]);
 

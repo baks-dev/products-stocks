@@ -288,8 +288,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         $dbal
-            ->addSelect('total.total AS stock_total')
-            ->addSelect('total.storage AS stock_storage')
+            ->addSelect('SUM(total.total) AS stock_total')
+            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
             ->leftJoin(
                 'stock_product',
                 ProductStockTotal::class,
@@ -801,6 +801,9 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number');
         }
+
+        $dbal->addGroupBy('ord.ord');
+        $dbal->allGroupByExclude();
 
 
         $dbal->addOrderBy('products_move', 'ASC');

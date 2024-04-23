@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\MovingCancel;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Cancel;
 
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
@@ -33,7 +33,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockEvent */
-final class MovingProductStockCancelDTO implements ProductStockEventInterface
+final class CancelProductStockDTO implements ProductStockEventInterface
 {
     /**
      * Идентификатор события
@@ -46,7 +46,7 @@ final class MovingProductStockCancelDTO implements ProductStockEventInterface
     #[Assert\IsNull]
     private readonly ?UserProfileUid $fixed;
 
-    /** Статус заявки - Укомплектована для погрузки (выдачи) */
+    /** Статус заявки - Отмена «Отменено» */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 

@@ -111,8 +111,11 @@
     </td>
 
     <td class="ps-5 text-center fw-bolder vertical-middle text-muted">
-
         {{ item.stock_total ?: 'Нет в наличии' }}
+    </td>
+    <td class="ps-5 text-center fw-bolder vertical-middle text-muted">
+
+        {{ item.stock_total ? item.stock_storage : '-' }}
     </td>
 
 </tr>
