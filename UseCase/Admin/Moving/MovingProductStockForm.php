@@ -39,6 +39,7 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileCh
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -75,6 +76,7 @@ final class MovingProductStockForm extends AbstractType
     private UserUid $user;
 
     private TokenStorageInterface $tokenStorage;
+    private iterable $reference;
 
     public function __construct(
         UserProfileChoiceInterface $userProfileChoice,
@@ -84,6 +86,7 @@ final class MovingProductStockForm extends AbstractType
         ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
         ProductWarehouseChoiceInterface $productWarehouseChoice,
         TokenStorageInterface $tokenStorage,
+        #[TaggedIterator('baks.reference.choice')] iterable $reference,
 
     )
     {
@@ -96,6 +99,7 @@ final class MovingProductStockForm extends AbstractType
         $this->userProfileChoice = $userProfileChoice;
 
         $this->tokenStorage = $tokenStorage;
+        $this->reference = $reference;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -123,20 +127,17 @@ final class MovingProductStockForm extends AbstractType
         $this->user = $usr->getId();  //$builder->getData()->getUsr();
 
 
-
-
         /**
          * Подукция
          *
          * @var ProductUid $product
          */
-         $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
+        $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
 
 
         $productChoiceWarehouse = $this->productChoiceWarehouse->getProductsExistWarehouse($this->user);
 
-
-        if(!empty($productChoiceWarehouse))
+        if($productChoiceWarehouse->valid())
         {
             $builder->add(
                 'preProduct',
@@ -147,11 +148,28 @@ final class MovingProductStockForm extends AbstractType
                         return $product?->getValue();
                     },
                     'choice_label' => function(ProductUid $product) {
-                        return $product->getAttr().' ('.$product->getOption().')';
+                        return $product->getAttr();
                     },
                     'choice_attr' => function(?ProductUid $product) {
-                        return $product ? ['data-name' => $product->getAttr()] : [];
+
+                        if(!$product)
+                        {
+                            return [];
+                        }
+
+                        if($product->getAttr())
+                        {
+                            $attr['data-name'] = $product->getAttr();
+                        }
+
+                        if($product->getOption())
+                        {
+                            $attr['data-filter'] = '('.$product->getOption().')';
+                        }
+
+                        return $attr;
                     },
+
                     'label' => false,
                 ]
             );
@@ -238,6 +256,7 @@ final class MovingProductStockForm extends AbstractType
         $builder->get('preModification')->addEventListener(
             FormEvents::POST_SUBMIT,
             function(FormEvent $event): void {
+
                 $parent = $event->getForm()->getParent();
 
                 if(!$parent)
@@ -292,23 +311,22 @@ final class MovingProductStockForm extends AbstractType
         }
 
 
-
-//        /** @var ?UserProfileUid $currentWarehouse */
-//        $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
-//
-//        if($currentWarehouse)
-//        {
-//            $builder->addEventListener(
-//                FormEvents::PRE_SET_DATA,
-//                function(FormEvent $event) use ($currentWarehouse): void {
-//                    /** @var MovingProductStockDTO $data */
-//                    $data = $event->getData();
-//
-//                    $data->setTargetWarehouse($currentWarehouse);
-//                    $data->setDestinationWarehouse($currentWarehouse);
-//                },
-//            );
-//        }
+        //        /** @var ?UserProfileUid $currentWarehouse */
+        //        $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
+        //
+        //        if($currentWarehouse)
+        //        {
+        //            $builder->addEventListener(
+        //                FormEvents::PRE_SET_DATA,
+        //                function(FormEvent $event) use ($currentWarehouse): void {
+        //                    /** @var MovingProductStockDTO $data */
+        //                    $data = $event->getData();
+        //
+        //                    $data->setTargetWarehouse($currentWarehouse);
+        //                    $data->setDestinationWarehouse($currentWarehouse);
+        //                },
+        //            );
+        //        }
 
 
         /* Склад назначения */
@@ -331,7 +349,6 @@ final class MovingProductStockForm extends AbstractType
 
         // Количество
         $builder->add('preTotal', IntegerType::class, ['required' => false]);
-
 
 
         // Section Collection
@@ -374,10 +391,13 @@ final class MovingProductStockForm extends AbstractType
 
     private function formOfferModifier(FormInterface $form, ProductUid $product): void
     {
-        $offer = $this->productOfferChoiceWarehouse->getProductsOfferExistWarehouse($this->user, $product);
+        $offer = $this->productOfferChoiceWarehouse
+            ->user($this->user)
+            ->product($product)
+            ->getProductsOfferExistWarehouse();
 
         // Если у продукта нет ТП
-        if(empty($offer))
+        if(!$offer->valid())
         {
             $form->add(
                 'preOffer',
@@ -389,7 +409,21 @@ final class MovingProductStockForm extends AbstractType
             return;
         }
 
-        $label = current($offer)->getOption();
+        $currentOffer = $offer->current();
+        $label = $currentOffer->getOption();
+        $domain = null;
+
+        if($currentOffer->getReference())
+        {
+            /** Если торговое предложение Справочник - ищем домен переводов */
+            foreach($this->reference as $reference)
+            {
+                if($reference->type() === $currentOffer->getReference())
+                {
+                    $domain = $reference->domain();
+                }
+            }
+        }
 
         $form
             ->add(
@@ -401,12 +435,30 @@ final class MovingProductStockForm extends AbstractType
                         return $offer?->getValue();
                     },
                     'choice_label' => function(ProductOfferConst $offer) {
-                        return $offer->getAttr().' ('.$offer->getProperty().')';
+                        return $offer->getAttr();
                     },
                     'choice_attr' => function(?ProductOfferConst $offer) {
-                        return $offer ? ['data-name' => $offer->getAttr()] : [];
+
+                        if(!$offer)
+                        {
+                            return [];
+                        }
+
+                        if($offer->getAttr())
+                        {
+                            $attr['data-name'] = $offer->getAttr();
+                        }
+
+                        if($offer->getProperty())
+                        {
+                            $attr['data-filter'] = trim($offer->getCharacteristic().' ('.$offer->getProperty().')');
+                        }
+
+                        return $attr;
+
                     },
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
                 ]
             );
@@ -414,10 +466,14 @@ final class MovingProductStockForm extends AbstractType
 
     private function formVariationModifier(FormInterface $form, ProductUid $product, ProductOfferConst $offer): void
     {
-        $variations = $this->productVariationChoiceWarehouse->getProductsVariationExistWarehouse($this->user, $product, $offer);
+        $variations = $this->productVariationChoiceWarehouse
+            ->user($this->user)
+            ->product($product)
+            ->offerConst($offer)
+            ->getProductsVariationExistWarehouse();
 
         // Если у продукта нет множественных вариантов
-        if(empty($variations))
+        if(!$variations->valid())
         {
             $form->add('preVariation', HiddenType::class,);
             $this->formTargetWarehouseModifier($form, $product, $offer);
@@ -425,7 +481,21 @@ final class MovingProductStockForm extends AbstractType
             return;
         }
 
-        $label = current($variations)->getOption();
+        $currentVariation = $variations->current();
+        $label = $currentVariation->getOption();
+        $domain = null;
+
+        if($currentVariation->getReference())
+        {
+            /** Если торговое предложение Справочник - ищем домен переводов */
+            foreach($this->reference as $reference)
+            {
+                if($reference->type() === $currentVariation->getReference())
+                {
+                    $domain = $reference->domain();
+                }
+            }
+        }
 
         $form
             ->add(
@@ -437,12 +507,29 @@ final class MovingProductStockForm extends AbstractType
                         return $variation?->getValue();
                     },
                     'choice_label' => function(ProductVariationConst $variation) {
-                        return $variation->getAttr().' ('.$variation->getProperty().')';
+                        return $variation->getAttr();
                     },
                     'choice_attr' => function(?ProductVariationConst $variation) {
-                        return $variation ? ['data-name' => $variation->getAttr()] : [];
+
+                        if(!$variation)
+                        {
+                            return [];
+                        }
+
+                        if($variation->getAttr())
+                        {
+                            $attr['data-name'] = $variation->getAttr();
+                        }
+
+                        if($variation->getProperty())
+                        {
+                            $attr['data-filter'] = trim($variation->getCharacteristic().' ('.$variation->getProperty().')');
+                        }
+
+                        return $attr;
                     },
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
                 ],
             );
@@ -455,11 +542,16 @@ final class MovingProductStockForm extends AbstractType
         ProductVariationConst $variation,
     ): void
     {
-        $modifications = $this->productModificationChoiceWarehouse
-            ->getProductsModificationExistWarehouse($this->user, $product, $offer, $variation);
 
-        // Если у продукта нет множественных вариантов
-        if(empty($modifications))
+        $modifications = $this->productModificationChoiceWarehouse
+            ->user($this->user)
+            ->product($product)
+            ->offerConst($offer)
+            ->variationConst($variation)
+            ->getProductsModificationExistWarehouse();
+
+        // Если у продукта нет модификаций множественных вариантов
+        if(!$modifications->valid())
         {
             $form->add('preModification', HiddenType::class,);
             $this->formTargetWarehouseModifier($form, $product, $offer, $variation);
@@ -467,7 +559,21 @@ final class MovingProductStockForm extends AbstractType
             return;
         }
 
-        $label = current($modifications)->getOption();
+        $currentModification = $modifications->current();
+        $label = $currentModification->getOption();
+        $domain = null;
+
+        if($currentModification->getReference())
+        {
+            /** Если торговое предложение Справочник - ищем домен переводов */
+            foreach($this->reference as $reference)
+            {
+                if($reference->type() === $currentModification->getReference())
+                {
+                    $domain = $reference->domain();
+                }
+            }
+        }
 
         $form
             ->add(
@@ -479,12 +585,32 @@ final class MovingProductStockForm extends AbstractType
                         return $modification?->getValue();
                     },
                     'choice_label' => function(ProductModificationConst $modification) {
-                        return $modification->getAttr().' ('.$modification->getProperty().')';
+                        return $modification->getAttr();
                     },
+
                     'choice_attr' => function(?ProductModificationConst $modification) {
-                        return $modification ? ['data-name' => $modification->getAttr()] : [];
+
+                        if(!$modification)
+                        {
+                            return [];
+                        }
+
+                        if($modification->getAttr())
+                        {
+                            $attr['data-name'] = $modification->getAttr();
+                        }
+
+                        if($modification->getProperty())
+                        {
+                            $attr['data-filter'] = trim($modification->getCharacteristic().' ('.$modification->getProperty().')');
+                        }
+
+                        return $attr;
                     },
+
+
                     'label' => $label,
+                    'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
                 ]
             );
@@ -498,10 +624,18 @@ final class MovingProductStockForm extends AbstractType
         ?ProductModificationConst $modification = null,
     ): void
     {
+        $this
+            ->productWarehouseChoice
+            ->user($this->user)
+            ->product($product);
 
-        $warehouses = $this->productWarehouseChoice->fetchWarehouseByProduct($this->user, $product, $offer, $variation, $modification);
+        $offer ? $this->productWarehouseChoice->offerConst($offer) : null;
+        $variation ? $this->productWarehouseChoice->variationConst($variation) : null;
+        $modification ? $this->productWarehouseChoice->modificationConst($modification) : null;
 
-        if(empty($warehouses))
+        $warehouses = $this->productWarehouseChoice->fetchWarehouseByProduct();
+
+        if(!$warehouses->valid())
         {
             $form->add(
                 'targetWarehouse',
@@ -525,13 +659,27 @@ final class MovingProductStockForm extends AbstractType
                     return $warehouse?->getValue();
                 },
                 'choice_label' => function(UserProfileUid $warehouse) {
-                    return $warehouse->getAttr().' ('.$warehouse->getProperty().')';
+                    return $warehouse->getAttr();
                 },
                 'choice_attr' => function(?UserProfileUid $warehouse) {
-                    return $warehouse ? [
-                        'data-name' => $warehouse->getAttr(),
-                        'data-max' => $warehouse->getProperty(),
-                    ] : [];
+
+                    if(!$warehouse)
+                    {
+                        return [];
+                    }
+
+                    if($warehouse->getAttr())
+                    {
+                        $attr['data-name'] = $warehouse->getAttr();
+                    }
+
+                    if($warehouse->getProperty())
+                    {
+                        $attr['data-max'] = $warehouse->getProperty();
+                        $attr['data-filter'] = '('.$warehouse->getProperty().')';
+                    }
+
+                    return $attr;
                 },
                 'label' => false,
                 'required' => false,

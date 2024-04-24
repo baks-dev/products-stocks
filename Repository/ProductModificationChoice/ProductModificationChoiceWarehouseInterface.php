@@ -27,14 +27,19 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
 interface ProductModificationChoiceWarehouseInterface
 {
+
+    public function user(UserUid|string $user): self;
+
+    public function product(ProductUid|string $product): self;
+
+    public function offerConst(ProductOfferConst|string $offer): self;
+
+    public function variationConst(ProductVariationConst|string $variation): self;
+
     /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад */
-    public function getProductsModificationExistWarehouse(
-        UserUid $usr,
-        ProductUid $product,
-        ProductOfferConst $offer,
-        ProductVariationConst $variation
-    ): ?array;
+    public function getProductsModificationExistWarehouse(): Generator;
 }

@@ -25,102 +25,142 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductOfferChoice;
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Products\Category\Entity as CategoryEntity;
-use BaksDev\Products\Product\Entity as ProductEntity;
+
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
+use InvalidArgumentException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceWarehouseInterface
 {
 
-    private TranslatorInterface $translator;
-    private ORMQueryBuilder $ORMQueryBuilder;
+    private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?UserUid $user = null;
+    private ?ProductUid $product = null;
 
     public function __construct(
-        ORMQueryBuilder $ORMQueryBuilder,
-        TranslatorInterface $translator
+        DBALQueryBuilder $DBALQueryBuilder,
     )
     {
-
-        $this->translator = $translator;
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
+
+    public function user(UserUid|string $user): self
+    {
+        if(is_string($user))
+        {
+            $user = new UserUid($user);
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+
+    public function product(ProductUid|string $product): self
+    {
+        if(is_string($product))
+        {
+            $product = new ProductUid($product);
+        }
+
+        $this->product = $product;
+
+        return $this;
+    }
+
 
     /**
      * Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличии на складе
      */
-    public function getProductsOfferExistWarehouse(
-        UserUid $usr,
-        ProductUid $product
-    ): ?array
+    public function getProductsOfferExistWarehouse(): Generator
     {
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        if(!$this->user || !$this->product)
+        {
+            throw new InvalidArgumentException('Необходимо передать все параметры');
+        }
 
-        $select = sprintf('new %s(stock.offer, offer.value, trans.name, (SUM(stock.total) - SUM(stock.reserve)))', ProductOfferConst::class);
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        $qb->select($select);
+        $dbal->from(ProductStockTotal::class, 'stock');
 
-        $qb->from(ProductStockTotal::class, 'stock');
-
-        $qb
+        $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+            ->setParameter('usr', $this->user, UserUid::TYPE);
 
-        $qb->andWhere('(stock.total - stock.reserve) > 0');
-        $qb->andWhere('stock.product = :product');
+        $dbal
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $this->product, ProductUid::TYPE);
 
-        $qb->groupBy('stock.offer');
-        $qb->addGroupBy('trans.name');
-        $qb->addGroupBy('offer.value');
+        $dbal->andWhere('(stock.total - stock.reserve) > 0');
 
-        $qb->join(
-            ProductEntity\Product::class,
+
+        $dbal->join(
+            'stock',
+            Product::class,
             'product',
-            'WITH',
             'product.id = stock.product'
         );
 
-        /*$qb->join(
-            ProductEntity\Event\ProductEvent::class,
-            'event',
-            'WITH',
-            'event.id = product.event'
-        );*/
 
-        $qb->join(
-            ProductEntity\Offers\ProductOffer::class,
+        $dbal->join(
+            'product',
+            ProductOffer::class,
             'offer',
-            'WITH',
             'offer.const = stock.offer AND offer.event = product.event'
         );
 
         // Тип торгового предложения
 
-        $qb->join(
-            CategoryEntity\Offers\CategoryProductOffers::class,
+        $dbal->join(
+            'offer',
+            CategoryProductOffers::class,
             'category_offer',
-            'WITH',
-            'category_offer.id = offer.categoryOffer'
+            'category_offer.id = offer.category_offer'
         );
 
-        $qb->leftJoin(
-            CategoryEntity\Offers\Trans\CategoryProductOffersTrans::class,
-            'trans',
-            'WITH',
-            'trans.offer = category_offer.id AND trans.local = :local'
+        $dbal->leftJoin(
+            'category_offer',
+            CategoryProductOffersTrans::class,
+            'category_offer_trans',
+            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
 
-        $qb->setParameter('product', $product, ProductUid::TYPE);
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
+
+        $dbal->addSelect('stock.offer AS value');
+        $dbal->addSelect('offer.value AS attr');
+        $dbal->addSelect('category_offer_trans.name AS option');
+
+        $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS property');
+        $dbal->addSelect('offer.postfix AS characteristic');
+        $dbal->addSelect('category_offer.reference AS reference');
+
+        $dbal->groupBy('stock.offer');
+        $dbal->addGroupBy('category_offer_trans.name');
+        $dbal->addGroupBy('offer.value');
+        $dbal->addGroupBy('offer.postfix');
+        $dbal->addGroupBy('category_offer.reference');
+
+        return $dbal
+            ->enableCache('products-stocks', 86400)
+            ->fetchAllHydrate(ProductOfferConst::class);
 
 
-        /* Кешируем результат ORM */
-        return $qb->enableCache('products-stocks', 86400)->getResult();
+
 
     }
 }

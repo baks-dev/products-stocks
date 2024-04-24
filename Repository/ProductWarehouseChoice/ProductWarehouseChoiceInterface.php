@@ -28,17 +28,22 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
 interface ProductWarehouseChoiceInterface
 {
 
+    public function user(UserUid|string $user): self;
+
+    public function product(ProductUid|string $product): self;
+
+    public function offerConst(ProductOfferConst|string $offer): self;
+
+    public function variationConst(ProductVariationConst|string $variation): self;
+
+    public function modificationConst(ProductModificationConst|string $modification): self;
+
     /** Возвращает список складов (профилей пользователя) на которых имеется данный вид продукта */
-    public function fetchWarehouseByProduct(
-        UserUid $usr,
-        ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification,
-    ): ?array;
+    public function fetchWarehouseByProduct(): Generator;
 
 }

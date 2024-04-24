@@ -25,125 +25,186 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductModificationChoice;
 
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Products\Category\Entity as CategoryEntity;
-use BaksDev\Products\Product\Entity as ProductEntity;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Generator;
+use InvalidArgumentException;
 
 final class ProductModificationChoiceWarehouseRepository implements ProductModificationChoiceWarehouseInterface
 {
-    private TranslatorInterface $translator;
-    private ORMQueryBuilder $ORMQueryBuilder;
+    private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?UserUid $user = null;
+    private ?ProductUid $product = null;
+    private ?ProductOfferConst $offer = null;
+    private ?ProductVariationConst $variation = null;
 
     public function __construct(
-        ORMQueryBuilder $ORMQueryBuilder,
-        TranslatorInterface $translator,
+        DBALQueryBuilder $DBALQueryBuilder
     )
     {
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
+    }
 
-        $this->translator = $translator;
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
+
+    public function user(UserUid|string $user): self
+    {
+        if(is_string($user))
+        {
+            $user = new UserUid($user);
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+
+    public function product(ProductUid|string $product): self
+    {
+        if(is_string($product))
+        {
+            $product = new ProductUid($product);
+        }
+
+        $this->product = $product;
+
+        return $this;
+    }
+
+
+    public function offerConst(ProductOfferConst|string $offer): self
+    {
+        if(is_string($offer))
+        {
+            $offer = new ProductOfferConst($offer);
+        }
+
+        $this->offer = $offer;
+
+        return $this;
+    }
+
+    public function variationConst(ProductVariationConst|string $variation): self
+    {
+        if(is_string($variation))
+        {
+            $variation = new ProductVariationConst($variation);
+        }
+
+        $this->variation = $variation;
+
+        return $this;
     }
 
 
     /**
      * Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад
      */
-    public function getProductsModificationExistWarehouse(
-        UserUid $usr,
-        ProductUid $product,
-        ProductOfferConst $offer,
-        ProductVariationConst $variation,
-    ): ?array
+    public function getProductsModificationExistWarehouse(): Generator
     {
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        if(!$this->user || !$this->product || !$this->offer || !$this->variation)
+        {
+            throw new InvalidArgumentException('Необходимо передать все параметры');
+        }
 
-        $select = sprintf('new %s(stock.modification, modification.value, trans.name, (SUM(stock.total) - SUM(stock.reserve)))', ProductModificationConst::class);
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        $qb->select($select);
 
-        $qb->from(ProductStockTotal::class, 'stock');
+        $dbal->from(ProductStockTotal::class, 'stock');
 
-        $qb
+        $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+            ->setParameter('usr', $this->user, UserUid::TYPE);
 
-        // $qb->where('stock.warehouse = :warehouse');
-        $qb->andWhere('(stock.total - stock.reserve) > 0');
-        $qb->andWhere('stock.product = :product');
-        $qb->andWhere('stock.offer = :offer');
-        $qb->andWhere('stock.variation = :variation');
+        $dbal->andWhere('stock.product = :product')
+            ->setParameter('product', $this->product, ProductUid::TYPE);
 
-        $qb->groupBy('stock.modification');
-        $qb->addGroupBy('modification.value');
-        $qb->addGroupBy('trans.name');
 
-        $qb->join(
-            ProductEntity\Product::class,
+        $dbal->andWhere('stock.offer = :offer')
+            ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+
+
+        $dbal->andWhere('stock.variation = :variation')
+            ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
+
+        $dbal->andWhere('(stock.total - stock.reserve) > 0');
+
+
+        $dbal->join(
+            'stock',
+            Product::class,
             'product',
-            'WITH',
             'product.id = stock.product',
         );
 
 
-        $qb->join(
-            ProductEntity\Offers\ProductOffer::class,
+        $dbal->join(
+            'stock',
+            ProductOffer::class,
             'offer',
-            'WITH',
             'offer.const = stock.offer AND offer.event = product.event',
         );
 
 
-        $qb->join(
-            ProductEntity\Offers\Variation\ProductVariation::class,
+        $dbal->join(
+            'stock',
+            ProductVariation::class,
             'variation',
-            'WITH',
             'variation.const = stock.variation AND variation.offer = offer.id',
         );
 
 
-        $qb->join(
-            ProductEntity\Offers\Variation\Modification\ProductModification::class,
+        $dbal->join(
+            'stock',
+            ProductModification::class,
             'modification',
-            'WITH',
             'modification.const = stock.modification AND modification.variation = variation.id'
         );
 
 
         // Тип торгового предложения
 
-        $qb->join(
-            CategoryEntity\Offers\Variation\Modification\CategoryProductModification::class,
+        $dbal->join(
+            'modification',
+            CategoryProductModification::class,
             'category_modification',
-            'WITH',
-            'category_modification.id = modification.categoryModification'
+            'category_modification.id = modification.category_modification'
         );
 
-        $qb->leftJoin(
-            CategoryEntity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans::class,
-            'trans',
-            'WITH',
-            'trans.modification = category_modification.id AND trans.local = :local'
+        $dbal->leftJoin(
+            'category_modification',
+            CategoryProductModificationTrans::class,
+            'category_modification_trans',
+            'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
 
 
-        $qb->setParameter('product', $product, ProductUid::TYPE);
-        $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
-        $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
+        $dbal->addSelect('stock.modification AS value')->groupBy('stock.modification');
+        $dbal->addSelect('modification.value AS attr')->addGroupBy('modification.value');
+        $dbal->addSelect('category_modification_trans.name AS option')->addGroupBy('category_modification_trans.name');
+
+        $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS property');
+        $dbal->addSelect('modification.postfix AS characteristic')->addGroupBy('modification.postfix');
+        $dbal->addSelect('category_modification.reference AS reference')->addGroupBy('category_modification.reference');
 
 
-        /* Кешируем результат ORM */
-        return $qb
-            //->enableCache('products-stocks', 86400)
-            ->getResult();
+        return $dbal
+            ->enableCache('products-stocks', 86400)
+            ->fetchAllHydrate(ProductModificationConst::class);
 
     }
 }

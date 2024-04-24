@@ -26,14 +26,19 @@ namespace BaksDev\Products\Stocks\Repository\ProductVariationChoice;
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
 interface ProductVariationChoiceWarehouseInterface
 {
+
+    public function user(UserUid|string $user): self;
+
+    public function product(ProductUid|string $product): self;
+
+    public function offerConst(ProductOfferConst|string $offer): self;
+
     /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад */
-    public function getProductsVariationExistWarehouse(
-        UserUid $usr,
-        ProductUid $product,
-        ProductOfferConst $offer
-    ): ?array;
+    public function getProductsVariationExistWarehouse(): Generator;
 }

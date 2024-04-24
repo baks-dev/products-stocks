@@ -24,8 +24,15 @@
 namespace BaksDev\Products\Stocks\Repository\ProductChoice;
 
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
 interface ProductChoiceWarehouseInterface
 {
+    /**
+     * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
+     */
+    public function getProductsExistWarehouse(UserUid $usr): Generator;
+
     public function getProductsByWarehouse(ContactsRegionCallUid $warehouse): ?array;
 }

@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Repository\ProductWarehouseChoice;
 
 use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Product\Type\Id\ProductUid;
@@ -39,115 +40,177 @@ use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
+use Generator;
+use InvalidArgumentException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceInterface
 {
-    //    private EntityManagerInterface $entityManager;
-    //
-    //    private TranslatorInterface $translator;
-    //
-    //    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator)
-    //    {
-    //        $this->entityManager = $entityManager;
-    //        $this->translator = $translator;
-    //    }
+    private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?UserUid $user = null;
+    private ?ProductUid $product = null;
+    private ?ProductOfferConst $offer = null;
+    private ?ProductVariationConst $variation = null;
+    private ?ProductModificationConst $modification = null;
 
 
-    private ORMQueryBuilder $ORMQueryBuilder;
-
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
+    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
     {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
+    }
+
+
+    public function user(UserUid|string $user): self
+    {
+        if(is_string($user))
+        {
+            $user = new UserUid($user);
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+
+    public function product(ProductUid|string $product): self
+    {
+        if(is_string($product))
+        {
+            $product = new ProductUid($product);
+        }
+
+        $this->product = $product;
+
+        return $this;
+    }
+
+
+    public function offerConst(ProductOfferConst|string $offer): self
+    {
+        if(is_string($offer))
+        {
+            $offer = new ProductOfferConst($offer);
+        }
+
+        $this->offer = $offer;
+
+        return $this;
+    }
+
+    public function variationConst(ProductVariationConst|string $variation): self
+    {
+        if(is_string($variation))
+        {
+            $variation = new ProductVariationConst($variation);
+        }
+
+        $this->variation = $variation;
+
+        return $this;
+    }
+
+    public function modificationConst(ProductModificationConst|string $modification): self
+    {
+        if(is_string($modification))
+        {
+            $modification = new ProductModificationConst($modification);
+        }
+
+        $this->modification = $modification;
+
+        return $this;
     }
 
 
     /**
      * Возвращает список складов (профилей пользователя) на которых имеется данный вид продукта
      */
-    public function fetchWarehouseByProduct(
-        UserUid $usr,
-        ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification,
-    ): ?array
+    public function fetchWarehouseByProduct(): Generator
     {
+        if(!$this->user || !$this->product)
+        {
+            throw new InvalidArgumentException('Необходимо передать все параметры');
+        }
 
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        $select = sprintf('new %s(stock.profile, profile_personal.username, stock.profile, (SUM(stock.total) - SUM(stock.reserve)) )', UserProfileUid::class);
 
-        $qb->select($select);
+        $dbal->from(ProductStockTotal::class, 'stock');
 
-        $qb->from(ProductStockTotal::class, 'stock');
-
-        $qb->addGroupBy('stock.profile');
-        $qb->addGroupBy('profile_personal.username');
-
-        $qb
+        $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+            ->setParameter('usr', $this->user, UserUid::TYPE);
 
-        $qb->andWhere('(stock.total - stock.reserve) > 0');
-
-        $qb->andWhere('stock.product = :product');
-        $qb->setParameter('product', $product, ProductUid::TYPE);
-        $qb->addGroupBy('stock.product');
+        $dbal
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $this->product, ProductUid::TYPE);
 
 
-        if($offer)
+        $dbal->andWhere('(stock.total - stock.reserve) > 0');
+
+
+        if($this->offer)
         {
-            $qb->andWhere('stock.offer = :offer');
-            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
-            $qb->addGroupBy('stock.offer');
+            $dbal->andWhere('stock.offer = :offer');
+            $dbal->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+            $dbal->addGroupBy('stock.offer');
         }
         else
         {
-            $qb->andWhere('stock.offer IS NULL');
+            $dbal->andWhere('stock.offer IS NULL');
         }
 
-        if($variation)
+        if($this->variation)
         {
-            $qb->andWhere('stock.variation = :variation');
-            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+            $dbal->andWhere('stock.variation = :variation');
+            $dbal->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
 
-            $qb->addGroupBy('stock.variation');
+            $dbal->addGroupBy('stock.variation');
         }
         else
         {
-            $qb->andWhere('stock.variation IS NULL');
+            $dbal->andWhere('stock.variation IS NULL');
         }
 
-        if($modification)
+        if($this->modification)
         {
-            $qb->andWhere('stock.modification = :modification');
-            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+            $dbal->andWhere('stock.modification = :modification');
+            $dbal->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
 
-            $qb->addGroupBy('stock.modification');
+            $dbal->addGroupBy('stock.modification');
 
         }
         else
         {
-            $qb->andWhere('stock.modification IS NULL');
+            $dbal->andWhere('stock.modification IS NULL');
         }
 
-        $qb->join(
+        $dbal->join(
+            'stock',
             UserProfile::class,
             'profile',
-            'WITH',
             'profile.id = stock.profile',
         );
 
-        $qb->join(
+        $dbal->join(
+            'profile',
             UserProfilePersonal::class,
             'profile_personal',
-            'WITH',
             'profile_personal.event = profile.event',
         );
 
-        /** Не кешируем результат! Необходима актуальная информация о наличии */
-        return $qb->getResult();
+        $dbal->addSelect('stock.profile AS value')->groupBy('stock.profile');
+        $dbal->addSelect('profile_personal.username AS attr')->addGroupBy('profile_personal.username');
+        $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS property');
+
+        return $dbal
+            ->fetchAllHydrate(UserProfileUid::class);
+
+
 
     }
 }

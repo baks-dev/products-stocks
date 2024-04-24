@@ -25,107 +25,161 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductVariationChoice;
 
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Products\Category\Entity as CategoryEntity;
-use BaksDev\Products\Product\Entity as ProductEntity;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Generator;
+use InvalidArgumentException;
 
 final class ProductVariationChoiceWarehouseRepository implements ProductVariationChoiceWarehouseInterface
 {
+    private DBALQueryBuilder $DBALQueryBuilder;
 
-    private TranslatorInterface $translator;
-    private ORMQueryBuilder $ORMQueryBuilder;
+    private ?UserUid $user = null;
+    private ?ProductUid $product = null;
+    private ?ProductOfferConst $offer = null;
 
     public function __construct(
-        ORMQueryBuilder $ORMQueryBuilder,
-        TranslatorInterface $translator
+        DBALQueryBuilder $DBALQueryBuilder
     )
     {
-
-        $this->translator = $translator;
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
+    public function user(UserUid|string $user): self
+    {
+        if(is_string($user))
+        {
+            $user = new UserUid($user);
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+
+    public function product(ProductUid|string $product): self
+    {
+        if(is_string($product))
+        {
+            $product = new ProductUid($product);
+        }
+
+        $this->product = $product;
+
+        return $this;
+    }
+
+
+    public function offerConst(ProductOfferConst|string $offer): self
+    {
+        if(is_string($offer))
+        {
+            $offer = new ProductOfferConst($offer);
+        }
+
+        $this->offer = $offer;
+
+        return $this;
+    }
+
+
     /** Метод возвращает все идентификаторы множественных вариантов, имеющиеся в наличии на склад */
-    public function getProductsVariationExistWarehouse(
-        UserUid $usr,
-        ProductUid $product,
-        ProductOfferConst $offer
-    ): ?array
+    public function getProductsVariationExistWarehouse(): Generator
     {
 
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        if(!$this->user || !$this->product || !$this->offer)
+        {
+            throw new InvalidArgumentException('Необходимо передать все параметры');
+        }
 
-        $select = sprintf('new %s(stock.variation, variation.value, trans.name, (SUM(stock.total) - SUM(stock.reserve)))', ProductVariationConst::class);
 
-        $qb->select($select);
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        $qb->from(ProductStockTotal::class, 'stock');
+        $dbal->from(ProductStockTotal::class, 'stock');
 
-        $qb
+        $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+            ->setParameter('usr', $this->user, UserUid::TYPE);
 
-        // $qb->where('stock.warehouse = :warehouse');
-        $qb->andWhere('(stock.total - stock.reserve) > 0');
-        $qb->andWhere('stock.product = :product');
-        $qb->andWhere('stock.offer = :offer');
+        $dbal
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $this->product, ProductUid::TYPE);
 
-        $qb->addGroupBy('stock.variation');
-        $qb->addGroupBy('trans.name');
-        $qb->addGroupBy('variation.value');
+        $dbal
+            ->andWhere('stock.offer = :offer')
+            ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
 
-        $qb->join(
-            ProductEntity\Product::class,
+        $dbal->andWhere('(stock.total - stock.reserve) > 0');
+
+        $dbal->addGroupBy('stock.variation');
+        $dbal->addGroupBy('trans.name');
+        $dbal->addGroupBy('variation.value');
+
+
+        $dbal->join(
+            'stock',
+            Product::class,
             'product',
-            'WITH',
             'product.id = stock.product'
         );
 
-        $qb->join(
-            ProductEntity\Offers\ProductOffer::class,
+        $dbal->join(
+            'stock',
+            ProductOffer::class,
             'offer',
-            'WITH',
             'offer.const = stock.offer AND offer.event = product.event'
         );
 
-        $qb->join(
-            ProductEntity\Offers\Variation\ProductVariation::class,
+        $dbal->join(
+            'stock',
+            ProductVariation::class,
             'variation',
-            'WITH',
             'variation.const = stock.variation AND variation.offer = offer.id'
         );
 
         // Тип торгового предложения
 
-        $qb->join(
-            CategoryEntity\Offers\Variation\CategoryProductVariation::class,
-            'category_variation',
-            'WITH',
-            'category_variation.id = variation.categoryVariation'
-        );
+        $dbal
+            ->join(
+                'variation',
+                CategoryProductVariation::class,
+                'category_variation',
+                'category_variation.id = variation.category_variation'
+            );
 
-        $qb->leftJoin(
-            CategoryEntity\Offers\Variation\Trans\CategoryProductVariationTrans::class,
-            'trans',
-            'WITH',
-            'trans.variation = category_variation.id AND trans.local = :local'
-        );
-
-        $qb->setParameter('product', $product, ProductUid::TYPE);
-        $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
+        $dbal
+            ->leftJoin(
+                'category_variation',
+                CategoryProductVariationTrans::class,
+                'category_variation_trans',
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+            );
 
 
-        /* Кешируем результат ORM */
-        return $qb
-            //->enableCache('products-stocks', 86400)
-            ->getResult();
+        $dbal->addSelect('stock.variation AS value')->groupBy('stock.variation');
+        $dbal->addSelect('variation.value AS attr')->addGroupBy('variation.value');
+        $dbal->addSelect('category_variation_trans.name AS option')->addGroupBy('category_variation_trans.name');
+
+        $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS property');
+        $dbal->addSelect('variation.postfix AS characteristic')->addGroupBy('variation.postfix');
+        $dbal->addSelect('category_variation.reference AS reference')->addGroupBy('category_variation.reference');
+
+
+        return $dbal
+            ->enableCache('products-stocks', 86400)
+            ->fetchAllHydrate(ProductVariationConst::class);
+
     }
 }

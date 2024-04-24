@@ -26,89 +26,96 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductChoice;
 
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Products\Product\Entity as ProductEntity;
+use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Generator;
 
 final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseInterface
 {
 
-    private TranslatorInterface $translator;
     private ORMQueryBuilder $ORMQueryBuilder;
+    private DBALQueryBuilder $DBALQueryBuilder;
 
     public function __construct(
-        ORMQueryBuilder $ORMQueryBuilder,
-        TranslatorInterface $translator
+        DBALQueryBuilder $DBALQueryBuilder,
+        ORMQueryBuilder $ORMQueryBuilder
     )
     {
-
-        $this->translator = $translator;
         $this->ORMQueryBuilder = $ORMQueryBuilder;
+        $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
 
     /**
      * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
      */
-    public function getProductsExistWarehouse(UserUid $usr): ?array
+    public function getProductsExistWarehouse(UserUid $usr): Generator
     {
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        $dbal = $this
+            ->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        $select = sprintf('new %s(stock.product, trans.name, (SUM(stock.total) - SUM(stock.reserve)) )', ProductUid::class);
 
-        $qb->select($select);
-
-        $qb->from(ProductStockTotal::class, 'stock');
-
-        $qb
+        $dbal
+            ->from(ProductStockTotal::class, 'stock')
             ->andWhere('stock.usr = :usr')
             ->setParameter('usr', $usr, UserUid::TYPE);
 
-        //$qb->where('stock.warehouse = :warehouse');
-        $qb->andWhere('(stock.total - stock.reserve)  > 0');
 
-        $qb
-            ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+        $dbal->andWhere('(stock.total - stock.reserve)  > 0');
 
-        $qb->groupBy('stock.product');
-        $qb->addGroupBy('trans.name');
 
-        $qb->join(
-            ProductEntity\Product::class,
+        $dbal->groupBy('stock.product');
+        $dbal->addGroupBy('trans.name');
+
+        $dbal->join(
+            'stock',
+            Product::class,
             'product',
-            'WITH',
             'product.id = stock.product'
         );
 
-        $qb->leftJoin(
-            ProductEntity\Trans\ProductTrans::class,
+        $dbal->leftJoin(
+            'product',
+            ProductTrans::class,
             'trans',
-            'WITH',
             'trans.event = product.event AND trans.local = :local'
         );
 
 
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
+        //        $select = sprintf('new %s(stock.product, trans.name, (SUM(stock.total) - SUM(stock.reserve)) )', ProductUid::class);
+        //
+        //        $qb->select($select);
 
-        /* Кешируем результат ORM */
-        return $qb->enableCache('products-stocks', 86400)->getResult();
+
+        $dbal->addSelect('stock.product AS value');
+        $dbal->addSelect('trans.name AS attr');
+        $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS option');
+
+        return $dbal
+            ->enableCache('products-product', 86400)
+            ->fetchAllHydrate(ProductUid::class);
+
 
     }
-
-
-
-
 
 
     /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе */
     public function getProductsByWarehouse(ContactsRegionCallUid $warehouse): ?array
     {
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this
+            ->ORMQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal()
+        ;
 
         $select = sprintf('new %s(stock.product, trans.name, SUM(stock.total))', ProductUid::class);
 
@@ -118,11 +125,13 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
         $qb->where('stock.warehouse = :warehouse');
         $qb->andWhere('stock.total > 0');
 
+        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallUid::TYPE);
+
         $qb->groupBy('stock.product');
         $qb->addGroupBy('trans.name');
 
         $qb->join(
-            ProductEntity\Product::class,
+            Product::class,
             'product',
             'WITH',
             'product.id = stock.product'
@@ -130,15 +139,15 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
 
 
         $qb->leftJoin(
-            ProductEntity\Trans\ProductTrans::class,
+            ProductTrans::class,
             'trans',
             'WITH',
             'trans.event = product.event AND trans.local = :local'
         );
 
 
-        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallUid::TYPE);
-        $qb->setParameter('local', new Locale($this->translator->getLocale()), Locale::TYPE);
+
+
 
         /* Кешируем результат ORM */
         return $qb->enableCache('products-stocks', 86400)->getResult();

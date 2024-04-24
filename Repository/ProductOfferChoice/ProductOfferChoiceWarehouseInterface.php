@@ -26,12 +26,14 @@ namespace BaksDev\Products\Stocks\Repository\ProductOfferChoice;
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
 interface ProductOfferChoiceWarehouseInterface
 {
+    public function user(UserUid|string $user): self;
+
+    public function product(ProductUid|string $product): self;
+
     /** Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличии на данном складе */
-    public function getProductsOfferExistWarehouse(
-        UserUid $usr,
-        ProductUid $product
-    ): ?array;
+    public function getProductsOfferExistWarehouse(): Generator;
 }
