@@ -1,6 +1,6 @@
 # BaksDev Product Stocks
 
-[![Version](https://img.shields.io/badge/version-7.0.78-blue)](https://github.com/baks-dev/products-stocks/releases)
+[![Version](https://img.shields.io/badge/version-7.0.79-blue)](https://github.com/baks-dev/products-stocks/releases)
 ![php 8.2+](https://img.shields.io/badge/php-min%208.1-red.svg)
 
 Модуль складского учета продукции
