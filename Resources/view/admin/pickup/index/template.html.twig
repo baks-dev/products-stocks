@@ -13,12 +13,20 @@
 {# ---- CSS ------------------------------------------------------------ #}
 {% block stylesheets %}
     <link href="/assets/plugins/nice-select2/nice-select2.min.css" rel="stylesheet" type="text/css">
+    <link href="/assets/plugins/datepicker/datepicker.min.css" rel="stylesheet">
 {% endblock %}
 
 
 {# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
 {% block content %}
     {{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
+
+    <div class="offcanvas offcanvas-start"
+         tabindex="-1"
+         id="offcanvas"
+         style="--bs-offcanvas-width: 800px;"
+    >
+    </div>
 {% endblock %}
 
 

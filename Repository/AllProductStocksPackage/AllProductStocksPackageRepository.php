@@ -312,7 +312,9 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
 
-        $dbal->leftJoin(
+        $dbal
+            ->addSelect('orders.id AS order_id')
+            ->leftJoin(
             'ord',
             Order::class,
             'orders',

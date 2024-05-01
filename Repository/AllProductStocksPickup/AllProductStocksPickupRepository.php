@@ -424,6 +424,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
 
 
         $dbal
+            ->addSelect('ord.id AS order_id')
             ->join(
                 'product_stock_order',
                 Order::class,
@@ -439,6 +440,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'ord_client',
                 'ord_client.event = ord.event'
             );
+
+
 
         if($this->search->getQuery())
         {

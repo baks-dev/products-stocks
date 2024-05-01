@@ -202,18 +202,30 @@
                         <div class="w-100 d-flex gap-5 justify-content-between">
 
                             <div>
-                                <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+
+                                <span class="badge text-bg-warning me-3">
+                                            Готов к выдаче
+                                        </span>
+
+                                {#<a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
                                    class="text-hover-primary fw-bolder text-decoration-none text-nowrapmodal-link disabled"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Детали заявки">
 
                                     <span># {{ item.number }}</span>
-                                </a>
+                                </a>#}
 
-                                <div class="fw-normal text-nowrap">
+                                <button data-href='{{ item.order_id ? path('orders-order:admin.detail', { id: item.order_id }) : '#' }}'
+                                        data-id='{{ item.order_id }}'
+                                        class="btn btn-sm btn-link fw-bolder text-decoration-none product-name offcanvas-link text-nowrap p-0"
+                                >
+                                    {{ item.number }}
+                                </button>
+
+                                {#<div class="fw-normal text-nowrap">
                                     {{ item.mod_date|date('d.m.Y H:i') }}
-                                </div>
+                                </div>#}
                             </div>
 
                             {# СКЛАД #}
@@ -230,12 +242,11 @@
                                 </div>
                             </div>
 
-
                             {# Клиент  #}
                             <div class="d-flex w-50 gap-3">
                                 <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Клиент: </span> &nbsp;
-                                    {{ user_profile(item.client_profile_event) }}
+                                    {{ user_profile_render(item.client_profile_event) }}
                                 </div>
                             </div>
                         </div>
