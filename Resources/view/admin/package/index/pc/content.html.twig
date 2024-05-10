@@ -456,7 +456,7 @@
 
                         {% else %}
 
-                            {% if (not item.products_move or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
+                            {% if (not item.products_move or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN')) %}
 
 
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"

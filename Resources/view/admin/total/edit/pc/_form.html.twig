@@ -32,15 +32,16 @@
                             {% set image_path = img_host ~ img_dir ~ img_file %}
                         {% endif %}
 
-
-                        <a href="{{ path('products-product:user.detail', {
+                        {% set product_href = path('products-product:user.detail', {
                             category: card.category_url,
-                            url: card.url,
+                            url: card.product_url,
                             offer : card.product_offer_value,
                             variation : card.product_variation_value,
-                            modification : card.product_modification_value
-                        }) }}"
+                            modification : card.product_modification_value,
+                            postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
+                        })  %}
 
+                        <a href="{{ product_href }}"
                            target="_detail" class="icon rounded-3 bg-contain lazy p-1"
                            style="width: 50px; height: 50px;"
                            data-bg="{{ image_path }}">
@@ -48,13 +49,7 @@
                     </div>
 
                     <div class="d-flex flex-column align-items-start">
-                        <a href="{{ path('products-product:user.detail', {
-                            category: card.category_url,
-                            url: card.url,
-                            offer : card.product_offer_value,
-                            variation : card.product_variation_value,
-                            modification : card.product_modification_value
-                        }) }}"
+                        <a href="{{ product_href }}"
 
                            target="_detail"
                            class="text-decoration-none h5 mb-0 d-flex align-items-center gap-3">
@@ -74,8 +69,6 @@
                             {{ card.product_variation_postfix }}
                             {# Постфикс модификации #}
                             {{ card.product_modification_postfix }}
-
-
 
                             {# Свойства, учавствующие в названии #}
                             {% for name_property in arr_property | filter(props => props.field_name == true) %}

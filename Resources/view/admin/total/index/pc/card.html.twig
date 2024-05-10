@@ -31,14 +31,17 @@
                 {% set image_path = img_host ~ img_dir ~ img_file %}
             {% endif %}
 
+            {% set product_href = path('products-product:user.detail', {
+                category: item.category_url,
+                url: item.product_url,
+                offer : item.product_offer_value,
+                variation : item.product_variation_value,
+                modification : item.product_modification_value,
+                postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
+            })  %}
+
             <div>
-                <a href="{{ path('products-product:user.detail', {
-                    category: item.category_url,
-                    url: item.product_url,
-                    offer : item.product_offer_value,
-                    variation : item.product_variation_value,
-                    modification : item.product_modification_value
-                }) }}" class="icon rounded-3 lazy bg-contain p-1"
+                <a href="{{ product_href }}" class="icon rounded-3 lazy bg-contain p-1"
                    data-bg="{{ image_path }}"
                    style="width: 45px; height: 45px;"
                    target="_detail"
@@ -48,13 +51,7 @@
             <div>
 
                 {# Название #}
-                <a href="{{ path('products-product:user.detail', {
-                    category: item.category_url,
-                    url: item.product_url,
-                    offer : item.product_offer_value,
-                    variation : item.product_variation_value,
-                    modification : item.product_modification_value
-                }) }}"
+                <a href="{{ product_href }}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                    target="_detail"
                 >
@@ -136,8 +133,6 @@
             -
         {% endif %}
 
-
-
     </td>
 
 
@@ -157,10 +152,5 @@
         {% endif %}
 
     </td>
-
-
-
-
-
 
 </tr>

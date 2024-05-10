@@ -32,6 +32,7 @@ use BaksDev\Core\Services\Paginator\PaginatorInterface;
 //use BaksDev\Products\Product\Entity as ProductEntity;
 //use BaksDev\Products\Stocks\Entity as ProductStockEntity;
 use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
@@ -367,6 +368,15 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 CategoryProductTrans::class,
                 'category_trans',
                 'category_trans.event = category.event AND category_trans.local = :local'
+            );
+
+        $dbal
+            ->addSelect('category_info.url AS category_url')
+            ->leftJoin(
+                'category',
+                CategoryProductInfo::class,
+                'category_info',
+                'category_info.event = category.event'
             );
 
         // ОТВЕТСТВЕННЫЙ

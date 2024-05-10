@@ -32,14 +32,16 @@
             {% endif %}
 
 
-
+            {% set product_href = path('products-product:user.detail', {
+                category: item.category_url,
+                url: item.product_url,
+                offer : item.product_offer_value,
+                variation : item.product_variation_value,
+                modification : item.product_modification_value,
+                postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
+            })  %}
             <div>
-                <a href="{#{{ path('products-product:user.detail', {
-                    url : item.product_url ,
-                    offer: item.product_offer_value,
-                    variation: item.product_variation_value,
-                    modification: item.product_modification_value
-                }) }}#}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
+                <a href="{{ product_href }}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
                    data-bg="{{ image_path }}"
                    style="width: 60px; height: 60px;"
                 ></a>
@@ -49,11 +51,10 @@
             <div class="ms-5">
 
                 {# Название #}
-                <a href="#"
+                <a href="{{ product_href }}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
                         target="_detail"
                    >
-
 
                     {{ item.product_name }}
 
@@ -75,7 +76,6 @@
                     {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
 						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
 					{% endfor %} #}
-
 
                 </a>
 
