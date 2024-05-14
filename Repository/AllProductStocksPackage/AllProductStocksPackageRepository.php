@@ -210,7 +210,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             /** Подгружаем разделенные заказы */
 
 
-            $existDeliveryPackage = $this->DBALQueryBuilder->builder();
+            $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
             $existDeliveryPackage->select('1');
             $existDeliveryPackage->from(DeliveryPackage::TABLE, 'bGIuGLiNkf');
             $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
@@ -712,7 +712,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //$dbal->addSelect('NULL AS group_name'); // Название группы
 
         /** Проверка перемещения по заказу */
-        $dbalExist = $this->DBALQueryBuilder->builder();
+        $dbalExist = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbalExist->select('1');
         $dbalExist->from(ProductStockMove::TABLE, 'exist_move');
