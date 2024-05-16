@@ -251,10 +251,18 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_modification.article IS NOT NULL THEN product_offer_modification.article
-			   WHEN product_offer_variation.article IS NOT NULL THEN product_offer_variation.article
-			   WHEN product_offer.article IS NOT NULL THEN product_offer.article
-			   WHEN product_info.article IS NOT NULL THEN product_info.article
+			   WHEN product_offer_modification.article IS NOT NULL 
+			   THEN product_offer_modification.article
+			   
+			   WHEN product_offer_variation.article IS NOT NULL 
+			   THEN product_offer_variation.article
+			   
+			   WHEN product_offer.article IS NOT NULL 
+			   THEN product_offer.article
+			   
+			   WHEN product_info.article IS NOT NULL 
+			   THEN product_info.article
+			   
 			   ELSE NULL
 			END AS product_article
 		'
@@ -308,14 +316,18 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             "
 			CASE
 			 
-			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_offer_modification_image.name)
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_offer_variation_image.name)
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_images.name)
-			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.name)
+                 WHEN product_offer_modification_image.name IS NOT NULL 
+                 THEN CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_offer_modification_image.name)
+					
+			   WHEN product_offer_variation_image.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_offer_variation_image.name)
+					
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
+					
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
+					
 			   ELSE NULL
 			END AS product_image
 		"
@@ -326,10 +338,17 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             "
 			CASE
 			
-			    WHEN product_offer_modification_image.name IS NOT NULL THEN  product_offer_modification_image.ext
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN product_offer_variation_image.ext
-			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
-			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
+			    WHEN product_offer_modification_image.name IS NOT NULL 
+			    THEN  product_offer_modification_image.ext
+			    
+			   WHEN product_offer_variation_image.name IS NOT NULL 
+			   THEN product_offer_variation_image.ext
+			   
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.ext
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.ext
 				
 			   ELSE NULL
 			   
@@ -341,12 +360,15 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					product_offer_variation_image.cdn
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					product_offer_images.cdn
-			   WHEN product_photo.name IS NOT NULL THEN
-					product_photo.cdn
+			   WHEN product_offer_variation_image.name IS NOT NULL 
+			   THEN product_offer_variation_image.cdn
+					
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.cdn
+					
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.cdn
+					
 			   ELSE NULL
 			END AS product_image_cdn
 		'
@@ -451,7 +473,6 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
 
-
         if($this->search->getQuery())
         {
             $dbal->join(
@@ -465,7 +486,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         if(class_exists(BaksDevDeliveryTransportBundle::class))
         {
             /** Проверяем, чтобы не было на доставке упаковки */
-            $dbal->andWhereNotExists(DeliveryPackageStocks::class, 'tmp', 'tmp.stock = stock.id');
+            //$dbal->andWhereNotExists(DeliveryPackageStocks::class, 'tmp', 'tmp.stock = stock.id');
         }
 
         // Поиск

@@ -814,14 +814,13 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 ->addSearchLike('event.number');
         }
 
-        $dbal->addGroupBy('ord.ord');
-        $dbal->allGroupByExclude();
-
 
         $dbal->addOrderBy('products_move', 'ASC');
         $dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
         $dbal->addOrderBy('stock.id', 'ASC');
 
+        $dbal->addGroupBy('ord.ord');
+        $dbal->allGroupByExclude();
 
         return $this->paginator->fetchAllAssociative($dbal);
 

@@ -29,10 +29,10 @@ use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-class VoterMoveCancel implements VoterInterface
+class VoterCancel implements VoterInterface
 {
     /** Отмена перемещения */
-    public const VOTER = 'MOVING_CANCEL';
+    public const VOTER = 'CANCEL';
 
     public static function getVoter(): string
     {

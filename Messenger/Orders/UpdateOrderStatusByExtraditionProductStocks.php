@@ -74,7 +74,6 @@ final class UpdateOrderStatusByExtraditionProductStocks
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         /**
          * Получаем статус заявки.
          */

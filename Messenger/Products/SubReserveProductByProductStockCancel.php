@@ -100,6 +100,13 @@ final class SubReserveProductByProductStockCancel
             return;
         }
 
+        /** Если заявка по заказу - не снимаем резерв (будет снят при отмене заказа) */
+        if($ProductStockEvent->getOrder())
+        {
+            return;
+        }
+
+
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $this->productStocks->getProductsCancelStocks($message->getId());
 

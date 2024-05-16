@@ -31,9 +31,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.menu.admin.group')]
 final class MenuGroupStocks implements MenuAdminSectionGroupCollectionInterface
 {
-
     public const GROUP = 'stocks';
-
 
     /**
      * Возвращает значение (value)

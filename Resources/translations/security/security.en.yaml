@@ -3,14 +3,21 @@ ROLE_PRODUCT_STOCK:
   name: 'Warehouse accounting'
   desc: 'Warehouse accounting of goods'
 
-# Роль
+
+# Role
 ROLE_PRODUCT_STOCK_INDEX:
-  name: 'Просмотр'
+  name: 'View'
 
 
 ROLE_PRODUCT_STOCK_EDIT:
   name: 'Edit balances'
   desc: 'Edit warehouse balances and reserve'
+
+
+ROLE_PRODUCT_STOCK_CANCEL:
+  name: 'Cancel'
+  desc: 'Cancel request'
+
 
 # Rules
 
@@ -32,9 +39,6 @@ ROLE_PRODUCT_STOCK_MOVING_NEW:
   name: 'Add movement'
   desc: 'Add a request to move goods from the warehouse'
 
-ROLE_PRODUCT_STOCK_MOVING_CANCEL:
-  name: 'Cancel move'
-  desc: 'Cancel the request to move goods from the warehouse'
 
 
 
@@ -56,8 +60,8 @@ ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
 
 ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Packaging orders'
-  desc: 'Packaging orders for loading'
+  desc: 'Packaging loading orders'
 
 ROLE_PRODUCT_STOCK_PICKUP:
   name: 'Issuing orders'
-  desc: 'Issuing orders at the pick-up point (Pickup)'
+  desc: 'Pickup of orders at the pick-up point (Pickup)'

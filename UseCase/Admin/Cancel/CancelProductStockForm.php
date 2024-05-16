@@ -35,11 +35,11 @@ final class CancelProductStockForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('comment', TextareaType::class, ['required' => false]);
+        $builder->add('comment', TextareaType::class);
 
         /* Сохранить ******************************************************/
         $builder->add(
-            'moving_product_stock_cancel',
+            'product_stock_cancel',
             SubmitType::class,
             ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-warning']]
         );

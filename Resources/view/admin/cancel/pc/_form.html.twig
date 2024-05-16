@@ -1,9 +1,7 @@
 {% trans_default_domain 'admin.product.stock' %}
 
-
 <div class="modal-dialog modal-dialog-centered " style="max-width: 800px;">
     {{ form_start(form) }}
-
 
     <div class="modal-content p-3 border-bottom border-5 border-warning">
 
@@ -17,9 +15,11 @@
 
             <h4>
                 {# Вы уверены, что желаете отменить #}
-                {{ 'Вы действительно желаете отменить заявку на перемещение #%number%?'|trans({'%number%' : number}) }}
+                {{ 'Вы действительно желаете отменить заявку #%number%?'|trans({'%number%' : number}) }}
             </h4>
+
             <br>
+
             <p>
                 {# Убедитесь, что выбран именно тот объект, который нужно удалить, и нажмите Удалить. Если вы не
                     желаете удалять выбранный объект, нажмите кнопку Отмена.  #}
@@ -45,7 +45,7 @@
                 </button>
 
                 {# Сохранить #}
-                {{ form_widget(form.moving_product_stock_cancel, { label: '
+                {{ form_widget(form.product_stock_cancel, { label: '
                     <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
                     <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
 			    '}) }}

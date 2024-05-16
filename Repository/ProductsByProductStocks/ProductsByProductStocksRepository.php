@@ -555,7 +555,6 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         $qb->allGroupByExclude();
 
-        /* Кешируем результат DBAL */
         return $qb
             ->enableCache('products-stocks', 86400)
             ->fetchAllAssociative();

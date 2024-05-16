@@ -540,10 +540,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         $dbal->allGroupByExclude();
 
-        //dump($dbal->analyze());
-
-         /*dump($dbal->fetchAllAssociative());*/
-
         return $this->paginator->fetchAllAssociative($dbal);
 
     }

@@ -49,79 +49,78 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class CancelProductStocksByOrderCancel
 {
-	private EntityManagerInterface $entityManager;
-	
-	private CurrentQuantityByModificationInterface $quantityByModification;
-	
-	private CurrentQuantityByVariationInterface $quantityByVariation;
-	
-	private CurrentQuantityByOfferInterface $quantityByOffer;
-	
-	private CurrentQuantityByEventInterface $quantityByEvent;
+    private EntityManagerInterface $entityManager;
+
+    private CurrentQuantityByModificationInterface $quantityByModification;
+
+    private CurrentQuantityByVariationInterface $quantityByVariation;
+
+    private CurrentQuantityByOfferInterface $quantityByOffer;
+
+    private CurrentQuantityByEventInterface $quantityByEvent;
     private LoggerInterface $logger;
     private ProductStocksByOrderInterface $productStocksByOrder;
     private CancelProductStockHandler $cancelProductStockHandler;
 
 
     public function __construct(
-		EntityManagerInterface $entityManager,
-		CurrentQuantityByModificationInterface $quantityByModification,
-		CurrentQuantityByVariationInterface $quantityByVariation,
-		CurrentQuantityByOfferInterface $quantityByOffer,
-		CurrentQuantityByEventInterface $quantityByEvent,
+        EntityManagerInterface $entityManager,
+        CurrentQuantityByModificationInterface $quantityByModification,
+        CurrentQuantityByVariationInterface $quantityByVariation,
+        CurrentQuantityByOfferInterface $quantityByOffer,
+        CurrentQuantityByEventInterface $quantityByEvent,
         LoggerInterface $ordersOrderLogger,
 
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
 
 
+    )
+    {
+        $this->entityManager = $entityManager;
+        $this->entityManager->clear();
 
-	)
-	{
-		$this->entityManager = $entityManager;
-		$this->entityManager->clear();
-		
-		$this->quantityByModification = $quantityByModification;
-		$this->quantityByVariation = $quantityByVariation;
-		$this->quantityByOffer = $quantityByOffer;
-		$this->quantityByEvent = $quantityByEvent;
+        $this->quantityByModification = $quantityByModification;
+        $this->quantityByVariation = $quantityByVariation;
+        $this->quantityByOffer = $quantityByOffer;
+        $this->quantityByEvent = $quantityByEvent;
         $this->logger = $ordersOrderLogger;
         $this->productStocksByOrder = $productStocksByOrder;
         $this->cancelProductStockHandler = $cancelProductStockHandler;
     }
-	
-	
-	/** Снимаем резерв с продукции при отмене заказа  */
-	public function __invoke(OrderMessage $message) : void
-	{
-		/**
-		 * Событие заказа
-		 *
-		 * @var OrderEvent $OrderEvent
-		 */
-		$OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
-		
-		/** Если статус не Canceled «Отменен» - завершаем обработчик */
-		if(!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
-		{
-			return;
-		}
-		
-		if($message->getLast())
-		{
-			/**
-			 * Предыдущее событие заказа
-			 *
-			 * @var OrderEvent $OrderEventLast
-			 */
-			$OrderEventLast = $this->entityManager->getRepository(OrderEvent::class)->find($message->getLast());
-			
-			/** Если статус предыдущего события Completed «Выполнен» - завершаем обработчик  */
-			if($OrderEventLast->getStatus()->equals(OrderStatusCompleted::class))
-			{
-				return;
-			}
-		}
+
+
+    /** Снимаем резерв с продукции при отмене заказа  */
+    public function __invoke(OrderMessage $message): void
+    {
+        /**
+         * Событие заказа
+         *
+         * @var OrderEvent $OrderEvent
+         */
+        $OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
+
+        /** Если статус не Canceled «Отменен» - завершаем обработчик */
+        if(!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+        {
+            return;
+        }
+
+        if($message->getLast())
+        {
+            /**
+             * Предыдущее событие заказа
+             *
+             * @var OrderEvent $OrderEventLast
+             */
+            $OrderEventLast = $this->entityManager->getRepository(OrderEvent::class)->find($message->getLast());
+
+            /** Если статус предыдущего события Completed «Выполнен» - завершаем обработчик  */
+            if($OrderEventLast->getStatus()->equals(OrderStatusCompleted::class))
+            {
+                return;
+            }
+        }
 
 
         $OrderCanceledDTO = new OrderCanceledDTO(new UserProfileUid());
@@ -145,6 +144,6 @@ final class CancelProductStocksByOrderCancel
             }
         }
 
-	}
+    }
 
 }
