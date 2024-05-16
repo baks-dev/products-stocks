@@ -331,8 +331,12 @@
 
                                 {% if item.date_package %}
 
+                                    {#{{ dump(item.delivery_date|date_modify("-1 days")|date('Ymd') ~' > '~date('now')|date('Ymd')) }}#}
+
+
                                     <div class="text-dark text-nowrap">
-                                        {% if item.date_package|date('YmdH') < date('now')|date('YmdH') %}
+                                        {#{% if item.date_package|date('YmdH') > date('now')|date_modify("-1 days")|date('YmdH') %}#}
+                                        {% if date('now')|date('Ymd') > item.delivery_date|date_modify("-1 days")|date('Ymd') %}
 
                                             <span class="badge text-bg-danger">Опоздание погрузки:</span>
                                             &nbsp;
@@ -345,11 +349,29 @@
                                                 {{ item.date_package|date('d.m.Y') }}
                                             </strong>
                                         {% else %}
+
                                             <span class="text-muted opacity-50">Погрузка:</span>
                                             &nbsp;
                                             <strong>{{ item.date_package|date('d.m.Y') }}</strong>
+
                                         {% endif %}
                                     </div>
+
+
+                                    <div class="text-dark text-nowrap">
+                                        <span class="text-muted opacity-50">Дата доставки:</span>
+                                        &nbsp;
+
+                                        {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                            <strong class="text-success">Сегодня
+                                                ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+                                                )</strong>
+                                        {% else %}
+                                            <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                        {% endif %}
+                                    </div>
+
+
                                 {% else %}
 
 

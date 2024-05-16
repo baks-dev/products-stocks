@@ -19,11 +19,13 @@
                 {# Сумма транзакций #}
 
                 {% if query.data %}
+
                     {% set total = 0 %}
+                    {% set current_user = app.user.profile %}
 
                     {% for item in query.data %}
                         {# приход #}
-                        {% if app.user.profile == item.user_profile_id %}
+                        {% if current_user == item.user_profile_id %}
                             {% set total = total + item.total %}
                         {% else %}
                             {% set total = total - item.total %}
