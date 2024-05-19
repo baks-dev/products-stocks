@@ -155,12 +155,53 @@
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
-                <div class="col-3">
-                    {# {{ form_start(filter) }}
-                    <div class="w-100" style="height: 55px;">
-                        {{ form_widget(filter.warehouse, { placeholder: 'Выберите склад из списка ...', attr: { 'data-select' : 'select2' } }) }}
+                <div class="col-6">
+
+                    {{ form_start(filter) }}
+
+                    <div class="w-100 d-flex gap-3 justify-content-end" style="height: 55px;">
+
+                        <div class="w-50">
+                            {{ form_row(filter.delivery, { placeholder : 'Любой способ доставки ...', attr : { 'data-select' : 'select2' } }) }}
+                        </div>
+
+                        <div class="d-flex gap-3" style="width: 300px;">
+
+
+                            {# НАЗАД #}
+                            {{ form_row(filter.back, { label: '
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                         viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"></path>
+                                    </svg>
+                        '}) }}
+
+
+                            <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+                                    <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                </svg>
+                            </span>
+                                {{ form_widget(filter.date, { attr: { placeholder : 'Дата доставки' } }) }}
+                            </div>
+
+
+                            {# ВПЕРЕД #}
+                            {{ form_row(filter.next, { label: '
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" class="fw-bolder">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"></path></svg>
+                        '}) }}
+                        </div>
+
+
                     </div>
-                    {{ form_end(filter) }} #}
+
+
+                    {{ form_end(filter) }}
                 </div>
             </div>
 
@@ -180,27 +221,24 @@
         {% endif %}
 
 
-        <div class="card  mb-3 border-light">
-
-
+        <div class="card mb-3 border-light">
             <div class="card-header bg-body border-light">
 
-                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between">
+                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between align-items-center text-secondary">
 
                     <button
-                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body"
+                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0"
                             style="width: 20px;"
                             type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapse{{ item.stock_id }}"
-                            {# aria-expanded="false" #}
-                            {# aria-controls="collapse{{ item.stock_id }}" #}
                     >
                     </button>
 
-                    <div class="w-100 mt-2">
+
+
+                    <div class="w-100">
 
                         <div class="w-100 d-flex gap-3 justify-content-between align-items-center">
-
 
 
                             {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
@@ -212,30 +250,31 @@
 
                             <div>
 
-                                <span class="badge text-bg-warning me-3">
-                                            Готов к выдаче
-                                        </span>
-
-                                {#<a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                   class="text-hover-primary fw-bolder text-decoration-none text-nowrapmodal-link disabled"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#modal"
-                                   title="Детали заявки">
-
-                                    <span># {{ item.number }}</span>
-                                </a>#}
-
                                 <button data-href='{{ item.order_id ? path('orders-order:admin.detail', { id: item.order_id }) : '#' }}'
                                         data-id='{{ item.order_id }}'
                                         class="btn btn-sm btn-link fw-bolder text-decoration-none product-name offcanvas-link text-nowrap p-0"
                                 >
+                                    <span class="badge text-bg-warning me-3">
+                                        Готов к выдаче
+                                    </span>
+
                                     {{ item.number }}
                                 </button>
 
-                                {#<div class="fw-normal text-nowrap">
-                                    {{ item.mod_date|date('d.m.Y H:i') }}
-                                </div>#}
+                                <div class="fw-normal text-nowrap">
+
+                                    {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                        <strong class="text-success">
+                                            Сегодня
+                                            ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }})
+                                        </strong>
+                                    {% else %}
+                                        <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                    {% endif %}
+
+                                </div>
                             </div>
+
 
                             {# СКЛАД #}
 
@@ -251,6 +290,7 @@
                                 </div>
                             </div>
 
+
                             {# Клиент  #}
                             <div class="d-flex w-50 gap-3">
                                 <div class="text-nowrap">
@@ -258,6 +298,7 @@
                                     {{ user_profile_render(item.client_profile_event) }}
                                 </div>
                             </div>
+
                         </div>
 
                         {# Комментарий  #}
@@ -278,7 +319,7 @@
 
                     </div>
 
-                    <div class="mt-2">
+                    <div>
 
                         {% if item.status == 'extradition' %}
 

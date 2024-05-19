@@ -21,7 +21,7 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Forms\PackageFilter\Admin;
+namespace BaksDev\Products\Stocks\Forms\PickupFilter\Admin;
 
 use BaksDev\Delivery\Forms\Delivery\DeliveryForm;
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
@@ -35,7 +35,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-final class ProductStockPackageFilterForm extends AbstractType
+final class ProductStockPickupFilterForm extends AbstractType
 {
     private RequestStack $request;
 
@@ -63,11 +63,11 @@ final class ProductStockPackageFilterForm extends AbstractType
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
             function (FormEvent $event): void {
-                /** @var ProductStockPackageFilterDTO $data */
+                /** @var ProductStockPickupFilterDTO $data */
                 $data = $event->getData();
 
-                $this->request->getSession()->set(ProductStockPackageFilterDTO::date, $data->getDate());
-                $this->request->getSession()->set(ProductStockPackageFilterDTO::delivery, $data->getDelivery());
+                $this->request->getSession()->set(ProductStockPickupFilterDTO::date, $data->getDate());
+                $this->request->getSession()->set(ProductStockPickupFilterDTO::delivery, $data->getDelivery());
             }
         );
 
@@ -90,7 +90,7 @@ final class ProductStockPackageFilterForm extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => ProductStockPackageFilterDTO::class,
+                'data_class' => ProductStockPickupFilterDTO::class,
                 'method' => 'POST',
             ]
         );

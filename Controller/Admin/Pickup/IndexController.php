@@ -27,7 +27,12 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Pickup;
 
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
+use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
+use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterForm;
+use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterDTO;
+use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPickup\AllProductStocksPickupInterface;
+use DateInterval;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use BaksDev\Core\Controller\AbstractController;
@@ -37,10 +42,10 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PICKUP')]
-final class PickupController extends AbstractController
+final class IndexController extends AbstractController
 {
     /**
-     * Список всех заказов, готовых к выдаче в пункте самовывоза
+     * Список всех заказов, готовых к выдаче
      */
     #[Route('/admin/product/stocks/pickup{page<\d+>}', name: 'admin.pickup.index', methods: ['GET', 'POST'])]
     public function index(
@@ -56,21 +61,37 @@ final class PickupController extends AbstractController
         );
         $searchForm->handleRequest($request);
 
-
         // Фильтр
-        // $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        // $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        // $filterForm->handleRequest($request);
+        $filter = new ProductStockPickupFilterDTO($request);
+        $filterForm = $this->createForm(ProductStockPickupFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
+
+        if($filterForm->isSubmitted())
+        {
+            if($filterForm->get('back')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->sub(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+
+            if($filterForm->get('next')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->add(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+        }
 
         // Получаем список
         $Orders = $allProductStocksPickup
             ->search($search)
+            ->filter($filter)
             ->findAll($this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $Orders,
                 'search' => $searchForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }

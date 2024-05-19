@@ -29,10 +29,12 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\CategoryProduct;
 use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
@@ -57,6 +59,7 @@ use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
@@ -65,6 +68,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Entity\Value\UserProfileValue;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksPickupRepository implements AllProductStocksPickupInterface
 {
@@ -73,6 +77,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
     private DBALQueryBuilder $DBALQueryBuilder;
 
     private ?SearchDTO $search = null;
+
+    private ?ProductStockPickupFilterInterface $filter = null;
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
@@ -86,6 +92,12 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
     public function search(SearchDTO $search): self
     {
         $this->search = $search;
+        return $this;
+    }
+
+    public function filter(ProductStockPickupFilterInterface $filter): self
+    {
+        $this->filter = $filter;
         return $this;
     }
 
@@ -201,49 +213,49 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         // Множественные варианты торгового предложения
 
         $dbal
-            ->addSelect('product_offer_variation.id as product_variation_uid')
-            ->addSelect('product_offer_variation.value as product_variation_value')
-            ->addSelect('product_offer_variation.postfix as product_variation_postfix')
+            ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
             ->leftJoin(
                 'product_offer',
                 ProductVariation::class,
-                'product_offer_variation',
-                'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
+                'product_variation',
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
             );
 
         // Получаем тип множественного варианта
         $dbal
             ->addSelect('category_offer_variation.reference as product_variation_reference')
             ->leftJoin(
-                'product_offer_variation',
+                'product_variation',
                 CategoryProductVariation::class,
                 'category_offer_variation',
-                'category_offer_variation.id = product_offer_variation.category_variation'
+                'category_offer_variation.id = product_variation.category_variation'
             );
 
 
         // Модификация множественного варианта торгового предложения
 
         $dbal
-            ->addSelect('product_offer_modification.id as product_modification_uid')
-            ->addSelect('product_offer_modification.value as product_modification_value')
-            ->addSelect('product_offer_modification.postfix as product_modification_postfix')
+            ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
             ->leftJoin(
-                'product_offer_variation',
+                'product_variation',
                 ProductModification::class,
-                'product_offer_modification',
-                'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
+                'product_modification',
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
             );
 
 
         // Получаем тип модификации множественного варианта
         $dbal
-            ->addSelect('category_offer_modification.reference as product_modification_reference')
+            ->addSelect('category_modification.reference as product_modification_reference')
             ->leftJoin(
-                'product_offer_modification',
+                'product_modification',
                 CategoryProductModification::class,
-                'category_offer_modification',
-                'category_offer_modification.id = product_offer_modification.category_modification'
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
             );
 
         // Артикул продукта
@@ -251,11 +263,11 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_modification.article IS NOT NULL 
-			   THEN product_offer_modification.article
+			   WHEN product_modification.article IS NOT NULL 
+			   THEN product_modification.article
 			   
-			   WHEN product_offer_variation.article IS NOT NULL 
-			   THEN product_offer_variation.article
+			   WHEN product_variation.article IS NOT NULL 
+			   THEN product_variation.article
 			   
 			   WHEN product_offer.article IS NOT NULL 
 			   THEN product_offer.article
@@ -271,22 +283,22 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         // Фото продукта
 
         $dbal->leftJoin(
-            'product_offer_modification',
+            'product_modification',
             ProductModificationImage::class,
-            'product_offer_modification_image',
+            'product_modification_image',
             '
-			product_offer_modification_image.modification = product_offer_modification.id AND
-			product_offer_modification_image.root = true
+			product_modification_image.modification = product_modification.id AND
+			product_modification_image.root = true
 			'
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductVariationImage::class,
-            'product_offer_variation_image',
+            'product_variation_image',
             '
-			product_offer_variation_image.variation = product_offer_variation.id AND
-			product_offer_variation_image.root = true
+			product_variation_image.variation = product_variation.id AND
+			product_variation_image.root = true
 			'
         );
 
@@ -295,7 +307,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             ProductOfferImage::class,
             'product_offer_images',
             '
-			product_offer_variation_image.name IS NULL AND
+			product_variation_image.name IS NULL AND
 			product_offer_images.offer = product_offer.id AND
 			product_offer_images.root = true
 			'
@@ -316,11 +328,11 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             "
 			CASE
 			 
-                 WHEN product_offer_modification_image.name IS NOT NULL 
-                 THEN CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_offer_modification_image.name)
+               WHEN product_modification_image.name IS NOT NULL 
+               THEN CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_modification_image.name)
 					
-			   WHEN product_offer_variation_image.name IS NOT NULL 
-			   THEN CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_offer_variation_image.name)
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
 					
 			   WHEN product_offer_images.name IS NOT NULL 
 			   THEN CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
@@ -338,11 +350,11 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             "
 			CASE
 			
-			    WHEN product_offer_modification_image.name IS NOT NULL 
-			    THEN  product_offer_modification_image.ext
+			    WHEN product_modification_image.name IS NOT NULL 
+			    THEN  product_modification_image.ext
 			    
-			   WHEN product_offer_variation_image.name IS NOT NULL 
-			   THEN product_offer_variation_image.ext
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.ext
 			   
 			   WHEN product_offer_images.name IS NOT NULL 
 			   THEN product_offer_images.ext
@@ -360,8 +372,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_variation_image.name IS NOT NULL 
-			   THEN product_offer_variation_image.cdn
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.cdn
 					
 			   WHEN product_offer_images.name IS NOT NULL 
 			   THEN product_offer_images.cdn
@@ -464,22 +476,55 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
         $dbal
-            ->addSelect('ord_client.profile AS client_profile_event')
+            ->addSelect('order_user.profile AS client_profile_event')
             ->leftJoin(
                 'ord',
                 OrderUser::class,
-                'ord_client',
-                'ord_client.event = ord.event'
+                'order_user',
+                'order_user.event = ord.event'
             );
+
+
+
+
+        $dbal->addSelect('order_delivery.delivery_date');
+
+        $delivery_condition = 'order_delivery.usr = order_user.id';
+
+        if($this->filter !== null)
+        {
+            if($this->filter->getDate())
+            {
+                $delivery_condition .= ' AND order_delivery.delivery_date = :delivery_date';
+                $dbal->setParameter('delivery_date', $this->filter->getDate(), Types::DATE_IMMUTABLE);
+            }
+
+
+            if($this->filter->getDelivery())
+            {
+                $delivery_condition .= ' AND order_delivery.delivery = :delivery';
+                $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
+            }
+
+        }
+
+        $dbal
+            ->join(
+                'order_user',
+                OrderDelivery::class,
+                'order_delivery',
+                $delivery_condition
+            );
+
 
 
         if($this->search->getQuery())
         {
             $dbal->join(
-                'ord_client',
+                'order_user',
                 UserProfileValue::class,
                 'client_profile_value',
-                'client_profile_value.event = ord_client.profile'
+                'client_profile_value.event = order_user.profile'
             );
         }
 
@@ -495,7 +540,13 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             $dbal
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number')
-                ->addSearchLike('client_profile_value.value');
+                ->addSearchLike('client_profile_value.value')
+
+                ->addSearchLike('product_modification.article')
+                ->addSearchLike('product_variation.article')
+                ->addSearchLike('product_offer.article')
+                ->addSearchLike('product_info.article')
+            ;
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');

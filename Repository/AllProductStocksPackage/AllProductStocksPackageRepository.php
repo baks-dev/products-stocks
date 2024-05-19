@@ -31,6 +31,7 @@ use BaksDev\Core\Services\Paginator\PaginatorInterface;
 
 use BaksDev\Delivery\Entity\Event\DeliveryEvent;
 use BaksDev\Delivery\Entity\Trans\DeliveryTrans;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackage;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackageTransport;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
@@ -83,6 +84,7 @@ use Doctrine\DBAL\Types\Types;
 final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
 {
     private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
 
     private ?SearchDTO $search = null;
@@ -239,7 +241,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'delivery_transport.package = delivery_package.id'
             );
 
-            $dbal->addOrderBy('delivery_transport.date_package');
+            //$dbal->addOrderBy('delivery_transport.date_package');
 
         }
         else
@@ -270,22 +272,22 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-//        /* Получаем наличие на указанном складе */
-//        $dbal
-//            ->addSelect('SUM(total.total) AS stock_total')
-//            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
-//            ->leftJoin(
-//                'stock_product',
-//                ProductStockTotal::TABLE,
-//                'total',
-//                '
-//                total.profile = :profile AND
-//                total.product = stock_product.product AND
-//                (total.offer IS NULL OR total.offer = stock_product.offer) AND
-//                (total.variation IS NULL OR total.variation = stock_product.variation) AND
-//                (total.modification IS NULL OR total.modification = stock_product.modification) AND
-//                total.total > 0
-//            ');
+        //        /* Получаем наличие на указанном складе */
+        //        $dbal
+        //            ->addSelect('SUM(total.total) AS stock_total')
+        //            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
+        //            ->leftJoin(
+        //                'stock_product',
+        //                ProductStockTotal::TABLE,
+        //                'total',
+        //                '
+        //                total.profile = :profile AND
+        //                total.product = stock_product.product AND
+        //                (total.offer IS NULL OR total.offer = stock_product.offer) AND
+        //                (total.variation IS NULL OR total.variation = stock_product.variation) AND
+        //                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+        //                total.total > 0
+        //            ');
 
 
         $dbal
@@ -303,7 +305,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 (total.modification IS NULL OR total.modification = stock_product.modification) AND
                 total.total > 0
             '
-        );
+            );
 
         $dbal->join(
             'stock',
@@ -316,11 +318,11 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal
             ->addSelect('orders.id AS order_id')
             ->leftJoin(
-            'ord',
-            Order::class,
-            'orders',
-            'orders.id = ord.ord'
-        );
+                'ord',
+                Order::class,
+                'orders',
+                'orders.id = ord.ord'
+            );
 
         $dbal->leftJoin(
             'orders',
@@ -330,33 +332,35 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
 
-        // delivery_date
 
         $dbal->addSelect('order_delivery.delivery_date');
 
-        if($this->filter !== null && $this->filter->getDate())
+        $delivery_condition = 'order_delivery.usr = order_user.id';
+
+        if($this->filter !== null)
         {
-            $dbal
-                ->join(
-                    'order_user',
-                    OrderDelivery::class,
-                    'order_delivery',
-                    'order_delivery.usr = order_user.id AND order_delivery.delivery_date <= :delivery_date'
-                )
-                ->setParameter('delivery_date', $this->filter->getDate(), Types::DATE_IMMUTABLE)
-            ;
-        }
-        else
-        {
-            $dbal
-                ->leftJoin(
-                    'order_user',
-                    OrderDelivery::class,
-                    'order_delivery',
-                    'order_delivery.usr = order_user.id'
-                );
+            if($this->filter->getDate())
+            {
+                $delivery_condition .= ' AND order_delivery.delivery_date = :delivery_date';
+                $dbal->setParameter('delivery_date', $this->filter->getDate(), Types::DATE_IMMUTABLE);
+            }
+
+
+            if($this->filter->getDelivery())
+            {
+                $delivery_condition .= ' AND order_delivery.delivery = :delivery';
+                $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
+            }
+
         }
 
+        $dbal
+            ->join(
+                'order_user',
+                OrderDelivery::class,
+                'order_delivery',
+                $delivery_condition
+            );
 
         $dbal->leftJoin(
             'order_delivery',
@@ -453,33 +457,33 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
          */
 
         $dbal
-            ->addSelect('product_offer_variation.id as product_variation_uid')
-            ->addSelect('product_offer_variation.value as product_variation_value')
-            ->addSelect('product_offer_variation.postfix as product_variation_postfix')
+            ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
             ->leftJoin(
                 'product_offer',
                 ProductVariation::class,
-                'product_offer_variation',
-                'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
+                'product_variation',
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
             );
 
         // Получаем тип множественного варианта
         $dbal
-            ->addSelect('category_offer_variation.reference as product_variation_reference')
+            ->addSelect('category_variation.reference as product_variation_reference')
             ->leftJoin(
-                'product_offer_variation',
+                'product_variation',
                 CategoryProductVariation::class,
-                'category_offer_variation',
-                'category_offer_variation.id = product_offer_variation.category_variation'
+                'category_variation',
+                'category_variation.id = product_variation.category_variation'
             );
 
         $dbal
-            ->addSelect('category_offer_variation_trans.name as product_variation_name')
+            ->addSelect('category_variation_trans.name as product_variation_name')
             ->leftJoin(
-                'category_offer_variation',
+                'category_variation',
                 CategoryProductVariationTrans::class,
-                'category_offer_variation_trans',
-                'category_offer_variation_trans.variation = category_offer_variation.id AND category_offer_variation_trans.local = :local'
+                'category_variation_trans',
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
             );
 
         /*
@@ -487,33 +491,33 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
          */
 
         $dbal
-            ->addSelect('product_offer_modification.id as product_modification_uid')
-            ->addSelect('product_offer_modification.value as product_modification_value')
-            ->addSelect('product_offer_modification.postfix as product_modification_postfix')
+            ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
             ->leftJoin(
-                'product_offer_variation',
+                'product_variation',
                 ProductModification::class,
-                'product_offer_modification',
-                'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
+                'product_modification',
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
             );
 
         // Получаем тип модификации множественного варианта
         $dbal
-            ->addSelect('category_offer_modification.reference as product_modification_reference')
+            ->addSelect('category_modification.reference as product_modification_reference')
             ->leftJoin(
-                'product_offer_modification',
+                'product_modification',
                 CategoryProductModification::class,
-                'category_offer_modification',
-                'category_offer_modification.id = product_offer_modification.category_modification'
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
             );
 
         $dbal
-            ->addSelect('category_offer_modification_trans.name as product_modification_name')
+            ->addSelect('category_modification_trans.name as product_modification_name')
             ->leftJoin(
-                'category_offer_modification',
+                'category_modification',
                 CategoryProductModificationTrans::class,
-                'category_offer_modification_trans',
-                'category_offer_modification_trans.modification = category_offer_modification.id AND category_offer_modification_trans.local = :local'
+                'category_modification_trans',
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
             );
 
         // Артикул продукта
@@ -521,8 +525,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_modification.article IS NOT NULL THEN product_offer_modification.article
-			   WHEN product_offer_variation.article IS NOT NULL THEN product_offer_variation.article
+			   WHEN product_modification.article IS NOT NULL THEN product_modification.article
+			   WHEN product_variation.article IS NOT NULL THEN product_variation.article
 			   WHEN product_offer.article IS NOT NULL THEN product_offer.article
 			   WHEN product_info.article IS NOT NULL THEN product_info.article
 			   ELSE NULL
@@ -533,22 +537,22 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         // Фото продукта
 
         $dbal->leftJoin(
-            'product_offer_modification',
+            'product_modification',
             ProductModificationImage::class,
-            'product_offer_modification_image',
+            'product_modification_image',
             '
-			product_offer_modification_image.modification = product_offer_modification.id AND
-			product_offer_modification_image.root = true
+                product_modification_image.modification = product_modification.id AND
+                product_modification_image.root = true
 			'
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductVariationImage::class,
-            'product_offer_variation_image',
+            'product_variation_image',
             '
-			product_offer_variation_image.variation = product_offer_variation.id AND
-			product_offer_variation_image.root = true
+                product_variation_image.variation = product_variation.id AND
+                product_variation_image.root = true
 			'
         );
 
@@ -557,9 +561,9 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ProductOfferImage::class,
             'product_offer_images',
             '
-			product_offer_variation_image.name IS NULL AND
-			product_offer_images.offer = product_offer.id AND
-			product_offer_images.root = true
+                product_variation_image.name IS NULL AND
+                product_offer_images.offer = product_offer.id AND
+                product_offer_images.root = true
 			'
         );
 
@@ -578,10 +582,10 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             "
 			CASE
 			 
-			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_offer_modification_image.name)
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_offer_variation_image.name)
+			 WHEN product_modification_image.name IS NOT NULL THEN
+					CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_modification_image.name)
+			   WHEN product_variation_image.name IS NOT NULL THEN
+					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
 			   WHEN product_offer_images.name IS NOT NULL THEN
 					CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
 			   WHEN product_photo.name IS NOT NULL THEN
@@ -596,8 +600,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             "
 			CASE
 			
-			   WHEN product_offer_modification_image.name IS NOT NULL THEN  product_offer_modification_image.ext
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN product_offer_variation_image.ext
+			   WHEN product_modification_image.name IS NOT NULL THEN  product_modification_image.ext
+			   WHEN product_variation_image.name IS NOT NULL THEN product_variation_image.ext
 			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
 			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
 				
@@ -611,8 +615,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					product_offer_variation_image.cdn
+			   WHEN product_variation_image.name IS NOT NULL THEN
+					product_variation_image.cdn
 			   WHEN product_offer_images.name IS NOT NULL THEN
 					product_offer_images.cdn
 			   WHEN product_photo.name IS NOT NULL THEN
@@ -767,7 +771,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'users_profile_personal_move.event = users_profile_move.event'
             );
 
-
         /** Пункт назначения при перемещении */
 
         $dbal->leftOneJoin(
@@ -804,14 +807,16 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-
-
         // Поиск
         if($this->search?->getQuery())
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number');
+                ->addSearchLike('event.number')
+                ->addSearchLike('product_modification.article')
+                ->addSearchLike('product_variation.article')
+                ->addSearchLike('product_offer.article')
+                ->addSearchLike('product_info.article');
         }
 
 
@@ -821,6 +826,14 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
+
+
+        ///$dbal->addGroupBy('ord.ord');
+        //$dbal->allGroupByExclude();
+
+        //        $dbal->setMaxResults(24);
+        //        dd($dbal->fetchAllAssociative());
+        //        dd($this->paginator->fetchAllAssociative($dbal));
 
         return $this->paginator->fetchAllAssociative($dbal);
 

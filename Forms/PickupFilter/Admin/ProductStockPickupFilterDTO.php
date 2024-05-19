@@ -21,15 +21,16 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Forms\PackageFilter\Admin;
+namespace BaksDev\Products\Stocks\Forms\PickupFilter\Admin;
 
 use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
+
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
+use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Request;
 
-final class ProductStockPackageFilterDTO implements ProductStockPackageFilterInterface
+final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInterface
 {
     public const date = 'zbJIvDNPeN';
 

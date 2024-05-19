@@ -1,6 +1,6 @@
 {% trans_default_domain('admin.product.stock') %}
 
-<main class="main d-print-none ">
+<main class="main d-print-none">
 
     <section class="container px-4 mb-5">
 
@@ -155,13 +155,18 @@
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
-                <div class="col-3">
+                <div class="col-6">
+
                     {{ form_start(filter) }}
 
                     <div class="w-100 d-flex gap-3 justify-content-end" style="height: 55px;">
 
+                       <div class="w-50">
+                           {{ form_row(filter.delivery, { placeholder : 'Любой способ доставки ...', attr : { 'data-select' : 'select2' } }) }}
+                       </div>
 
-                        <div class="d-flex gap-3" style="width: 265px;">
+                        <div class="d-flex gap-3" style="width: 300px;">
+
 
                             {# НАЗАД #}
                             {{ form_row(filter.back, { label: '
@@ -181,7 +186,7 @@
                                     <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
                                 </svg>
                             </span>
-                                {{ form_widget(filter.date, { attr: { placeholder : 'Дата' } }) }}
+                                {{ form_widget(filter.date, { attr: { placeholder : 'Дата доставки' } }) }}
                             </div>
 
 
@@ -216,27 +221,24 @@
         {% endif %}
 
 
-        <div class="card  mb-3 {{ item.products_move ? 'shadow border-danger' : 'border-light' }}"
+        <div class="card mb-3 {{ item.products_move ? 'shadow border-danger' : 'border-light' }}"
              style="{{ item.products_move ? '--bs-border-opacity: 0.2;' : '' }}">
-
 
             <div class="card-header bg-body border-light">
 
-                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between text-secondary">
+                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between align-items-center text-secondary">
 
 
                     <button
-                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body"
+                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0"
                             style="width: 20px;"
                             type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapse{{ item.id }}"
-                            {# aria-expanded="false" #}
-                            {# aria-controls="collapse{{ item.id }}" #}
                     >
                     </button>
 
 
-                    <div class="w-100 mt-2">
+                    <div class="w-100">
 
                         <div class="w-100 d-flex gap-3 justify-content-between align-items-center">
 
@@ -250,28 +252,6 @@
 
 
                             <div>
-                                {# <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                   class="text-hover-primary fw-bolder text-decoration-none text-nowrapmodal-link disabled"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#modal"
-                                   title="Детали заявки">
-
-                                    {% if item.status == 'package' or item.status == 'divide' %}
-                                        <span class="badge text-bg-warning me-3">
-                                            Сборка
-                                        </span>
-                                    {% endif %}
-
-
-                                    {% if item.status == 'moving' %}
-                                        <span class="badge text-bg-danger me-3">
-                                            Перемещение
-                                        </span>
-                                    {% endif %}
-
-                                    <span class="text-nowrap"># {{ item.number }}</span>
-                                </a> #}
-
 
                                 <button data-href='{{ item.order_id ? path('orders-order:admin.detail', { id: item.order_id }) : '#' }}'
                                         data-id='{{ item.order_id }}'
@@ -279,9 +259,21 @@
                                 >
 
                                     {% if item.status == 'package' or item.status == 'divide' %}
-                                        <span class="badge text-bg-warning me-3">
+
+                                        {% if date('now')|date('Ymd') == item.delivery_date|date('Ymd') %}
+                                            <span class="badge text-bg-warning me-3">
+                                                Опоздание
+                                            </span>
+                                        {% elseif date('now')|date('Ymd') > item.delivery_date|date_modify("-1 days")|date('Ymd') %}
+                                            <span class="badge text-bg-danger me-3">
+                                                Просрочен
+                                            </span>
+                                        {% else %}
+                                            <span class="badge me-3" style="background-color: #8000FF;">
                                             Сборка
                                         </span>
+                                        {% endif %}
+
                                     {% endif %}
 
 
@@ -296,9 +288,19 @@
                                 </button>
 
                                 <div class="fw-normal text-nowrap">
-                                    {{ item.mod_date|date('d.m.Y H:i') }}
+
+                                    {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                        <strong class="text-success">Сегодня
+                                            ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+                                            )</strong>
+                                    {% else %}
+                                        <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                    {% endif %}
+
                                 </div>
                             </div>
+
+
 
                             {# СКЛАД #}
 
@@ -312,17 +314,20 @@
 
                                     {% if item.delivery_name %}
                                         <div class="text-dark text-nowrap">
-                                            <span class="text-muted opacity-50">Доставка:</span>
-                                            &nbsp; {{ item.delivery_name }}
+                                            <span class="text-muted opacity-50">
+                                                Доставка: &nbsp;
+                                            </span>
+                                          {{ item.delivery_name }}
                                         </div>
                                     {% endif %}
 
 
-
                                     {% if item.products_move %}
                                         <div class="text-dark text-nowrap">
-                                            <span class="text-muted opacity-50">Ожидание:</span>
-                                            &nbsp; {{ item.users_profile_move }}
+                                            <span class="text-muted opacity-50">
+                                                Ожидание: &nbsp;
+                                            </span>
+                                           {{ item.users_profile_move }}
                                         </div>
                                     {% endif %}
 
@@ -330,129 +335,18 @@
 
 
                                 {% if item.users_profile_destination %}
-
                                     <div class="text-dark text-nowrap">
-                                        <span class="text-muted opacity-50">Пункт назначения:</span>
-                                        &nbsp; {{ item.users_profile_destination }}
+                                        <span class="text-muted opacity-50">
+                                            Пункт назначения: &nbsp;
+                                        </span>
+                                        {{ item.users_profile_destination }}
                                     </div>
                                 {% endif %}
-
-                                {% if item.date_package %}
-
-                                    {# {{ dump(item.delivery_date|date_modify("-1 days")|date('Ymd') ~' > '~date('now')|date('Ymd')) }} #}
-
-
-                                    <div class="text-dark text-nowrap">
-                                        {# {% if item.date_package|date('YmdH') > date('now')|date_modify("-1 days")|date('YmdH') %} #}
-                                        {% if date('now')|date('Ymd') > item.delivery_date|date_modify("-1 days")|date('Ymd') %}
-
-                                            <span class="badge text-bg-danger">Опоздание погрузки:</span>
-                                            &nbsp;
-                                            <strong class="text-danger pointer"
-                                                    data-bs-toggle="tooltip"
-                                                    data-bs-placement="bottom"
-                                                    data-bs-delay='{"show":600,"hide":100}'
-                                                    title="Дата погрузки не является текущей"
-                                            >
-                                                {{ item.date_package|date('d.m.Y') }}
-                                            </strong>
-                                        {% else %}
-
-                                            <span class="text-muted opacity-50">Погрузка:</span>
-                                            &nbsp;
-                                            <strong>{{ item.date_package|date('d.m.Y') }}</strong>
-
-                                        {% endif %}
-                                    </div>
-
-
-                                    <div class="text-dark text-nowrap">
-                                        <span class="text-muted opacity-50">Дата доставки:</span>
-                                        &nbsp;
-
-                                        {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
-                                            <strong class="text-success">Сегодня
-                                                ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
-                                                )</strong>
-                                        {% else %}
-                                            <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
-                                        {% endif %}
-                                    </div>
-
-
-                                {% else %}
-
-
-
-
-                                    {% if item.delivery_date|date('Ymd') < date('now')|date('Ymd') %}
-
-                                        <span class="badge text-bg-danger">Опоздание:</span>
-                                        &nbsp;
-                                        <strong class="text-danger pointer">
-                                            {{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
-                                        </strong>
-
-                                    {% else %}
-
-                                        <span class="text-muted opacity-50">Дата выдачи:</span> &nbsp;
-
-                                        {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
-                                            <strong class="text-success">Сегодня
-                                                ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
-                                                )</strong>
-                                        {% else %}
-                                            <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
-                                        {% endif %}
-
-                                    {% endif %}
-
-
-                                {% endif %}
-
                             </div>
 
                             {# ОТВЕТСТВЕННЫЙ  #}
                             <div class="d-flex w-50 gap-3">
-
-                                {# Обложка #}{#
-                                {% set image_path = '/assets/img/blank.svg' %}
-
-                                {% if item.users_profile_avatar_ext is defined and item.users_profile_avatar_ext is not null %}
-                                    {% set img_host =  item.users_profile_avatar_cdn == true  ? CDN_HOST : '' %}
-                                    {% set img_dir = item.users_profile_avatar %}
-                                    {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.users_profile_avatar_ext %}
-                                    {% set image_path = img_host ~ img_dir ~ img_file %}
-                                {% endif %}
-
-                                <div>
-                                    <a href="#"
-                                       class="icon rounded-circle bg-contain lazy p-1"
-                                       data-bg="{{ image_path }}"
-                                    > </a>
-                                </div> #}
-
                                 <div class="ms-0">
-                                    {# <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
-                                       class="fw-bolder mb- text-decoration-none text-dark">
-                                        {{ item.users_profile_username }}
-                                    </a> #}
-
-                                    {# <div class="text-muted fs-7 fw-bolder">
-
-											<span class="me-1 text-muted">
-												<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                                                     viewBox="0 0 24 24" fill="none">
-													<path opacity="0.3"
-                                                          d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
-                                                          fill="currentColor"></path>
-													<path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z"
-                                                          fill="currentColor"></path>
-												</svg>
-											</span>
-                                        {{ item.group_name }}
-                                    </div> #}
-
                                 </div>
                             </div>
 
@@ -476,11 +370,11 @@
 
                     </div>
 
-                    <div class="w-50 mt-2 text-end">
+                    <div>
 
                         {% if item.status == 'error' %}
 
-                            <button class="btn btn-danger disabled text-nowrap mb-3" title="Ошибка заказа">
+                            <button class="btn btn-danger disabled text-nowrap" title="Ошибка заказа">
                                 Ошибка заказа
                             </button>
 
@@ -490,7 +384,7 @@
 
 
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"
-                                   class="btn btn-warning modal-link disabled text-nowrap mb-3"
+                                   class="btn btn-warning modal-link disabled text-nowrap"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal"
                                    title="Отправить в доставку">
@@ -500,7 +394,7 @@
                             {% elseif item.products_move %}
 
                                 <button
-                                        class="btn btn-danger text-nowrap mb-3"
+                                        class="btn btn-danger text-nowrap"
                                         disabled="disabled"
                                         title="Отправить в доставку">
                                     Ожидается перемещение

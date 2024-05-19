@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2023.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,11 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
+namespace BaksDev\Products\Stocks\Forms\PickupFilter;
 
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 
-interface AllProductStocksPickupInterface
+interface ProductStockPickupFilterInterface
 {
-
-    public function search(SearchDTO $search): self;
-
-    public function filter(ProductStockPickupFilterInterface $filter): self;
-
-    /** Метод возвращает пагинатор ProductStocks */
-    public function findAll(UserProfileUid $profile): PaginatorInterface;
+    public function getDate(): ?DateTimeImmutable;
 }

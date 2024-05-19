@@ -21,20 +21,33 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
+declare(strict_types=1);
 
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
-interface AllProductStocksPickupInterface
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
+/**
+ * Статус Completed «Выдан по месту назначения»
+ */
+#[AutoconfigureTag('baks.product.stock.status')]
+class ProductStockStatusCompleted implements ProductStockStatusInterface
 {
 
-    public function search(SearchDTO $search): self;
+    public const STATUS = 'completed';
 
-    public function filter(ProductStockPickupFilterInterface $filter): self;
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
 
-    /** Метод возвращает пагинатор ProductStocks */
-    public function findAll(UserProfileUid $profile): PaginatorInterface;
+//    /**
+//     * Проверяет, относится ли статус к данному объекту
+//     */
+//    public static function equals(string $status): bool
+//    {
+//        return self::STATUS === $status;
+//    }
 }

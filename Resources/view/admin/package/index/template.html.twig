@@ -27,6 +27,7 @@
          style="--bs-offcanvas-width: 800px;"
     >
     </div>
+
 {% endblock %}
 
 
@@ -37,7 +38,10 @@
 
 <script nonce="{{ csp_nonce() }}">
 
-    filterDate = document.getElementById('product_stock_package_filter_form_date');
+    document.addEventListener("DOMContentLoaded", (event) => {
+        const form = document.forms.product_stock_package_filter_form;
+        form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+    });
 
     function changeDatapicker(input) {
         let forms = input.closest('form');

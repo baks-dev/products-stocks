@@ -478,13 +478,22 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
             $dbal
                 ->createSearchQueryBuilder($this->search)
+
+                ->addSearchEqualUid('stock_product.id')
+
                 //->addSearchEqualUid('warehouse.id')
                 //->addSearchEqualUid('warehouse.event')
                 //->addSearchLike('warehouse_trans.name')
                 ->addSearchLike('users_profile_personal.username')
                 ->addSearchLike('users_profile_personal.location')
                 ->addSearchLike('product_trans.name')
-                ->addSearchLike('category_trans.name');
+                ->addSearchLike('category_trans.name')
+
+                ->addSearchLike('product_modification.article')
+                ->addSearchLike('product_variation.article')
+                ->addSearchLike('product_offer.article')
+                ->addSearchLike('product_info.article')
+            ;
 
         }
 
