@@ -48,7 +48,8 @@ final class SubProductStocksTotal
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger
-    ) {
+    )
+    {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
@@ -62,7 +63,7 @@ final class SubProductStocksTotal
     {
         $this->entityManager->clear();
 
-        $ProductStockTotal =  $this->productStockMinQuantity
+        $ProductStockTotal = $this->productStockMinQuantity
             ->profile($message->getProfile())
             ->product($message->getProduct())
             ->offerConst($message->getOffer())
@@ -75,32 +76,15 @@ final class SubProductStocksTotal
             $this->logger->critical('Не найдено продукции на складе для списания',
                 [
                     __FILE__.':'.__LINE__,
-                    'profile' => (string) $message->getProfile(),
-                    'product' => (string) $message->getProduct(),
-                    'offer' => (string) $message->getOffer(),
-                    'variation' => (string) $message->getVariation(),
-                    'modification' => (string) $message->getModification()
+                    'UserProfileUid' => (string) $message->getProfile(),
+                    'ProductUid' => (string) $message->getProduct(),
+                    'ProductOfferConst' => (string) $message->getOffer(),
+                    'ProductVariationConst' => (string) $message->getVariation(),
+                    'ProductModificationConst' => (string) $message->getModification()
                 ]);
 
-            throw new DomainException('Невозможно снять резерв с продукции, которой нет на складе');
-
+            return;
         }
-
-//        if($ProductStockTotal->getReserve() <= 0)
-//        {
-//            $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирован',
-//                [
-//                    __FILE__.':'.__LINE__,
-//                    'profile' => (string) $message->getProfile(),
-//                    'product' => (string) $message->getProduct(),
-//                    'offer' => (string) $message->getOffer(),
-//                    'variation' => (string) $message->getVariation(),
-//                    'modification' => (string) $message->getModification()
-//                ]);
-//
-//            throw new DomainException('Невозможно снять резерв с продукции, которая заранее не зарезервирована');
-//        }
-
 
 
         /**
@@ -114,8 +98,7 @@ final class SubProductStocksTotal
 
         $dbal
             ->where('id = :identifier')
-            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE)
-        ;
+            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE);
 
         $dbal->andWhere('reserve != 0');
         $dbal->andWhere('total != 0');
@@ -124,21 +107,18 @@ final class SubProductStocksTotal
 
         if(empty($rows))
         {
-            $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована или нет в ниличии',
+            $this->logger->critical(
+                'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована или нет в наличии',
                 [
                     __FILE__.':'.__LINE__,
-                    'identifier' => (string) $ProductStockTotal->getId()
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]);
 
-            throw new DomainException('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована');
+            return;
         }
 
-
-//        $ProductStockTotal->subReserve(1);
-//        $ProductStockTotal->subTotal(1);
-//        $this->entityManager->flush();
-
-        $this->logger->info(sprintf('%s : Сняли резерв и уменьшили количество на складе на единицу продукции', $ProductStockTotal->getStorage()) ,
+        $this->logger->info(
+            sprintf('%s : Сняли резерв и уменьшили количество на складе на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
                 'profile' => (string) $message->getProfile(),
@@ -149,7 +129,4 @@ final class SubProductStocksTotal
             ]);
 
     }
-
-
-
 }
