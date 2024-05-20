@@ -74,6 +74,8 @@ final class EditController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('product_stock_total_edit'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $ProductStocksHandler->handle($ProductStocksDTO);
 
             $this->addFlash

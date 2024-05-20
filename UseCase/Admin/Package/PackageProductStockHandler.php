@@ -33,8 +33,11 @@ use DomainException;
 
 final class PackageProductStockHandler extends AbstractHandler
 {
-    public function handle(PackageProductStockDTO $command,): string|ProductStock
+    public function handle(PackageProductStockDTO $command): string|ProductStock
     {
+
+
+
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
 

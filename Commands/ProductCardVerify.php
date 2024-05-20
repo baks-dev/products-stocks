@@ -133,6 +133,7 @@ class ProductCardVerify extends Command
         $dbal
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.const as product_modification_const')
+            ->addSelect('product_modification.id as product_modification_id')
             ->leftJoin(
                 'product_variation',
                 ProductModification::class,

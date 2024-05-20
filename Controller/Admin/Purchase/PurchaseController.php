@@ -62,6 +62,8 @@ final class PurchaseController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('purchase'))
         {
+            $this->refreshTokenForm($form);
+
             $purchase = clone $purchaseDTO;
 
             /** @var ProductStockDTO $product */

@@ -61,6 +61,8 @@ final class CancelController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('product_stock_cancel'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $MovingProductStockCancelHandler->handle($CancelProductStockDTO);
 
             $this->addFlash

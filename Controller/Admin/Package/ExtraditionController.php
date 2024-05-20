@@ -67,6 +67,8 @@ final class ExtraditionController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('extradition'))
         {
+            $this->refreshTokenForm($form);
+
             $ProductStocks = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
             if($ProductStocks instanceof ProductStock)

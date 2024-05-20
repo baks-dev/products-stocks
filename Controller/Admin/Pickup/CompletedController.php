@@ -79,6 +79,8 @@ final class CompletedController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_package'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
 
             $this->addFlash

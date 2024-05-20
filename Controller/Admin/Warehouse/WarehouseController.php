@@ -78,6 +78,8 @@ final class WarehouseController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('send'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $handler->handle($WarehouseProductStockDTO);
 
             $this->addFlash

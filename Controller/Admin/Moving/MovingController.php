@@ -60,6 +60,8 @@ final class MovingController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
+            $this->refreshTokenForm($form);
+
             $success = true;
 
             /** Создаем каждое отдельно перемещение */
