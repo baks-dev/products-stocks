@@ -104,6 +104,20 @@ final class SubReserveProductStocksTotalByOrderComplete
         }
 
 
+        /**
+         * Если имеется модуль Delivery - проверяем, нет ли статуса "Доставка"
+         * (при доставке резерв со склада снимается в момент погрузки и переходит на баланс транспорта)
+         */
+
+        if(class_exists(OrderStatusDelivery::class))
+        {
+
+
+
+            return;
+        }
+
+
         $lastOrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getLast());
 
         if(!$lastOrderEvent)

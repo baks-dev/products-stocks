@@ -29,7 +29,7 @@ use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuant
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
-use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve\ProductStocksTotalByReserveInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -43,15 +43,14 @@ final class RecalculateProductReserve
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private ProductStocksTotalInterface $productStocksTotal;
+    private ProductStocksTotalByReserveInterface $productStocksTotalByReserve;
 
     public function __construct(
         ProductModificationQuantityInterface $modificationQuantity,
         ProductVariationQuantityInterface $variationQuantity,
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
-        ProductStocksTotalInterface $productStocksTotal,
-
+        ProductStocksTotalByReserveInterface $productStocksTotalByReserve,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger
     )
@@ -61,10 +60,9 @@ final class RecalculateProductReserve
         $this->variationQuantity = $variationQuantity;
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
-
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
-        $this->productStocksTotal = $productStocksTotal;
+        $this->productStocksTotalByReserve = $productStocksTotalByReserve;
     }
 
     /**
@@ -122,12 +120,13 @@ final class RecalculateProductReserve
 
         if($ProductUpdateQuantity)
         {
-            $ProductStocksReserve = $this->productStocksTotal->getProductStocksReserve(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification()
-            );
+            // Метод возвращает общее количество РЕЗЕРВА продукции на всех складах
+            $ProductStocksReserve = $this->productStocksTotalByReserve
+                ->product($product->getProduct())
+                ->offer($product->getOffer())
+                ->variation($product->getVariation())
+                ->modification($product->getModification())
+                ->get();
 
             $ProductUpdateQuantity->setReserve($ProductStocksReserve);
             $this->entityManager->flush();

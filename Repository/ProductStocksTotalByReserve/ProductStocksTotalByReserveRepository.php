@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,22 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotal;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 
-final class ProductStocksTotalRepository implements ProductStocksTotalInterface
+
+final class ProductStocksTotalByReserveRepository implements ProductStocksTotalByReserveInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
+    public function __construct(DBALQueryBuilder $DBALQueryBuilder,)
     {
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
@@ -116,9 +115,8 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         return $this;
     }
 
-    /**
-     * Метод возвращает общее количество продукции на всех складах (без учета резерва)
-     */
+
+    /** Метод возвращает общее количество резерва продукции на всех складах */
     public function get(): int
     {
         if(empty($this->product))
@@ -129,7 +127,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbal
-            ->select('SUM(stock.total)')
+            ->select('SUM(stock.reserve)')
             ->from(ProductStockTotal::class, 'stock')
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
@@ -168,5 +166,6 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         }
 
         return $dbal->fetchOne() ?: 0;
+
     }
 }

@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
@@ -53,6 +54,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private UserByUserProfileInterface $userByUserProfile;
     private ProductStocksTotalInterface $productStocksTotal;
     private DBALQueryBuilder $DBALQueryBuilder;
+    private ProductStocksTotalStorageInterface $productStocksTotalStorage;
 
 
     public function __construct(
@@ -62,7 +64,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $productsStocksLogger,
         UserByUserProfileInterface $userByUserProfile,
-        ProductStocksTotalInterface $productStocksTotal
+        ProductStocksTotalInterface $productStocksTotal,
+        ProductStocksTotalStorageInterface $productStocksTotalStorage
     )
     {
         $this->productStocks = $productStocks;
@@ -75,6 +78,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
         $this->productStocksTotal = $productStocksTotal;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
+        $this->productStocksTotalStorage = $productStocksTotalStorage;
     }
 
     /**
@@ -129,15 +133,14 @@ final class AddQuantityProductStocksTotalByIncomingStock
         foreach($products as $product)
         {
             /** Получаем место для хранения указанной продукции данного профиля */
-            $ProductStockTotal = $this->productStocksTotal
-                ->getProductStocksTotalByStorage(
-                    $UserProfileUid,
-                    $product->getProduct(),
-                    $product->getOffer(),
-                    $product->getVariation(),
-                    $product->getModification(),
-                    $product->getStorage()
-                );
+            $ProductStockTotal = $this->productStocksTotalStorage
+                ->profile($UserProfileUid)
+                ->product($product->getProduct())
+                ->offer($product->getOffer())
+                ->variation($product->getVariation())
+                ->modification($product->getModification())
+                ->storage($product->getStorage())
+                ->find();
 
             if(!$ProductStockTotal)
             {
@@ -202,6 +205,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE);
 
             $rows = $dbal->executeStatement();
+
+
 
             if(empty($rows))
             {

@@ -22,6 +22,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve\ProductStocksTotalByReserveInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,25 +37,27 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ProductCardVerify extends Command
 {
     private DBALQueryBuilder $DBALQueryBuilder;
-    private ProductWarehouseTotalInterface $productWarehouseTotal;
     private ProductStocksTotalInterface $productStocksTotal;
+    private ProductStocksTotalByReserveInterface $productStocksTotalByReserve;
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         ProductWarehouseTotalInterface $productWarehouseTotal,
+
+
         ProductStocksTotalInterface $productStocksTotal,
+        ProductStocksTotalByReserveInterface $productStocksTotalByReserve,
     )
     {
         parent::__construct();
         $this->DBALQueryBuilder = $DBALQueryBuilder;
-        $this->productWarehouseTotal = $productWarehouseTotal;
         $this->productStocksTotal = $productStocksTotal;
+        $this->productStocksTotalByReserve = $productStocksTotalByReserve;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-
 
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -155,20 +158,21 @@ class ProductCardVerify extends Command
 
         foreach($dbal->fetchAllAssociative() as $product)
         {
-            $total = $this->productStocksTotal->getProductStocksTotal(
-                new ProductUid($product['product_id']),
-                $product['product_offer_const'] ? new ProductOfferConst($product['product_offer_const']) : null,
-                $product['product_variation_const'] ? new ProductVariationConst($product['product_variation_const']) : null,
-                $product['product_modification_const'] ? new ProductModificationConst($product['product_modification_const']) : null
-            );
+            $total = $this->productStocksTotal
+                ->product($product['product_id'])
+                ->offer($product['product_offer_const'])
+                ->variation($product['product_variation_const'])
+                ->modification($product['product_modification_const'])
+                ->get()
+            ;
 
-            $reserve = $this->productStocksTotal->getProductStocksReserve(
-                new ProductUid($product['product_id']),
-                $product['product_offer_const'] ? new ProductOfferConst($product['product_offer_const']) : null,
-                $product['product_variation_const'] ? new ProductVariationConst($product['product_variation_const']) : null,
-                $product['product_modification_const'] ? new ProductModificationConst($product['product_modification_const']) : null
-            );
-
+            $reserve = $this->productStocksTotalByReserve
+                ->product($product['product_id'])
+                ->offer($product['product_offer_const'])
+                ->variation($product['product_variation_const'])
+                ->modification($product['product_modification_const'])
+                ->get()
+            ;
 
             if($product['product_modification_const'])
             {

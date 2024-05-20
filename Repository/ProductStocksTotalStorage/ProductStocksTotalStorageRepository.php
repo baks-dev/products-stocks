@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,8 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotal;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage;
 
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -35,23 +34,35 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 
-final class ProductStocksTotalRepository implements ProductStocksTotalInterface
-{
-    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
+final class ProductStocksTotalStorageRepository implements ProductStocksTotalStorageInterface
+{
+    private ORMQueryBuilder $ORMQueryBuilder;
+
+    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
     {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
+        $this->ORMQueryBuilder = $ORMQueryBuilder;
     }
 
-    private ProductUid $product;
+    private UserProfileUid|string $profile;
+    private ProductUid|string $product;
 
-    private ?ProductOfferConst $offer = null;
+    private ProductOfferConst|string|null $offer = null;
+    private ProductVariationConst|string|null $variation = null;
+    private ProductModificationConst|string|null $modification = null;
+    private ?string $storage = null;
 
-    private ?ProductVariationConst $variation = null;
+    public function profile(UserProfileUid|string $profile): self
+    {
+        if(is_string($profile))
+        {
+            $profile = new UserProfileUid($profile);
+        }
 
-    private ?ProductModificationConst $modification = null;
+        $this->profile = $profile;
 
+        return $this;
+    }
 
     public function product(ProductUid|string $product): self
     {
@@ -116,57 +127,97 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         return $this;
     }
 
-    /**
-     * Метод возвращает общее количество продукции на всех складах (без учета резерва)
-     */
-    public function get(): int
+
+    public function storage(string|null $storage): self
     {
+        if(empty($storage))
+        {
+            return $this;
+        }
+
+        $storage = trim($storage);
+        $storage = mb_strtolower($storage);
+
+        $this->storage = $storage;
+
+        return $this;
+    }
+
+
+    /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
+    public function find(): ?ProductStockTotal
+    {
+        if(empty($this->profile))
+        {
+            throw new InvalidArgumentException('Invalid Argument profile');
+        }
+
         if(empty($this->product))
         {
             throw new InvalidArgumentException('Invalid Argument product');
         }
 
-        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $dbal
-            ->select('SUM(stock.total)')
-            ->from(ProductStockTotal::class, 'stock')
+        $orm->select('stock');
+
+        $orm->from(ProductStockTotal::class, 'stock');
+
+        $orm
+            ->andWhere('stock.profile = :profile')
+            ->setParameter('profile', $this->profile, UserProfileUid::TYPE);
+
+        $orm
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
 
+
+        if($this->storage)
+        {
+            $orm
+                ->andWhere('LOWER(stock.storage) = :storage')
+                ->setParameter('storage', $this->storage);
+        }
+        else
+        {
+            $orm->andWhere('stock.storage IS NULL');
+        }
+
         if($this->offer)
         {
-            $dbal
+            $orm
                 ->andWhere('stock.offer = :offer')
                 ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
         }
         else
         {
-            $dbal->andWhere('stock.offer IS NULL');
+            $orm->andWhere('stock.offer IS NULL');
         }
 
         if($this->variation)
         {
-            $dbal
+            $orm
                 ->andWhere('stock.variation = :variation')
                 ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
         }
         else
         {
-            $dbal->andWhere('stock.variation IS NULL');
+            $orm->andWhere('stock.variation IS NULL');
         }
 
         if($this->modification)
         {
-            $dbal
+            $orm
                 ->andWhere('stock.modification = :modification')
                 ->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
         }
         else
         {
-            $dbal->andWhere('stock.modification IS NULL');
+            $orm->andWhere('stock.modification IS NULL');
         }
 
-        return $dbal->fetchOne() ?: 0;
+        $orm->setMaxResults(1);
+
+        return $orm->getOneOrNullResult();
     }
 }

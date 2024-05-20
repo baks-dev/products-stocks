@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,26 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotal;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-interface ProductStocksTotalInterface
+/**
+ * Возвращает общее количество резерва продукции на всех складах
+ *
+ * <code>
+ *    $reserve = $this
+ *      ->product($product)
+ *      ->offer($offer)
+ *      ->variation($variation)
+ *      ->modification($modification)
+ *      ->get();
+ * </code>
+ */
+interface ProductStocksTotalByReserveInterface
 {
     public function product(ProductUid|string $product): self;
 
@@ -40,7 +50,6 @@ interface ProductStocksTotalInterface
 
     public function modification(ProductModificationConst|string|null $modification): self;
 
-    /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
+    /** Метод возвращает общее количество резерва продукции на всех складах */
     public function get(): int;
-
 }

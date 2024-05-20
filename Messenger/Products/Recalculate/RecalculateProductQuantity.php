@@ -57,7 +57,8 @@ final class RecalculateProductQuantity
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
         AppCacheInterface $cache
-    ) {
+    )
+    {
 
         $this->modificationQuantity = $modificationQuantity;
         $this->variationQuantity = $variationQuantity;
@@ -127,12 +128,13 @@ final class RecalculateProductQuantity
 
         if($ProductUpdateQuantity)
         {
-            $ProductStocksTotal = $this->productStocksTotal->getProductStocksTotal(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification()
-            );
+            // Метод возвращает общее количество продукции на всех складах (без учета резерва)
+            $ProductStocksTotal = $this->productStocksTotal
+                ->product($product->getProduct())
+                ->offer($product->getOffer())
+                ->variation($product->getVariation())
+                ->modification($product->getModification())
+                ->get();
 
             $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
             $this->entityManager->flush();

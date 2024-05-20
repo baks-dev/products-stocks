@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotal;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -30,8 +30,10 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-interface ProductStocksTotalInterface
+interface ProductStocksTotalStorageInterface
 {
+    public function profile(UserProfileUid|string $profile): self;
+
     public function product(ProductUid|string $product): self;
 
     public function offer(ProductOfferConst|string|null $offer): self;
@@ -40,7 +42,8 @@ interface ProductStocksTotalInterface
 
     public function modification(ProductModificationConst|string|null $modification): self;
 
-    /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
-    public function get(): int;
+    public function storage(string|null $storage): self;
 
+    /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
+    public function find(): ?ProductStockTotal;
 }
