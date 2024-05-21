@@ -78,6 +78,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 
@@ -339,7 +340,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         if($this->filter !== null)
         {
-            if($this->filter->getDate())
+            if($this->filter->getDate() instanceof DateTimeImmutable)
             {
                 $delivery_condition .= ' AND order_delivery.delivery_date >= :delivery_date_start AND order_delivery.delivery_date < :delivery_date_end';
                 $dbal->setParameter('delivery_date_start', $this->filter->getDate(), Types::DATE_IMMUTABLE);
@@ -347,7 +348,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             }
 
 
-            if($this->filter->getDelivery())
+            if($this->filter->getDelivery() instanceof DeliveryUid)
             {
                 $delivery_condition .= ' AND order_delivery.delivery = :delivery';
                 $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);

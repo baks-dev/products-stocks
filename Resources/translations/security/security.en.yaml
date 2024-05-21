@@ -1,12 +1,15 @@
 # Role
 ROLE_PRODUCT_STOCK:
+  header: 'Warehouse'
   name: 'Warehouse accounting'
   desc: 'Warehouse accounting of goods'
 
 
 # Role
 ROLE_PRODUCT_STOCK_INDEX:
+  header: 'Orders'
   name: 'View'
+  desc: 'Warehouse accounting of goods'
 
 
 ROLE_PRODUCT_STOCK_EDIT:

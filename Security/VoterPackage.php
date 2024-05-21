@@ -73,7 +73,7 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
     public function getSortMenu(): int
     {
-        return 140;
+        return 201;
     }
 
     /** Метод возвращает флаг "Показать в выпадающем меню"  */

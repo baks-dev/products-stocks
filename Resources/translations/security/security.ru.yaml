@@ -1,13 +1,19 @@
 
 # Роль
 ROLE_PRODUCT_STOCK:
+  header: 'Склад'
   name: 'Складской учет'
   desc: 'Складской учет товаров'
 
 
+
 # Роль
 ROLE_PRODUCT_STOCK_INDEX:
+  header: 'Заказы'
   name: 'Просмотр'
+  desc: 'Складской учет товаров'
+
+
 
 
 ROLE_PRODUCT_STOCK_EDIT:

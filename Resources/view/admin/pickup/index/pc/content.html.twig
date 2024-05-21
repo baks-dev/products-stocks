@@ -284,6 +284,13 @@
                                     <strong>{{ item.users_profile_username }}</strong>
                                 </div>
 
+                                {% if item.delivery_name %}
+                                    <div class="text-nowrap">
+                                        <span class="text-muted opacity-50">Доставка:</span> &nbsp;
+                                        <strong>{{ item.delivery_name }}</strong>
+                                    </div>
+                                {% endif %}
+
                                 <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Готовность:</span> &nbsp;
                                     <strong>{{ item.mod_date|date('d.m.Y H:i') }}</strong>

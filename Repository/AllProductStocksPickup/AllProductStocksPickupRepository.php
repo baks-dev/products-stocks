@@ -29,6 +29,8 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Delivery\Entity\Event\DeliveryEvent;
+use BaksDev\Delivery\Entity\Trans\DeliveryTrans;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
@@ -517,7 +519,21 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 $delivery_condition
             );
 
+        $dbal->leftJoin(
+            'order_delivery',
+            DeliveryEvent::class,
+            'delivery_event',
+            'delivery_event.id = order_delivery.event'
+        );
 
+        $dbal
+            ->addSelect('delivery_trans.name AS delivery_name')
+            ->leftJoin(
+                'delivery_event',
+                DeliveryTrans::class,
+                'delivery_trans',
+                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
+            );
 
         if($this->search->getQuery())
         {
