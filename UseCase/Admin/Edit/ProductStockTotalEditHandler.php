@@ -74,9 +74,6 @@ final class ProductStockTotalEditHandler
 
         $ProductStockTotal->setEntity($command);
 
-
-
-
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
         {

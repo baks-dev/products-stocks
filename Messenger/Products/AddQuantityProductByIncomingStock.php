@@ -33,7 +33,6 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -57,7 +56,6 @@ final class AddQuantityProductByIncomingStock
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger
     )
     {
@@ -67,18 +65,14 @@ final class AddQuantityProductByIncomingStock
         $this->variationQuantity = $variationQuantity;
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
-
-        // Инициируем статусы складских остатков
-        $collection->cases();
         $this->logger = $productsStocksLogger;
     }
 
     /**
-     * Пополнение наличием продукции при поступлении на склад
+     * Пополнение наличием продукции в карточке при поступлении на склад
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
@@ -90,15 +84,6 @@ final class AddQuantityProductByIncomingStock
         // Если статус не является Incoming «Приход на склад»
         if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
         {
-
-            $this->logger->notice('Не пополняем карточку товара: Статус заявки не является Incoming «Приход на склад»',
-                [
-                    __FILE__.':'.__LINE__,
-                    'ProductStockUid' => (string) $message->getId(),
-                    'event' => (string) $message->getEvent(),
-                    'last' => (string) $message->getLast()]
-            );
-
             return;
         }
 
@@ -107,80 +92,87 @@ final class AddQuantityProductByIncomingStock
 
         if($products)
         {
-
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach($products as $key => $product)
+            foreach($products as $product)
             {
-
-                $ProductUpdateQuantity = null;
-
-                // Количественный учет модификации множественного варианта торгового предложения
-                if(null === $ProductUpdateQuantity && $product->getModification())
-                {
-
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification()
-                    );
-                }
-
-                // Количественный учет множественного варианта торгового предложения
-                if(null === $ProductUpdateQuantity && $product->getVariation())
-                {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantity = $this->variationQuantity->getProductVariationQuantity(
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation()
-                    );
-                }
-
-                // Количественный учет торгового предложения
-                if(null === $ProductUpdateQuantity && $product->getOffer())
-                {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantity = $this->offerQuantity->getProductOfferQuantity(
-                        $product->getProduct(),
-                        $product->getOffer()
-                    );
-                }
-
-                // Количественный учет продукта
-                if(null === $ProductUpdateQuantity)
-                {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
-                        $product->getProduct()
-                    );
-                }
-
-                if($ProductUpdateQuantity)
-                {
-                    $ProductUpdateQuantity->addQuantity($product->getTotal());
-                    $this->entityManager->flush();
-
-
-                    $this->logger->info('Пополнили общий остаток продукции '.$key.' в карточке',
-                        [
-                            __FILE__.':'.__LINE__,
-                            'event' => (string) $message->getEvent(),
-                            'product' => (string) $product->getProduct(),
-                            'offer' => (string) $product->getOffer(),
-                            'variation' => (string) $product->getVariation(),
-                            'modification' => (string) $product->getModification(),
-                            'total' => $product->getTotal(),
-                        ]);
-                }
+                $this->changeTotal($product);
             }
         }
+    }
+
+    public function changeTotal(ProductStockProduct $product): void
+    {
+        $ProductUpdateQuantity = null;
+
+        // Количественный учет модификации множественного варианта торгового предложения
+        if(null === $ProductUpdateQuantity && $product->getModification())
+        {
+
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation(),
+                $product->getModification()
+            );
+        }
+
+        // Количественный учет множественного варианта торгового предложения
+        if(null === $ProductUpdateQuantity && $product->getVariation())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->variationQuantity->getProductVariationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation()
+            );
+        }
+
+        // Количественный учет торгового предложения
+        if(null === $ProductUpdateQuantity && $product->getOffer())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->offerQuantity->getProductOfferQuantity(
+                $product->getProduct(),
+                $product->getOffer()
+            );
+        }
+
+        // Количественный учет продукта
+        if(null === $ProductUpdateQuantity)
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
+                $product->getProduct()
+            );
+        }
+
+        $context = [
+            __FILE__.':'.__LINE__,
+            'total' => $product->getTotal(),
+            'ProductUid' => (string) $product->getProduct(),
+            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
+            'ProductOfferConst' => (string) $product->getOffer(),
+            'ProductVariationConst' => (string) $product->getVariation(),
+            'ProductModificationConst' => (string) $product->getModification(),
+        ];
+
+        if($ProductUpdateQuantity)
+        {
+            $ProductUpdateQuantity->addQuantity($product->getTotal());
+            $this->entityManager->flush();
+            $this->logger->info('Пополнили общий остаток продукции в карточке', $context);
+
+            return;
+        }
+
+        $this->logger->critical('Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
+
     }
 }

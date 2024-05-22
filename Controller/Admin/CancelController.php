@@ -39,7 +39,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_CANCEL')]
 final class CancelController extends AbstractController
 {
-    /** Отмена складской заявки */
+    /** Отмена складской заявки (БЕЗ ОТМЕНЫ ЗАКАЗА) */
     #[Route('/admin/product/stock/cancel/{id}', name: 'admin.cancel', methods: ['GET', 'POST'])]
     public function cancel(
         #[MapEntity] ProductStockEvent $Event,
@@ -67,9 +67,9 @@ final class CancelController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.cancel',
-                $handle instanceof ProductStock ? 'admin.success.cancel' : 'admin.danger.cancel',
-                'admin.product.stock',
+                'page.cancel',
+                $handle instanceof ProductStock ? 'success.cancel' : 'danger.cancel',
+                'products-stocks.admin',
                 $handle
             );
 

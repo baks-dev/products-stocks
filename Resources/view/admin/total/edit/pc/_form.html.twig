@@ -1,4 +1,4 @@
-{% trans_default_domain 'admin.product.stock' %}
+{% trans_default_domain 'products-stocks.admin' %}
 
 {% set arr_property = card.category_section_field|json_decode %}
 
@@ -10,7 +10,7 @@
 
         <div class="modal-header">
             <h5 class="modal-title">
-                {{ 'admin.page.total'|trans }}
+                {{ 'page.total'|trans }}
             </h5>
         </div>
 
@@ -39,7 +39,7 @@
                             variation : card.product_variation_value,
                             modification : card.product_modification_value,
                             postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
-                        })  %}
+                        }) %}
 
                         <a href="{{ product_href }}"
                            target="_detail" class="icon rounded-3 bg-contain lazy p-1"
@@ -90,10 +90,9 @@
                 </div>
             </div>
 
-            {% if is_granted('ROLE_ADMIN') %}
-                {{ form_row(form.total, { label: 'Наличие', attr: { min : 0 } }) }}
-                {{ form_row(form.reserve, {label: 'Резерв', attr: { min : 0 }}) }}
-            {% endif %}
+            {{ form_row(form.total, { label: 'Наличие', attr: { min : 0 } }) }}
+
+            {{ form_row(form.reserve, {label: 'Резерв', attr: { min : 0 }}) }}
 
             {{ form_row(form.storage, { label: 'Место' }) }}
 
@@ -104,7 +103,8 @@
                 <div class="flex-grow-1 d-flex align-items-center gap-2">
                     <small class="text-muted">Наличие:</small> <strong>{{ form.vars.data.total }}</strong>
                     <small class="text-muted">Резерв:</small> <strong>{{ form.vars.data.reserve }}</strong>
-                    <small class="text-muted">Доступно</small> <strong>{{ (form.vars.data.total - form.vars.data.reserve) }}</strong>
+                    <small class="text-muted">Доступно</small>
+                    <strong>{{ (form.vars.data.total - form.vars.data.reserve) }}</strong>
                 </div>
             {% endif %}
 

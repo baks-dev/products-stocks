@@ -85,7 +85,7 @@ final class CompletedController extends AbstractController
 
             $this->addFlash
             (
-                'page.edit',
+                'page.pickup',
                 $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
                 'products-stocks.package',
                 $handle

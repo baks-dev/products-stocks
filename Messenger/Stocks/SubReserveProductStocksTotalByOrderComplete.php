@@ -25,25 +25,19 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\DeliveryTransport\Type\OrderStatus\OrderStatusDelivery;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
-use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusExtradition;
-use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusNew;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
-use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -73,11 +67,11 @@ final class SubReserveProductStocksTotalByOrderComplete
     }
 
     /**
-     * Снимаем резерв со склада при статусе "ВЫПОЛНЕН" если предыдущее событие было "СОБРАН"
-     * (например при самовывозе с «Собран» перевели в статус «Выполнен»)
+     * Снимаем резерв и остаток со склада при статусе заказа Completed «Выполнен»
      */
     public function __invoke(OrderMessage $message): void
     {
+
         $this->entityManager->clear();
 
         /** @var OrderEvent $OrderEvent */
@@ -88,55 +82,9 @@ final class SubReserveProductStocksTotalByOrderComplete
             return;
         }
 
-        /* Если статус заказа не Completed «Выполнен» */
-        if(!$OrderEvent->getStatus()->equals(OrderStatusCompleted::class))
+        /** Если статус заказа не Completed «Выполнен» */
+        if(false === $OrderEvent->getStatus()->equals(OrderStatusCompleted::class))
         {
-            $this->logger
-                ->notice('Не снимаем резерв на складе: Статус заказа не Completed «Выполнен»',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'OrderUid' => $message->getId(),
-                        'event' => $message->getEvent(),
-                        'last' => $message->getLast()
-                    ]);
-
-            return;
-        }
-
-
-        /**
-         * Если имеется модуль Delivery - проверяем, нет ли статуса "Доставка"
-         * (при доставке резерв со склада снимается в момент погрузки и переходит на баланс транспорта)
-         */
-
-        if(class_exists(OrderStatusDelivery::class))
-        {
-
-
-
-            return;
-        }
-
-
-        $lastOrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getLast());
-
-        if(!$lastOrderEvent)
-        {
-            return;
-        }
-
-        /* Если статус предыдущего события заказа не Extradition «Готов к выдаче» */
-        if(!$lastOrderEvent->getStatus()->equals(OrderStatusExtradition::class))
-        {
-            $this->logger
-                ->notice('Не снимаем резерв на складе: Статус предыдущего события не Extradition «Готов к выдаче»',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'OrderUid' => $message->getId(),
-                        'event' => $message->getEvent(),
-                        'last' => $message->getLast()
-                    ]);
-
             return;
         }
 
@@ -182,36 +130,22 @@ final class SubReserveProductStocksTotalByOrderComplete
             ->getRepository(ProductModification::class)
             ->find($product->getModification())?->getConst() : null;
 
-        $ProductStockTotal = $this->entityManager
-            ->getRepository(ProductStockTotal::class)
-            ->findOneBy(
-                [
-                    'profile' => $profile,
-                    'product' => $ProductUid,
-                    'offer' => $ProductOfferConst,
-                    'variation' => $ProductVariationConst,
-                    'modification' => $ProductModificationConst
-                ]
-            );
+        $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа',
+            [
+                __FILE__.':'.__LINE__,
+                'total' => $product->getTotal(),
+                'profile' => (string) $profile,
+                'product' => (string) $product->getProduct(),
+                'offer' => (string) $product->getOffer(),
+                'variation' => (string) $product->getVariation(),
+                'modification' => (string) $product->getModification(),
 
-        if(!$ProductStockTotal)
-        {
-            $throw = sprintf(
-                'Невозможно снять резерв с продукции, которой нет на складе (warehouse: %s, product: %s, offer: %s, variation: %s, modification: %s)',
-                $profile,
-                $ProductUid,
-                $ProductOfferConst,
-                $ProductVariationConst,
-                $ProductModificationConst,
-            );
+            ]);
 
-            throw new DomainException($throw);
-        }
-
-        /** Снимаем резерв и остаток продукции на складе */
+        /** Снимаем резерв и остаток продукции на складе по одной единице продукции */
         for($i = 1; $i <= $product->getTotal(); $i++)
         {
-            $SubProductStocksTotalMessage = new SubProductStocksTotalMessage(
+            $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
                 $profile,
                 $ProductUid,
                 $ProductOfferConst,
@@ -221,22 +155,6 @@ final class SubReserveProductStocksTotalByOrderComplete
 
             $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
         }
-
-        //$ProductStockTotal->subReserve($product->getTotal());
-        //$ProductStockTotal->subTotal($product->getTotal());
-        //$this->entityManager->flush();
-
-        $this->logger->info('Снимаем резерв и уменьшаем количество на складе при самовывозе',
-            [
-                __FILE__.':'.__LINE__,
-                'profile' => (string) $profile,
-                'product' => (string) $product->getProduct(),
-                'offer' => (string) $product->getOffer(),
-                'variation' => (string) $product->getVariation(),
-                'modification' => (string) $product->getModification(),
-                'total' => $product->getTotal(),
-            ]);
-
 
     }
 }

@@ -73,18 +73,18 @@ final class ExtraditionController extends AbstractController
 
             if($ProductStocks instanceof ProductStock)
             {
-                $this->addFlash('admin.page.package',
-                    'admin.success.extradition',
-                    'admin.product.stock'
+                $this->addFlash('page.package',
+                    'success.extradition',
+                    'products-stocks.admin'
                 );
 
                 return $this->redirectToRoute('products-stocks:admin.package.index');
             }
 
             $this->addFlash(
-                'admin.page.package',
-                'admin.danger.extradition',
-                'admin.product.stock',
+                'page.package',
+                'danger.extradition',
+                'products-stocks.admin',
                 $ProductStocks);
 
             return $this->redirectToReferer();

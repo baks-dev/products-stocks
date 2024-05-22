@@ -38,19 +38,16 @@ final class ProductStockTotalEditForm extends AbstractType
 {
     private Security $security;
 
-    public function __construct(Security $security) {
+    public function __construct(Security $security)
+    {
         $this->security = $security;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
 
-        if($this->security->isGranted('ROLE_ADMIN'))
-        {
-            $builder->add('total', IntegerType::class);
-            $builder->add('reserve', IntegerType::class);
-        }
-
+        $builder->add('total', IntegerType::class);
+        $builder->add('reserve', IntegerType::class);
         $builder->add('storage', TextType::class, ['required' => false]);
 
         /* Сохранить ******************************************************/

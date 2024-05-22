@@ -166,6 +166,9 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
         /* складские места только с наличием */
         $orm->andWhere('stock.total > 0');
 
+        /* складские места только с резервом */
+        $orm->andWhere('stock.reserve > 0');
+
         return $orm->getOneOrNullResult();
     }
 

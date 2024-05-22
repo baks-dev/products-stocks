@@ -64,7 +64,7 @@ final class CancelController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.cancel',
+                'page.cancel',
                 $handle instanceof ProductStock ? 'admin.success.cancel' : 'admin.danger.cancel',
                 'admin.product.stock',
                 $handle

@@ -80,9 +80,9 @@ final class EditController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.total',
-                $handle instanceof ProductStockTotal ? 'admin.success.total' : 'admin.danger.total',
-                'admin.product.stock',
+                'page.total',
+                $handle instanceof ProductStockTotal ? 'success.total' : 'danger.total',
+                'products-stocks.admin',
                 $handle
             );
 

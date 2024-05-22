@@ -117,7 +117,7 @@ final class MovingController extends AbstractController
                         $msg .= '<br>Доступно: <b>'.$ProductStockTotal.'</b>';
 
 
-                        $this->addFlash('Недостаточное количество продукции', $msg, 'admin.product.stock');
+                        $this->addFlash('Недостаточное количество продукции', $msg, 'products-stocks.admin');
                         continue 2;
                     }
                 }
@@ -130,13 +130,13 @@ final class MovingController extends AbstractController
                 if(!$ProductStock instanceof ProductStock)
                 {
                     $success = false;
-                    $this->addFlash('danger', 'admin.danger.move', 'admin.product.stock', $ProductStock);
+                    $this->addFlash('danger', 'danger.move', 'products-stocks.admin', $ProductStock);
                 }
             }
 
             if($success)
             {
-                $this->addFlash('success', 'admin.success.move', 'admin.product.stock');
+                $this->addFlash('success', 'success.move', 'products-stocks.admin');
             }
 
             return $this->redirectToRoute('products-stocks:admin.moving.index');

@@ -44,7 +44,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Снимает ТОЛЬКО! резерв продукции при отмене заявки Cancel «Отменен»
  */
-
 #[AsMessageHandler(priority: 1)]
 final class SubReserveProductByProductStockCancel
 {
@@ -65,7 +64,8 @@ final class SubReserveProductByProductStockCancel
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger
-    ) {
+    )
+    {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -79,11 +79,10 @@ final class SubReserveProductByProductStockCancel
     }
 
     /**
-     * Снимает ТОЛЬКО! резерв продукции в карточке при отмене заявки
+     * Снимает ТОЛЬКО! резерв продукции в карточке при отмене заявки без заказа
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         if(!$message->getLast())
         {
             return;
@@ -94,8 +93,13 @@ final class SubReserveProductByProductStockCancel
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
+        if(!$ProductStockEvent)
+        {
+            return;
+        }
+
         // Если Статус не является Cancel «Отменен».
-        if (!$ProductStockEvent || false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
+        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
         {
             return;
         }
@@ -106,80 +110,90 @@ final class SubReserveProductByProductStockCancel
             return;
         }
 
-
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $this->productStocks->getProductsCancelStocks($message->getId());
 
-        if ($products) {
-
+        if($products)
+        {
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
-            foreach ($products as $key => $product) {
-
-                $ProductUpdateQuantityReserve = null;
-
-                // Количественный учет модификации множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getModification()) {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantityReserve = $this->modificationQuantity->getProductModificationQuantity(
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation(),
-                        $product->getModification()
-                    );
-                }
-
-                // Количественный учет множественного варианта торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getVariation()) {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantityReserve = $this->variationQuantity->getProductVariationQuantity(
-                        $product->getProduct(),
-                        $product->getOffer(),
-                        $product->getVariation()
-                    );
-                }
-
-                // Количественный учет торгового предложения
-                if (null === $ProductUpdateQuantityReserve && $product->getOffer()) {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantityReserve = $this->offerQuantity->getProductOfferQuantity(
-                        $product->getProduct(),
-                        $product->getOffer()
-                    );
-                }
-
-                // Количественный учет продукта
-                if (null === $ProductUpdateQuantityReserve) {
-                    $this->entityManager->clear();
-
-                    $ProductUpdateQuantityReserve = $this->productQuantity->getProductQuantity(
-                        $product->getProduct()
-                    );
-                }
-
-                if ($ProductUpdateQuantityReserve)
-                {
-                    //$ProductUpdateQuantityReserve->subQuantity($product->getTotal());
-                    $ProductUpdateQuantityReserve->subReserve($product->getTotal());
-
-                    $this->entityManager->flush();
-
-                    $this->logger->info('Сняли общий резерв и количество продукции '.$key.' в карточке при перемещении между складами',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'event' => $message->getEvent()->getValue(),
-                        'product' => $product->getProduct()->getValue(),
-                        'offer' => $product->getOffer()?->getValue(),
-                        'variation' => $product->getVariation()?->getValue(),
-                        'modification' => $product->getModification()?->getValue(),
-                        'total' => $product->getTotal(),
-                    ]);
-                }
+            foreach($products as $product)
+            {
+                $this->changeReserve($product);
             }
         }
+    }
+
+    public function changeReserve(ProductStockProduct $product): void
+    {
+        $ProductUpdateQuantityReserve = null;
+
+        // Количественный учет модификации множественного варианта торгового предложения
+        if(null === $ProductUpdateQuantityReserve && $product->getModification())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantityReserve = $this->modificationQuantity->getProductModificationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation(),
+                $product->getModification()
+            );
+        }
+
+        // Количественный учет множественного варианта торгового предложения
+        if(null === $ProductUpdateQuantityReserve && $product->getVariation())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantityReserve = $this->variationQuantity->getProductVariationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation()
+            );
+        }
+
+        // Количественный учет торгового предложения
+        if(null === $ProductUpdateQuantityReserve && $product->getOffer())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantityReserve = $this->offerQuantity->getProductOfferQuantity(
+                $product->getProduct(),
+                $product->getOffer()
+            );
+        }
+
+        // Количественный учет продукта
+        if(null === $ProductUpdateQuantityReserve)
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantityReserve = $this->productQuantity->getProductQuantity(
+                $product->getProduct()
+            );
+        }
+
+        $context = [
+            __FILE__.':'.__LINE__,
+            'total' => $product->getTotal(),
+            'ProductUid' => (string) $product->getProduct(),
+            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
+            'ProductOfferConst' => (string) $product->getOffer(),
+            'ProductVariationConst' => (string) $product->getVariation(),
+            'ProductModificationConst' => (string) $product->getModification(),
+        ];
+
+
+        if($ProductUpdateQuantityReserve && $ProductUpdateQuantityReserve->subReserve($product->getTotal()))
+        {
+            $this->entityManager->flush();
+            $this->logger->info('Отменили общий резерв в карточке при отмене складской заявки на перемещение', $context);
+            return;
+        }
+
+        $this->logger->critical('Невозможно отменить общий резерв продукции: карточка не найдена либо недостаточное количество резерва)', $context);
+
     }
 }

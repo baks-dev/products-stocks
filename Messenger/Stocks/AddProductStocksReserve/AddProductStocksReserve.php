@@ -23,12 +23,13 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
@@ -36,30 +37,30 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class SubProductStocksTotal
+final class AddProductStocksReserve
 {
     private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
-    private DBALQueryBuilder $DBALQueryBuilder;
+    private AddProductStockInterface $addProductStock;
 
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        AddProductStockInterface $addProductStock
     )
     {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
+        $this->addProductStock = $addProductStock;
     }
 
     /**
-     * Снимает наличие продукции и резерв с указанного склада с мест, начиная с минимального наличия
+     * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия
      */
-    public function __invoke(SubProductStocksTotalMessage $message): void
+    public function __invoke(AddProductStocksReserveMessage $message): void
     {
         $this->entityManager->clear();
 
@@ -69,46 +70,38 @@ final class SubProductStocksTotal
             ->offerConst($message->getOffer())
             ->variationConst($message->getVariation())
             ->modificationConst($message->getModification())
-            ->findOneByTotalMin();
+            ->findOneBySubReserve();
 
         if(!$ProductStockTotal)
         {
-            $this->logger->critical('Не найдено продукции на складе для списания',
+            $this->logger->critical('Не найдено продукции на складе для резервирования',
                 [
                     __FILE__.':'.__LINE__,
-                    'UserProfileUid' => (string) $message->getProfile(),
-                    'ProductUid' => (string) $message->getProduct(),
-                    'ProductOfferConst' => (string) $message->getOffer(),
-                    'ProductVariationConst' => (string) $message->getVariation(),
-                    'ProductModificationConst' => (string) $message->getModification()
+                    'profile' => (string) $message->getProfile(),
+                    'product' => (string) $message->getProduct(),
+                    'offer' => (string) $message->getOffer(),
+                    'variation' => (string) $message->getVariation(),
+                    'modification' => (string) $message->getModification()
                 ]);
 
-            return;
+            throw new DomainException('Невозможно добавить резерв на продукцию');
+
         }
 
 
-        /**
-         * Снимает наличие продукции и резерв
-         */
-        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $this->handle($ProductStockTotal);
+    }
 
-        $dbal->update(ProductStockTotal::class);
-        $dbal->set('total', 'total - 1');
-        $dbal->set('reserve', 'reserve - 1');
-
-        $dbal
-            ->where('id = :identifier')
-            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE);
-
-        $dbal->andWhere('reserve != 0');
-        $dbal->andWhere('total != 0');
-
-        $rows = $dbal->executeStatement();
+    public function handle(ProductStockTotal $ProductStockTotal): void
+    {
+        /** Добавляем в резерв единицу продукции */
+        $rows = $this->addProductStock
+            ->reserve(1)
+            ->updateById($ProductStockTotal);
 
         if(empty($rows))
         {
-            $this->logger->critical(
-                'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована или нет в наличии',
+            $this->logger->critical('Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
                 [
                     __FILE__.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
@@ -117,16 +110,10 @@ final class SubProductStocksTotal
             return;
         }
 
-        $this->logger->info(
-            sprintf('%s : Сняли резерв и уменьшили количество на складе на единицу продукции', $ProductStockTotal->getStorage()),
+        $this->logger->info(sprintf('%s : Добавили резерв на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
-                'profile' => (string) $message->getProfile(),
-                'product' => (string) $message->getProduct(),
-                'offer' => (string) $message->getOffer(),
-                'variation' => (string) $message->getVariation(),
-                'modification' => (string) $message->getModification()
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]);
-
     }
 }

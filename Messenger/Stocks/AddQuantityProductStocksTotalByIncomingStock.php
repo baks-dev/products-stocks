@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
@@ -34,6 +35,7 @@ use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocks
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
+use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
@@ -52,33 +54,32 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private UserByUserProfileInterface $userByUserProfile;
-    private ProductStocksTotalInterface $productStocksTotal;
-    private DBALQueryBuilder $DBALQueryBuilder;
     private ProductStocksTotalStorageInterface $productStocksTotalStorage;
+    private AddProductStockInterface $addProductStock;
+    private MessageDispatchInterface $messageDispatch;
 
 
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $ProductStockStatusCollection,
         LoggerInterface $productsStocksLogger,
         UserByUserProfileInterface $userByUserProfile,
-        ProductStocksTotalInterface $productStocksTotal,
-        ProductStocksTotalStorageInterface $productStocksTotalStorage
+        ProductStocksTotalStorageInterface $productStocksTotalStorage,
+        AddProductStockInterface $addProductStock,
+        MessageDispatchInterface $messageDispatch
     )
     {
+        // Инициируем статусы складских остатков
+        $ProductStockStatusCollection->cases();
+
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->userByUserProfile = $userByUserProfile;
-
-        // Инициируем статусы складских остатков
-        $ProductStockStatusCollection->cases();
         $this->logger = $productsStocksLogger;
-
-        $this->productStocksTotal = $productStocksTotal;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
         $this->productStocksTotalStorage = $productStocksTotalStorage;
+        $this->addProductStock = $addProductStock;
+        $this->messageDispatch = $messageDispatch;
     }
 
     /**
@@ -93,27 +94,18 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
         $this->entityManager->clear();
 
-
         if(!$ProductStockEvent)
         {
             return;
         }
 
-        // Если Статус заявки не является "Приход на склад"
-        if($ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class) === false)
+        /**
+         * Если Статус заявки не является Incoming «Приход на склад»
+         */
+        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
         {
-            $this->logger
-                ->notice('Не пополняем складские остатки: Статус заявки не является Incoming «Приход на склад»',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'ProductStockUid' => (string) $message->getId(),
-                        'event' => (string) $message->getEvent(),
-                        'last' => (string) $message->getLast()
-                    ]);
-
             return;
         }
-
 
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
@@ -186,62 +178,41 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 );
             }
 
-
-            /**
-             * Добавляем приход на указанный профиль (склад)
-             */
-
-
-            $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-            $dbal->update(ProductStockTotal::class);
-
-            $dbal
-                ->set('total', 'total + :total')
-                ->setParameter('total', $product->getTotal(), ParameterType::INTEGER);
-
-            $dbal
-                ->where('id = :identifier')
-                ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE);
-
-            $rows = $dbal->executeStatement();
-
-
-
-            if(empty($rows))
-            {
-                $this->logger->critical('Ошибка при обновлении складских остатков.',
-                    [
-                        __FILE__.':'.__LINE__,
-                        'identifier' => (string) $ProductStockTotal->getId()
-                    ]);
-
-                throw new DomainException('Ошибка при обновлении складских остатков.');
-            }
-
-
-            //                $ProductStockTotal->getId();
-            //                $product->getTotal();
-            //                $ProductStockTotal->addTotal($product->getTotal());
-
-
-            $this->logger->info('Добавили приход продукции на склад',
-                [
-                    __FILE__.':'.__LINE__,
-                    'number' => $ProductStockEvent->getNumber(),
-                    'event' => (string) $message->getEvent(),
-                    'profile' => (string) $UserProfileUid,
-                    'product' => (string) $product->getProduct(),
-                    'offer' => (string) $product->getOffer(),
-                    'variation' => (string) $product->getVariation(),
-                    'modification' => (string) $product->getModification(),
-                    'storage' => $product->getStorage(),
-                    'total' => $product->getTotal(),
-                ]
+            $this->logger->info(
+                sprintf('Добавляем приход продукции по заявке %s', $ProductStockEvent->getNumber()),
+                [__FILE__.':'.__LINE__]
             );
+
+            $this->handle($ProductStockTotal, $product->getTotal());
+
         }
 
-        //$this->entityManager->flush();
+    }
 
+    public function handle(ProductStockTotal $ProductStockTotal, int $total): void
+    {
+
+        /** Добавляем приход на указанный профиль (склад) */
+        $rows = $this->addProductStock
+            ->total($total)
+            ->updateById($ProductStockTotal);
+
+        if(empty($rows))
+        {
+            $this->logger->critical('Ошибка при обновлении складских остатков',
+                [
+                    __FILE__.':'.__LINE__,
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
+                ]);
+
+            return;
+        }
+
+        $this->logger->info('Добавили приход продукции на склад',
+            [
+                __FILE__.':'.__LINE__,
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
+            ]
+        );
     }
 }

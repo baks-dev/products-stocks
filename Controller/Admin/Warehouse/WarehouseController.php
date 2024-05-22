@@ -84,9 +84,9 @@ final class WarehouseController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.warehouse',
-                $handle instanceof ProductStock ? 'admin.success.warehouse' : 'admin.danger.warehouse',
-                'admin.product.stock',
+                'page.warehouse',
+                $handle instanceof ProductStock ? 'success.warehouse' : 'danger.warehouse',
+                'products-stocks.admin',
                 $handle
             );
 

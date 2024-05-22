@@ -67,7 +67,7 @@ final class UpdateOrderStatusByCompletedProductStocks
     }
 
     /**
-     * Обновляет статус заказа при доставке заказа в пункт назначения.
+     * Обновляет статус заказа при доставке заказа .
      */
     public function __invoke(ProductStockMessage $message): void
     {
@@ -80,7 +80,8 @@ final class UpdateOrderStatusByCompletedProductStocks
             return;
         }
 
-        if($ProductStockEvent->getStatus()->equals(ProductStockStatusCompleted::class) === false)
+        /** Если складская заявка не является статусом Completed «Выдан по месту назначения» */
+        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCompleted::class))
         {
             return;
         }
@@ -88,14 +89,16 @@ final class UpdateOrderStatusByCompletedProductStocks
         if($ProductStockEvent->getMoveOrder() !== null)
         {
             $this->logger
-                ->warning('Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
-                    [__FILE__.':'.__LINE__, $message]);
+                ->warning(
+                    'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
+                    [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]);
             return;
         }
 
-        $this->logger
-            ->info('Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
-                [__FILE__.':'.__LINE__, $message]);
+        $this->logger->info(
+            'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
+            [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+        );
 
         /**
          * Получаем событие заказа.
@@ -106,7 +109,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         if(!$OrderEvent)
         {
             $this->logger
-                ->warning('не возможно получить событие заказа',
+                ->critical('не возможно получить событие заказа для обновления статуса Completed «Выдан по месту назначения»',
                     [__FILE__.':'.__LINE__, 'OrderUid' => (string) $ProductStockEvent->getOrder()]);
             return;
         }
@@ -114,16 +117,19 @@ final class UpdateOrderStatusByCompletedProductStocks
 
         /** Обновляем статус заказа на Completed «Выдан по месту назначения» */
 
-        $OrderStatusDTO = new OrderStatusDTO(OrderStatusCompleted::class, $OrderEvent->getId(), $ProductStockEvent->getProfile());
-        $this->OrderStatusHandler->handle($OrderStatusDTO);
+        $OrderStatusDTO = new OrderStatusDTO(
+            OrderStatusCompleted::class,
+            $OrderEvent->getId(),
+            $ProductStockEvent->getProfile()
+        );
 
+        $this->OrderStatusHandler->handle($OrderStatusDTO);
 
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
             ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
             ->send('orders');
-
 
 
         $this->logger->info('Обновили статус заказа на Completed «Выдан по месту назначения»',

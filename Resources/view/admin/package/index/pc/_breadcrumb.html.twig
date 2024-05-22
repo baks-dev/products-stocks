@@ -1,4 +1,4 @@
-{% trans_default_domain('admin.product.stock') %}
+{% trans_default_domain 'products-stocks.admin' %}
 
 <nav class="small" style="--bs-breadcrumb-divider: '-';" aria-label="breadcrumb">
 	<ol class="breadcrumb small opacity-75">
@@ -36,16 +36,16 @@
 		<li class="breadcrumb-item">
 			<a href="{{ path('products-stocks:admin.total.index') }}"
 			   class="text-decoration-none"
-			   aria-label="{{ 'admin.breadcrumb.index'|trans }}"
-			   title="{{ 'admin.breadcrumb.index'|trans }}">
-				{{ 'admin.breadcrumb.index'|trans }}
+			   aria-label="{{ 'breadcrumb.index'|trans }}"
+			   title="{{ 'breadcrumb.index'|trans }}">
+				{{ 'breadcrumb.index'|trans }}
 			</a>
 		</li>
 		
 		<li class="breadcrumb-item active" aria-current="page"
-				aria-label="{{ 'admin.breadcrumb.package'|trans }}"
-				title="{{ 'admin.breadcrumb.package'|trans }}">
-			{{ 'admin.breadcrumb.package'|trans }}
+				aria-label="{{ 'breadcrumb.package'|trans }}"
+				title="{{ 'breadcrumb.package'|trans }}">
+			{{ 'breadcrumb.package'|trans }}
 		</li>
 	</ol>
 </nav>

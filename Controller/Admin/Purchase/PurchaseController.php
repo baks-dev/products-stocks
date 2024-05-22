@@ -77,9 +77,9 @@ final class PurchaseController extends AbstractController
                 {
                     $this->addFlash
                     (
-                        'admin.page.purchase',
-                        'admin.danger.purchase',
-                        'admin.product.stock',
+                        'page.purchase',
+                        'danger.purchase',
+                        'products-stocks.admin',
                         $handle
                     );
                 }
@@ -87,9 +87,9 @@ final class PurchaseController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.purchase',
-                'admin.success.purchase',
-                'admin.product.stock'
+                'page.purchase',
+                'success.purchase',
+                'products-stocks.admin'
             );
 
             return $this->redirectToRoute('products-stocks:admin.purchase.index');

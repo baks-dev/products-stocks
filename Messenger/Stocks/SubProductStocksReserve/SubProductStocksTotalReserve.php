@@ -23,12 +23,13 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksCancel;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve;
 
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
@@ -36,34 +37,35 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class SubProductStocksTotalCancel
+final class SubProductStocksTotalReserve
 {
     private ProductStockQuantityInterface $productStockMinQuantity;
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
-    private DBALQueryBuilder $DBALQueryBuilder;
+    private SubProductStockInterface $updateProductStock;
 
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
-        LoggerInterface $productsStocksLogger
-    ) {
+        LoggerInterface $productsStocksLogger,
+        SubProductStockInterface $updateProductStock
+    )
+    {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
+        $this->updateProductStock = $updateProductStock;
     }
 
     /**
      * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
      */
-    public function __invoke(SubProductStocksTotalCancelMessage $message): void
+    public function __invoke(SubProductStocksTotalReserveMessage $message): void
     {
         $this->entityManager->clear();
 
         /* Получаем одно место складирования с максимальным количеством продукции и резервом > 0 */
-        $ProductStockTotal =  $this->productStockMinQuantity
+        $ProductStockTotal = $this->productStockMinQuantity
             ->profile($message->getProfile())
             ->product($message->getProduct())
             ->offerConst($message->getOffer())
@@ -87,49 +89,34 @@ final class SubProductStocksTotalCancel
 
         }
 
-        /**
-         * Снимаем резерв на единицу продукции
-         */
-        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $this->handle($ProductStockTotal);
 
-        $dbal->update(ProductStockTotal::class);
-        $dbal->set('reserve', 'reserve - 1');
+    }
 
-        $dbal
-            ->where('id = :identifier')
-            ->setParameter('identifier', $ProductStockTotal->getId(), ProductStockTotalUid::TYPE)
-        ;
-
-        $dbal->andWhere('reserve != 0');
-        $rows = $dbal->executeStatement();
+    public function handle(ProductStockTotal $ProductStockTotal): void
+    {
+        $rows = $this->updateProductStock
+            ->reserve(1)
+            ->updateById($ProductStockTotal);
 
         if(empty($rows))
         {
             $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
                     __FILE__.':'.__LINE__,
-                    'identifier' => (string) $ProductStockTotal->getId()
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]);
 
-            throw new DomainException('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована');
+            return;
         }
 
-
-//        $ProductStockTotal->subReserve(1);
-//        $this->entityManager->flush();
-
-        $this->logger->info(sprintf('%s : Сняли резерв на складе на единицу продукции при отмене', $ProductStockTotal->getStorage()) ,
+        $this->logger->info(
+            sprintf('Место %s: Сняли резерв продукции на складе на одну единицу', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
-                'profile' => (string) $message->getProfile(),
-                'product' => (string) $message->getProduct(),
-                'offer' => (string) $message->getOffer(),
-                'variation' => (string) $message->getVariation(),
-                'modification' => (string) $message->getModification()
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]);
-
     }
-
 
 
 }

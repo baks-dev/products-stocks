@@ -41,8 +41,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 1)]
 final class UpdateOrderStatusByExtraditionProductStocks
 {
-    //private ProductStocksByIdInterface $productStocks;
-
     private EntityManagerInterface $entityManager;
 
     private CurrentOrderEventInterface $currentOrderEvent;
@@ -105,11 +103,19 @@ final class UpdateOrderStatusByExtraditionProductStocks
 
         if(!$OrderEvent)
         {
+            $this->logger
+                ->critical('не возможно получить событие заказа для обновления статуса Extradition «Готов к выдаче»',
+                    [__FILE__.':'.__LINE__, 'OrderUid' => (string) $ProductStockEvent->getOrder()]);
             return;
         }
 
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
-        $OrderStatusDTO = new OrderStatusDTO(new OrderStatus(new OrderStatusExtradition()), $OrderEvent->getId(), $ProductStockEvent->getProfile());
+        $OrderStatusDTO = new OrderStatusDTO(
+            OrderStatusExtradition::class,
+            $OrderEvent->getId(),
+            $ProductStockEvent->getProfile()
+        );
+
         $this->OrderStatusHandler->handle($OrderStatusDTO);
 
         // Отправляем сокет для скрытия заказа у других менеджеров

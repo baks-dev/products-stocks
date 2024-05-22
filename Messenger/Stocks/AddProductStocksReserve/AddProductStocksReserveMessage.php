@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -32,8 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see SubProductStocksTotalCancelMessage */
-final class SubProductStocksTotalMessage
+final class AddProductStocksReserveMessage
 {
     private UserProfileUid $profile;
     private ProductUid $product;
