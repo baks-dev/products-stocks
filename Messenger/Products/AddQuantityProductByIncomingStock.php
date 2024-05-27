@@ -92,8 +92,6 @@ final class AddQuantityProductByIncomingStock
 
         if($products)
         {
-            $this->entityManager->clear();
-
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
@@ -153,26 +151,32 @@ final class AddQuantityProductByIncomingStock
             );
         }
 
-        $context = [
-            __FILE__.':'.__LINE__,
-            'total' => $product->getTotal(),
-            'ProductUid' => (string) $product->getProduct(),
-            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
-            'ProductOfferConst' => (string) $product->getOffer(),
-            'ProductVariationConst' => (string) $product->getVariation(),
-            'ProductModificationConst' => (string) $product->getModification(),
-        ];
-
         if($ProductUpdateQuantity)
         {
             $ProductUpdateQuantity->addQuantity($product->getTotal());
             $this->entityManager->flush();
-            $this->logger->info('Пополнили общий остаток продукции в карточке', $context);
+
+            $this->logger->info('Пополнили общий остаток продукции в карточке', [
+                'total' => $product->getTotal(),
+                (string) $ProductUpdateQuantity => $ProductUpdateQuantity::class,
+                __FILE__.':'.__LINE__,
+            ]);
 
             return;
         }
 
-        $this->logger->critical('Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
+        $this->logger->critical(
+            'Невозможно добавить общий остаток продукции: карточка не найдена)',
+            [
+                __FILE__.':'.__LINE__,
+                'total' => $product->getTotal(),
+                'ProductUid' => (string) $product->getProduct(),
+                'ProductStockEventUid' => (string) $product->getEvent()->getId(),
+                'ProductOfferConst' => (string) $product->getOffer(),
+                'ProductVariationConst' => (string) $product->getVariation(),
+                'ProductModificationConst' => (string) $product->getModification(),
+            ]
+        );
 
     }
 }
