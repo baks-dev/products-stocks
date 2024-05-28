@@ -57,6 +57,8 @@ final class PackageController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
+            $this->refreshTokenForm($form);
+
             /** @var ProductStockDTO $move */
             $success = true;
             foreach ($movingDTO->getMove() as $move)

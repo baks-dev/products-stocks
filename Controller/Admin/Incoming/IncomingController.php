@@ -64,7 +64,6 @@ final class IncomingController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
-
             $this->refreshTokenForm($form);
 
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);

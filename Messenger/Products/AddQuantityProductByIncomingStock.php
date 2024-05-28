@@ -92,6 +92,8 @@ final class AddQuantityProductByIncomingStock
 
         if($products)
         {
+            $this->entityManager->clear();
+
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
@@ -102,12 +104,21 @@ final class AddQuantityProductByIncomingStock
 
     public function changeTotal(ProductStockProduct $product): void
     {
-        $ProductUpdateQuantity = null;
+        $context = [
+            __FILE__.':'.__LINE__,
+            'total' => $product->getTotal(),
+            'ProductUid' => (string) $product->getProduct(),
+            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
+            'ProductOfferConst' => (string) $product->getOffer(),
+            'ProductVariationConst' => (string) $product->getVariation(),
+            'ProductModificationConst' => (string) $product->getModification(),
+        ];
 
-        // Количественный учет модификации множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantity && $product->getModification())
+        /**
+         * Количественный учет модификации множественного варианта торгового предложения
+         */
+        if($product->getModification())
         {
-
             $this->entityManager->clear();
 
             $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
@@ -116,10 +127,26 @@ final class AddQuantityProductByIncomingStock
                 $product->getVariation(),
                 $product->getModification()
             );
+
+            if($ProductUpdateQuantity)
+            {
+                $ProductUpdateQuantity->addQuantity($product->getTotal());
+                $this->entityManager->flush();
+                $this->logger->info('Пополнили общий остаток модификации множественного варианта в карточке', $context);
+            }
+            else
+            {
+                $this->logger->critical('Невозможно добавить общий остаток модификации множественного варианта: карточка не найдена)', $context);
+            }
+
+            return;
         }
 
-        // Количественный учет множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantity && $product->getVariation())
+
+        /**
+         * Количественный учет множественного варианта торгового предложения
+         */
+        if($product->getVariation())
         {
             $this->entityManager->clear();
 
@@ -128,10 +155,26 @@ final class AddQuantityProductByIncomingStock
                 $product->getOffer(),
                 $product->getVariation()
             );
+
+            if($ProductUpdateQuantity)
+            {
+                $ProductUpdateQuantity->addQuantity($product->getTotal());
+                $this->entityManager->flush();
+                $this->logger->info('Пополнили общий остаток множественного варианта в карточке', $context);
+            }
+            else
+            {
+                $this->logger->critical('Невозможно добавить общий остаток множественного варианта: карточка не найдена)', $context);
+            }
+
+            return;
         }
 
-        // Количественный учет торгового предложения
-        if(null === $ProductUpdateQuantity && $product->getOffer())
+
+        /**
+         * Количественный учет торгового предложения
+         */
+        if($product->getOffer())
         {
             $this->entityManager->clear();
 
@@ -139,44 +182,39 @@ final class AddQuantityProductByIncomingStock
                 $product->getProduct(),
                 $product->getOffer()
             );
+
+            if($ProductUpdateQuantity)
+            {
+                $ProductUpdateQuantity->addQuantity($product->getTotal());
+                $this->entityManager->flush();
+                $this->logger->info('Пополнили общий остаток торгового предложения в карточке', $context);
+            }
+            else
+            {
+                $this->logger->critical('Невозможно добавить общий остаток торгового предложения: карточка не найдена)', $context);
+            }
         }
 
-        // Количественный учет продукта
-        if(null === $ProductUpdateQuantity)
-        {
-            $this->entityManager->clear();
 
-            $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
-                $product->getProduct()
-            );
-        }
+        /**
+         * Количественный учет продукта
+         */
+
+        $this->entityManager->clear();
+
+        $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
+            $product->getProduct()
+        );
 
         if($ProductUpdateQuantity)
         {
             $ProductUpdateQuantity->addQuantity($product->getTotal());
             $this->entityManager->flush();
-
-            $this->logger->info('Пополнили общий остаток продукции в карточке', [
-                'total' => $product->getTotal(),
-                (string) $ProductUpdateQuantity => $ProductUpdateQuantity::class,
-                __FILE__.':'.__LINE__,
-            ]);
-
-            return;
+            $this->logger->info('Пополнили общий остаток продукции в карточке', $context);
         }
-
-        $this->logger->critical(
-            'Невозможно добавить общий остаток продукции: карточка не найдена)',
-            [
-                __FILE__.':'.__LINE__,
-                'total' => $product->getTotal(),
-                'ProductUid' => (string) $product->getProduct(),
-                'ProductStockEventUid' => (string) $product->getEvent()->getId(),
-                'ProductOfferConst' => (string) $product->getOffer(),
-                'ProductVariationConst' => (string) $product->getVariation(),
-                'ProductModificationConst' => (string) $product->getModification(),
-            ]
-        );
-
+        else
+        {
+            $this->logger->critical('Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
+        }
     }
 }

@@ -67,7 +67,7 @@ final class UpdateOrderStatusByCompletedProductStocks
     }
 
     /**
-     * Обновляет статус заказа при доставке заказа .
+     * Обновляет статус заказа при доставке (Completed «Выдан по месту назначения»)
      */
     public function __invoke(ProductStockMessage $message): void
     {
