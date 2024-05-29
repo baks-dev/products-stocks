@@ -32,6 +32,7 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\ExistProductStocksStatus\ExistProductStocksStatusInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -50,6 +51,7 @@ final class UpdateOrderStatusByCompletedProductStocks
     private CentrifugoPublishInterface $CentrifugoPublish;
 
     private LoggerInterface $logger;
+    private ExistProductStocksStatusInterface $existProductStocksStatus;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -57,6 +59,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $productsStocksLogger,
+        ExistProductStocksStatusInterface $existProductStocksStatus
     )
     {
         $this->entityManager = $entityManager;
@@ -64,6 +67,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $productsStocksLogger;
+        $this->existProductStocksStatus = $existProductStocksStatus;
     }
 
     /**
@@ -92,8 +96,22 @@ final class UpdateOrderStatusByCompletedProductStocks
                 ->warning(
                     'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
                     [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]);
+
             return;
         }
+
+        /** Не делаем отметку о выполнении если дублируется событие */
+        $isOtherExistsEvent = $this->existProductStocksStatus->isOtherExists(
+            $message->getId(),
+            $message->getEvent(),
+            ProductStockStatusCompleted::class
+        );
+
+        if($isOtherExistsEvent)
+        {
+            return;
+        }
+
 
         $this->logger->info(
             'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
@@ -105,12 +123,8 @@ final class UpdateOrderStatusByCompletedProductStocks
          */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($ProductStockEvent->getOrder());
 
-
         if(!$OrderEvent)
         {
-            $this->logger
-                ->critical('не возможно получить событие заказа для обновления статуса Completed «Выдан по месту назначения»',
-                    [__FILE__.':'.__LINE__, 'OrderUid' => (string) $ProductStockEvent->getOrder()]);
             return;
         }
 

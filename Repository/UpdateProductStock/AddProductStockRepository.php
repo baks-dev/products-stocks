@@ -48,16 +48,16 @@ final class AddProductStockRepository implements AddProductStockInterface
     }
 
     /** Указываем количество снятия резерва */
-    public function reserve(int $reserve): self
+    public function reserve(?int $reserve): self
     {
-        $this->reserve = $reserve;
+        $this->reserve = $reserve ?: false;
         return $this;
     }
 
     /** Указываем количество снятия остатка */
-    public function total(int $total): self
+    public function total(?int $total): self
     {
-        $this->total = $total;
+        $this->total = $total ?: null;
         return $this;
     }
 
@@ -82,7 +82,10 @@ final class AddProductStockRepository implements AddProductStockInterface
 
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $dbal->update(ProductStockTotal::class);
+        $dbal
+            ->update(ProductStockTotal::class)
+            ->where('id = :identifier')
+            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
 
         /** Если указан остаток - добавляем */
         if($this->total)
@@ -99,15 +102,9 @@ final class AddProductStockRepository implements AddProductStockInterface
                 ->set('reserve', 'reserve + :reserve')
                 ->setParameter('reserve', $this->reserve, ParameterType::INTEGER);
 
-
             /** @note !!! Добавить резерв можно только если имеются остатки */
             $dbal->andWhere('(total - reserve) > 0');
         }
-
-        $dbal
-            ->where('id = :identifier')
-            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
-
 
         return (int) $dbal->executeStatement();
     }

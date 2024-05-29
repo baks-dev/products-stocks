@@ -47,16 +47,16 @@ final class SubProductStockRepository implements SubProductStockInterface
     }
 
     /** Указываем количество снятия резерва */
-    public function reserve(int $reserve): self
+    public function reserve(?int $reserve): self
     {
-        $this->reserve = $reserve;
+        $this->reserve = $reserve ?: null;
         return $this;
     }
 
     /** Указываем количество снятия остатка */
-    public function total(int $total): self
+    public function total(?int $total): self
     {
-        $this->total = $total;
+        $this->total = $total ?: null;
         return $this;
     }
 
@@ -81,7 +81,10 @@ final class SubProductStockRepository implements SubProductStockInterface
 
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $dbal->update(ProductStockTotal::class);
+        $dbal
+            ->update(ProductStockTotal::class)
+            ->where('id = :identifier')
+            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
 
         /** Если указан остаток - снимаем */
         if($this->total)
@@ -103,11 +106,6 @@ final class SubProductStockRepository implements SubProductStockInterface
 
             $dbal->andWhere('reserve != 0');
         }
-
-        $dbal
-            ->where('id = :identifier')
-            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
-
 
         return (int) $dbal->executeStatement();
     }

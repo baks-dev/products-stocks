@@ -195,6 +195,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         /** Добавляем приход на указанный профиль (склад) */
         $rows = $this->addProductStock
             ->total($total)
+            ->reserve(null)
             ->updateById($ProductStockTotal);
 
         if(empty($rows))

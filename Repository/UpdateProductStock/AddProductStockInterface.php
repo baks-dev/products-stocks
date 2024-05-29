@@ -29,10 +29,10 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 interface AddProductStockInterface
 {
     /** Указываем количество снятия резерва */
-    public function reserve(int $reserve): self;
+    public function reserve(?int $reserve): self;
 
     /** Указываем количество снятия остатка */
-    public function total(int $total): self;
+    public function total(?int $total): self;
 
     /** Метод ДОБАВЛЯЕТ к складскому учету резерв либо остаток */
     public function updateById(ProductStockTotal|ProductStockTotalUid|string $id): int;

@@ -96,6 +96,7 @@ final class AddProductStocksReserve
     {
         /** Добавляем в резерв единицу продукции */
         $rows = $this->addProductStock
+            ->total(null)
             ->reserve(1)
             ->updateById($ProductStockTotal);
 
@@ -110,7 +111,7 @@ final class AddProductStocksReserve
             return;
         }
 
-        $this->logger->info(sprintf('%s : Добавили резерв на единицу продукции', $ProductStockTotal->getStorage()),
+        $this->logger->info(sprintf('%s : Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()

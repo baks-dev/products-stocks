@@ -21,19 +21,21 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\UpdateProductStock;
+namespace BaksDev\Products\Stocks\Repository\ExistProductStocksStatus;
 
-use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
-interface SubProductStockInterface
+interface ExistProductStocksStatusInterface
 {
-    /** Указываем количество снятия резерва */
-    public function reserve(?int $reserve): self;
-
-    /** Указываем количество снятия остатка */
-    public function total(?int $total): self;
-
-    /** Метод СНИМАЕТ со складского учета резерв либо остаток */
-    public function updateById(ProductStockTotal|ProductStockTotalUid|string $id): int;
+    /**
+     * Метод проверяет, имеется ли другое событие с указанным статусом
+     */
+    public function isOtherExists(
+        ProductStockUid|string $stock,
+        ProductStockEventUid|string $event,
+        ProductStockStatus|ProductStockStatusInterface|string $status
+    ): bool;
 }

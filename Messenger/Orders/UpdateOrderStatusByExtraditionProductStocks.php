@@ -33,6 +33,8 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\ExistProductStocksStatus\ExistProductStocksStatusInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -50,6 +52,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
     private CentrifugoPublishInterface $CentrifugoPublish;
 
     private LoggerInterface $logger;
+    private ExistProductStocksStatusInterface $existProductStocksStatus;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -57,6 +60,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $productsStocksLogger,
+        ExistProductStocksStatusInterface $existProductStocksStatus
     )
     {
 
@@ -65,6 +69,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $productsStocksLogger;
+        $this->existProductStocksStatus = $existProductStocksStatus;
     }
 
     /**
@@ -103,9 +108,19 @@ final class UpdateOrderStatusByExtraditionProductStocks
 
         if(!$OrderEvent)
         {
-            $this->logger
-                ->critical('не возможно получить событие заказа для обновления статуса Extradition «Готов к выдаче»',
-                    [__FILE__.':'.__LINE__, 'OrderUid' => (string) $ProductStockEvent->getOrder()]);
+            return;
+        }
+
+
+        /** Не делаем "Собран, готов к отправке" если дублируется событие */
+        $isOtherExistsEvent = $this->existProductStocksStatus->isOtherExists(
+            $message->getId(),
+            $message->getEvent(),
+            ProductStockStatusExtradition::class
+        );
+
+        if($isOtherExistsEvent)
+        {
             return;
         }
 

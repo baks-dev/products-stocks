@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Orders;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventByStatusInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCanceled;
 use BaksDev\Orders\Order\UseCase\Admin\Canceled\OrderCanceledDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
@@ -50,12 +51,14 @@ final class CancelProductStocksByCancelOrder
     private CurrentOrderEventInterface $currentOrderEvent;
     private ProductStocksByOrderInterface $productStocksByOrder;
     private CancelProductStockHandler $cancelProductStockHandler;
+    private ExistOrderEventByStatusInterface $existOrderEventByStatus;
 
     public function __construct(
         LoggerInterface $productsStocksLogger,
         CurrentOrderEventInterface $currentOrderEvent,
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
+        ExistOrderEventByStatusInterface $existOrderEventByStatus
     )
     {
 
@@ -63,6 +66,7 @@ final class CancelProductStocksByCancelOrder
         $this->currentOrderEvent = $currentOrderEvent;
         $this->productStocksByOrder = $productStocksByOrder;
         $this->cancelProductStockHandler = $cancelProductStockHandler;
+        $this->existOrderEventByStatus = $existOrderEventByStatus;
     }
 
 
@@ -75,8 +79,25 @@ final class CancelProductStocksByCancelOrder
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($message->getId());
 
+        if(!$OrderEvent)
+        {
+            return;
+        }
+
         /** Если статус заказа не Canceled «Отменен» - завершаем обработчик */
-        if(!$OrderEvent || !$OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+        if(false === $OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+        {
+            return;
+        }
+
+        /** Не Отменяем складскую заявку если дублируется событие */
+        $isOtherExists = $this->existOrderEventByStatus->isOtherExists(
+            $message->getId(),
+            $message->getEvent(),
+            OrderStatusCanceled::class
+        );
+
+        if($isOtherExists)
         {
             return;
         }

@@ -96,6 +96,7 @@ final class SubProductStocksTotalReserve
     public function handle(ProductStockTotal $ProductStockTotal): void
     {
         $rows = $this->updateProductStock
+            ->total(null)
             ->reserve(1)
             ->updateById($ProductStockTotal);
 
