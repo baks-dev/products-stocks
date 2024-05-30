@@ -18,13 +18,13 @@
 
                 {# Сумма транзакций #}
 
-                {% if query.data %}
+                {#{% if query.data %}
 
                     {% set total = 0 %}
                     {% set current_user = app.user.profile %}
 
                     {% for item in query.data %}
-                        {# приход #}
+                        #}{# приход #}{#
                         {% if current_user == item.user_profile_id %}
                             {% set total = total + item.total %}
                         {% else %}
@@ -35,7 +35,7 @@
                     <span class="badge badge text-bg-primary ms-3">
                         Сумма транзакций: {{ total }}
                     </span>
-                {% endif %}
+                {% endif %}#}
 
 
             </div>

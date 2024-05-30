@@ -86,7 +86,7 @@ final class SubProductStocksTotalAndReserve
                     'modification' => (string) $message->getModification()
                 ]);
 
-
+            return;
         }
 
         $this->handle($ProductStockTotal);
