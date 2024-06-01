@@ -37,5 +37,10 @@ interface AllProductStocksPackageInterface
     public function filter(ProductStockPackageFilterInterface $filter): self;
 
     /** Метод возвращает все заявки на упаковку заказов. */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface;
+    public function findPaginator(UserProfileUid $profile): PaginatorInterface;
+
+    /**
+     * Метод возвращает всю продукцию требующая сборки
+     */
+    public function findAllProducts(UserProfileUid $profile): ?array;
 }

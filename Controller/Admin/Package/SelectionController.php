@@ -35,12 +35,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PACKAGE')]
-final class IndexController extends AbstractController
+final class SelectionController extends AbstractController
 {
     /**
      * Заказы на сборке
      */
-    #[Route('/admin/product/stocks/package/{page<\d+>}', name: 'admin.package.index', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stocks/selection', name: 'admin.package.selection', methods: ['GET'])]
     public function incoming(
         Request $request,
         AllProductStocksPackageInterface $allPackage,
@@ -50,53 +50,37 @@ final class IndexController extends AbstractController
 
         // Поиск
         $search = new SearchDTO($request);
-        $searchForm = $this->createForm(SearchForm::class, $search,
-            ['action' => $this->generateUrl('products-stocks:admin.package.index')]
-        );
-        $searchForm->handleRequest($request);
+//        $searchForm = $this->createForm(SearchForm::class, $search,
+//            ['action' => $this->generateUrl('products-stocks:admin.package.index')]
+//        );
+        //$searchForm->handleRequest($request);
+        //$searchForm->createView();
+
 
         // Фильтр
         $filter = new ProductStockPackageFilterDTO($request);
-        $filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+        //$filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
+        //$filterForm->handleRequest($request);
+        //$filterForm->createView();
 
-        if($filterForm->isSubmitted())
-        {
-            if($filterForm->get('back')->isClicked())
-            {
-                $filter->setDate($filter->getDate()?->sub(new DateInterval('P1D')));
-                return $this->redirectToReferer();
-            }
-
-            if($filterForm->get('next')->isClicked())
-            {
-                $filter->setDate($filter->getDate()?->add(new DateInterval('P1D')));
-                return $this->redirectToReferer();
-            }
-        }
-
-
-
-
-        /** Если ajax (печать) - показываем только свой склад */
-        if($request->isXmlHttpRequest())
-        {
-            $allPackage->setLimit(1000);
-        }
 
         // Получаем список заявок на упаковку
         $query = $allPackage
+            ->setLimit(1000)
             ->search($search)
             ->filter($filter)
-            ->findPaginator($this->getProfileUid());
+            ->findAllProducts($this->getProfileUid());
 
+        //dump($query);
+        //dd($filter);
+        //dd($query);
 
         return $this->render(
             [
                 'query' => $query,
-                'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
-            ]
+                //'search' => $searchForm->createView(),
+                //'filter' => $filterForm->createView(),
+            ], file: 'content.html.twig'
         );
     }
 }

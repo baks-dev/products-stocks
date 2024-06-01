@@ -84,6 +84,7 @@ use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
 {
+
     private PaginatorInterface $paginator;
 
     private DBALQueryBuilder $DBALQueryBuilder;
@@ -113,56 +114,17 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         return $this;
     }
 
-    /** Метод возвращает все заявки на упаковку заказов */
-    public function fetchAllPackageAssociative(UserProfileUid $profile): PaginatorInterface
+    public function setLimit(int $limit): self
     {
-        $dbal = $this->DBALQueryBuilder
-            ->createQueryBuilder(self::class);
-
-        // ProductStock
-        $dbal->select('stock.id');
-        $dbal->addSelect('stock.event');
-
-        $dbal->from(ProductStock::class, 'stock');
-
-        // ProductStockEvent
-        $dbal->addSelect('event.number');
-        $dbal->addSelect('event.comment');
-        $dbal->addSelect('event.status');
-
-        $dbal->join(
-            'stock',
-            ProductStockEvent::class,
-            'event',
-            //'event.id = stock.event AND (event.status = :package OR event.status = :move) '.($profile ? ' AND event.profile = :profile' : '')
-            'event.id = stock.event AND event.profile = :profile AND (event.status = :package OR event.status = :move) '
-        );
-
-
-        //if($profile)
-        //{
-        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
-        //}
-
-        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
-        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
-
-        // ProductStockModify
-        $dbal->addSelect('modify.mod_date');
-        $dbal->join(
-            'stock',
-            ProductStockModify::TABLE,
-            'modify',
-            'modify.event = stock.event'
-        );
-
-        return $this->paginator->fetchAllAssociative($dbal);
+        $this->paginator->setLimit($limit);
+        return $this;
     }
+
 
     /**
      * Метод возвращает все заявки на упаковку заказов.
      */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(UserProfileUid $profile): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -331,7 +293,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             'order_user',
             'order_user.event = orders.event'
         );
-
 
 
         $dbal->addSelect('order_delivery.delivery_date');
@@ -839,5 +800,595 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         return $this->paginator->fetchAllAssociative($dbal);
 
+    }
+
+
+    /**
+     * Метод возвращает всю продукцию требующая сборки
+     */
+    public function findAllProducts(UserProfileUid $profile): ?array
+    {
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
+
+        // Stock
+
+        // ProductStock
+        //$dbal->select('stock.id');
+        //$dbal->addSelect('stock.event');
+
+        $dbal->from(ProductStock::class, 'stock');
+
+        // ProductStockEvent
+        //$dbal->addSelect('event.number');
+        //$dbal->addSelect('event.comment');
+        //$dbal->addSelect('event.status');
+
+        $dbal->join(
+            'stock',
+            ProductStockEvent::class,
+            'event',
+            '
+            event.id = stock.event AND 
+            event.profile = :profile AND  
+            (
+                event.status = :package OR 
+                event.status = :move
+                
+            )'
+        );
+
+        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
+        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+
+        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+
+        /** Погрузка на доставку */
+
+        //        if(defined(DeliveryPackage::class.'::TABLE'))
+        //        {
+        //
+        //            /** Подгружаем разделенные заказы */
+        //
+        //
+        //            $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        //            $existDeliveryPackage->select('1');
+        //            $existDeliveryPackage->from(DeliveryPackage::TABLE, 'bGIuGLiNkf');
+        //            $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
+        //
+        //            $dbal->leftJoin(
+        //                'stock',
+        //                DeliveryPackageStocks::TABLE,
+        //                'delivery_stocks',
+        //                'delivery_stocks.stock = stock.id AND EXISTS('.$existDeliveryPackage->getSQL().')'
+        //            );
+        //
+        //
+        //            $dbal->leftJoin(
+        //                'delivery_stocks',
+        //                DeliveryPackage::TABLE,
+        //                'delivery_package',
+        //                'delivery_package.event = delivery_stocks.event'
+        //            );
+        //
+        //            //$dbal->addSelect('delivery_transport.date_package');
+        //
+        //            $dbal->leftJoin(
+        //                'delivery_package',
+        //                DeliveryPackageTransport::TABLE,
+        //                'delivery_transport',
+        //                'delivery_transport.package = delivery_package.id'
+        //            );
+        //
+        //            //$dbal->addOrderBy('delivery_transport.date_package');
+        //
+        //        }
+        //        else
+        //        {
+        //            $dbal->addSelect('NULL AS date_package');
+        //            $dbal->setParameter('divide', 'ntUIGnScMq');
+        //        }
+
+        //
+        //        $dbal
+        //            ->addSelect('modify.mod_date')
+        //            ->join(
+        //                'stock',
+        //                ProductStockModify::class,
+        //                'modify',
+        //                'modify.event = stock.event'
+        //            );
+
+
+        $dbal
+            //->addSelect('stock_product.id as product_stock_id')
+            ->addSelect('SUM(stock_product.total) AS total')
+            ->leftJoin(
+                'event',
+                ProductStockProduct::class,
+                'stock_product',
+                'stock_product.event = stock.event'
+            );
+
+
+        //        /* Получаем наличие на указанном складе */
+        //        $dbal
+        //            ->addSelect('SUM(total.total) AS stock_total')
+        //            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
+        //            ->leftJoin(
+        //                'stock_product',
+        //                ProductStockTotal::TABLE,
+        //                'total',
+        //                '
+        //                total.profile = :profile AND
+        //                total.product = stock_product.product AND
+        //                (total.offer IS NULL OR total.offer = stock_product.offer) AND
+        //                (total.variation IS NULL OR total.variation = stock_product.variation) AND
+        //                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+        //                total.total > 0
+        //            ');
+
+
+        $dbal
+            ->addSelect("total.storage AS stock_storage")
+            ->leftOneJoin(
+                'stock_product',
+                ProductStockTotal::class,
+                'total',
+                '
+                total.profile = event.profile AND
+                total.product = stock_product.product AND 
+                (total.offer IS NULL OR total.offer = stock_product.offer) AND 
+                (total.variation IS NULL OR total.variation = stock_product.variation) AND 
+                (total.modification IS NULL OR total.modification = stock_product.modification) AND
+                total.total > 0
+            '
+            );
+
+        $dbal->join(
+            'stock',
+            ProductStockOrder::class,
+            'ord',
+            'ord.event = stock.event'
+        );
+
+
+        $dbal
+            //->addSelect('orders.id AS order_id')
+            ->leftJoin(
+                'ord',
+                Order::class,
+                'orders',
+                'orders.id = ord.ord'
+            );
+
+        $dbal->leftJoin(
+            'orders',
+            OrderUser::class,
+            'order_user',
+            'order_user.event = orders.event'
+        );
+
+
+        //$dbal->addSelect('order_delivery.delivery_date');
+
+        $delivery_condition = 'order_delivery.usr = order_user.id';
+
+        if($this->filter !== null)
+        {
+            if($this->filter->getDate() instanceof DateTimeImmutable)
+            {
+                $delivery_condition .= ' AND order_delivery.delivery_date >= :delivery_date_start AND order_delivery.delivery_date < :delivery_date_end';
+                $dbal->setParameter('delivery_date_start', $this->filter->getDate(), Types::DATE_IMMUTABLE);
+                $dbal->setParameter('delivery_date_end', $this->filter->getDate()->modify('+1 day'), Types::DATE_IMMUTABLE);
+            }
+
+
+            if($this->filter->getDelivery() instanceof DeliveryUid)
+            {
+                $delivery_condition .= ' AND order_delivery.delivery = :delivery';
+                $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
+            }
+
+        }
+
+        $dbal
+            ->join(
+                'order_user',
+                OrderDelivery::class,
+                'order_delivery',
+                $delivery_condition
+            );
+        //
+        //        $dbal->leftJoin(
+        //            'order_delivery',
+        //            DeliveryEvent::class,
+        //            'delivery_event',
+        //            'delivery_event.id = order_delivery.event AND delivery_event.main = order_delivery.delivery'
+        //        );
+        //
+        //        $dbal
+        //            ->addSelect('delivery_trans.name AS delivery_name')
+        //            ->leftJoin(
+        //                'delivery_event',
+        //                DeliveryTrans::class,
+        //                'delivery_trans',
+        //                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
+        //            );
+
+
+        // Product
+        $dbal
+            ->addSelect('product.id as product_id')
+            ->addSelect('product.event as product_event')
+            ->join(
+                'stock_product',
+                Product::class,
+                'product',
+                'product.id = stock_product.product'
+            );
+
+        // Product Event
+        $dbal->join(
+            'product',
+            ProductEvent::class,
+            'product_event',
+            'product_event.id = product.event'
+        );
+
+        // Product Info
+        //        $dbal
+        //            ->addSelect('product_info.url AS product_url')
+        //            ->leftJoin(
+        //                'product_event',
+        //                ProductInfo::class,
+        //                'product_info',
+        //                'product_info.product = product.id'
+        //            );
+
+        // Product Trans
+        $dbal
+            ->addSelect('product_trans.name as product_name')
+            ->join(
+                'product_event',
+                ProductTrans::class,
+                'product_trans',
+                'product_trans.event = product_event.id AND product_trans.local = :local'
+            );
+
+        /*
+         * Торговое предложение
+         */
+
+        $dbal
+            ->addSelect('product_offer.id as product_offer_uid')
+            ->addSelect('product_offer.value as product_offer_value')
+            ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->leftJoin(
+                'product_event',
+                ProductOffer::class,
+                'product_offer',
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+            );
+
+        // Получаем тип торгового предложения
+        $dbal
+            ->addSelect('category_offer.reference as product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                CategoryProductOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
+
+        //        $dbal
+        //            ->addSelect('category_offer_trans.name as product_offer_name')
+        //            ->leftJoin(
+        //                'category_offer',
+        //                CategoryProductOffersTrans::class,
+        //                'category_offer_trans',
+        //                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+        //            );
+
+        /*
+         * Множественные варианты торгового предложения
+         */
+
+        $dbal
+            ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
+            ->leftJoin(
+                'product_offer',
+                ProductVariation::class,
+                'product_variation',
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+            );
+
+        // Получаем тип множественного варианта
+        $dbal
+            ->addSelect('category_variation.reference as product_variation_reference')
+            ->leftJoin(
+                'product_variation',
+                CategoryProductVariation::class,
+                'category_variation',
+                'category_variation.id = product_variation.category_variation'
+            );
+
+        //        $dbal
+        //            ->addSelect('category_variation_trans.name as product_variation_name')
+        //            ->leftJoin(
+        //                'category_variation',
+        //                CategoryProductVariationTrans::class,
+        //                'category_variation_trans',
+        //                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+        //            );
+
+        /*
+         * Модификация множественного варианта торгового предложения
+         */
+
+        $dbal
+            ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
+            ->leftJoin(
+                'product_variation',
+                ProductModification::class,
+                'product_modification',
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+            );
+
+        // Получаем тип модификации множественного варианта
+        $dbal
+            ->addSelect('category_modification.reference as product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                CategoryProductModification::class,
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
+            );
+
+        //        $dbal
+        //            ->addSelect('category_modification_trans.name as product_modification_name')
+        //            ->leftJoin(
+        //                'category_modification',
+        //                CategoryProductModificationTrans::class,
+        //                'category_modification_trans',
+        //                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+        //            );
+
+        // Артикул продукта
+
+        //        $dbal->addSelect(
+        //            '
+        //			CASE
+        //			   WHEN product_modification.article IS NOT NULL THEN product_modification.article
+        //			   WHEN product_variation.article IS NOT NULL THEN product_variation.article
+        //			   WHEN product_offer.article IS NOT NULL THEN product_offer.article
+        //			   WHEN product_info.article IS NOT NULL THEN product_info.article
+        //			   ELSE NULL
+        //			END AS product_article
+        //		'
+        //        );
+
+
+        // ОТВЕТСТВЕННЫЙ
+
+        // UserProfile
+        //$dbal->addSelect('users_profile.event as users_profile_event');
+        $dbal->join(
+            'event',
+            UserProfile::class,
+            'users_profile',
+            'users_profile.id = event.profile'
+        );
+
+        // Info
+        $dbal->join(
+            'event',
+            UserProfileInfo::class,
+            'users_profile_info',
+            'users_profile_info.profile = event.profile'
+        );
+
+        // Event
+        $dbal->join(
+            'users_profile',
+            UserProfileEvent::class,
+            'users_profile_event',
+            'users_profile_event.id = users_profile.event'
+        );
+
+        // Personal
+        $dbal->addSelect('users_profile_personal.username AS users_profile_username');
+
+        $dbal->join(
+            'users_profile_event',
+            UserProfilePersonal::class,
+            'users_profile_personal',
+            'users_profile_personal.event = users_profile_event.id'
+        );
+
+
+        // Группа
+
+
+        //$dbal->addSelect('NULL AS group_name'); // Название группы
+
+        //        /** Проверка перемещения по заказу */
+        //        $dbalExist = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        //
+        //        $dbalExist->select('1');
+        //        $dbalExist->from(ProductStockMove::TABLE, 'exist_move');
+        //        $dbalExist->where('exist_move.ord = ord.ord ');
+        //
+        //        $dbalExist->join(
+        //            'exist_move',
+        //            ProductStockEvent::TABLE,
+        //            'exist_move_event',
+        //            'exist_move_event.id = exist_move.event AND  (
+        //                exist_move_event.status != :incoming
+        //            )'
+        //        );
+        //
+        //
+        //        $dbalExist->join(
+        //            'exist_move_event',
+        //            ProductStock::TABLE,
+        //            'exist_move_stock',
+        //            'exist_move_stock.event = exist_move_event.id'
+        //        );
+        //
+        //
+        //        $dbal->addSelect(sprintf('EXISTS(%s) AS products_move', $dbalExist->getSQL()));
+        //        $dbal->setParameter('incoming', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+
+
+        /** Пункт назначения при перемещении */
+
+        $dbal->leftJoin(
+            'event',
+            ProductStockMove::class,
+            'move_stock',
+            'move_stock.event = event.id'
+        );
+
+
+        // UserProfile
+        $dbal->leftJoin(
+            'move_stock',
+            UserProfile::class,
+            'users_profile_move',
+            'users_profile_move.id = move_stock.destination'
+        );
+
+        $dbal
+            //->addSelect('users_profile_personal_move.username AS users_profile_destination')
+            ->leftJoin(
+                'users_profile_move',
+                UserProfilePersonal::class,
+                'users_profile_personal_move',
+                'users_profile_personal_move.event = users_profile_move.event'
+            );
+
+        /** Пункт назначения при перемещении */
+
+        $dbal->leftOneJoin(
+            'ord',
+            ProductStockMove::class,
+            'destination_stock',
+            'destination_stock.event != stock.event AND destination_stock.ord = ord.ord',
+            'event'
+        );
+
+
+        $dbal->leftJoin(
+            'destination_stock',
+            ProductStockEvent::class,
+            'destination_event',
+            'destination_event.id = destination_stock.event'
+        );
+
+        // UserProfile
+        $dbal->leftJoin(
+            'destination_stock',
+            UserProfile::class,
+            'users_profile_destination',
+            'users_profile_destination.id = destination_event.profile'
+        );
+
+        $dbal
+            //->addSelect('users_profile_personal_destination.username AS users_profile_move')
+            ->leftJoin(
+                'users_profile_destination',
+                UserProfilePersonal::class,
+                'users_profile_personal_destination',
+                'users_profile_personal_destination.event = users_profile_destination.event'
+            );
+
+
+        // Поиск
+        //        if($this->search?->getQuery())
+        //        {
+        //            $dbal
+        //                ->createSearchQueryBuilder($this->search)
+        //                ->addSearchLike('event.number')
+        //                ->addSearchLike('product_modification.article')
+        //                ->addSearchLike('product_variation.article')
+        //                ->addSearchLike('product_offer.article')
+        //                ->addSearchLike('product_info.article');
+        //        }
+
+
+        //$dbal->addOrderBy('stock_storage', 'ASC');
+
+        //$dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
+        //$dbal->addOrderBy('stock.id', 'ASC');
+
+        //$dbal->addGroupBy('ord.ord');
+        $dbal->allGroupByExclude();
+
+
+        ///$dbal->addGroupBy('ord.ord');
+        //$dbal->allGroupByExclude();
+
+        //        $dbal->setMaxResults(24);
+        //        dd($dbal->fetchAllAssociative());
+        //        dd($this->paginator->fetchAllAssociative($dbal));
+
+        return $dbal
+            //->enableCache('products-stocks')
+            ->fetchAllAssociative();
+
+    }
+
+
+    /* Метод возвращает все заявки на упаковку заказов */
+    public function OLD_fetchAllPackageAssociative(UserProfileUid $profile): PaginatorInterface
+    {
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class);
+
+        // ProductStock
+        $dbal->select('stock.id');
+        $dbal->addSelect('stock.event');
+
+        $dbal->from(ProductStock::class, 'stock');
+
+        // ProductStockEvent
+        $dbal->addSelect('event.number');
+        $dbal->addSelect('event.comment');
+        $dbal->addSelect('event.status');
+
+        $dbal->join(
+            'stock',
+            ProductStockEvent::class,
+            'event',
+            //'event.id = stock.event AND (event.status = :package OR event.status = :move) '.($profile ? ' AND event.profile = :profile' : '')
+            'event.id = stock.event AND event.profile = :profile AND (event.status = :package OR event.status = :move) '
+        );
+
+
+        //if($profile)
+        //{
+        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+        //}
+
+        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
+        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+
+        // ProductStockModify
+        $dbal->addSelect('modify.mod_date');
+        $dbal->join(
+            'stock',
+            ProductStockModify::TABLE,
+            'modify',
+            'modify.event = stock.event'
+        );
+
+        return $this->paginator->fetchAllAssociative($dbal);
     }
 }

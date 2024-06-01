@@ -87,7 +87,7 @@ final class CompletedController extends AbstractController
             (
                 'page.pickup',
                 $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
-                'products-stocks.package',
+                'products-stocks.admin',
                 $handle
             );
 

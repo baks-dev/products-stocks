@@ -50,7 +50,7 @@ final class AddProductStockRepository implements AddProductStockInterface
     /** Указываем количество снятия резерва */
     public function reserve(?int $reserve): self
     {
-        $this->reserve = $reserve ?: false;
+        $this->reserve = $reserve ?: null;
         return $this;
     }
 

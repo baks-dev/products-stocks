@@ -75,7 +75,7 @@ final class SubProductStocksTotalReserve
 
         if(!$ProductStockTotal)
         {
-            $this->logger->critical('Не найдено продукции на складе для списания',
+            $this->logger->critical('Не найдено продукции на складе для списания, либо нет резерва на указанную продукцию',
                 [
                     __FILE__.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
@@ -85,8 +85,7 @@ final class SubProductStocksTotalReserve
                     'modification' => (string) $message->getModification()
                 ]);
 
-            throw new DomainException('Невозможно снять резерв с продукции, которой нет на складе');
-
+            return;
         }
 
         $this->handle($ProductStockTotal);

@@ -97,7 +97,7 @@ final class SubProductStockRepository implements SubProductStockInterface
 
         }
 
-        /** Если указан резерв - снимаем */
+        /** Если указан резерв - снимаем selection */
         if($this->reserve)
         {
             $dbal
@@ -107,6 +107,32 @@ final class SubProductStockRepository implements SubProductStockInterface
             $dbal->andWhere('reserve != 0');
         }
 
-        return (int) $dbal->executeStatement();
+        $rows = (int) $dbal->executeStatement();
+
+        /**
+         * Удаляем пустое место со склада
+         */
+        if($rows)
+        {
+            $this->delete($id);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Метод удалят складское место при условии, что остаток и резерв равен нулю
+     */
+    private function delete(ProductStockTotalUid $id): void
+    {
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal
+            ->delete(ProductStockTotal::class)
+            ->where('id = :identifier')
+            ->andWhere('total = 0')
+            ->andWhere('reserve = 0')
+            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE)
+            ->executeStatement();
     }
 }
