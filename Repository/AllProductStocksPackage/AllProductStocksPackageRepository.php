@@ -1256,7 +1256,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         //$dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
-
+        $dbal->addOrderBy('stock_storage', 'ASC');
 
         ///$dbal->addGroupBy('ord.ord');
         //$dbal->allGroupByExclude();
@@ -1271,50 +1271,4 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
     }
 
-
-    /* Метод возвращает все заявки на упаковку заказов */
-    public function OLD_fetchAllPackageAssociative(UserProfileUid $profile): PaginatorInterface
-    {
-        $dbal = $this->DBALQueryBuilder
-            ->createQueryBuilder(self::class);
-
-        // ProductStock
-        $dbal->select('stock.id');
-        $dbal->addSelect('stock.event');
-
-        $dbal->from(ProductStock::class, 'stock');
-
-        // ProductStockEvent
-        $dbal->addSelect('event.number');
-        $dbal->addSelect('event.comment');
-        $dbal->addSelect('event.status');
-
-        $dbal->join(
-            'stock',
-            ProductStockEvent::class,
-            'event',
-            //'event.id = stock.event AND (event.status = :package OR event.status = :move) '.($profile ? ' AND event.profile = :profile' : '')
-            'event.id = stock.event AND event.profile = :profile AND (event.status = :package OR event.status = :move) '
-        );
-
-
-        //if($profile)
-        //{
-        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
-        //}
-
-        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
-        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
-
-        // ProductStockModify
-        $dbal->addSelect('modify.mod_date');
-        $dbal->join(
-            'stock',
-            ProductStockModify::class,
-            'modify',
-            'modify.event = stock.event'
-        );
-
-        return $this->paginator->fetchAllAssociative($dbal);
-    }
 }

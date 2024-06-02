@@ -34,6 +34,12 @@
     document.addEventListener("DOMContentLoaded", (event) => {
         const form = document.forms.product_stock_pickup_filter_form;
         form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+
+        form.addEventListener('keydown', function(event) {
+            if (event.key === "Enter") {
+                form.submit();
+            }
+        });
     });
 
     function changeDatapicker(input) {

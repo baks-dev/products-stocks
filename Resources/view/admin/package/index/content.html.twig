@@ -27,54 +27,69 @@
         {% if order != card.id %}
 
             {% if order != null %}
-                </table> <hr>
+                </table>
+
+                {% if loop.index0 is divisible by(5) %}
+                    {# Вставляем разрыв страницы #}
+                    <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
+                {% else %}
+                    <hr>
+                {% endif %}
             {% endif %}
 
-            <table class="table w-100 mb-2">
-                <thead>
-                <tr>
-                    <th scope="col"> Заказ
-                    <th scope="col"> Доставка
-                    <th scope="col"> Дата доставки
 
-                <tbody>
+<table class="table w-100 mb-2">
+    <thead>
+    <tr>
+        <th scope="col"> Заказ
+        <th scope="col"> Доставка
+        <th scope="col"> Дата доставки
 
-                <tr>
-                    <td scope="row"> {{ card.number }}
-                    <td scope="row"> {{ card.delivery_name }}
-                    <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+    <tbody>
 
-                <tr>
-                    <th scope="row" class="w-50"> Продукция
-                    <th scope="row" class="w-25 text-center"> Количество
-                    <th scope="row" class="w-25"> Место складирования
+    <tr>
+        <td scope="row"> {{ card.number }}
+        <td scope="row"> {{ card.delivery_name }}
+        <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
 
-        {% endif %}
+    <tr>
+        <th scope="row"> Продукция
+        <th scope="row"> Количество
+        <th scope="row"> Место складирования
 
-                <tr>
-                    <td scope="row">
+            {% endif %}
 
-                        {{ card.product_name }}
+    <tr>
+        <td scope="row">
 
-                        {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
-                        card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
+            {{ card.product_name }}
 
-                        {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
+            {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
+            card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
 
-                        {#Постфикс торгового предложения#}
-                        {{ card.product_offer_postfix }}
-                        {#Постфикс множественного варианта#}
-                        {{ card.product_variation_postfix }}
-                        {#Постфикс модификации#}
-                        {{ card.product_modification_postfix }}
+            {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
 
-
-                    <td scope="row" class="text-center"> {{ card.total }}
-                    <td scope="row"> {{ card.stock_storage|replace({ ': [': ' <small>(', ']' : ')</small>' })|raw }}
-
-        {% set order = card.id %}
+            {#Постфикс торгового предложения#}
+            {{ card.product_offer_postfix }}
+            {#Постфикс множественного варианта#}
+            {{ card.product_variation_postfix }}
+            {#Постфикс модификации#}
+            {{ card.product_modification_postfix }}
 
 
-    {% endfor %}
+        <td scope="row"> {{ card.total }}
+        <td scope="row">  {{ card.stock_storage }}
+
+            {% set order = card.id %}
+
+            {#{% if loop.index is divisible by(5) %}
+
+
+            #}{# Вставляем разрыв страницы #}{#
+            <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
+        {% endif %}#}
+
+
+            {% endfor %}
 
 </table>

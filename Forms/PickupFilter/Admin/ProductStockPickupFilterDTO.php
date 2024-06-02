@@ -36,6 +36,7 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
 
     public const delivery = 'zFFtvNTQsC';
 
+
     private Request $request;
 
     private ?DeliveryUid $delivery = null;
@@ -45,6 +46,13 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
      * Дата
      */
     private ?DateTimeImmutable $date = null;
+
+
+    /**
+     * Номер тел клиента
+     */
+    private mixed $phone = null;
+
 
 
     public function __construct(Request $request)
@@ -107,5 +115,26 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
 
         return $this;
     }
+
+    /**
+     * Phone
+     */
+    public function getPhone(): mixed
+    {
+        if($this->phone)
+        {
+            dd($this->phone);
+        }
+
+        return $this->phone;
+    }
+
+    public function setPhone(mixed $phone): self
+    {
+        $this->phone = $phone;
+        return $this;
+    }
+
+
 
 }

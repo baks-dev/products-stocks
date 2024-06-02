@@ -24,6 +24,7 @@
 namespace BaksDev\Products\Stocks\Forms\PickupFilter\Admin;
 
 use BaksDev\Delivery\Forms\Delivery\DeliveryForm;
+use BaksDev\Field\Pack\Phone\Form\PhoneFieldForm;
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -46,9 +47,9 @@ final class ProductStockPickupFilterForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-
         $builder->add('delivery', DeliveryForm::class, ['required' => false]);
 
+        $builder->add('phone', PhoneFieldForm::class, ['required' => false]);
 
         $builder->add('date', DateType::class, [
             'widget' => 'single_text',
@@ -60,16 +61,22 @@ final class ProductStockPickupFilterForm extends AbstractType
         ]);
 
 
-        $builder->addEventListener(
-            FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
-                /** @var ProductStockPickupFilterDTO $data */
-                $data = $event->getData();
+//        $builder->addEventListener(
+//            FormEvents::POST_SUBMIT,
+//            function (FormEvent $event): void {
+//
+//
+//
+//
+//                /** @var ProductStockPickupFilterDTO $data */
+//                $data = $event->getData();
+//
+//                $this->request->getSession()->set(ProductStockPickupFilterDTO::date, $data->getDate());
+//                $this->request->getSession()->set(ProductStockPickupFilterDTO::delivery, $data->getDelivery());
+//            }
+//        );
 
-                $this->request->getSession()->set(ProductStockPickupFilterDTO::date, $data->getDate());
-                $this->request->getSession()->set(ProductStockPickupFilterDTO::delivery, $data->getDelivery());
-            }
-        );
+
 
 
         $builder->add(

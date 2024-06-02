@@ -487,8 +487,6 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
 
-
-
         $dbal->addSelect('order_delivery.delivery_date');
 
         $delivery_condition = 'order_delivery.usr = order_user.id';
@@ -535,14 +533,15 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
             );
 
-        if($this->search->getQuery())
+        if($this->search->getQuery() && preg_match('/^\(\d+\) \d+-\d+-\d+$/', $this->search->getQuery()))
         {
             $dbal->join(
                 'order_user',
                 UserProfileValue::class,
                 'client_profile_value',
                 'client_profile_value.event = order_user.profile'
-            );
+            )
+                ->addSearchLike('client_profile_value.value');
         }
 
         if(class_exists(BaksDevDeliveryTransportBundle::class))
@@ -557,13 +556,11 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             $dbal
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number')
-                ->addSearchLike('client_profile_value.value')
 
                 ->addSearchLike('product_modification.article')
                 ->addSearchLike('product_variation.article')
                 ->addSearchLike('product_offer.article')
-                ->addSearchLike('product_info.article')
-            ;
+                ->addSearchLike('product_info.article');
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
