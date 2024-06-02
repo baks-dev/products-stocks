@@ -24,9 +24,9 @@
 <table class="table w-100 mb-2">
     <thead>
     <tr>
-        <th scope="row"> Продукция
-        <th scope="row"> Количество
-        <th scope="row"> Место
+        <th scope="row" class="w-50"> Продукция
+        <th scope="row" class="w-25 text-center"> Количество
+        <th scope="row" class="w-25"> Место
 
     <tbody>
 
@@ -51,8 +51,8 @@
                 {{ card.product_modification_postfix }}
 
 
-            <td scope="row"> {{ card.total }}
-            <td scope="row">  {{ card.stock_storage }}
+            <td scope="row" class="text-center"> {{ card.total }}
+            <td scope="row">  {{ card.stock_storage|replace({ '[': '<small>(', ']' : ')</small>' })|raw }}
 
 
     {% endfor %}

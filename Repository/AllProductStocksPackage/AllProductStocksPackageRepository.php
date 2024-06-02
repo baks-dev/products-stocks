@@ -169,7 +169,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         /** Погрузка на доставку */
 
-        if(defined(DeliveryPackage::class.'::TABLE'))
+        if(class_exists(DeliveryPackage::class))
         {
 
             /** Подгружаем разделенные заказы */
@@ -177,12 +177,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
             $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
             $existDeliveryPackage->select('1');
-            $existDeliveryPackage->from(DeliveryPackage::TABLE, 'bGIuGLiNkf');
+            $existDeliveryPackage->from(DeliveryPackage::class, 'bGIuGLiNkf');
             $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
 
             $dbal->leftJoin(
                 'stock',
-                DeliveryPackageStocks::TABLE,
+                DeliveryPackageStocks::class,
                 'delivery_stocks',
                 'delivery_stocks.stock = stock.id AND EXISTS('.$existDeliveryPackage->getSQL().')'
             );
@@ -190,7 +190,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
             $dbal->leftJoin(
                 'delivery_stocks',
-                DeliveryPackage::TABLE,
+                DeliveryPackage::class,
                 'delivery_package',
                 'delivery_package.event = delivery_stocks.event'
             );
@@ -199,7 +199,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
             $dbal->leftJoin(
                 'delivery_package',
-                DeliveryPackageTransport::TABLE,
+                DeliveryPackageTransport::class,
                 'delivery_transport',
                 'delivery_transport.package = delivery_package.id'
             );
@@ -235,22 +235,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-        //        /* Получаем наличие на указанном складе */
-        //        $dbal
-        //            ->addSelect('SUM(total.total) AS stock_total')
-        //            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
-        //            ->leftJoin(
-        //                'stock_product',
-        //                ProductStockTotal::TABLE,
-        //                'total',
-        //                '
-        //                total.profile = :profile AND
-        //                total.product = stock_product.product AND
-        //                (total.offer IS NULL OR total.offer = stock_product.offer) AND
-        //                (total.variation IS NULL OR total.variation = stock_product.variation) AND
-        //                (total.modification IS NULL OR total.modification = stock_product.modification) AND
-        //                total.total > 0
-        //            ');
 
 
         $dbal
@@ -660,12 +644,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             'users_profile_personal.event = users_profile_event.id'
         );
 
-        //        // Avatar
-        //
-        //        $dbal->addSelect("CONCAT ( '/upload/".UserProfileEntity\Avatar\UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar");
-        //        $dbal->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext");
-        //        $dbal->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn');
-
         $dbal->leftJoin(
             'users_profile_event',
             UserProfileAvatar::class,
@@ -682,12 +660,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbalExist = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbalExist->select('1');
-        $dbalExist->from(ProductStockMove::TABLE, 'exist_move');
+        $dbalExist->from(ProductStockMove::class, 'exist_move');
         $dbalExist->where('exist_move.ord = ord.ord ');
 
         $dbalExist->join(
             'exist_move',
-            ProductStockEvent::TABLE,
+            ProductStockEvent::class,
             'exist_move_event',
             'exist_move_event.id = exist_move.event AND  (
                 exist_move_event.status != :incoming
@@ -697,7 +675,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbalExist->join(
             'exist_move_event',
-            ProductStock::TABLE,
+            ProductStock::class,
             'exist_move_stock',
             'exist_move_stock.event = exist_move_event.id'
         );
@@ -841,13 +819,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
         $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
-
         $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
 
 
         /** Погрузка на доставку */
 
-        //        if(defined(DeliveryPackage::class.'::TABLE'))
+        //        if(defined(DeliveryPackage::class.'::class'))
         //        {
         //
         //            /** Подгружаем разделенные заказы */
@@ -855,12 +832,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //
         //            $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
         //            $existDeliveryPackage->select('1');
-        //            $existDeliveryPackage->from(DeliveryPackage::TABLE, 'bGIuGLiNkf');
+        //            $existDeliveryPackage->from(DeliveryPackage::class, 'bGIuGLiNkf');
         //            $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
         //
         //            $dbal->leftJoin(
         //                'stock',
-        //                DeliveryPackageStocks::TABLE,
+        //                DeliveryPackageStocks::class,
         //                'delivery_stocks',
         //                'delivery_stocks.stock = stock.id AND EXISTS('.$existDeliveryPackage->getSQL().')'
         //            );
@@ -868,7 +845,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //
         //            $dbal->leftJoin(
         //                'delivery_stocks',
-        //                DeliveryPackage::TABLE,
+        //                DeliveryPackage::class,
         //                'delivery_package',
         //                'delivery_package.event = delivery_stocks.event'
         //            );
@@ -877,7 +854,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //
         //            $dbal->leftJoin(
         //                'delivery_package',
-        //                DeliveryPackageTransport::TABLE,
+        //                DeliveryPackageTransport::class,
         //                'delivery_transport',
         //                'delivery_transport.package = delivery_package.id'
         //            );
@@ -903,7 +880,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         $dbal
-            //->addSelect('stock_product.id as product_stock_id')
             ->addSelect('SUM(stock_product.total) AS total')
             ->leftJoin(
                 'event',
@@ -913,39 +889,30 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-        //        /* Получаем наличие на указанном складе */
-        //        $dbal
-        //            ->addSelect('SUM(total.total) AS stock_total')
-        //            ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
-        //            ->leftJoin(
-        //                'stock_product',
-        //                ProductStockTotal::TABLE,
-        //                'total',
-        //                '
-        //                total.profile = :profile AND
-        //                total.product = stock_product.product AND
-        //                (total.offer IS NULL OR total.offer = stock_product.offer) AND
-        //                (total.variation IS NULL OR total.variation = stock_product.variation) AND
-        //                (total.modification IS NULL OR total.modification = stock_product.modification) AND
-        //                total.total > 0
-        //            ');
+       /* Получаем наличие на указанном складе */
+
+        $storage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $storage->select("STRING_AGG(DISTINCT CONCAT(total.storage, ' [', total.total, ']'), ', ' ) AS stock_storage");
+        $storage
+            ->from(ProductStockTotal::class, 'total')
+            ->where('total.profile = :profile')
+            ->andWhere('total.product = stock_product.product')
+            ->andWhere('total.offer = stock_product.offer')
+            ->andWhere('total.variation = stock_product.variation')
+            ->andWhere('total.modification = stock_product.modification')
+            ->andWhere('total.total > 0')
+            ;
+
+
+        $dbal->addSelect('('.$storage->getSQL().') AS stock_storage');
 
 
         $dbal
-            ->addSelect("total.storage AS stock_storage")
-            ->leftOneJoin(
-                'stock_product',
-                ProductStockTotal::class,
-                'total',
-                '
-                total.profile = event.profile AND
-                total.product = stock_product.product AND 
-                (total.offer IS NULL OR total.offer = stock_product.offer) AND 
-                (total.variation IS NULL OR total.variation = stock_product.variation) AND 
-                (total.modification IS NULL OR total.modification = stock_product.modification) AND
-                total.total > 0
-            '
-            );
+            ->addGroupBy('stock_product.product')
+            ->addGroupBy('stock_product.offer')
+            ->addGroupBy('stock_product.variation')
+            ->addGroupBy('stock_product.modification')
+        ;
 
         $dbal->join(
             'stock',
@@ -972,7 +939,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
 
-        //$dbal->addSelect('order_delivery.delivery_date');
 
         $delivery_condition = 'order_delivery.usr = order_user.id';
 
@@ -1001,22 +967,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_delivery',
                 $delivery_condition
             );
-        //
-        //        $dbal->leftJoin(
-        //            'order_delivery',
-        //            DeliveryEvent::class,
-        //            'delivery_event',
-        //            'delivery_event.id = order_delivery.event AND delivery_event.main = order_delivery.delivery'
-        //        );
-        //
-        //        $dbal
-        //            ->addSelect('delivery_trans.name AS delivery_name')
-        //            ->leftJoin(
-        //                'delivery_event',
-        //                DeliveryTrans::class,
-        //                'delivery_trans',
-        //                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
-        //            );
+
 
 
         // Product
@@ -1030,32 +981,15 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'product.id = stock_product.product'
             );
 
-        // Product Event
-        $dbal->join(
-            'product',
-            ProductEvent::class,
-            'product_event',
-            'product_event.id = product.event'
-        );
-
-        // Product Info
-        //        $dbal
-        //            ->addSelect('product_info.url AS product_url')
-        //            ->leftJoin(
-        //                'product_event',
-        //                ProductInfo::class,
-        //                'product_info',
-        //                'product_info.product = product.id'
-        //            );
 
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
             ->join(
-                'product_event',
+                'product',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product.event AND product_trans.local = :local'
             );
 
         /*
@@ -1067,10 +1001,10 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix')
             ->leftJoin(
-                'product_event',
+                'product',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product.event AND product_offer.const = stock_product.offer'
             );
 
         // Получаем тип торгового предложения
@@ -1083,14 +1017,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'category_offer.id = product_offer.category_offer'
             );
 
-        //        $dbal
-        //            ->addSelect('category_offer_trans.name as product_offer_name')
-        //            ->leftJoin(
-        //                'category_offer',
-        //                CategoryProductOffersTrans::class,
-        //                'category_offer_trans',
-        //                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
-        //            );
 
         /*
          * Множественные варианты торгового предложения
@@ -1187,29 +1113,29 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
         // Info
-        $dbal->join(
-            'event',
-            UserProfileInfo::class,
-            'users_profile_info',
-            'users_profile_info.profile = event.profile'
-        );
+//        $dbal->leftJoin(
+//            'event',
+//            UserProfileInfo::class,
+//            'users_profile_info',
+//            'users_profile_info.profile = event.profile'
+//        );
 
         // Event
-        $dbal->join(
-            'users_profile',
-            UserProfileEvent::class,
-            'users_profile_event',
-            'users_profile_event.id = users_profile.event'
-        );
+//        $dbal->leftJoin(
+//            'users_profile',
+//            UserProfileEvent::class,
+//            'users_profile_event',
+//            'users_profile_event.id = users_profile.event'
+//        );
 
         // Personal
         $dbal->addSelect('users_profile_personal.username AS users_profile_username');
 
-        $dbal->join(
-            'users_profile_event',
+        $dbal->leftJoin(
+            'users_profile',
             UserProfilePersonal::class,
             'users_profile_personal',
-            'users_profile_personal.event = users_profile_event.id'
+            'users_profile_personal.event = users_profile.event'
         );
 
 
@@ -1222,12 +1148,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //        $dbalExist = $this->DBALQueryBuilder->createQueryBuilder(self::class);
         //
         //        $dbalExist->select('1');
-        //        $dbalExist->from(ProductStockMove::TABLE, 'exist_move');
+        //        $dbalExist->from(ProductStockMove::class, 'exist_move');
         //        $dbalExist->where('exist_move.ord = ord.ord ');
         //
         //        $dbalExist->join(
         //            'exist_move',
-        //            ProductStockEvent::TABLE,
+        //            ProductStockEvent::class,
         //            'exist_move_event',
         //            'exist_move_event.id = exist_move.event AND  (
         //                exist_move_event.status != :incoming
@@ -1237,7 +1163,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //
         //        $dbalExist->join(
         //            'exist_move_event',
-        //            ProductStock::TABLE,
+        //            ProductStock::class,
         //            'exist_move_stock',
         //            'exist_move_stock.event = exist_move_event.id'
         //        );
@@ -1384,7 +1310,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addSelect('modify.mod_date');
         $dbal->join(
             'stock',
-            ProductStockModify::TABLE,
+            ProductStockModify::class,
             'modify',
             'modify.event = stock.event'
         );

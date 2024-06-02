@@ -45,9 +45,9 @@
                     <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
 
                 <tr>
-                    <th scope="row"> Продукция
-                    <th scope="row"> Количество
-                    <th scope="row"> Место складирования
+                    <th scope="row" class="w-50"> Продукция
+                    <th scope="row" class="w-25 text-center"> Количество
+                    <th scope="row" class="w-25"> Место складирования
 
         {% endif %}
 
@@ -69,8 +69,8 @@
                         {{ card.product_modification_postfix }}
 
 
-                    <td scope="row"> {{ card.total }}
-                    <td scope="row">  {{ card.stock_storage }}
+                    <td scope="row" class="text-center"> {{ card.total }}
+                    <td scope="row"> {{ card.stock_storage|replace({ ': [': ' <small>(', ']' : ')</small>' })|raw }}
 
         {% set order = card.id %}
 
