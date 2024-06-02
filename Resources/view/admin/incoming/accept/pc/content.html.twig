@@ -55,7 +55,7 @@
                             {% if detail.product_image_ext is defined and detail.product_image_ext is not null %}
                                 {% set img_host = detail.product_image_cdn  == true  ? CDN_HOST : '' %}
                                 {% set img_dir = detail.product_image %}
-                                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ detail.product_image_ext %}
+                                {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ detail.product_image_ext %}
                                 {% set image_path = img_host ~ img_dir ~ img_file %}
                             {% endif %}
 

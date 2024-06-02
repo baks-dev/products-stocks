@@ -28,7 +28,7 @@
                 {% set img_host =  item.product_image_cdn == true  ? CDN_HOST : '' %}
                 {# {% set img_table = '/upload/' ~ constant('BaksDev\\Payment\\Entity\\Cover\\PaymentCover::TABLE') %} #}
                 {% set img_dir = item.product_image %}
-                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ item.product_image_ext %}
+                {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ item.product_image_ext %}
                 {% set image_path = img_host ~ img_dir ~ img_file %}
             {% endif %}
 

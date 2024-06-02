@@ -121,11 +121,6 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
      */
     public function getPhone(): mixed
     {
-        if($this->phone)
-        {
-            dd($this->phone);
-        }
-
         return $this->phone;
     }
 
