@@ -35,4 +35,10 @@ class BaksDevProductsStocksBundle extends AbstractBundle
     public const NAMESPACE = __NAMESPACE__.'\\';
 
     public const PATH = __DIR__.DIRECTORY_SEPARATOR;
+
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        $path = self::PATH.'Resources/packages/products-stocks/services.php';
+        $container->import($path);
+    }
 }
