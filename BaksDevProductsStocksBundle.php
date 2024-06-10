@@ -38,7 +38,21 @@ class BaksDevProductsStocksBundle extends AbstractBundle
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        $path = self::PATH.'Resources/packages/products-stocks/services.php';
-        $container->import($path);
+        $services = $container->services()
+            ->defaults()
+            ->autowire()
+            ->autoconfigure();
+
+        $services->load(self::NAMESPACE, self::PATH)
+            ->exclude([
+                self::PATH.'{Entity,Resources,Type}',
+                self::PATH.'**/*Message.php',
+                self::PATH.'**/*DTO.php',
+            ]);
+
+        $services->load(
+            self::NAMESPACE.'Type\Status\ProductStockStatus\\',
+            self::PATH.'Type/Status/ProductStockStatus'
+        );
     }
 }
