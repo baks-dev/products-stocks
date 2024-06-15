@@ -141,6 +141,13 @@ final class SubReserveProductStockTotalByMove
                     $SubProductStocksTotalMessage,
                     transport: 'products-stocks'
                 );
+
+                if($i === $product->getTotal())
+                {
+                    return;
+                }
+
+                usleep(300);
             }
         }
     }

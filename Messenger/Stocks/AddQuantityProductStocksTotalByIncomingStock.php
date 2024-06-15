@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
@@ -57,6 +58,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private ProductStocksTotalStorageInterface $productStocksTotalStorage;
     private AddProductStockInterface $addProductStock;
     private MessageDispatchInterface $messageDispatch;
+    private AppLockInterface $appLock;
 
 
     public function __construct(
@@ -67,7 +69,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
         UserByUserProfileInterface $userByUserProfile,
         ProductStocksTotalStorageInterface $productStocksTotalStorage,
         AddProductStockInterface $addProductStock,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        AppLockInterface $appLock
     )
     {
         // Инициируем статусы складских остатков
@@ -80,6 +83,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $this->productStocksTotalStorage = $productStocksTotalStorage;
         $this->addProductStock = $addProductStock;
         $this->messageDispatch = $messageDispatch;
+        $this->appLock = $appLock;
     }
 
     /**
@@ -124,6 +128,17 @@ final class AddQuantityProductStocksTotalByIncomingStock
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
+            $key = $UserProfileUid.
+                $product->getProduct().
+                $product->getOffer().
+                $product->getVariation().
+                $product->getModification();
+
+            $lock = $this->appLock
+                ->createLock($key)
+                ->lifetime(30)
+                ->wait();
+
             /** Получаем место для хранения указанной продукции данного профиля */
             $ProductStockTotal = $this->productStocksTotalStorage
                 ->profile($UserProfileUid)
@@ -184,6 +199,9 @@ final class AddQuantityProductStocksTotalByIncomingStock
             );
 
             $this->handle($ProductStockTotal, $product->getTotal());
+
+
+            $lock->release(); // снимаем блокировку
 
         }
 

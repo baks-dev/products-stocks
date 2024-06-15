@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
+use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
@@ -54,6 +55,7 @@ final class SubReserveProductByProductStockCancel
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
+    private AppLockInterface $appLock;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -63,7 +65,8 @@ final class SubReserveProductByProductStockCancel
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        AppLockInterface $appLock
     )
     {
         $this->productStocks = $productStocks;
@@ -76,6 +79,7 @@ final class SubReserveProductByProductStockCancel
         // Инициируем статусы складских остатков
         $collection->cases();
         $this->logger = $productsStocksLogger;
+        $this->appLock = $appLock;
     }
 
     /**
@@ -120,7 +124,16 @@ final class SubReserveProductByProductStockCancel
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
+                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
+
+                $lock = $this->appLock
+                    ->createLock($key)
+                    ->lifetime(30)
+                    ->wait();
+
                 $this->changeReserve($product);
+
+                $lock->release(); // снимаем блокировку
             }
         }
     }

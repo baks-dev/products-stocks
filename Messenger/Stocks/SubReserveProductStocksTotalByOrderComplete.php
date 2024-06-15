@@ -154,6 +154,14 @@ final class SubReserveProductStocksTotalByOrderComplete
             );
 
             $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
+
+            if($i === $product->getTotal())
+            {
+                return;
+            }
+
+            usleep(300);
+
         }
 
     }

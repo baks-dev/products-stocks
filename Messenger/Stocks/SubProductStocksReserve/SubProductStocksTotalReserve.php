@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve;
 
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
@@ -43,18 +44,21 @@ final class SubProductStocksTotalReserve
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private SubProductStockInterface $updateProductStock;
+    private AppLockInterface $appLock;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger,
-        SubProductStockInterface $updateProductStock
+        SubProductStockInterface $updateProductStock,
+        AppLockInterface $appLock
     )
     {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->updateProductStock = $updateProductStock;
+        $this->appLock = $appLock;
     }
 
     /**
@@ -62,6 +66,19 @@ final class SubProductStocksTotalReserve
      */
     public function __invoke(SubProductStocksTotalReserveMessage $message): void
     {
+
+        $key = $message->getProfile().
+            $message->getProduct().
+            $message->getOffer().
+            $message->getVariation().
+            $message->getModification();
+
+        $lock = $this->appLock
+            ->createLock($key)
+            ->lifetime(30)
+            ->wait();
+
+
         $this->entityManager->clear();
 
         /* Получаем одно место складирования с максимальным количеством продукции и резервом > 0 */
@@ -89,6 +106,8 @@ final class SubProductStocksTotalReserve
         }
 
         $this->handle($ProductStockTotal);
+
+        $lock->release(); // снимаем блокировку
 
     }
 

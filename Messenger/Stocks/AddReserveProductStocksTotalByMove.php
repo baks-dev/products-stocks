@@ -121,6 +121,13 @@ final class AddReserveProductStocksTotalByMove
                     $AddProductStocksReserve,
                     transport: 'products-stocks'
                 );
+
+                if($i === $product->getTotal())
+                {
+                    return;
+                }
+
+                usleep(300);
             }
 
         }

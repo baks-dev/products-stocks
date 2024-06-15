@@ -110,6 +110,7 @@ final class AddReserveProductStocksTotalByPackage
                 ]
             );
 
+
             /**
              * Создаем резерв на единицу продукции при упаковке
              */
@@ -127,6 +128,13 @@ final class AddReserveProductStocksTotalByPackage
                     $AddProductStocksReserve,
                     transport: 'products-stocks'
                 );
+
+                if($i === $product->getTotal())
+                {
+                    return;
+                }
+
+                usleep(300);
             }
         }
     }

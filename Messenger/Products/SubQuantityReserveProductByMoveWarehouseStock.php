@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
+use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
@@ -53,6 +54,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
+    private AppLockInterface $appLock;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -61,7 +63,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        AppLockInterface $appLock
     )
     {
         $this->productStocks = $productStocks;
@@ -71,6 +74,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
         $this->logger = $productsStocksLogger;
+        $this->appLock = $appLock;
     }
 
     /**
@@ -113,7 +117,17 @@ final class SubQuantityReserveProductByMoveWarehouseStock
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
+
+                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
+
+                $lock = $this->appLock
+                    ->createLock($key)
+                    ->lifetime(30)
+                    ->wait();
+
                 $this->changeProduct($product);
+
+                $lock->release(); // снимаем блокировку
             }
         }
     }

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
+use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
@@ -48,6 +49,7 @@ final class AddQuantityProductByIncomingStock
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
+    private AppLockInterface $appLock;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -56,7 +58,8 @@ final class AddQuantityProductByIncomingStock
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger
+        LoggerInterface $productsStocksLogger,
+        AppLockInterface $appLock
     )
     {
         $this->productStocks = $productStocks;
@@ -66,6 +69,7 @@ final class AddQuantityProductByIncomingStock
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
         $this->logger = $productsStocksLogger;
+        $this->appLock = $appLock;
     }
 
     /**
@@ -97,7 +101,20 @@ final class AddQuantityProductByIncomingStock
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
+                /** Блокируем процесс в очереди */
+
+                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
+
+                $lock = $this->appLock
+                    ->createLock($key)
+                    ->lifetime(30)
+                    ->wait();
+
+                /** Снимаем резерв отмененного заказа */
                 $this->changeTotal($product);
+
+                $lock->release(); // снимаем блокировку
+                
             }
         }
     }
