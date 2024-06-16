@@ -25,6 +25,7 @@
 
                     <a href="{{ path('orders-order:admin.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -42,6 +43,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.package.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -58,6 +60,7 @@
 
                     <button {# href="{{ path('products-stocks:admin.pickup.index') }}" #}
                             class="btn btn-light bold opacity-25"
+                            role="tooltip"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
                             data-bs-delay='{"show":600,"hide":100}'

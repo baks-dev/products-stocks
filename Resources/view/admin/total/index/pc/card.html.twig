@@ -97,6 +97,7 @@
         <div
                 {{ item.users_profile_location ? 'style="cursor: help;"' }}
                 class="p-1 text-nowrap"
+                role="tooltip"
                 data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
                 data-bs-delay='{"show":300,"hide":600}'
@@ -122,6 +123,7 @@
 
             <span
                     class="pointer {{ alert ? 'badge text-bg-danger' }}"
+                    role="tooltip"
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-delay='{"show":600,"hide":100}'
@@ -143,6 +145,7 @@
         {% else %}
             0 <span
                 class="pointer badge text-bg-danger"
+                role="tooltip"
                 data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
                 data-bs-delay='{"show":600,"hide":100}'

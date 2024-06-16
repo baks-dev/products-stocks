@@ -35,6 +35,7 @@
 
                     <a href="{{ path('products-stocks:admin.total.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -53,6 +54,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE') or is_granted('ROLE_ADMIN') %}
                     <button {# href="{{ path('products-stocks:admin.purchase.index') }}" #}
                             class="btn btn-light opacity-25"
+                            role="tooltip"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
                             data-bs-delay='{"show":600,"hide":100}'
@@ -72,6 +74,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.warehouse.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -93,6 +96,7 @@
 
                     <a href="{{ path('products-stocks:admin.incoming.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -109,6 +113,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.package.index') }}"
                        class="btn btn-light bold"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
@@ -125,6 +130,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_MOVING') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.moving.index') }}"
                        class="btn btn-light"
+                       role="tooltip"
                        data-bs-toggle="tooltip"
                        data-bs-placement="bottom"
                        data-bs-delay='{"show":600,"hide":100}'
