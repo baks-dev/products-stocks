@@ -71,7 +71,6 @@ final class MovingProductStockDTO
     }
 
 
-
     // WAREHOUSE
 
     public function getTargetWarehouse(): ?UserProfileUid

@@ -63,7 +63,6 @@ final class ExtraditionProductStockTest extends KernelTestCase
         $ExtraditionProductStockDTO->setComment('ExtraditionComment');
 
 
-
         /** @var ExtraditionProductStockHandler $ExtraditionProductStockHandler */
         $ExtraditionProductStockHandler = self::getContainer()->get(ExtraditionProductStockHandler::class);
         $handle = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);

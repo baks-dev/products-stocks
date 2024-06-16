@@ -45,7 +45,8 @@ final class ProductStockTotalEditHandler
         EntityManagerInterface $entityManager,
         ValidatorCollectionInterface $validatorCollection,
         MessageDispatchInterface $messageDispatch
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->validatorCollection = $validatorCollection;
         $this->messageDispatch = $messageDispatch;

@@ -25,7 +25,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Symfony\Config\FrameworkConfig;
 
-return static function (FrameworkConfig $framework) {
+return static function(FrameworkConfig $framework) {
 
     $messenger = $framework->messenger();
 
@@ -39,15 +39,12 @@ return static function (FrameworkConfig $framework) {
         ->delay(1000)
         ->maxDelay(0)
         ->multiplier(3) // увеличиваем задержку перед каждой повторной попыткой
-        ->service(null)
-
-    ;
+        ->service(null);
 
     $failure = $framework->messenger();
 
     $failure->transport('failed-products-stocks')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
-        ->options(['queue_name' => 'failed-products-stocks'])
-    ;
+        ->options(['queue_name' => 'failed-products-stocks']);
 
 };

@@ -56,7 +56,7 @@
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PICKUP') or is_granted('ROLE_ADMIN') %}
 
-                    <button {#href="{{ path('products-stocks:admin.pickup.index') }}"#}
+                    <button {# href="{{ path('products-stocks:admin.pickup.index') }}" #}
                             class="btn btn-light bold opacity-25"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
@@ -148,13 +148,13 @@
 
                 {% for item in query.data %}
 
-                    {% if card != item.stock_id %}
+                {% if card != item.stock_id %}
 
-                        {% if card is not null %}
-                                    </table>
-                                </div>
-                            </div>
-                        {% endif %}
+                {% if card is not null %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
 
         <div class="card mb-3 border-light">
@@ -169,7 +169,6 @@
                             data-bs-target="#collapse{{ item.stock_id }}"
                     >
                     </button>
-
 
 
                     <div class="w-100">
@@ -271,9 +270,12 @@
                                     aria-expanded="false"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-printer-fill" viewBox="0 0 16 16"><path
-                                            d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path><path
-                                            d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"></path></svg>
+                                     class="bi bi-printer-fill" viewBox="0 0 16 16">
+                                    <path
+                                            d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path>
+                                    <path
+                                            d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"></path>
+                                </svg>
                             </button>
 
                             <ul class="dropdown-menu">
@@ -323,10 +325,10 @@
 
                 <table>
                     <tbody>
-                        {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
+                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
                     </tbody>
 
-                        {% set card = item.stock_id %}
+                    {% set card = item.stock_id %}
 
                     {% endif %}
 

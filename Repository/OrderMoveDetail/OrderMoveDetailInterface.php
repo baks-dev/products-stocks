@@ -27,9 +27,9 @@ use BaksDev\Orders\Order\Type\Id\OrderUid;
 
 interface OrderMoveDetailInterface
 {
-	/**
+    /**
      * Метод возвращает массив с информацией о перемещении заказа
      */
-	public function fetchDetailOrderAssociative(OrderUid $order) : ?array;
+    public function fetchDetailOrderAssociative(OrderUid $order): ?array;
 
 }

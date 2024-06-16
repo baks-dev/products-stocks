@@ -66,7 +66,7 @@ class ProductStockOrder extends EntityEvent
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if ($dto instanceof ProductStockOrderInterface)
+        if($dto instanceof ProductStockOrderInterface)
         {
             return parent::getDto($dto);
         }
@@ -76,12 +76,12 @@ class ProductStockOrder extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if (empty($dto->getOrd()))
+        if(empty($dto->getOrd()))
         {
             return false;
         }
 
-        if ($dto instanceof ProductStockOrderInterface || $dto instanceof self)
+        if($dto instanceof ProductStockOrderInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

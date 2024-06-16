@@ -235,8 +235,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-
-
         $dbal
             ->addSelect('SUM(total.total) AS stock_total')
             ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
@@ -889,7 +887,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
-       /* Получаем наличие на указанном складе */
+        /* Получаем наличие на указанном складе */
 
         $storage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
         $storage->select("STRING_AGG(DISTINCT CONCAT(total.storage, ' [', total.total, ']'), ', ' ) AS stock_storage");
@@ -900,8 +898,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->andWhere('total.offer = stock_product.offer')
             ->andWhere('total.variation = stock_product.variation')
             ->andWhere('total.modification = stock_product.modification')
-            ->andWhere('total.total > 0')
-            ;
+            ->andWhere('total.total > 0');
 
 
         $dbal->addSelect('('.$storage->getSQL().') AS stock_storage');
@@ -911,8 +908,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->addGroupBy('stock_product.product')
             ->addGroupBy('stock_product.offer')
             ->addGroupBy('stock_product.variation')
-            ->addGroupBy('stock_product.modification')
-        ;
+            ->addGroupBy('stock_product.modification');
 
         $dbal->join(
             'stock',
@@ -937,7 +933,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             'order_user',
             'order_user.event = orders.event'
         );
-
 
 
         $delivery_condition = 'order_delivery.usr = order_user.id';
@@ -967,7 +962,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_delivery',
                 $delivery_condition
             );
-
 
 
         // Product
@@ -1113,20 +1107,20 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
         // Info
-//        $dbal->leftJoin(
-//            'event',
-//            UserProfileInfo::class,
-//            'users_profile_info',
-//            'users_profile_info.profile = event.profile'
-//        );
+        //        $dbal->leftJoin(
+        //            'event',
+        //            UserProfileInfo::class,
+        //            'users_profile_info',
+        //            'users_profile_info.profile = event.profile'
+        //        );
 
         // Event
-//        $dbal->leftJoin(
-//            'users_profile',
-//            UserProfileEvent::class,
-//            'users_profile_event',
-//            'users_profile_event.id = users_profile.event'
-//        );
+        //        $dbal->leftJoin(
+        //            'users_profile',
+        //            UserProfileEvent::class,
+        //            'users_profile_event',
+        //            'users_profile_event.id = users_profile.event'
+        //        );
 
         // Personal
         $dbal->addSelect('users_profile_personal.username AS users_profile_username');

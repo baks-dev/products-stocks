@@ -187,7 +187,7 @@ class ProductStockTotal extends EntityState
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if ($dto instanceof ProductStockTotalEditDTO)
+        if($dto instanceof ProductStockTotalEditDTO)
         {
             return parent::getDto($dto);
         }
@@ -197,7 +197,7 @@ class ProductStockTotal extends EntityState
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockTotalEditDTO || $dto instanceof self)
+        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

@@ -1,4 +1,3 @@
-
 {# ПЕЧАТЬ #}
 
 {% set current = query.data|first %}
@@ -23,26 +22,26 @@
 
     {% for card in query.data %}
 
-        <tr>
-            <th scope="row"> {{ card.product_article }}
-            <td>
-                {{ card.product_name }}
+    <tr>
+        <th scope="row"> {{ card.product_article }}
+        <td>
+            {{ card.product_name }}
 
-                {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
-                card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
+            {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
+            card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
 
-                {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
+            {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
 
-                {# Постфикс торгового предложения #}
-                {{ card.product_offer_postfix }}
-                {# Постфикс множественного варианта #}
-                {{ card.product_variation_postfix }}
-                {# Постфикс модификации #}
-                {{ card.product_modification_postfix }}
+            {# Постфикс торгового предложения #}
+            {{ card.product_offer_postfix }}
+            {# Постфикс множественного варианта #}
+            {{ card.product_variation_postfix }}
+            {# Постфикс модификации #}
+            {{ card.product_modification_postfix }}
 
-            <td> {{ (card.stock_total - card.stock_reserve) }}
-            <td> {{ card.stock_storage }}
+        <td> {{ (card.stock_total - card.stock_reserve) }}
+        <td> {{ card.stock_storage }}
 
-    {% endfor %}
+            {% endfor %}
 
 </table>

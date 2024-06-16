@@ -50,7 +50,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
-    public function main(ProductStock|ProductStockUid|string $main) : self
+    public function main(ProductStock|ProductStockUid|string $main): self
     {
         if(is_string($main))
         {
@@ -82,20 +82,18 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
             ->addSelect('event.number AS event_number')
             ->addSelect('event.status AS event_status')
             ->addSelect('event.comment AS event_comment')
-
             ->from(ProductStockEvent::class, 'event')
             ->where('event.main = :main')
-            ->setParameter('main', $this->main, ProductStockUid::TYPE)
-        ;
+            ->setParameter('main', $this->main, ProductStockUid::TYPE);
 
         $dbal
             ->addSelect('modify.mod_date AS date_modify')
             ->leftJoin(
-            'event',
+                'event',
                 ProductStockModify::class,
                 'modify',
                 'modify.event = event.id'
-        );
+            );
 
         $dbal
             ->leftJoin(

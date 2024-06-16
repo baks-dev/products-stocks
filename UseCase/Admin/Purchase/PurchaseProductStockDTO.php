@@ -110,8 +110,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     public function addProduct(Products\ProductStockDTO $product): void
     {
-        $filter = $this->product->filter(function(Products\ProductStockDTO $element) use ($product)
-        {
+        $filter = $this->product->filter(function(Products\ProductStockDTO $element) use ($product) {
             return $element->getProduct()->equals($product->getProduct()) &&
                 $element->getOffer()?->equals($product->getOffer()) &&
                 $element->getVariation()?->equals($product->getVariation()) &&
@@ -167,17 +166,17 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     /** ВСПОМОГАТЕЛЬНЫЕ СВОЙСТВА */
 
-//    // WAREHOUSE
-//
-//    public function getPreWarehouse(): ?ContactsRegionCallUid
-//    {
-//        return $this->preWarehouse;
-//    }
-//
-//    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
-//    {
-//        $this->preWarehouse = $warehouse;
-//    }
+    //    // WAREHOUSE
+    //
+    //    public function getPreWarehouse(): ?ContactsRegionCallUid
+    //    {
+    //        return $this->preWarehouse;
+    //    }
+    //
+    //    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
+    //    {
+    //        $this->preWarehouse = $warehouse;
+    //    }
 
     // PRODUCT
 
@@ -238,7 +237,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     {
         $this->preTotal = $total;
     }
-
 
 
 }

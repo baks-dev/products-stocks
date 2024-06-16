@@ -20,11 +20,13 @@
 
 var limit_NMrsJxDFr = 1000;
 
-setTimeout(function init_xXgmjezHJ() {
+setTimeout(function init_xXgmjezHJ()
+{
 
     var object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
-    if (object_product) {
+    if(object_product)
+    {
 
         object_product.addEventListener('change', changeObjectProduct, false);
 
@@ -46,32 +48,39 @@ setTimeout(function init_xXgmjezHJ() {
         // });
 
         document.getElementById('purchase_product_stock_form_purchase')
-            .addEventListener('click', function (event) {
-                if (event.key !== "Enter") {
+            .addEventListener('click', function(event)
+            {
+                if(event.key !== "Enter")
+                {
                     submitModalForm(forms);
                 }
                 return false;
             });
 
         document.getElementById("purchase_product_stock_form_preTotal")
-            .addEventListener("keydown", function (event) {
+            .addEventListener("keydown", function(event)
+            {
 
-                if (event.key === "Enter") {
+                if(event.key === "Enter")
+                {
                     addProductPurchase();
                 }
             });
 
 
         document.getElementById("purchase_product_stock_form_number")
-            .addEventListener("keydown", function (event) {
+            .addEventListener("keydown", function(event)
+            {
 
-                if (event.key === "Enter") {
+                if(event.key === "Enter")
+                {
 
                     event.preventDefault();
 
                     var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
 
-                    if (input_preProduct) {
+                    if(input_preProduct)
+                    {
                         document.getElementById('purchase_product_stock_form_preProduct_select2').click();
 
                     }
@@ -82,7 +91,8 @@ setTimeout(function init_xXgmjezHJ() {
         return;
     }
 
-    if (limit_NMrsJxDFr > 1000) {
+    if(limit_NMrsJxDFr > 1000)
+    {
         return;
     }
 
@@ -131,7 +141,8 @@ setTimeout(function init_xXgmjezHJ() {
 //});
 
 
-function changeObjectProduct() {
+function changeObjectProduct()
+{
 
     let replaceId = 'purchase_product_stock_form_preOffer';
 
@@ -151,9 +162,11 @@ function changeObjectProduct() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preOffer');
 
@@ -162,13 +175,15 @@ function changeObjectProduct() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(replacer, {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение торгового предложения */
                 let offerChange = document.getElementById('purchase_product_stock_form_preOffer');
 
-                if (offerChange) {
+                if(offerChange)
+                {
                     offerChange.addEventListener('change', changeObjectOffer, false);
 
                     let focus = document.getElementById(replaceId + '_select2');
@@ -187,7 +202,8 @@ function changeObjectProduct() {
 }
 
 
-function changeObjectOffer() {
+function changeObjectOffer()
+{
 
 
     let replaceId = 'purchase_product_stock_form_preVariation';
@@ -207,9 +223,11 @@ function changeObjectOffer() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
 
             let result = requestModalName.response.getElementById('preVariation');
@@ -221,17 +239,20 @@ function changeObjectOffer() {
             /* Удаляем предыдущий Select2 */
             let select2 = document.getElementById(replaceId + '_select2');
 
-            if (select2) {
+            if(select2)
+            {
                 select2.remove();
             }
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение множественного варианта предложения */
                 let offerVariation = document.getElementById('purchase_product_stock_form_preVariation');
 
-                if (offerVariation) {
+                if(offerVariation)
+                {
                     offerVariation.addEventListener('change', changeObjectVariation, false);
                 }
 
@@ -248,7 +269,8 @@ function changeObjectOffer() {
 }
 
 
-function changeObjectVariation() {
+function changeObjectVariation()
+{
 
     let replaceId = 'purchase_product_stock_form_preModification';
 
@@ -267,9 +289,11 @@ function changeObjectVariation() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preModification');
 
@@ -277,7 +301,8 @@ function changeObjectVariation() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
             }
 
@@ -288,10 +313,13 @@ function changeObjectVariation() {
             /** Событие на изменение множественного варианта предложения */
             let offerModification = document.getElementById('purchase_product_stock_form_preModification');
 
-            if (offerModification) {
+            if(offerModification)
+            {
 
-                offerModification.addEventListener("change", (event) => {
-                    setTimeout(function initBootstrap() {
+                offerModification.addEventListener("change", (event) =>
+                {
+                    setTimeout(function initBootstrap()
+                    {
                         document.getElementById('purchase_product_stock_form_preTotal').focus();
                     }, 100);
 
@@ -308,7 +336,8 @@ function changeObjectVariation() {
 }
 
 
-function addProductPurchase() {
+function addProductPurchase()
+{
 
     /* Блок для новой коллекции КАТЕГОРИИ */
     let $blockCollectionStock = document.getElementById('collectionStock');
@@ -325,7 +354,8 @@ function addProductPurchase() {
     let $preTotal = document.getElementById('purchase_product_stock_form_preTotal');
     let $TOTAL = $preTotal.value * 1;
 
-    if ($TOTAL === undefined || $TOTAL < 1) {
+    if($TOTAL === undefined || $TOTAL < 1)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +
@@ -335,7 +365,8 @@ function addProductPurchase() {
 
     let $number = document.getElementById('purchase_product_stock_form_number');
 
-    if ($number.value.length === 0) {
+    if($number.value.length === 0)
+    {
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +
             '"message" : "Не заполнен номер закупки" }';
@@ -352,7 +383,8 @@ function addProductPurchase() {
 
 
     let $preProduct = document.getElementById('purchase_product_stock_form_preProduct');
-    if ($preProduct.value.length === 0) {
+    if($preProduct.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"' + header + '"  , ' +
@@ -362,8 +394,10 @@ function addProductPurchase() {
 
 
     let $preOffer = document.getElementById('purchase_product_stock_form_preOffer');
-    if ($preOffer) {
-        if ($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0) {
+    if($preOffer)
+    {
+        if($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -373,8 +407,10 @@ function addProductPurchase() {
 
 
     let $preVariation = document.getElementById('purchase_product_stock_form_preVariation');
-    if ($preVariation) {
-        if ($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0) {
+    if($preVariation)
+    {
+        if($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -383,8 +419,10 @@ function addProductPurchase() {
     }
 
     let $preModification = document.getElementById('purchase_product_stock_form_preModification');
-    if ($preModification) {
-        if ($preModification.tagName === 'SELECT' && $preModification.value.length === 0) {
+    if($preModification)
+    {
+        if($preModification.tagName === 'SELECT' && $preModification.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"' + header + '"  , ' +
@@ -395,7 +433,8 @@ function addProductPurchase() {
 
     /* Выводим сообщение об ошибке заполнения */
 
-    if ($errorFormHandler) {
+    if($errorFormHandler)
+    {
         createToast(JSON.parse($errorFormHandler));
         return false;
     }
@@ -407,7 +446,7 @@ function addProductPurchase() {
     let index = $addButtonStock.dataset.index * 1;
 
     /* Замена '__name__' в HTML-коде прототипа
-    вместо этого будет число, основанное на том, сколько коллекций */
+     вместо этого будет число, основанное на том, сколько коллекций */
     newForm = newForm.replace(/__product__/g, index);
     //newForm = newForm.replace(/__FIELD__/g, index);
 
@@ -459,7 +498,8 @@ function addProductPurchase() {
 
 
     /* Удаляем при клике колекцию СЕКЦИЙ */
-    stockDiv.querySelector('.del-item-product').addEventListener('click', function () {
+    stockDiv.querySelector('.del-item-product').addEventListener('click', function()
+    {
         this.closest('.item-collection-product').remove();
         index = $addButtonStock.dataset.index * 1;
         $addButtonStock.dataset.index = (index - 1).toString();
@@ -482,17 +522,20 @@ function addProductPurchase() {
 
     var limit_faaJUfW = 1000;
 
-    setTimeout(function init_TQCmNQtx() {
+    setTimeout(function init_TQCmNQtx()
+    {
 
         var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
 
-        if (input_preProduct) {
+        if(input_preProduct)
+        {
             document.getElementById('purchase_product_stock_form_preProduct_select2').click();
             return;
         }
 
 
-        if (limit_faaJUfW > 1000) {
+        if(limit_faaJUfW > 1000)
+        {
             return;
         }
 

@@ -58,10 +58,8 @@
 // });
 
 
-
-
-
-function changeObjectProduct() {
+function changeObjectProduct()
+{
 
     let replaceId = 'incoming_product_stock_form_preOffer';
 
@@ -81,9 +79,11 @@ function changeObjectProduct() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preOffer');
 
@@ -92,13 +92,15 @@ function changeObjectProduct() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(replacer, {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение торгового предложения */
                 let offerChange = document.getElementById('incoming_product_stock_form_preOffer');
 
-                if (offerChange) {
+                if(offerChange)
+                {
                     offerChange.addEventListener('change', changeObjectOffer, false);
                 }
             }
@@ -113,7 +115,8 @@ function changeObjectProduct() {
 }
 
 
-function changeObjectOffer() {
+function changeObjectOffer()
+{
 
 
     let replaceId = 'incoming_product_stock_form_preVariation';
@@ -133,9 +136,11 @@ function changeObjectOffer() {
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preVariation');
 
@@ -143,13 +148,15 @@ function changeObjectOffer() {
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
 
                 /** Событие на изменение множественного варианта предложения */
                 let offerVariation = document.getElementById('incoming_product_stock_form_preVariation');
 
-                if (offerVariation) {
+                if(offerVariation)
+                {
                     offerVariation.addEventListener('change', changeObjectVariation, false);
                 }
             }
@@ -183,9 +190,11 @@ function changeObjectVariation()
     requestModalName.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     /* Получаем ответ от сервера на запрос*/
-    requestModalName.addEventListener("readystatechange", function () {
+    requestModalName.addEventListener("readystatechange", function()
+    {
         /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-        if (requestModalName.readyState === 4 && requestModalName.status === 200) {
+        if(requestModalName.readyState === 4 && requestModalName.status === 200)
+        {
 
             let result = requestModalName.response.getElementById('preModification');
 
@@ -193,7 +202,8 @@ function changeObjectVariation()
 
             let replacer = document.getElementById(replaceId);
 
-            if (replacer.tagName === 'SELECT') {
+            if(replacer.tagName === 'SELECT')
+            {
                 new NiceSelect(document.getElementById(replaceId), {searchable: true, id: 'select2-' + replaceId});
             }
 
@@ -222,7 +232,8 @@ function addProductIncoming()
 
     let $preTotal = document.getElementById('incoming_product_stock_form_preTotal');
     let $TOTAL = $preTotal.value * 1;
-    if ($TOTAL === undefined || $TOTAL < 1) {
+    if($TOTAL === undefined || $TOTAL < 1)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"Добавить приход"  , ' +
@@ -231,7 +242,8 @@ function addProductIncoming()
     }
 
     let $preWarehouse = document.getElementById('incoming_product_stock_form_preWarehouse');
-    if ($preWarehouse.value.length === 0) {
+    if($preWarehouse.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"Добавить приход"  , ' +
@@ -241,7 +253,8 @@ function addProductIncoming()
 
 
     let $preProduct = document.getElementById('incoming_product_stock_form_preProduct');
-    if ($preProduct.value.length === 0) {
+    if($preProduct.value.length === 0)
+    {
 
         $errorFormHandler = '{ "type":"danger" , ' +
             '"header":"Добавить приход"  , ' +
@@ -251,8 +264,10 @@ function addProductIncoming()
 
 
     let $preOffer = document.getElementById('incoming_product_stock_form_preOffer');
-    if ($preOffer) {
-        if ($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0) {
+    if($preOffer)
+    {
+        if($preOffer.tagName === 'SELECT' && $preOffer.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"Добавить приход"  , ' +
@@ -262,8 +277,10 @@ function addProductIncoming()
 
 
     let $preVariation = document.getElementById('incoming_product_stock_form_preVariation');
-    if ($preVariation) {
-        if ($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0) {
+    if($preVariation)
+    {
+        if($preVariation.tagName === 'SELECT' && $preVariation.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"Добавить приход"  , ' +
@@ -272,8 +289,10 @@ function addProductIncoming()
     }
 
     let $preModification = document.getElementById('incoming_product_stock_form_preModification');
-    if ($preModification) {
-        if ($preModification.tagName === 'SELECT' && $preModification.value.length === 0) {
+    if($preModification)
+    {
+        if($preModification.tagName === 'SELECT' && $preModification.value.length === 0)
+        {
 
             $errorFormHandler = '{ "type":"danger" , ' +
                 '"header":"Добавить приход"  , ' +
@@ -284,11 +303,11 @@ function addProductIncoming()
 
     /* Выводим сообщение об ошибке заполнения */
 
-    if ($errorFormHandler) {
+    if($errorFormHandler)
+    {
         createToast(JSON.parse($errorFormHandler));
         return false;
     }
-
 
 
     /* получаем прототип коллекции  */
@@ -298,7 +317,7 @@ function addProductIncoming()
     let index = $addButtonStock.dataset.index * 1;
 
     /* Замена '__name__' в HTML-коде прототипа
-    вместо этого будет число, основанное на том, сколько коллекций */
+     вместо этого будет число, основанное на том, сколько коллекций */
     newForm = newForm.replace(/__product__/g, index);
     //newForm = newForm.replace(/__FIELD__/g, index);
 
@@ -330,30 +349,28 @@ function addProductIncoming()
     $total.value = $preTotal.value;
 
 
-
-
-
     let productIndex = $preProduct.selectedIndex;
     let $productName = $preProduct.options[productIndex].textContent;
 
     let offerIndex = $preOffer.selectedIndex;
-    let $offerName = $preOffer.tagName === 'SELECT' ? document.querySelector('label[for="'+$preOffer.id+'"]').textContent +' '+$preOffer.options[offerIndex].textContent : '';
+    let $offerName = $preOffer.tagName === 'SELECT' ? document.querySelector('label[for="' + $preOffer.id + '"]').textContent + ' ' + $preOffer.options[offerIndex].textContent : '';
 
     let variationIndex = $preVariation.selectedIndex;
-    let $variationName = $preVariation.tagName === 'SELECT' ? document.querySelector('label[for="'+$preVariation.id+'"]').textContent +' '+$preVariation.options[variationIndex].textContent : '';
+    let $variationName = $preVariation.tagName === 'SELECT' ? document.querySelector('label[for="' + $preVariation.id + '"]').textContent + ' ' + $preVariation.options[variationIndex].textContent : '';
 
     let modificationIndex = $preModification.selectedIndex;
-    let $modificationName = $preModification.tagName === 'SELECT' ? document.querySelector('label[for="'+$preModification.id+'"]').textContent +' '+$preModification.options[modificationIndex].textContent : '';
+    let $modificationName = $preModification.tagName === 'SELECT' ? document.querySelector('label[for="' + $preModification.id + '"]').textContent + ' ' + $preModification.options[modificationIndex].textContent : '';
 
 
     let $productTextBlock = stockDiv.querySelector('#product-text-' + index);
-    $productTextBlock.innerHTML = $productName + ' ' + $offerName+ ' ' + $variationName+ ' ' + $modificationName + '&nbsp; : &nbsp;' + $total.value + ' шт.';
+    $productTextBlock.innerHTML = $productName + ' ' + $offerName + ' ' + $variationName + ' ' + $modificationName + '&nbsp; : &nbsp;' + $total.value + ' шт.';
 
     $preTotal.value = null;
 
 
     /* Удаляем при клике колекцию СЕКЦИЙ */
-    stockDiv.querySelector('.del-item-product').addEventListener('click', function () {
+    stockDiv.querySelector('.del-item-product').addEventListener('click', function()
+    {
         this.closest('.item-collection-product').remove();
         index = $addButtonStock.dataset.index * 1;
         $addButtonStock.dataset.index = (index - 1).toString();

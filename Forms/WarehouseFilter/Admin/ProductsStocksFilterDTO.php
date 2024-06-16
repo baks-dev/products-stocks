@@ -42,7 +42,7 @@ final class ProductsStocksFilterDTO implements ProductsStocksFilterInterface
 
     public function setWarehouse(?ContactsRegionCallConst $warehouse): void
     {
-        if ($warehouse === null)
+        if($warehouse === null)
         {
             $this->request->getSession()->remove(self::warehouse);
         }

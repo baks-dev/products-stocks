@@ -83,13 +83,13 @@ final class PackageProductStockTest extends KernelTestCase
             $em->remove($remove);
         }
 
-//        $total = $em->getRepository(ProductStockTotal::class)
-//            ->findBy(['profile' => UserProfileUid::TEST]);
-//
-//        foreach($total as $remove)
-//        {
-//            $em->remove($remove);
-//        }
+        //        $total = $em->getRepository(ProductStockTotal::class)
+        //            ->findBy(['profile' => UserProfileUid::TEST]);
+        //
+        //        foreach($total as $remove)
+        //        {
+        //            $em->remove($remove);
+        //        }
 
         $em->flush();
         $em->clear();
@@ -149,7 +149,6 @@ final class PackageProductStockTest extends KernelTestCase
         //$ProductStockDTO->setPrice($PackageOrderPriceDTO);
 
         //self::assertEquals(123, $PackageOrderPriceDTO->getTotal());
-
 
 
         $PackageProductStockDTO->addProduct($ProductStockDTO);

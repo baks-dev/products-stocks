@@ -39,7 +39,7 @@
                 variation : item.product_variation_value,
                 modification : item.product_modification_value,
                 postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
-            })  %}
+            }) %}
 
             <div>
                 <a href="{{ product_href }}" target="_detail" class="icon rounded-3 mb-2 lazy bg-contain p-1"
@@ -54,8 +54,8 @@
                 {# Название #}
                 <a href="{{ product_href }}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
-                        target="_detail"
-                   >
+                   target="_detail"
+                >
 
                     {{ item.product_name }}
 
@@ -87,15 +87,18 @@
 
                 <div>
                     {% if item.product_offer_value %}
-                        <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
+                        <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;
+                        <strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
                     {% endif %}
 
                     {% if item.product_variation_value %}
-                        , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;<strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
+                        , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;
+                        <strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
                     {% endif %}
 
                     {% if item.product_modification_value %}
-                        , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
+                        , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;
+                        <strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
                     {% endif %}
                 </div>
             </div>

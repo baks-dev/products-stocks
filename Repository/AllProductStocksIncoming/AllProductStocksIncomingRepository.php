@@ -98,30 +98,30 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
-//        // ProductStock
-//        $dbal
-//            ->select('stock.id')
-//            ->addSelect('stock.event')
-//            ->from(ProductStock::class, 'stock');
-//
-//        // ProductStockEvent
-//        // $dbal->addSelect('event.total');
-//        $dbal
-//            ->addSelect('event.comment')
-//            ->addSelect('event.status')
-//            ->addSelect('event.number')
-//            ->join(
-//                'stock',
-//                ProductStockEvent::class,
-//                'event',
-//                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-//            )
-//            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-//            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
-//
-//
-//
-//
+        //        // ProductStock
+        //        $dbal
+        //            ->select('stock.id')
+        //            ->addSelect('stock.event')
+        //            ->from(ProductStock::class, 'stock');
+        //
+        //        // ProductStockEvent
+        //        // $dbal->addSelect('event.total');
+        //        $dbal
+        //            ->addSelect('event.comment')
+        //            ->addSelect('event.status')
+        //            ->addSelect('event.number')
+        //            ->join(
+        //                'stock',
+        //                ProductStockEvent::class,
+        //                'event',
+        //                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+        //            )
+        //            ->setParameter('profile', $profile, UserProfileUid::TYPE)
+        //            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+        //
+        //
+        //
+        //
 
 
         $dbal
@@ -158,8 +158,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             );
 
 
-
-
         // ProductStockModify
         $dbal->addSelect('modify.mod_date')
             ->join(
@@ -180,10 +178,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'stock_product',
                 'stock_product.event = stock.event'
             );
-
-
-
-
 
 
         // Product
@@ -242,7 +236,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             $dbal->andWhere('product_offer.value = :offer');
             $dbal->setParameter('offer', $this->filter->getOffer());
         }
-        
+
         // Получаем тип торгового предложения
         $dbal
             ->addSelect('category_offer.reference as product_offer_reference')
@@ -273,7 +267,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             $dbal->andWhere('product_variation.value = :variation');
             $dbal->setParameter('variation', $this->filter->getVariation());
         }
-        
+
         // Получаем тип множественного варианта
         $dbal
             ->addSelect('category_offer_variation.reference as product_variation_reference')
@@ -299,13 +293,12 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             );
 
 
-
         if($this->filter?->getModification())
         {
             $dbal->andWhere('product_modification.value = :modification');
             $dbal->setParameter('modification', $this->filter->getModification());
         }
-        
+
         // Получаем тип модификации множественного варианта
         $dbal
             ->addSelect('category_offer_modification.reference as product_modification_reference')
@@ -315,7 +308,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'category_offer_modification',
                 'category_offer_modification.id = product_modification.category_modification'
             );
-
 
 
         // Артикул продукта
@@ -525,8 +517,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             $dbal
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number')
-                ->addSearchLike('product_trans.name')
-            ;
+                ->addSearchLike('product_trans.name');
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');

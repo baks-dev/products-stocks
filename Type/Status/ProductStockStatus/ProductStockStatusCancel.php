@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Статус Cancel «Отменен»

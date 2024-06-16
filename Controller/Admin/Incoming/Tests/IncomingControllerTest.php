@@ -48,19 +48,18 @@ final class IncomingControllerTest extends WebTestCase
     }
 
 
-
     /** Доступ по роли */
     public function testRoleSuccessful(): void
     {
         // Получаем одно из событий
         $Event = self::$identifier;
 
-        if ($Event)
+        if($Event)
         {
             self::ensureKernelShutdown();
             $client = static::createClient();
 
-            foreach (TestUserAccount::getDevice() as $device)
+            foreach(TestUserAccount::getDevice() as $device)
             {
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
                 $usr = TestUserAccount::getModer(self::ROLE);
@@ -81,11 +80,11 @@ final class IncomingControllerTest extends WebTestCase
         // Получаем одно из событий
         $Event = self::$identifier;
 
-        if ($Event)
+        if($Event)
         {
             self::ensureKernelShutdown();
             $client = static::createClient();
-            foreach (TestUserAccount::getDevice() as $device)
+            foreach(TestUserAccount::getDevice() as $device)
             {
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
                 $usr = TestUserAccount::getAdmin();
@@ -106,12 +105,12 @@ final class IncomingControllerTest extends WebTestCase
         // Получаем одно из событий
         $Event = self::$identifier;
 
-        if ($Event)
+        if($Event)
         {
             self::ensureKernelShutdown();
             $client = static::createClient();
 
-            foreach (TestUserAccount::getDevice() as $device)
+            foreach(TestUserAccount::getDevice() as $device)
             {
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
                 $usr = TestUserAccount::getUsr();
@@ -131,12 +130,12 @@ final class IncomingControllerTest extends WebTestCase
         // Получаем одно из событий
         $Event = self::$identifier;
 
-        if ($Event)
+        if($Event)
         {
             self::ensureKernelShutdown();
             $client = static::createClient();
 
-            foreach (TestUserAccount::getDevice() as $device)
+            foreach(TestUserAccount::getDevice() as $device)
             {
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
                 $client->request('GET', sprintf(self::URL, $Event->getValue()));

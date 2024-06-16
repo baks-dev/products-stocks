@@ -189,7 +189,6 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
     }
 
 
-
     /**
      * Метод возвращает место складирования продукции с максимальным количеством в наличии и резервом > 0
      */
@@ -221,7 +220,6 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
         return $orm->getOneOrNullResult();
     }
-
 
 
 }

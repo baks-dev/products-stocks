@@ -48,7 +48,8 @@ final class IncomingController extends AbstractController
         IncomingProductStockHandler $IncomingProductStockHandler,
         //ProductsByProductStocksInterface $productDetail,
         ProductStockQuantityInterface $productStockQuantity
-    ): Response {
+    ): Response
+    {
 
         $IncomingProductStockDTO = new IncomingProductStockDTO(); // $this->getProfileUid()
         $ProductStockEvent->getDto($IncomingProductStockDTO);
@@ -62,7 +63,7 @@ final class IncomingController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
+        if($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
             $this->refreshTokenForm($form);
 
@@ -92,10 +93,7 @@ final class IncomingController extends AbstractController
             ->offerConst($ProductStockDTO->getOffer())
             ->variationConst($ProductStockDTO->getVariation())
             ->modificationConst($ProductStockDTO->getModification())
-            ->findOneByTotalMax()
-
-        ;
-
+            ->findOneByTotalMax();
 
 
         return $this->render([

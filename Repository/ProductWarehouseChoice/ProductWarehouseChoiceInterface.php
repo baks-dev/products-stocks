@@ -32,7 +32,6 @@ use Generator;
 
 interface ProductWarehouseChoiceInterface
 {
-
     public function user(UserUid|string $user): self;
 
     public function product(ProductUid|string $product): self;

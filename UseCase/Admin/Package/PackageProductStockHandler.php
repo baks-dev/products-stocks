@@ -37,7 +37,6 @@ final class PackageProductStockHandler extends AbstractHandler
     {
 
 
-
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
 
@@ -65,7 +64,7 @@ final class PackageProductStockHandler extends AbstractHandler
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport:'products-stocks'
+            transport: 'products-stocks'
         );
 
         return $this->main;

@@ -33,5 +33,8 @@ interface ProductStocksNewByOrderInterface
     /**
      * Метод получает заявку на упаковку заказа
      */
-    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, UserProfileUid $profile): ?ProductStockEvent;
+    public function getProductStocksEventByOrderAndWarehouse(
+        OrderUid $order,
+        UserProfileUid $profile
+    ): ?ProductStockEvent;
 }

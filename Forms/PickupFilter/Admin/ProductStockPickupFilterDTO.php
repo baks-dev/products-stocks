@@ -24,7 +24,6 @@
 namespace BaksDev\Products\Stocks\Forms\PickupFilter\Admin;
 
 use BaksDev\Delivery\Type\Id\DeliveryUid;
-
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
 use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
 use DateTimeImmutable;
@@ -54,7 +53,6 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
     private mixed $phone = null;
 
 
-
     public function __construct(Request $request)
     {
         $this->request = $request;
@@ -79,12 +77,12 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
             $this->delivery = null;
         }
 
-        return $this->date ?: $sessionDate ;
+        return $this->date ?: $sessionDate;
     }
 
     public function setDate(?DateTimeImmutable $date): void
     {
-        if ($date === null)
+        if($date === null)
         {
             $this->request->getSession()->remove(self::date);
         }
@@ -129,7 +127,6 @@ final class ProductStockPickupFilterDTO implements ProductStockPickupFilterInter
         $this->phone = $phone;
         return $this;
     }
-
 
 
 }

@@ -76,8 +76,6 @@ final class IndexController extends AbstractController
         }
 
 
-
-
         /** Если ajax (печать) - показываем только свой склад */
         if($request->isXmlHttpRequest())
         {

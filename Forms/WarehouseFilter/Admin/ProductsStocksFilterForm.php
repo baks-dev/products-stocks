@@ -37,7 +37,8 @@ final class ProductsStocksFilterForm extends AbstractType
     public function __construct(
         WarehouseChoiceInterface $warehouseChoice,
         RequestStack $request,
-    ) {
+    )
+    {
         $this->request = $request;
         $this->warehouseChoice = $warehouseChoice;
     }
@@ -46,19 +47,19 @@ final class ProductsStocksFilterForm extends AbstractType
     {
         $builder->add('warehouse', ChoiceType::class, [
             'choices' => $this->warehouseChoice->fetchAllWarehouse(),
-            'choice_value' => function (?ContactsRegionCallConst $warehouse) {
+            'choice_value' => function(?ContactsRegionCallConst $warehouse) {
                 return $warehouse?->getValue();
             },
-            'choice_label' => function (ContactsRegionCallConst $warehouse) {
+            'choice_label' => function(ContactsRegionCallConst $warehouse) {
                 return $warehouse->getAttr();
             },
             'label' => false,
         ]);
-        
+
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
+            function(FormEvent $event): void {
                 /** @var ProductsStocksFilterDTO $data */
                 $data = $event->getData();
 

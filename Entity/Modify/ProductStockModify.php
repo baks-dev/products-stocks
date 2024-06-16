@@ -27,9 +27,9 @@ namespace BaksDev\Products\Stocks\Entity\Modify;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Core\Type\Ip\IpAddress;
-use BaksDev\Core\Type\Modify\ModifyAction;
 use BaksDev\Core\Type\Modify\Modify\ModifyActionNew;
 use BaksDev\Core\Type\Modify\Modify\ModifyActionUpdate;
+use BaksDev\Core\Type\Modify\ModifyAction;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -105,7 +105,7 @@ class ProductStockModify extends EntityEvent
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if ($dto instanceof ProductStockModifyInterface)
+        if($dto instanceof ProductStockModifyInterface)
         {
             return parent::getDto($dto);
         }
@@ -115,7 +115,7 @@ class ProductStockModify extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockModifyInterface || $dto instanceof self)
+        if($dto instanceof ProductStockModifyInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

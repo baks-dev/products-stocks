@@ -51,7 +51,7 @@ final class ProductStockStatusListener
     public function onKernelController(ControllerEvent $event): void
     {
         // Инициируем статусы складских остатков
-        if (in_array(ProductStockStatusType::class, get_declared_classes(), true))
+        if(in_array(ProductStockStatusType::class, get_declared_classes(), true))
         {
             $this->collection->cases();
         }

@@ -23,23 +23,27 @@
 
 
 {% block javascript %}
-<script nonce='{{ csp_nonce() }}' async  data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
-<script nonce="{{ csp_nonce() }}">
-document.addEventListener("DOMContentLoaded", (event) => {
-	const form = document.forms.product_filter_form;
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}"
+            class="lazy"></script>
+    <script nonce="{{ csp_nonce() }}">
+        document.addEventListener("DOMContentLoaded", (event) =>
+        {
+            const form = document.forms.product_filter_form;
 
-    form.product_filter_form_category.addEventListener('change', () => {
-        const options = form.product_filter_form_offer.options;
+            form.product_filter_form_category.addEventListener('change', () =>
+            {
+                const options = form.product_filter_form_offer.options;
 
-        for (var i = 0; i < options.length; i++) {
-            options[i].selected = false;
-          }
+                for(var i = 0; i < options.length; i++)
+                {
+                    options[i].selected = false;
+                }
 
-        form.product_filter_form_offer.selectedIndex = 0;
-    });
+                form.product_filter_form_offer.selectedIndex = 0;
+            });
 
-    form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+            form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
 
-});
-</script>
+        });
+    </script>
 {% endblock %}

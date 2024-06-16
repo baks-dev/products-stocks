@@ -1,4 +1,3 @@
-
 {# ---- ШАБЛОН ------------------------------------------------------------ #}
 {% extends Template('/admin/base.html.twig') %}
 
@@ -35,7 +34,8 @@
 
 {% block javascript %}
 
-<script nonce='{{ csp_nonce() }}' async  data-src="/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/plugins/nice-select2/nice-select2.min.js?v={{ version }}"
+            class="lazy"></script>
 
 
 {% endblock %}

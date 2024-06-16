@@ -22,9 +22,9 @@ use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 
 interface ProductsStocksFilterInterface
 {
-	
-	public function getWarehouse() : ?ContactsRegionCallConst;
 
-	//public function getProfile() : ?UserProfileUid;
-	
+    public function getWarehouse(): ?ContactsRegionCallConst;
+
+    //public function getProfile() : ?UserProfileUid;
+
 }

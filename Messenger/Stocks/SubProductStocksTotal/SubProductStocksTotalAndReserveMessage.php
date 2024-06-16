@@ -47,7 +47,8 @@ final class SubProductStocksTotalAndReserveMessage
         ?ProductOfferConst $offer,
         ?ProductVariationConst $variation,
         ?ProductModificationConst $modification
-    ) {
+    )
+    {
 
         $this->profile = $profile;
         $this->product = $product;

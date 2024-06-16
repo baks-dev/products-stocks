@@ -161,13 +161,13 @@ class ProductStockEvent extends EntityEvent
 
 
 
-//    /**
-//     * Идентификатор склада.
-//     */
-//    public function getWarehouse(): ?ContactsRegionCallConst
-//    {
-//        return $this->warehouse;
-//    }
+    //    /**
+    //     * Идентификатор склада.
+    //     */
+    //    public function getWarehouse(): ?ContactsRegionCallConst
+    //    {
+    //        return $this->warehouse;
+    //    }
 
     /**
      * Идентификатор заказа.
@@ -220,7 +220,7 @@ class ProductStockEvent extends EntityEvent
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if ($dto instanceof ProductStockEventInterface)
+        if($dto instanceof ProductStockEventInterface)
         {
             return parent::getDto($dto);
         }
@@ -230,7 +230,7 @@ class ProductStockEvent extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if ($dto instanceof ProductStockEventInterface || $dto instanceof self)
+        if($dto instanceof ProductStockEventInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

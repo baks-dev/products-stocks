@@ -94,7 +94,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         $qb->from(OrderEntity\Order::TABLE, 'orders');
 
 
-
         $qb->addSelect('event.status AS order_status')->addGroupBy('event.status');
 
         $qb->join('orders',
@@ -125,17 +124,12 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         );
 
 
-
-
-
         $qb->leftJoin(
             'order_product',
             ProductEvent::TABLE,
             'product_event',
             'product_event.id = order_product.product'
         );
-
-
 
 
         $qb->leftJoin(
@@ -145,7 +139,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
             'product_info.product = product_event.main '
         )->addGroupBy('product_info.article');
 
-        
 
         $qb->leftJoin(
             'product_event',
@@ -153,8 +146,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
             'product_trans',
             'product_trans.event = product_event.id AND product_trans.local = :local'
         );
-
-
 
 
         /** Торговое предложение */
@@ -183,9 +174,7 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         );
 
 
-
         /** Множественный вариант */
-
 
 
         $qb->leftJoin(
@@ -213,8 +202,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         );
 
 
-
-
         /* Получаем тип модификации множественного варианта */
 
         $qb->leftJoin(
@@ -238,9 +225,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
             'category_modification_trans',
             'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
-
-
-
 
 
         /* Фото продукта */
@@ -272,7 +256,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
             'product_modification_image',
             'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
         );
-
 
 
         $qb->addSelect(
@@ -455,8 +438,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
         );
 
 
-
-
         $qb->addSelect(
             "JSON_AGG
 			( DISTINCT
@@ -474,8 +455,6 @@ final class OrderMoveDetailRepository implements OrderMoveDetailInterface
 			)
 			AS order_user"
         );
-
-
 
 
         $qb->where('orders.id = :order');

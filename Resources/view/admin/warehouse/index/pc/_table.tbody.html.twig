@@ -39,7 +39,7 @@
                 variation : item.product_variation_value,
                 modification : item.product_modification_value,
                 postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
-            })  %}
+            }) %}
 
             <div>
                 <a href="{{ product_href }}" class="icon rounded-3 mb-2 lazy bg-contain p-1"
@@ -108,7 +108,7 @@
     <td class="ps-5">
         <a href="{{ path('products-product:user.catalog.category', {
             category: item.category_url
-        }) }}" class="text-decoration-none" target="_detail" >{{ item.category_name }}</a>
+        }) }}" class="text-decoration-none" target="_detail">{{ item.category_name }}</a>
     </td>
 
     <td class="ps-5 text-center fw-bolder vertical-middle">

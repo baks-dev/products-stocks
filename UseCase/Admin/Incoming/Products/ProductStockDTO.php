@@ -63,10 +63,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
-//    public function setProduct(ProductUid $product): void
-//    {
-//        $this->product = $product;
-//    }
+    //    public function setProduct(ProductUid $product): void
+    //    {
+    //        $this->product = $product;
+    //    }
 
     /** Торговое предложение */
     public function getOffer(): ?ProductOfferConst
@@ -74,10 +74,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-//    public function setOffer(ProductOfferConst $offer): void
-//    {
-//        $this->offer = $offer;
-//    }
+    //    public function setOffer(ProductOfferConst $offer): void
+    //    {
+    //        $this->offer = $offer;
+    //    }
 
     /** Множественный вариант */
     public function getVariation(): ?ProductVariationConst
@@ -85,10 +85,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-//    public function setVariation(?ProductVariationConst $variation): void
-//    {
-//        $this->variation = $variation;
-//    }
+    //    public function setVariation(?ProductVariationConst $variation): void
+    //    {
+    //        $this->variation = $variation;
+    //    }
 
     /** Модификация множественного варианта */
     public function getModification(): ?ProductModificationConst
@@ -96,10 +96,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-//    public function setModification(?ProductModificationConst $modification): void
-//    {
-//        $this->modification = $modification;
-//    }
+    //    public function setModification(?ProductModificationConst $modification): void
+    //    {
+    //        $this->modification = $modification;
+    //    }
 
     /** Количество */
     public function getTotal(): int
@@ -125,7 +125,6 @@ final class ProductStockDTO implements ProductStockProductInterface
         $this->storage = $storage;
         return $this;
     }
-
 
 
 }

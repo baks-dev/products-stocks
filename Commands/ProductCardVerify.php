@@ -164,16 +164,14 @@ class ProductCardVerify extends Command
                 ->offer($product['product_offer_const'])
                 ->variation($product['product_variation_const'])
                 ->modification($product['product_modification_const'])
-                ->get()
-            ;
+                ->get();
 
             $reserve = $this->productStocksTotalByReserve
                 ->product($product['product_id'])
                 ->offer($product['product_offer_const'])
                 ->variation($product['product_variation_const'])
                 ->modification($product['product_modification_const'])
-                ->get()
-            ;
+                ->get();
 
             if($product['product_modification_const'])
             {

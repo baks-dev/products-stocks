@@ -32,7 +32,7 @@ use Symfony\Component\Uid\AbstractUid;
 final class ProductStockTotalUid extends Uid
 {
     public const TEST = '0188a9a1-e3c3-7dc1-b058-022b6120212d';
-    
+
     public const TYPE = 'product_stock_total';
 
 }

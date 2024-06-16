@@ -78,7 +78,6 @@ final class RecalculateProductQuantity
     {
 
 
-
         $ProductUpdateQuantity = null;
 
         // Количественный учет модификации множественного варианта торгового предложения

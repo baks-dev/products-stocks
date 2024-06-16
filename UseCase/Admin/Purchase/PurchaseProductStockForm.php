@@ -111,8 +111,7 @@ final class PurchaseProductStockForm extends AbstractType
             )
         );
 
-        $formOfferModifier = function(FormInterface $form, ProductUid $product = null)
-        {
+        $formOfferModifier = function(FormInterface $form, ProductUid $product = null) {
             if(null === $product)
             {
                 return;
@@ -282,8 +281,7 @@ final class PurchaseProductStockForm extends AbstractType
             )
         );
 
-        $formModificationModifier = function(FormInterface $form, ProductVariationConst $variation = null)
-        {
+        $formModificationModifier = function(FormInterface $form, ProductVariationConst $variation = null) {
             if(null === $variation)
             {
                 return;

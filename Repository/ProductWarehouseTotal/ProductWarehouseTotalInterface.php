@@ -64,6 +64,6 @@ interface ProductWarehouseTotalInterface
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ) : int;
+    ): int;
 
 }

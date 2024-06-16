@@ -63,7 +63,7 @@ final class ProductStockPickupFilterForm extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
+            function(FormEvent $event): void {
 
                 /** @var ProductStockPickupFilterDTO $data */
                 $data = $event->getData();

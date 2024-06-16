@@ -53,7 +53,7 @@ final class VoterPurchaseNew implements VoterInterface, MenuAdminInterface
     }
 
     /** Метод возвращает PATH раздела
-     *  @see PurchaseController
+     * @see PurchaseController
      */
     public function getPath(): string
     {

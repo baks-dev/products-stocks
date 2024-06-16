@@ -39,10 +39,10 @@ final class ProductStockForm extends AbstractType
 
         $builder->get('product')->addModelTransformer(
             new CallbackTransformer(
-                function ($product) {
+                function($product) {
                     return $product instanceof ProductUid ? $product->getValue() : $product;
                 },
-                function ($product) {
+                function($product) {
                     return new ProductUid($product);
                 }
             )
@@ -54,10 +54,10 @@ final class ProductStockForm extends AbstractType
 
         $builder->get('offer')->addModelTransformer(
             new CallbackTransformer(
-                function ($offer) {
+                function($offer) {
                     return $offer instanceof ProductOfferConst ? $offer->getValue() : $offer;
                 },
-                function ($offer) {
+                function($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
                 }
             )
@@ -69,10 +69,10 @@ final class ProductStockForm extends AbstractType
 
         $builder->get('variation')->addModelTransformer(
             new CallbackTransformer(
-                function ($variation) {
+                function($variation) {
                     return $variation instanceof ProductVariationConst ? $variation->getValue() : $variation;
                 },
-                function ($variation) {
+                function($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
                 }
             )
@@ -84,10 +84,10 @@ final class ProductStockForm extends AbstractType
 
         $builder->get('modification')->addModelTransformer(
             new CallbackTransformer(
-                function ($modification) {
+                function($modification) {
                     return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
-                function ($modification) {
+                function($modification) {
 
                     return $modification ? new ProductModificationConst($modification) : null;
                 }

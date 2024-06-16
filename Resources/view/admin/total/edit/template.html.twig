@@ -4,12 +4,12 @@
 {% extends Template('/admin/base.html.twig') %}
 
 {% block title %}
-	{# Редактировать продукцию #}
-	{{ 'page.total'|trans }}
+    {# Редактировать продукцию #}
+    {{ 'page.total'|trans }}
 {% endblock %}
 
 {# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
 {% block content %}
-	{{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
+    {{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
 {% endblock %}
 

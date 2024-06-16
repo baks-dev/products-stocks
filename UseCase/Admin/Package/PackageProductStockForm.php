@@ -39,58 +39,59 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class PackageProductStockForm extends AbstractType
 {
-//    private WarehouseChoiceInterface $warehouseChoice;
-//
-//    public function __construct(
-//        WarehouseChoiceInterface $warehouseChoice,
-//    ) {
-//        $this->warehouseChoice = $warehouseChoice;
-//    }
+    //    private WarehouseChoiceInterface $warehouseChoice;
+    //
+    //    public function __construct(
+    //        WarehouseChoiceInterface $warehouseChoice,
+    //    ) {
+    //        $this->warehouseChoice = $warehouseChoice;
+    //    }
 
     private UserProfileChoiceInterface $userProfileChoice;
 
-    public function __construct(UserProfileChoiceInterface $userProfileChoice) {
+    public function __construct(UserProfileChoiceInterface $userProfileChoice)
+    {
         $this->userProfileChoice = $userProfileChoice;
     }
 
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-//        $warehouses = $this->warehouseChoice->fetchAllWarehouse();
-//
-//        /** @var ContactsRegionCallUid $currentWarehouse */
-//        $currentWarehouse = (count($warehouses) === 1) ? current($warehouses) : null;
-//
-//        if ($currentWarehouse)
-//        {
-//            $builder->addEventListener(
-//                FormEvents::PRE_SET_DATA,
-//                function (FormEvent $event) use ($currentWarehouse): void {
-//
-//                    /** @var PackageProductStockDTO $data */
-//                    $data = $event->getData();
-//                    $data->setWarehouse($currentWarehouse);
-//                },
-//            );
-//        }
-//
-//        /* Склад назначения */
-//        $builder->add(
-//            'warehouse',
-//            ChoiceType::class,
-//            [
-//                'choices' => $warehouses,
-//                'choice_value' => function (?ContactsRegionCallConst $warehouse) {
-//                    return $warehouse?->getValue();
-//                },
-//                'choice_label' => function (ContactsRegionCallConst $warehouse) {
-//                    return $warehouse->getAttr();
-//                },
-//
-//                'label' => false,
-//                'required' => false,
-//            ]
-//        );
+        //        $warehouses = $this->warehouseChoice->fetchAllWarehouse();
+        //
+        //        /** @var ContactsRegionCallUid $currentWarehouse */
+        //        $currentWarehouse = (count($warehouses) === 1) ? current($warehouses) : null;
+        //
+        //        if ($currentWarehouse)
+        //        {
+        //            $builder->addEventListener(
+        //                FormEvents::PRE_SET_DATA,
+        //                function (FormEvent $event) use ($currentWarehouse): void {
+        //
+        //                    /** @var PackageProductStockDTO $data */
+        //                    $data = $event->getData();
+        //                    $data->setWarehouse($currentWarehouse);
+        //                },
+        //            );
+        //        }
+        //
+        //        /* Склад назначения */
+        //        $builder->add(
+        //            'warehouse',
+        //            ChoiceType::class,
+        //            [
+        //                'choices' => $warehouses,
+        //                'choice_value' => function (?ContactsRegionCallConst $warehouse) {
+        //                    return $warehouse?->getValue();
+        //                },
+        //                'choice_label' => function (ContactsRegionCallConst $warehouse) {
+        //                    return $warehouse->getAttr();
+        //                },
+        //
+        //                'label' => false,
+        //                'required' => false,
+        //            ]
+        //        );
 
 
         $builder->addEventListener(

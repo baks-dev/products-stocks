@@ -45,7 +45,7 @@ final class ProductWarehouseByOrderRepository implements ProductWarehouseByOrder
     /**
      * Метод возвращает идентификатор склада (профиля), на который была отправлена заявки для сборки
      */
-    public function getWarehouseByOrder(OrderUid $order) : ?UserProfileUid
+    public function getWarehouseByOrder(OrderUid $order): ?UserProfileUid
     {
         $qb = $this->entityManager->createQueryBuilder();
         $select = sprintf('new %s(event.profile)', UserProfileUid::class);

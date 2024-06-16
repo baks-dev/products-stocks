@@ -24,8 +24,8 @@
 namespace BaksDev\Products\Stocks\Forms\PackageFilter\Admin;
 
 use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
+use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -70,12 +70,12 @@ final class ProductStockPackageFilterDTO implements ProductStockPackageFilterInt
             $this->delivery = null;
         }
 
-        return $this->date ?: $sessionDate ;
+        return $this->date ?: $sessionDate;
     }
 
     public function setDate(?DateTimeImmutable $date): void
     {
-        if ($date === null)
+        if($date === null)
         {
             $this->request->getSession()->remove(self::date);
         }

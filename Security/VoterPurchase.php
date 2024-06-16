@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.security.voter')]
 final class VoterPurchase implements VoterInterface, MenuAdminInterface
 {
-    
+
     /** Закупки продукции */
     public const VOTER = 'PURCHASE';
 
@@ -46,7 +46,7 @@ final class VoterPurchase implements VoterInterface, MenuAdminInterface
     {
         return $role->getRole() === Role::ROLE;
     }
-    
+
     /** Метод возвращает префикс роли доступа */
     public function getRole(): string
     {

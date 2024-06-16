@@ -35,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class ProductStockMoveDTO implements ProductStockMoveInterface
 {
 
-//    /** Константа склада назначения при перемещении */
+    //    /** Константа склада назначения при перемещении */
     #[Assert\Uuid]
     private ?UserProfileUid $warehouse = null;
 
@@ -62,7 +62,7 @@ final class ProductStockMoveDTO implements ProductStockMoveInterface
         return $this;
     }
 
-    
+
     /** Константа склада назначения при перемещении */
 
     public function getDestination(): ?UserProfileUid

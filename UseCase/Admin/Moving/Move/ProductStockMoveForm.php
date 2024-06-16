@@ -43,10 +43,10 @@ final class ProductStockMoveForm extends AbstractType
 
         $builder->get('warehouse')->addModelTransformer(
             new CallbackTransformer(
-                function ($destination) {
+                function($destination) {
                     return $destination instanceof UserProfileUid ? $destination->getValue() : $destination;
                 },
-                function ($destination) {
+                function($destination) {
                     return $destination ? new UserProfileUid($destination) : null;
                 }
             ),
@@ -57,10 +57,10 @@ final class ProductStockMoveForm extends AbstractType
 
         $builder->get('destination')->addModelTransformer(
             new CallbackTransformer(
-                function ($destination) {
+                function($destination) {
                     return $destination instanceof UserProfileUid ? $destination->getValue() : $destination;
                 },
-                function ($destination) {
+                function($destination) {
                     return $destination ? new UserProfileUid($destination) : null;
                 }
             ),

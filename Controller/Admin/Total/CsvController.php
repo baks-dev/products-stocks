@@ -80,7 +80,7 @@ final class CsvController extends AbstractController
 
         $call = $environment->getExtension(CallTwigFuncExtension::class);
 
-        $response = new StreamedResponse(function () use ($call, $data, $environment) {
+        $response = new StreamedResponse(function() use ($call, $data, $environment) {
 
             $handle = fopen('php://output', 'w+');
 
@@ -88,18 +88,19 @@ final class CsvController extends AbstractController
             fputcsv($handle, ['Артикул', 'Наименование', 'Доступно', 'Место']);
 
             // Запись данных
-            foreach ($data as $data) {
+            foreach($data as $data)
+            {
 
                 $name = $data['product_name'];
 
                 $variation = $call->call($environment, $data['product_variation_value'], $data['product_variation_reference'].'_render');
-                $name .=  $variation ? ' '.$variation : null;
+                $name .= $variation ? ' '.$variation : null;
 
                 $modification = $call->call($environment, $data['product_modification_value'], $data['product_modification_reference'].'_render');
                 $name .= $modification ?: null;
 
                 $offer = $call->call($environment, $data['product_offer_value'], $data['product_offer_reference'].'_render');
-                $name .=  $offer ? ' '.$offer : null;
+                $name .= $offer ? ' '.$offer : null;
 
                 $name .= $data['product_offer_postfix'] ? ' '.$data['product_offer_postfix'] : null;
                 $name .= $data['product_variation_postfix'] ? ' '.$data['product_variation_postfix'] : null;

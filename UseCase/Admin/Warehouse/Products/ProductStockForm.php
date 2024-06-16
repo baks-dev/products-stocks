@@ -72,7 +72,6 @@ final class ProductStockForm extends AbstractType
         );
 
 
-
     }
 
     public function configureOptions(OptionsResolver $resolver): void

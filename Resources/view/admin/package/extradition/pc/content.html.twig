@@ -47,7 +47,7 @@
                                 variation : product.product_variation_value,
                                 modification : product.product_modification_value,
                                 postfix:  (product.product_modification_postfix ?: product.product_variation_postfix ?: product.product_offer_postfix ?: null )|replace({ '/': '-' })
-                            })  %}
+                            }) %}
 
 
                             <div class="rounded-circle bg-contain lazy p-1" style="width: 50px; height: 50px;"
@@ -79,15 +79,18 @@
                                 <div class="text-muted small">
 
                                     {% if product.product_offer_value %}
-                                        {{ product.product_offer_name }} : <strong>{{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}</strong>
+                                        {{ product.product_offer_name }} :
+                                        <strong>{{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}</strong>
                                     {% endif %}
 
                                     {% if product.product_variation_value %}
-                                        , {{ product.product_variation_name }} : <strong>{{ product.product_variation_value|call_twig_func(product.product_variation_reference) }}</strong>
+                                        , {{ product.product_variation_name }} :
+                                        <strong>{{ product.product_variation_value|call_twig_func(product.product_variation_reference) }}</strong>
                                     {% endif %}
 
                                     {% if product.product_modification_value %}
-                                        , {{ product.product_modification_name }}: <strong>{{ product.product_modification_value|call_twig_func(product.product_modification_reference) }}</strong>
+                                        , {{ product.product_modification_name }}:
+                                        <strong>{{ product.product_modification_value|call_twig_func(product.product_modification_reference) }}</strong>
                                     {% endif %}
                                 </div>
                             </div>
@@ -110,33 +113,32 @@
                     {{ form_widget(form.comment, { attr: { placeholder : 'Комментарий'} }) }}
                 </div>
 
-        </div>
-
-
-
-        <div class="modal-footer ">
-
-            <div class="flex-grow-1">
-                &nbsp;
             </div>
 
-            <div class="d-flex gap-3">
-                {# Отмена #}
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
-                </button>
+
+            <div class="modal-footer ">
+
+                <div class="flex-grow-1">
+                    &nbsp;
+                </div>
+
+                <div class="d-flex gap-3">
+                    {# Отмена #}
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                    </button>
 
 
-                {# Сохранить #}
-                {{ form_widget(form.extradition, { label: '
+                    {# Сохранить #}
+                    {{ form_widget(form.extradition, { label: '
                     <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
                     <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
 			    '}) }}
+                </div>
             </div>
+
+
         </div>
 
-
+        {{ form_end(form) }}
     </div>
-
-    {{ form_end(form) }}
-</div>

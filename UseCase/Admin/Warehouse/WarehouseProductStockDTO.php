@@ -36,14 +36,14 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-//    /** Склад */
-//    #[Assert\NotBlank]
-//    #[Assert\Uuid]
-//    private ?ContactsRegionCallConst $warehouse = null;
+    //    /** Склад */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private ?ContactsRegionCallConst $warehouse = null;
 
-//    /** Целевой склад при перемещении */
-//    #[Assert\Uuid]
-//    private ?UserProfileUid $destination = null;
+    //    /** Целевой склад при перемещении */
+    //    #[Assert\Uuid]
+    //    private ?UserProfileUid $destination = null;
 
     /** Ответственное лицо (Профиль пользователя) */
     #[Assert\NotBlank]

@@ -54,10 +54,10 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ) : int
+    ): int
     {
 
-        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb->select('(SUM(stock.total) - SUM(stock.reserve))');
 
@@ -69,7 +69,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         $qb->andWhere('stock.product = :product');
         $qb->setParameter('product', $product, ProductUid::TYPE);
 
-        if ($offer)
+        if($offer)
         {
             $qb->andWhere('stock.offer = :offer');
             $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
@@ -79,7 +79,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if ($variation)
+        if($variation)
         {
             $qb->andWhere('stock.variation = :variation');
             $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
@@ -89,7 +89,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if ($modification)
+        if($modification)
         {
             $qb->andWhere('stock.modification = :modification');
             $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
@@ -111,10 +111,10 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ) : int
+    ): int
     {
 
-        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb->select('SUM(stock.reserve)');
 
@@ -126,7 +126,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         $qb->andWhere('stock.product = :product');
         $qb->setParameter('product', $product, ProductUid::TYPE);
 
-        if ($offer)
+        if($offer)
         {
             $qb->andWhere('stock.offer = :offer');
             $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
@@ -136,7 +136,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if ($variation)
+        if($variation)
         {
             $qb->andWhere('stock.variation = :variation');
             $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
@@ -146,7 +146,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if ($modification)
+        if($modification)
         {
             $qb->andWhere('stock.modification = :modification');
             $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
@@ -168,10 +168,10 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ) : int
+    ): int
     {
 
-        $qb =$this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb->select('SUM(stock.total)');
 
@@ -183,7 +183,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         $qb->andWhere('stock.product = :product');
         $qb->setParameter('product', $product, ProductUid::TYPE);
 
-        if ($offer)
+        if($offer)
         {
             $qb->andWhere('stock.offer = :offer');
             $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
@@ -193,7 +193,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if ($variation)
+        if($variation)
         {
             $qb->andWhere('stock.variation = :variation');
             $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
@@ -203,7 +203,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if ($modification)
+        if($modification)
         {
             $qb->andWhere('stock.modification = :modification');
             $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);

@@ -456,7 +456,6 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
             );
 
 
-
         // ОТВЕТСТВЕННЫЙ
 
         // UserProfile
@@ -517,8 +516,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
             $dbal
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number')
-                ->addSearchLike('product_trans.name')
-            ;
+                ->addSearchLike('product_trans.name');
         }
 
         $dbal->orderBy('modify.mod_date');

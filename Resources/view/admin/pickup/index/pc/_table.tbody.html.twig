@@ -37,7 +37,7 @@
                 variation : item.product_variation_value,
                 modification : item.product_modification_value,
                 postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
-            })  %}
+            }) %}
 
 
             <div>
@@ -52,8 +52,8 @@
                 {# Название #}
                 <a href="{{ product_href }}"
                    class="text-decoration-none mb-1 fw-bolder text-muted"
-                        target="_detail"
-                   >
+                   target="_detail"
+                >
 
                     {{ item.product_name }}
 
@@ -85,7 +85,7 @@
                 </div>
 
 
-                {#<div>
+                {# <div>
                     {% if item.product_offer_value %}
                         <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
                     {% endif %}
@@ -98,23 +98,23 @@
                         , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
                     {% endif %}
                 </div>
-#}
+                #}
                 {# Описание #}
                 {# <div class="text-muted small">54654 dfgsd
 					{{ string_width(item.product_description, 150)|raw }}
 				</div> #}
                 <div>
-                    {#{% if item.product_offer_value %}
+                    {# {% if item.product_offer_value %}
                         <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
-                    {% endif %}#}
+                    {% endif %} #}
 
-                    {#{% if item.product_variation_value %}
+                    {# {% if item.product_variation_value %}
                         , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;<strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
-                    {% endif %}#}
+                    {% endif %} #}
 
-                    {#{% if item.product_modification_value %}
+                    {# {% if item.product_modification_value %}
                         , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
-                    {% endif %}#}
+                    {% endif %} #}
                 </div>
             </div>
 
@@ -131,7 +131,7 @@
         {{ item.category_name }}
     </td>
 
-    <td class="ps-5 text-center fw-bolder vertical-middle {#{{ item.products_move ? 'text-danger' : 'text-primary' }}#} h5">
+    <td class="ps-5 text-center fw-bolder vertical-middle {# {{ item.products_move ? 'text-danger' : 'text-primary' }} #} h5">
         {{ item.total }}
     </td>
 </tr>

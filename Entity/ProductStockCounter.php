@@ -41,7 +41,7 @@ class ProductStockCounter
     #[ORM\Id]
     #[ORM\Column(type: ContactsRegionCallConst::TYPE)]
     private ContactsRegionCallConst $warehouse;
-    
+
     /** Поступления на склад */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $incoming = 0;
@@ -54,7 +54,8 @@ class ProductStockCounter
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $package = 0;
 
-    public function __construct(ContactsRegionCallConst $warehouse) {
+    public function __construct(ContactsRegionCallConst $warehouse)
+    {
         $this->warehouse = $warehouse;
     }
 

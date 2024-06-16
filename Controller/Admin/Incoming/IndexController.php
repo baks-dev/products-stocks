@@ -42,7 +42,8 @@ final class IndexController extends AbstractController
         Request $request,
         AllProductStocksIncomingInterface $allIncoming,
         int $page = 0
-    ): Response {
+    ): Response
+    {
         /*$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');*/
 
         // Поиск

@@ -18,19 +18,19 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
+use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
-use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class WarehouseProductStockForm extends AbstractType
 {
@@ -44,7 +44,8 @@ final class WarehouseProductStockForm extends AbstractType
 
     private UserProfileChoiceInterface $userProfileChoice;
 
-    public function __construct(UserProfileChoiceInterface $userProfileChoice) {
+    public function __construct(UserProfileChoiceInterface $userProfileChoice)
+    {
         $this->userProfileChoice = $userProfileChoice;
     }
 
@@ -63,11 +64,11 @@ final class WarehouseProductStockForm extends AbstractType
 
                 //                /dd($data);
 
-//                if($data->getDestination())
-//                {
-//                    //$form->add('warehouse', HiddenType::class);
-//                    return;
-//                }
+                //                if($data->getDestination())
+                //                {
+                //                    //$form->add('warehouse', HiddenType::class);
+                //                    return;
+                //                }
 
 
                 /** Все профили пользователя */

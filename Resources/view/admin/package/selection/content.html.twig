@@ -1,4 +1,3 @@
-
 {# ПЕЧАТЬ #}
 
 
@@ -12,7 +11,7 @@
     </div>
 </div>
 
-{#{{ dd(current) }}#}
+{# {{ dd(current) }} #}
 
 {#
 <div class="mb-3 d-flex align-items-center gap-3">
@@ -33,28 +32,28 @@
 
     {% for card in query %}
 
-        <tr>
-            <td scope="row">
+    <tr>
+        <td scope="row">
 
-                {{ card.product_name }}
+            {{ card.product_name }}
 
-                {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
-                card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
+            {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render') ~
+            card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
 
-                {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
+            {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
 
-                {#Постфикс торгового предложения#}
-                {{ card.product_offer_postfix }}
-                {#Постфикс множественного варианта#}
-                {{ card.product_variation_postfix }}
-                {#Постфикс модификации#}
-                {{ card.product_modification_postfix }}
-
-
-            <td scope="row" class="text-center"> {{ card.total }}
-            <td scope="row">  {{ card.stock_storage|replace({ '[': '<small>(', ']' : ')</small>' })|raw }}
+            {# Постфикс торгового предложения #}
+            {{ card.product_offer_postfix }}
+            {# Постфикс множественного варианта #}
+            {{ card.product_variation_postfix }}
+            {# Постфикс модификации #}
+            {{ card.product_modification_postfix }}
 
 
-    {% endfor %}
+        <td scope="row" class="text-center"> {{ card.total }}
+        <td scope="row">  {{ card.stock_storage|replace({ '[': '<small>(', ']' : ')</small>' })|raw }}
+
+
+            {% endfor %}
 
 </table>

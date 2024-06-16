@@ -14,7 +14,7 @@
     <td class="text-center">
         <a href="{{ path('products-product:user.catalog.category', {
             category: item.category_url
-        }) }}" class="text-decoration-none" target="_detail" >{{ item.category_name }}</a>
+        }) }}" class="text-decoration-none" target="_detail">{{ item.category_name }}</a>
 
     </td>
 
@@ -38,7 +38,7 @@
                 variation : item.product_variation_value,
                 modification : item.product_modification_value,
                 postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
-            })  %}
+            }) %}
 
             <div>
                 <a href="{{ product_href }}" class="icon rounded-3 lazy bg-contain p-1"
@@ -95,7 +95,7 @@
 
     <td>
         <div
-                {{ item.users_profile_location ? 'style="cursor: help;"'  }}
+                {{ item.users_profile_location ? 'style="cursor: help;"' }}
                 class="p-1 text-nowrap"
                 data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
@@ -142,12 +142,12 @@
             {{ item.stock_total - item.stock_reserve }}
         {% else %}
             0 <span
-                    class="pointer badge text-bg-danger"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-delay='{"show":600,"hide":100}'
-                    title='Ожидается поступление'
-            > + {{ item.stock_reserve - item.stock_total }}
+                class="pointer badge text-bg-danger"
+                data-bs-toggle="tooltip"
+                data-bs-placement="bottom"
+                data-bs-delay='{"show":600,"hide":100}'
+                title='Ожидается поступление'
+        > + {{ item.stock_reserve - item.stock_total }}
         </span>
         {% endif %}
 

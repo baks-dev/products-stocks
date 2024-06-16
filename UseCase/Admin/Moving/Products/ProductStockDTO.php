@@ -50,18 +50,17 @@ final class ProductStockDTO implements ProductStockProductInterface
     #[Assert\Range(min: 1)]
     private int $total;
 
-    
 
-//    /** Склад */
-//    public function getWarehouse(): ContactsRegionCallUid
-//    {
-//        return $this->warehouse;
-//    }
-//
-//    public function setWarehouse(ContactsRegionCallUid $warehouse): void
-//    {
-//        $this->warehouse = $warehouse;
-//    }
+    //    /** Склад */
+    //    public function getWarehouse(): ContactsRegionCallUid
+    //    {
+    //        return $this->warehouse;
+    //    }
+    //
+    //    public function setWarehouse(ContactsRegionCallUid $warehouse): void
+    //    {
+    //        $this->warehouse = $warehouse;
+    //    }
 
     /** Продукт */
     public function getProduct(): ProductUid

@@ -45,7 +45,10 @@ final class ProductStocksMoveByOrderRepository implements ProductStocksMoveByOrd
     /**
      * Метод получает заявку на перемещение заказа на указанный склад
      */
-    public function getProductStocksEventByOrderAndWarehouse(OrderUid $order, ContactsRegionCallConst $warehouse) : ?ProductStockEvent
+    public function getProductStocksEventByOrderAndWarehouse(
+        OrderUid $order,
+        ContactsRegionCallConst $warehouse
+    ): ?ProductStockEvent
     {
         $qb = $this->entityManager->createQueryBuilder();
 

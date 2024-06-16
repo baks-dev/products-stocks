@@ -59,7 +59,8 @@ final class CancelProductStocksByCancelOrder
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
         ExistOrderEventByStatusInterface $existOrderEventByStatus
-    ) {
+    )
+    {
 
         $this->logger = $productsStocksLogger;
         $this->currentOrderEvent = $currentOrderEvent;
@@ -78,12 +79,14 @@ final class CancelProductStocksByCancelOrder
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($message->getId());
 
-        if(!$OrderEvent) {
+        if(!$OrderEvent)
+        {
             return;
         }
 
         /** Если статус заказа не Canceled «Отменен» - завершаем обработчик */
-        if(false === $OrderEvent->getStatus()->equals(OrderStatusCanceled::class)) {
+        if(false === $OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+        {
             return;
         }
 
@@ -94,21 +97,25 @@ final class CancelProductStocksByCancelOrder
             OrderStatusCanceled::class
         );
 
-        if($isOtherExists) {
+        if($isOtherExists)
+        {
             return;
         }
 
         /** Получаем все заявки по идентификатору заказа */
         $stocks = $this->productStocksByOrder->findByOrder($message->getId());
 
-        if(empty($stocks)) {
+        if(empty($stocks))
+        {
             return;
         }
 
         /** @var ProductStockEvent $ProductStockEvent */
-        foreach($stocks as $ProductStockEvent) {
+        foreach($stocks as $ProductStockEvent)
+        {
             /** Если статус складской заявки Canceled «Отменен» - завершаем обработчик */
-            if(true === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class)) {
+            if(true === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
+            {
                 continue;
             }
 
@@ -121,7 +128,8 @@ final class CancelProductStocksByCancelOrder
 
             $ProductStock = $this->cancelProductStockHandler->handle($CancelProductStockDTO);
 
-            if($ProductStock instanceof ProductStock) {
+            if($ProductStock instanceof ProductStock)
+            {
                 $this->logger->info(sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()));
                 continue;
             }

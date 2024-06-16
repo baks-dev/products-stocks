@@ -25,11 +25,9 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Type\Status;
 
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\StringType;
 use Doctrine\DBAL\Types\Type;
-use InvalidArgumentException;
 
 final class ProductStockStatusType extends Type
 {

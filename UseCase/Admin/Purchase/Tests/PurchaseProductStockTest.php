@@ -81,8 +81,6 @@ final class PurchaseProductStockTest extends KernelTestCase
     }
 
 
-
-
     /**
      * Тест нового закупочного листа
      */

@@ -35,12 +35,12 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 class ProductStockStatusShipment implements ProductStockStatusInterface
 {
 
-	public const STATUS = 'shipment';
-	
+    public const STATUS = 'shipment';
 
-	/** Возвращает значение (value) */
-	public function getValue(): string
-	{
-		return self::STATUS;
-	}
+
+    /** Возвращает значение (value) */
+    public function getValue(): string
+    {
+        return self::STATUS;
+    }
 }

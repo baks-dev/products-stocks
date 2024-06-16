@@ -76,7 +76,7 @@ class ProductStockMove extends EntityEvent
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if ($dto instanceof ProductStockMoveInterface)
+        if($dto instanceof ProductStockMoveInterface)
         {
             return parent::getDto($dto);
         }
@@ -86,12 +86,12 @@ class ProductStockMove extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if (empty($dto->getDestination()))
+        if(empty($dto->getDestination()))
         {
             return false;
         }
 
-        if ($dto instanceof ProductStockMoveInterface || $dto instanceof self)
+        if($dto instanceof ProductStockMoveInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

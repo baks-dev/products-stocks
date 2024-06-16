@@ -46,19 +46,19 @@ final class ProductStockDTO implements ProductStockEventInterface
     #[Assert\Length(max: 36)]
     private string $number;
 
-//    /** Константа Целевого склада */
-//    #[Assert\NotBlank]
-//    #[Assert\Uuid]
-//    private ?ContactsRegionCallConst $warehouse = null;
+    //    /** Константа Целевого склада */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private ?ContactsRegionCallConst $warehouse = null;
 
     /** Склад назначения при перемещении */
     #[Assert\Valid]
     private Move\ProductStockMoveDTO $move;
 
-//    /** Константа склада назначения при перемещении */
-//    #[Assert\NotBlank]
-//    #[Assert\Uuid]
-//    private ?ContactsRegionCallConst $destination = null;
+    //    /** Константа склада назначения при перемещении */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private ?ContactsRegionCallConst $destination = null;
 
     /** Коллекция продукции  */
     #[Assert\Valid]
@@ -106,7 +106,7 @@ final class ProductStockDTO implements ProductStockEventInterface
 
     public function addProduct(Products\ProductStockDTO $product): void
     {
-        $containsProducts = $this->product->filter(function (Products\ProductStockDTO $element) use ($product) {
+        $containsProducts = $this->product->filter(function(Products\ProductStockDTO $element) use ($product) {
 
             return
                 $element->getProduct()->equals($product->getProduct()) &&
@@ -116,7 +116,10 @@ final class ProductStockDTO implements ProductStockEventInterface
         });
 
 
-        if ($containsProducts->isEmpty()) {  $this->product->add($product); }
+        if($containsProducts->isEmpty())
+        {
+            $this->product->add($product);
+        }
     }
 
     public function removeProduct(Products\ProductStockDTO $product): void
@@ -163,27 +166,27 @@ final class ProductStockDTO implements ProductStockEventInterface
         $this->number = $number;
     }
 
-//    /** Константа Целевого склада */
-//    public function getWarehouse(): ?ContactsRegionCallConst
-//    {
-//        return $this->warehouse;
-//    }
-//
-//    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
-//    {
-//        $this->warehouse = $warehouse;
-//    }
+    //    /** Константа Целевого склада */
+    //    public function getWarehouse(): ?ContactsRegionCallConst
+    //    {
+    //        return $this->warehouse;
+    //    }
+    //
+    //    public function setWarehouse(?ContactsRegionCallConst $warehouse): void
+    //    {
+    //        $this->warehouse = $warehouse;
+    //    }
 
-//    /** Константа склада назначения при перемещении */
-//    public function getDestination(): ?ContactsRegionCallConst
-//    {
-//        return $this->destination;
-//    }
-//
-//    public function setDestination(?ContactsRegionCallConst $destination): void
-//    {
-//        $this->destination = $destination;
-//    }
+    //    /** Константа склада назначения при перемещении */
+    //    public function getDestination(): ?ContactsRegionCallConst
+    //    {
+    //        return $this->destination;
+    //    }
+    //
+    //    public function setDestination(?ContactsRegionCallConst $destination): void
+    //    {
+    //        $this->destination = $destination;
+    //    }
 
     /** Склад назначения при перемещении */
     public function getMove(): Move\ProductStockMoveDTO

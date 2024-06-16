@@ -49,7 +49,7 @@ final class MovingProductStockHandler extends AbstractHandler
         try
         {
             //$command->getEvent() ? $this->preUpdate($command, true) :
-                $this->prePersist($command);
+            $this->prePersist($command);
             //$this->preUpdate($command, true);
         }
         catch(DomainException $errorUniqid)

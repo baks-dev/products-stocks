@@ -24,7 +24,6 @@
 namespace BaksDev\Products\Stocks\Twig;
 
 use BaksDev\Orders\Order\Type\Status\OrderStatus;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Environment;
 use Twig\Extension\AbstractExtension;

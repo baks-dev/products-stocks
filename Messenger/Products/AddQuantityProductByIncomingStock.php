@@ -114,7 +114,7 @@ final class AddQuantityProductByIncomingStock
                 $this->changeTotal($product);
 
                 $lock->release(); // снимаем блокировку
-                
+
             }
         }
     }

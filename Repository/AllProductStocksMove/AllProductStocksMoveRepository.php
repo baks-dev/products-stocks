@@ -119,27 +119,22 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ->addSelect('event.status')
             ->addSelect('event.fixed')
             ->addSelect('event.profile AS user_profile_id')
-
             ->from(ProductStockEvent::class, 'event')
             ->andWhere('event.status = :status ')
-
             ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE)
-
             ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-        ;
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
 
         $dbal
-
             ->addSelect('stock.event AS is_warehouse')
             ->join(
-            'event',
-            ProductStock::class,
-            'stock',
-            'stock.event = event.id'
+                'event',
+                ProductStock::class,
+                'stock',
+                'stock.event = event.id'
 
-        );
+            );
 
 
         //dd($dbal->fetchAllAssociative());
@@ -283,8 +278,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             $dbal->setParameter('modification', $this->filter->getModification());
         }
 
-        
-        
 
         // Получаем тип модификации множественного варианта
         $dbal
@@ -444,7 +437,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             );
 
 
-
         /** Целевой склад */
 
         // UserProfile
@@ -463,7 +455,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             'users_profile_info',
             'users_profile_info.profile = users_profile.id'
         );
-
 
 
         // Personal
@@ -531,8 +522,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             $dbal
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number')
-                ->addSearchLike('product_trans.name')
-            ;
+                ->addSearchLike('product_trans.name');
         }
 
         /** Сортируем по дате, в первую очередь закрываем все старые заявки */

@@ -796,7 +796,8 @@ function changeObjectWarehause()
     document.getElementById('moving_product_stock_form_preTotal')
         .setAttribute('max', this.options[index].dataset.max);
 
-    document.getElementById('moving_product_stock_form_destinationWarehouse').addEventListener('change', () => {
+    document.getElementById('moving_product_stock_form_destinationWarehouse').addEventListener('change', () =>
+    {
 
         setTimeout(function()
         {

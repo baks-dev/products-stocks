@@ -53,7 +53,7 @@ final class VoterMovingNew implements VoterInterface, MenuAdminInterface
     }
 
     /** Метод возвращает PATH раздела
-     *  @see MovingController
+     * @see MovingController
      */
     public function getPath(): string
     {

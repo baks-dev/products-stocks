@@ -36,7 +36,7 @@ class VoterCancel implements VoterInterface
 
     public static function getVoter(): string
     {
-        return Role::ROLE . '_' . self::VOTER;
+        return Role::ROLE.'_'.self::VOTER;
     }
 
     public function equals(RoleInterface $role): bool

@@ -183,28 +183,28 @@
                     <div class="d-flex w-75 gap-3">
 
                         {# Обложка #}
-                        {#{% set image_path = '/assets/img/blank.svg' %}
+                        {# {% set image_path = '/assets/img/blank.svg' %}
 
                         {% if item.users_profile_avatar_ext is defined and item.users_profile_avatar_ext is not null %}
                             {% set img_host =  item.users_profile_avatar_cdn == true  ? CDN_HOST : '' %}
                             {% set img_dir = item.users_profile_avatar %}
                             {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ item.users_profile_avatar_ext %}
                             {% set image_path = img_host ~ img_table ~ img_dir ~ img_file %}
-                        {% endif %}#}
+                        {% endif %} #}
 
 
-                        {#<div>
-                            <a href="#}{# {{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }} #}{#"
+                        {# <div>
+                            <a href=" #}{# {{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }} #}{# "
                                class="icon rounded-circle bg-contain lazy p-1"
                                data-bg="{{ image_path }}"
-                            > </a></div>#}
+                            > </a></div> #}
 
 
                         <div class="ms-0">
-                            {#<a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
+                            {# <a href="{{ is_granted('ROLE_ADMIN') ? path('users-profile-user:admin.newedit.edit', { id: item.users_profile_event }) : '#' }}"
                                class="fw-bolder mb- text-decoration-none text-dark">
                                 {{ item.users_profile_username }}
-                            </a>#}
+                            </a> #}
 
                             {% if item.comment is not null %}
 
@@ -223,7 +223,7 @@
                                     {{ item.comment }}
                                 </div>
 
-                            {#{% else %}
+                                {# {% else %}
 
                                 <div class="text-muted fs-7 fw-bolder">
 
@@ -238,7 +238,7 @@
 												</svg>
 											</span>
                                     {{ item.group_name }}
-                                </div>#}
+                                </div> #}
                             {% endif %}
 
                         </div>

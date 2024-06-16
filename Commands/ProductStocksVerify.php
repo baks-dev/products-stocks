@@ -248,7 +248,7 @@ class ProductStocksVerify extends Command
                     $warning .= 'остаток указан меньше! сумма транзакций БОЛЬШЕ на '.($sum - $total).'. шт. (ожидается остаток '.$sum.')'.PHP_EOL;
                 }
 
-                if($total > $sum )
+                if($total > $sum)
                 {
                     $error .= PHP_EOL;
                     $error .= $name.PHP_EOL;

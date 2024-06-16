@@ -62,7 +62,7 @@ final class ProductStockPackageFilterForm extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
+            function(FormEvent $event): void {
                 /** @var ProductStockPackageFilterDTO $data */
                 $data = $event->getData();
 

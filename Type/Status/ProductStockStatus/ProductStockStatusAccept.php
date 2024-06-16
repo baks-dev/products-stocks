@@ -31,7 +31,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 /**
  * Статус "Принят со склада заявителю"
  */
-
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusAccept implements ProductStockStatusInterface
 {

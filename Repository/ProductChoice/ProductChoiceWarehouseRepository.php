@@ -114,8 +114,7 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
         $qb = $this
             ->ORMQueryBuilder
             ->createQueryBuilder(self::class)
-            ->bindLocal()
-        ;
+            ->bindLocal();
 
         $select = sprintf('new %s(stock.product, trans.name, SUM(stock.total))', ProductUid::class);
 
@@ -144,9 +143,6 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
             'WITH',
             'trans.event = product.event AND trans.local = :local'
         );
-
-
-
 
 
         /* Кешируем результат ORM */
