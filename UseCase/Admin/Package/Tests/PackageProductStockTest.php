@@ -164,6 +164,7 @@ final class PackageProductStockTest extends KernelTestCase
 
         /** @var ProductWarehouseTotalInterface $ProductWarehouseTotal */
         $em = self::getContainer()->get(EntityManagerInterface::class);
+        $em->clear();
 
         /** @var ProductStockTotal $ProductStockTotal */
         $ProductStockTotal = $em->getRepository(ProductStockTotal::class)->findOneBy(
