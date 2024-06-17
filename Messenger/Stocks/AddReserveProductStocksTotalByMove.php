@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
@@ -44,18 +45,20 @@ final class AddReserveProductStocksTotalByMove
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
         MessageDispatchInterface $messageDispatch,
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->messageDispatch = $messageDispatch;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -63,6 +66,17 @@ final class AddReserveProductStocksTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusMoving::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
@@ -78,7 +92,6 @@ final class AddReserveProductStocksTotalByMove
         {
             return;
         }
-
 
         // Получаем всю продукцию в ордере со статусом Moving (перемещение)
         $products = $this->productStocks->getProductsMovingStocks($message->getId());
@@ -124,13 +137,11 @@ final class AddReserveProductStocksTotalByMove
 
                 if($i === $product->getTotal())
                 {
-                    return;
+                    break;
                 }
-
-                usleep(300);
             }
-
         }
 
+        $Deduplicator->save();
     }
 }

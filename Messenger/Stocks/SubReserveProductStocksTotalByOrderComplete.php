@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
@@ -50,20 +51,20 @@ final class SubReserveProductStocksTotalByOrderComplete
 
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductWarehouseByOrderInterface $warehouseByOrder,
         LoggerInterface $productsStocksLogger,
-        MessageDispatchInterface $messageDispatch
-    )
-    {
+        MessageDispatchInterface $messageDispatch,
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->entityManager = $entityManager;
-        $this->entityManager->clear();
-
         $this->warehouseByOrder = $warehouseByOrder;
         $this->logger = $productsStocksLogger;
         $this->messageDispatch = $messageDispatch;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -71,11 +72,23 @@ final class SubReserveProductStocksTotalByOrderComplete
      */
     public function __invoke(OrderMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                OrderStatusCompleted::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
 
         $this->entityManager->clear();
 
         /** @var OrderEvent $OrderEvent */
-        $OrderEvent = $this->entityManager->getRepository(OrderEvent::class)->find($message->getEvent());
+        $OrderEvent = $this->entityManager
+            ->getRepository(OrderEvent::class)
+            ->find($message->getEvent());
 
         if(!$OrderEvent)
         {
@@ -104,6 +117,8 @@ final class SubReserveProductStocksTotalByOrderComplete
                 $this->changeReserve($product, $UserProfileUid);
             }
         }
+
+        $Deduplicator->save();
     }
 
     public function changeReserve(OrderProduct $product, UserProfileUid $profile): void
@@ -130,7 +145,8 @@ final class SubReserveProductStocksTotalByOrderComplete
             ->getRepository(ProductModification::class)
             ->find($product->getModification())?->getConst() : null;
 
-        $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа',
+        $this->logger->info(
+            'Снимаем резерв и остаток на складе при выполненном заказа',
             [
                 __FILE__.':'.__LINE__,
                 'total' => $product->getTotal(),
@@ -140,7 +156,8 @@ final class SubReserveProductStocksTotalByOrderComplete
                 'variation' => (string) $product->getVariation(),
                 'modification' => (string) $product->getModification(),
 
-            ]);
+            ]
+        );
 
         /** Снимаем резерв и остаток продукции на складе по одной единице продукции */
         for($i = 1; $i <= $product->getTotal(); $i++)
@@ -157,12 +174,8 @@ final class SubReserveProductStocksTotalByOrderComplete
 
             if($i === $product->getTotal())
             {
-                return;
+                break;
             }
-
-            usleep(300);
-
         }
-
     }
 }

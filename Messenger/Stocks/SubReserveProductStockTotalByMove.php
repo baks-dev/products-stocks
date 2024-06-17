@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
@@ -49,18 +50,20 @@ final class SubReserveProductStockTotalByMove
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
-        MessageDispatchInterface $messageDispatch
-    )
-    {
+        MessageDispatchInterface $messageDispatch,
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->messageDispatch = $messageDispatch;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -68,6 +71,17 @@ final class SubReserveProductStockTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusMoving::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
         if($message->getLast() === null)
         {
             return;
@@ -113,7 +127,8 @@ final class SubReserveProductStockTotalByMove
         foreach($products as $product)
         {
 
-            $this->logger->info('Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции',
+            $this->logger->info(
+                'Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции',
                 [
                     __FILE__.':'.__LINE__,
                     'number' => $ProductStockEvent->getNumber(),
@@ -124,7 +139,8 @@ final class SubReserveProductStockTotalByMove
                     'variation' => (string) $product->getVariation(),
                     'modification' => (string) $product->getModification(),
                     'total' => $product->getTotal(),
-                ]);
+                ]
+            );
 
             /** Снимаем резерв и остаток на единицу продукции на складе грузоотправителя */
             for($i = 1; $i <= $product->getTotal(); $i++)
@@ -144,11 +160,11 @@ final class SubReserveProductStockTotalByMove
 
                 if($i === $product->getTotal())
                 {
-                    return;
+                    break;
                 }
-
-                usleep(300);
             }
         }
+
+        $Deduplicator->save();
     }
 }

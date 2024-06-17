@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
@@ -49,7 +50,7 @@ final class AddQuantityProductByIncomingStock
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private AppLockInterface $appLock;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -59,9 +60,8 @@ final class AddQuantityProductByIncomingStock
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
-        AppLockInterface $appLock
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -69,7 +69,7 @@ final class AddQuantityProductByIncomingStock
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
         $this->logger = $productsStocksLogger;
-        $this->appLock = $appLock;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -77,8 +77,23 @@ final class AddQuantityProductByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusIncoming::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
+        $this->entityManager->clear();
+
+        $ProductStockEvent = $this->entityManager
+            ->getRepository(ProductStockEvent::class)
+            ->find($message->getEvent());
 
         if(!$ProductStockEvent)
         {
@@ -101,22 +116,12 @@ final class AddQuantityProductByIncomingStock
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
-                /** Блокируем процесс в очереди */
-
-                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
-
-                $lock = $this->appLock
-                    ->createLock($key)
-                    ->lifetime(30)
-                    ->wait();
-
                 /** Снимаем резерв отмененного заказа */
                 $this->changeTotal($product);
-
-                $lock->release(); // снимаем блокировку
-
             }
         }
+
+        $Deduplicator->save();
     }
 
     public function changeTotal(ProductStockProduct $product): void

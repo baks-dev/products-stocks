@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
-use BaksDev\Core\Lock\AppLockInterface;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
@@ -34,8 +34,6 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -54,7 +52,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private AppLockInterface $appLock;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -64,9 +62,8 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
-        AppLockInterface $appLock
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -74,7 +71,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
         $this->logger = $productsStocksLogger;
-        $this->appLock = $appLock;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -83,6 +80,17 @@ final class SubQuantityReserveProductByMoveWarehouseStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusMoving::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
         if(!$message->getLast())
         {
             return;
@@ -111,25 +119,16 @@ final class SubQuantityReserveProductByMoveWarehouseStock
 
         if($products)
         {
-
             $this->entityManager->clear();
 
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
-
-                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
-
-                $lock = $this->appLock
-                    ->createLock($key)
-                    ->lifetime(30)
-                    ->wait();
-
                 $this->changeProduct($product);
-
-                $lock->release(); // снимаем блокировку
             }
         }
+
+        $Deduplicator->save();
     }
 
 
@@ -197,8 +196,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
             $ProductUpdateQuantityReserve &&
             $ProductUpdateQuantityReserve->subQuantity($product->getTotal()) &&
             $ProductUpdateQuantityReserve->subReserve($product->getTotal())
-        )
-        {
+        ) {
             $this->entityManager->flush();
             $this->logger->info('Сняли общий резерв и количество продукции в карточке при перемещении между складами', $context);
             return;

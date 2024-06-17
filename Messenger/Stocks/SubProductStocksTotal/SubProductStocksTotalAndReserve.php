@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
 
-
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
@@ -52,8 +51,7 @@ final class SubProductStocksTotalAndReserve
         LoggerInterface $productsStocksLogger,
         SubProductStockInterface $updateProductStock,
         AppLockInterface $appLock
-    )
-    {
+    ) {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
@@ -93,7 +91,8 @@ final class SubProductStocksTotalAndReserve
 
         if(!$ProductStockTotal)
         {
-            $this->logger->critical('Не найдено продукции на складе для списания',
+            $this->logger->critical(
+                'Не найдено продукции на складе для списания',
                 [
                     __FILE__.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
@@ -101,7 +100,8 @@ final class SubProductStocksTotalAndReserve
                     'offer' => (string) $message->getOffer(),
                     'variation' => (string) $message->getVariation(),
                     'modification' => (string) $message->getModification()
-                ]);
+                ]
+            );
 
             return;
         }
@@ -125,7 +125,8 @@ final class SubProductStocksTotalAndReserve
                 [
                     __FILE__.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]);
+                ]
+            );
 
             return;
         }
@@ -135,6 +136,7 @@ final class SubProductStocksTotalAndReserve
             [
                 __FILE__.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-            ]);
+            ]
+        );
     }
 }

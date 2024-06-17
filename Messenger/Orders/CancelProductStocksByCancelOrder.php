@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
@@ -51,22 +52,21 @@ final class CancelProductStocksByCancelOrder
     private CurrentOrderEventInterface $currentOrderEvent;
     private ProductStocksByOrderInterface $productStocksByOrder;
     private CancelProductStockHandler $cancelProductStockHandler;
-    private ExistOrderEventByStatusInterface $existOrderEventByStatus;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         LoggerInterface $productsStocksLogger,
         CurrentOrderEventInterface $currentOrderEvent,
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
-        ExistOrderEventByStatusInterface $existOrderEventByStatus
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
 
         $this->logger = $productsStocksLogger;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->productStocksByOrder = $productStocksByOrder;
         $this->cancelProductStockHandler = $cancelProductStockHandler;
-        $this->existOrderEventByStatus = $existOrderEventByStatus;
+        $this->deduplicator = $deduplicator;
     }
 
 
@@ -76,6 +76,18 @@ final class CancelProductStocksByCancelOrder
 
     public function __invoke(OrderMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                (string) $message->getId(),
+                OrderStatusCanceled::class
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($message->getId());
 
@@ -90,17 +102,6 @@ final class CancelProductStocksByCancelOrder
             return;
         }
 
-        /** Не Отменяем складскую заявку если дублируется событие */
-        $isOtherExists = $this->existOrderEventByStatus->isOtherExists(
-            $message->getId(),
-            $message->getEvent(),
-            OrderStatusCanceled::class
-        );
-
-        if($isOtherExists)
-        {
-            return;
-        }
 
         /** Получаем все заявки по идентификатору заказа */
         $stocks = $this->productStocksByOrder->findByOrder($message->getId());
@@ -113,7 +114,7 @@ final class CancelProductStocksByCancelOrder
         /** @var ProductStockEvent $ProductStockEvent */
         foreach($stocks as $ProductStockEvent)
         {
-            /** Если статус складской заявки Canceled «Отменен» - завершаем обработчик */
+            /** Если статус складской заявки Canceled «Отменен» - пропускаем */
             if(true === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
             {
                 continue;
@@ -140,5 +141,7 @@ final class CancelProductStocksByCancelOrder
                 'OrderUid' => (string) $message->getId()
             ]);
         }
+
+        $Deduplicator->save();
     }
 }

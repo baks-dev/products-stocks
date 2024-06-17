@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
-
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
@@ -52,8 +51,7 @@ final class AddProductStocksReserve
         LoggerInterface $productsStocksLogger,
         AddProductStockInterface $addProductStock,
         AppLockInterface $appLock
-    )
-    {
+    ) {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
@@ -89,7 +87,8 @@ final class AddProductStocksReserve
 
         if(!$ProductStockTotal)
         {
-            $this->logger->critical('Не найдено продукции на складе для резервирования',
+            $this->logger->critical(
+                'Не найдено продукции на складе для резервирования',
                 [
                     __FILE__.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
@@ -97,12 +96,12 @@ final class AddProductStocksReserve
                     'offer' => (string) $message->getOffer(),
                     'variation' => (string) $message->getVariation(),
                     'modification' => (string) $message->getModification()
-                ]);
+                ]
+            );
 
             throw new DomainException('Невозможно добавить резерв на продукцию');
 
         }
-
 
         $this->handle($ProductStockTotal);
 
@@ -119,19 +118,23 @@ final class AddProductStocksReserve
 
         if(empty($rows))
         {
-            $this->logger->critical('Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
+            $this->logger->critical(
+                'Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
                 [
                     __FILE__.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]);
+                ]
+            );
 
             return;
         }
 
-        $this->logger->info(sprintf('%s : Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
+        $this->logger->info(
+            sprintf('%s : Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
             [
                 __FILE__.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-            ]);
+            ]
+        );
     }
 }

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
@@ -36,8 +37,6 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -55,7 +54,7 @@ final class SubReserveProductByProductStockCancel
     private ProductOfferQuantityInterface $offerQuantity;
     private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private AppLockInterface $appLock;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
@@ -66,9 +65,8 @@ final class SubReserveProductByProductStockCancel
         EntityManagerInterface $entityManager,
         ProductStockStatusCollection $collection,
         LoggerInterface $productsStocksLogger,
-        AppLockInterface $appLock
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->modificationQuantity = $modificationQuantity;
@@ -79,7 +77,7 @@ final class SubReserveProductByProductStockCancel
         // Инициируем статусы складских остатков
         $collection->cases();
         $this->logger = $productsStocksLogger;
-        $this->appLock = $appLock;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -87,6 +85,18 @@ final class SubReserveProductByProductStockCancel
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusCancel::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         if(!$message->getLast())
         {
             return;
@@ -124,18 +134,11 @@ final class SubReserveProductByProductStockCancel
             /** @var ProductStockProduct $product */
             foreach($products as $product)
             {
-                $key = $product->getProduct().$product->getOffer().$product->getVariation().$product->getModification();
-
-                $lock = $this->appLock
-                    ->createLock($key)
-                    ->lifetime(30)
-                    ->wait();
-
                 $this->changeReserve($product);
-
-                $lock->release(); // снимаем блокировку
             }
         }
+
+        $Deduplicator->save();
     }
 
     public function changeReserve(ProductStockProduct $product): void

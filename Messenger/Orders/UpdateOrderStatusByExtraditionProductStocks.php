@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusExtradition;
@@ -44,15 +45,11 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class UpdateOrderStatusByExtraditionProductStocks
 {
     private EntityManagerInterface $entityManager;
-
     private CurrentOrderEventInterface $currentOrderEvent;
-
     private OrderStatusHandler $OrderStatusHandler;
-
     private CentrifugoPublishInterface $CentrifugoPublish;
-
     private LoggerInterface $logger;
-    private ExistProductStocksStatusInterface $existProductStocksStatus;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -60,16 +57,15 @@ final class UpdateOrderStatusByExtraditionProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $productsStocksLogger,
-        ExistProductStocksStatusInterface $existProductStocksStatus
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
 
         $this->entityManager = $entityManager;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $productsStocksLogger;
-        $this->existProductStocksStatus = $existProductStocksStatus;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -77,6 +73,19 @@ final class UpdateOrderStatusByExtraditionProductStocks
      */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusExtradition::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         /**
          * Получаем статус заявки.
          */
@@ -111,19 +120,6 @@ final class UpdateOrderStatusByExtraditionProductStocks
             return;
         }
 
-
-        /** Не делаем "Собран, готов к отправке" если дублируется событие */
-        $isOtherExistsEvent = $this->existProductStocksStatus->isOtherExists(
-            $message->getId(),
-            $message->getEvent(),
-            ProductStockStatusExtradition::class
-        );
-
-        if($isOtherExistsEvent)
-        {
-            return;
-        }
-
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusExtradition::class,
@@ -133,6 +129,8 @@ final class UpdateOrderStatusByExtraditionProductStocks
 
         $this->OrderStatusHandler->handle($OrderStatusDTO);
 
+        $Deduplicator->save();
+
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
@@ -140,12 +138,14 @@ final class UpdateOrderStatusByExtraditionProductStocks
             ->send('orders');
 
 
-        $this->logger->info('Обновили статус заказа на Extradition «Готов к выдаче»',
+        $this->logger->info(
+            'Обновили статус заказа на Extradition «Готов к выдаче»',
             [
                 __FILE__.':'.__LINE__,
                 'order' => (string) $ProductStockEvent->getOrder(),
                 'profile' => (string) $ProductStockEvent->getProfile()
-            ]);
+            ]
+        );
 
     }
 }

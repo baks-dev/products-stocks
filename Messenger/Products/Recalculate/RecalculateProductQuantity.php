@@ -53,12 +53,10 @@ final class RecalculateProductQuantity
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         ProductStocksTotalInterface $productStocksTotal,
-
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
         AppCacheInterface $cache
-    )
-    {
+    ) {
 
         $this->modificationQuantity = $modificationQuantity;
         $this->variationQuantity = $variationQuantity;
@@ -140,7 +138,8 @@ final class RecalculateProductQuantity
             $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
             $this->entityManager->flush();
 
-            $this->logger->info('Обновили общее количество продукции в карточке',
+            $this->logger->info(
+                'Обновили общее количество продукции в карточке',
                 [
                     __FILE__.':'.__LINE__,
                     'total' => $ProductStocksTotal,
@@ -148,7 +147,8 @@ final class RecalculateProductQuantity
                     'offer' => (string) $product->getOffer(),
                     'variation' => (string) $product->getVariation(),
                     'modification' => (string) $product->getModification(),
-                ]);
+                ]
+            );
         }
 
         /* Чистим кеш модуля продукции */

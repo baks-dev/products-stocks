@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
@@ -38,20 +39,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-
 #[AsMessageHandler]
 final class UpdateOrderStatusByCompletedProductStocks
 {
     private EntityManagerInterface $entityManager;
-
     private CurrentOrderEventInterface $currentOrderEvent;
-
     private OrderStatusHandler $OrderStatusHandler;
-
     private CentrifugoPublishInterface $CentrifugoPublish;
-
     private LoggerInterface $logger;
-    private ExistProductStocksStatusInterface $existProductStocksStatus;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -59,15 +55,14 @@ final class UpdateOrderStatusByCompletedProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $productsStocksLogger,
-        ExistProductStocksStatusInterface $existProductStocksStatus
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->entityManager = $entityManager;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $productsStocksLogger;
-        $this->existProductStocksStatus = $existProductStocksStatus;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -75,6 +70,19 @@ final class UpdateOrderStatusByCompletedProductStocks
      */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusCompleted::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
@@ -95,23 +103,11 @@ final class UpdateOrderStatusByCompletedProductStocks
             $this->logger
                 ->warning(
                     'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
-                    [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]);
+                    [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+                );
 
             return;
         }
-
-        /** Не делаем отметку о выполнении если дублируется событие */
-        $isOtherExistsEvent = $this->existProductStocksStatus->isOtherExists(
-            $message->getId(),
-            $message->getEvent(),
-            ProductStockStatusCompleted::class
-        );
-
-        if($isOtherExistsEvent)
-        {
-            return;
-        }
-
 
         $this->logger->info(
             'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
@@ -139,6 +135,8 @@ final class UpdateOrderStatusByCompletedProductStocks
 
         $this->OrderStatusHandler->handle($OrderStatusDTO);
 
+        $Deduplicator->save();
+
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
@@ -146,12 +144,14 @@ final class UpdateOrderStatusByCompletedProductStocks
             ->send('orders');
 
 
-        $this->logger->info('Обновили статус заказа на Completed «Выдан по месту назначения»',
+        $this->logger->info(
+            'Обновили статус заказа на Completed «Выдан по месту назначения»',
             [
                 __FILE__.':'.__LINE__,
                 'OrderUid' => (string) $ProductStockEvent->getOrder(),
                 'UserProfileUid' => (string) $ProductStockEvent->getProfile()
-            ]);
+            ]
+        );
 
     }
 }

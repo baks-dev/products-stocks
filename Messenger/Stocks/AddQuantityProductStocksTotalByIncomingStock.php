@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
@@ -57,8 +58,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
     private UserByUserProfileInterface $userByUserProfile;
     private ProductStocksTotalStorageInterface $productStocksTotalStorage;
     private AddProductStockInterface $addProductStock;
-    private MessageDispatchInterface $messageDispatch;
-    private AppLockInterface $appLock;
+    private DeduplicatorInterface $deduplicator;
 
 
     public function __construct(
@@ -69,10 +69,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
         UserByUserProfileInterface $userByUserProfile,
         ProductStocksTotalStorageInterface $productStocksTotalStorage,
         AddProductStockInterface $addProductStock,
-        MessageDispatchInterface $messageDispatch,
-        AppLockInterface $appLock
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         // Инициируем статусы складских остатков
         $ProductStockStatusCollection->cases();
 
@@ -82,8 +80,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $this->logger = $productsStocksLogger;
         $this->productStocksTotalStorage = $productStocksTotalStorage;
         $this->addProductStock = $addProductStock;
-        $this->messageDispatch = $messageDispatch;
-        $this->appLock = $appLock;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -91,6 +88,19 @@ final class AddQuantityProductStocksTotalByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusIncoming::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
@@ -128,16 +138,6 @@ final class AddQuantityProductStocksTotalByIncomingStock
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-            $key = $UserProfileUid.
-                $product->getProduct().
-                $product->getOffer().
-                $product->getVariation().
-                $product->getModification();
-
-            $lock = $this->appLock
-                ->createLock($key)
-                ->lifetime(30)
-                ->wait();
 
             /** Получаем место для хранения указанной продукции данного профиля */
             $ProductStockTotal = $this->productStocksTotalStorage
@@ -156,7 +156,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
                 if(!$User)
                 {
-                    $this->logger->error('Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
+                    $this->logger->error(
+                        'Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
                         [
                             __FILE__.':'.__LINE__,
                             'profile' => (string) $UserProfileUid,
@@ -180,7 +181,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 $this->entityManager->persist($ProductStockTotal);
                 $this->entityManager->flush();
 
-                $this->logger->info('Место складирования не найдено! Создали новое место для указанной продукции',
+                $this->logger->info(
+                    'Место складирования не найдено! Создали новое место для указанной продукции',
                     [
                         __FILE__.':'.__LINE__,
                         'storage' => $product->getStorage(),
@@ -201,9 +203,9 @@ final class AddQuantityProductStocksTotalByIncomingStock
             $this->handle($ProductStockTotal, $product->getTotal());
 
 
-            $lock->release(); // снимаем блокировку
-
         }
+
+        $Deduplicator->save();
 
     }
 
@@ -218,16 +220,19 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
         if(empty($rows))
         {
-            $this->logger->critical('Ошибка при обновлении складских остатков',
+            $this->logger->critical(
+                'Ошибка при обновлении складских остатков',
                 [
                     __FILE__.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]);
+                ]
+            );
 
             return;
         }
 
-        $this->logger->info('Добавили приход продукции на склад',
+        $this->logger->info(
+            'Добавили приход продукции на склад',
             [
                 __FILE__.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()

@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
@@ -44,21 +45,22 @@ final class AddReserveProductStocksTotalByPackage
     private LoggerInterface $logger;
     private CurrentProductStocksInterface $currentProductStocks;
     private MessageDispatchInterface $messageDispatch;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
         CurrentProductStocksInterface $currentProductStocks,
-        MessageDispatchInterface $messageDispatch
-    )
-    {
+        MessageDispatchInterface $messageDispatch,
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->currentProductStocks = $currentProductStocks;
         $this->messageDispatch = $messageDispatch;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -66,6 +68,18 @@ final class AddReserveProductStocksTotalByPackage
      */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusPackage::STATUS
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
         $this->entityManager->clear();
 
         $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
@@ -97,7 +111,8 @@ final class AddReserveProductStocksTotalByPackage
         /** @var ProductStockProduct $product */
         foreach($products as $key => $product)
         {
-            $this->logger->info('Добавляем резерв продукции на складе при создании заявки на упаковку',
+            $this->logger->info(
+                'Добавляем резерв продукции на складе при создании заявки на упаковку',
                 [
                     __FILE__.':'.__LINE__,
                     'event' => (string) $message->getEvent(),
@@ -131,11 +146,11 @@ final class AddReserveProductStocksTotalByPackage
 
                 if($i === $product->getTotal())
                 {
-                    return;
+                    break;
                 }
-
-                usleep(300);
             }
         }
+
+        $Deduplicator->save();
     }
 }

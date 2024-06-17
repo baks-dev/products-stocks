@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
@@ -52,18 +53,20 @@ final class SubReserveProductStockTotalByCancel
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private MessageDispatchInterface $messageDispatch;
+    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
         ProductStocksByIdInterface $productStocks,
         EntityManagerInterface $entityManager,
         LoggerInterface $productsStocksLogger,
         MessageDispatchInterface $messageDispatch,
-    )
-    {
+        DeduplicatorInterface $deduplicator
+    ) {
         $this->productStocks = $productStocks;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->messageDispatch = $messageDispatch;
+        $this->deduplicator = $deduplicator;
     }
 
     /**
@@ -71,6 +74,19 @@ final class SubReserveProductStockTotalByCancel
      */
     public function __invoke(ProductStockMessage $message): void
     {
+
+        $Deduplicator = $this->deduplicator
+            ->deduplication([
+                $key1,
+                $key2
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         if($message->getLast() === null)
         {
             return;
@@ -99,15 +115,14 @@ final class SubReserveProductStockTotalByCancel
             return;
         }
 
-
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
         $UserProfileUid = $ProductStockEvent->getProfile();
-
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-            $this->logger->info('Отменяем резерв на складе при отмене складской заявки',
+            $this->logger->info(
+                'Отменяем резерв на складе при отмене складской заявки',
                 [
                     __FILE__.':'.__LINE__,
                     'number' => $ProductStockEvent->getNumber(),
@@ -118,8 +133,8 @@ final class SubReserveProductStockTotalByCancel
                     'ProductOfferConst' => (string) $product->getOffer(),
                     'ProductVariationConst' => (string) $product->getVariation(),
                     'ProductModificationConst' => (string) $product->getModification(),
-
-                ]);
+                ]
+            );
 
             /** Снимаем ТОЛЬКО резерв продукции на складе */
             for($i = 1; $i <= $product->getTotal(); $i++)
@@ -136,11 +151,11 @@ final class SubReserveProductStockTotalByCancel
 
                 if($i === $product->getTotal())
                 {
-                    return;
+                    break;
                 }
-
-                usleep(300);
             }
         }
+
+        $Deduplicator->save();
     }
 }

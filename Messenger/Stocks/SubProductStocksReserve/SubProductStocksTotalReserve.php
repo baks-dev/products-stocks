@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve;
 
-
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
@@ -52,8 +51,7 @@ final class SubProductStocksTotalReserve
         LoggerInterface $productsStocksLogger,
         SubProductStockInterface $updateProductStock,
         AppLockInterface $appLock
-    )
-    {
+    ) {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
@@ -92,7 +90,8 @@ final class SubProductStocksTotalReserve
 
         if(!$ProductStockTotal)
         {
-            $this->logger->critical('Не найдено продукции на складе для списания, либо нет резерва на указанную продукцию',
+            $this->logger->critical(
+                'Не найдено продукции на складе для списания, либо нет резерва на указанную продукцию',
                 [
                     __FILE__.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
@@ -100,7 +99,8 @@ final class SubProductStocksTotalReserve
                     'offer' => (string) $message->getOffer(),
                     'variation' => (string) $message->getVariation(),
                     'modification' => (string) $message->getModification()
-                ]);
+                ]
+            );
 
             return;
         }
@@ -120,11 +120,13 @@ final class SubProductStocksTotalReserve
 
         if(empty($rows))
         {
-            $this->logger->critical('Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
+            $this->logger->critical(
+                'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
                     __FILE__.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]);
+                ]
+            );
 
             return;
         }
@@ -134,8 +136,7 @@ final class SubProductStocksTotalReserve
             [
                 __FILE__.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-            ]);
+            ]
+        );
     }
-
-
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Commands;
 
-
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Elastic\BaksDevElasticBundle;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
@@ -43,12 +42,9 @@ class ProductCardVerify extends Command
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         ProductWarehouseTotalInterface $productWarehouseTotal,
-
-
         ProductStocksTotalInterface $productStocksTotal,
         ProductStocksTotalByReserveInterface $productStocksTotalByReserve,
-    )
-    {
+    ) {
         parent::__construct();
         $this->DBALQueryBuilder = $DBALQueryBuilder;
         $this->productStocksTotal = $productStocksTotal;
@@ -91,6 +87,7 @@ class ProductCardVerify extends Command
         $dbal
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.const as product_offer_const')
+            ->addSelect('product_offer.article as product_offer_article')
             ->leftJoin(
                 'product',
                 ProductOffer::class,
@@ -112,6 +109,7 @@ class ProductCardVerify extends Command
         $dbal
             ->addSelect('product_variation.value as product_variation_value')
             ->addSelect('product_variation.const as product_variation_const')
+            ->addSelect('product_variation.article as product_variation_article')
             ->leftJoin(
                 'product_offer',
                 ProductVariation::class,
@@ -134,6 +132,7 @@ class ProductCardVerify extends Command
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.const as product_modification_const')
             ->addSelect('product_modification.id as product_modification_id')
+            ->addSelect('product_modification.article as product_modification_article')
             ->leftJoin(
                 'product_variation',
                 ProductModification::class,
@@ -184,28 +183,37 @@ class ProductCardVerify extends Command
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].' '.
                         $product['product_modification_value'].': '.
-                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
+                        'card '.$product['product_modification_quantity'].' != склад '.$total.' '.$product['product_modification_article'];
 
                     $errorTotal .= PHP_EOL;
-
-
                 }
 
 
                 if($product['product_modification_reserve'] !== $reserve)
                 {
+
                     $errorReserve .=
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].' '.
-                        $product['product_modification_value'].': '.
-                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
+                        $product['product_modification_value'].': ';
+
+                    if($product['product_modification_reserve'] > $reserve)
+                    {
+                        $errorReserve .=
+                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (ожидается резерв на склад '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
+                    }
+                    else
+                    {
+                        $errorReserve .=
+                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (в карточке не снят резерв '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
+                    }
+
 
                     $errorReserve .= PHP_EOL;
                 }
             }
-
-            else if($product['product_variation_const'])
+            elseif($product['product_variation_const'])
             {
 
                 if($product['product_variation_quantity'] !== $total)
@@ -214,7 +222,7 @@ class ProductCardVerify extends Command
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].': '.
-                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
+                        $product['product_variation_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_modification_article'];
 
                     $errorTotal .= PHP_EOL;
                 }
@@ -225,14 +233,13 @@ class ProductCardVerify extends Command
                         $product['product_name'].' '.
                         $product['product_offer_value'].' '.
                         $product['product_variation_value'].': '.
-                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
+                        $product['product_variation_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_modification_article'];
 
                     $errorReserve .= PHP_EOL;
                 }
 
             }
-
-            else if($product['product_offer_const'])
+            elseif($product['product_offer_const'])
             {
 
                 if($product['product_offer_quantity'] !== $total)
@@ -240,7 +247,8 @@ class ProductCardVerify extends Command
                     $errorTotal .=
                         $product['product_name'].' '.
                         $product['product_offer_value'].': '.
-                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
+                        $product['product_offer_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_offer_article'];
+
 
                     $errorTotal .= PHP_EOL;
                 }
@@ -250,12 +258,11 @@ class ProductCardVerify extends Command
                     $errorReserve .=
                         $product['product_name'].' '.
                         $product['product_offer_value'].': '.
-                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
+                        $product['product_offer_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_offer_article'];
 
                     $errorReserve .= PHP_EOL;
                 }
             }
-
             else
             {
                 if($product['product_quantity'] !== $total)
