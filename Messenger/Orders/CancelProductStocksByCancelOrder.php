@@ -55,14 +55,14 @@ final class CancelProductStocksByCancelOrder
     private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-        LoggerInterface $ordersOrderLogger,
+        LoggerInterface $productStocksLogger,
         CurrentOrderEventInterface $currentOrderEvent,
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
         DeduplicatorInterface $deduplicator
     ) {
 
-        $this->logger = $ordersOrderLogger;
+        $this->logger = $productStocksLogger;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->productStocksByOrder = $productStocksByOrder;
         $this->cancelProductStockHandler = $cancelProductStockHandler;
