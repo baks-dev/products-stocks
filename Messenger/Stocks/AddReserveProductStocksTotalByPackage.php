@@ -70,8 +70,9 @@ final class AddReserveProductStocksTotalByPackage
     {
 
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusPackage::STATUS
             ]);
 

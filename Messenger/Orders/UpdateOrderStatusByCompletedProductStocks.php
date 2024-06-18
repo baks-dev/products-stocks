@@ -54,14 +54,14 @@ final class UpdateOrderStatusByCompletedProductStocks
         CurrentOrderEventInterface $currentOrderEvent,
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $ordersOrderLogger,
         DeduplicatorInterface $deduplicator
     ) {
         $this->entityManager = $entityManager;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $ordersOrderLogger;
         $this->deduplicator = $deduplicator;
     }
 
@@ -72,6 +72,7 @@ final class UpdateOrderStatusByCompletedProductStocks
     {
 
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusCompleted::STATUS

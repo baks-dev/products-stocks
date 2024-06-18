@@ -54,7 +54,7 @@ final class RecalculateProductQuantity
         ProductQuantityInterface $productQuantity,
         ProductStocksTotalInterface $productStocksTotal,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $productsProductLogger,
         AppCacheInterface $cache
     ) {
 
@@ -64,7 +64,7 @@ final class RecalculateProductQuantity
         $this->productQuantity = $productQuantity;
 
         $this->entityManager = $entityManager;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $productsProductLogger;
         $this->productStocksTotal = $productStocksTotal;
         $this->cache = $cache;
     }
@@ -139,7 +139,7 @@ final class RecalculateProductQuantity
             $this->entityManager->flush();
 
             $this->logger->info(
-                'Обновили общее количество продукции в карточке',
+                'Складской учет: Обновили общее количество продукции в карточке',
                 [
                     __FILE__.':'.__LINE__,
                     'total' => $ProductStocksTotal,

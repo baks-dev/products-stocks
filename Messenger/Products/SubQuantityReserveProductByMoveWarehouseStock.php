@@ -61,7 +61,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $productsProductLogger,
         DeduplicatorInterface $deduplicator
     ) {
         $this->productStocks = $productStocks;
@@ -70,7 +70,7 @@ final class SubQuantityReserveProductByMoveWarehouseStock
         $this->variationQuantity = $variationQuantity;
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $productsProductLogger;
         $this->deduplicator = $deduplicator;
     }
 
@@ -81,8 +81,9 @@ final class SubQuantityReserveProductByMoveWarehouseStock
     public function __invoke(ProductStockMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusMoving::STATUS
             ]);
 
@@ -198,10 +199,10 @@ final class SubQuantityReserveProductByMoveWarehouseStock
             $ProductUpdateQuantityReserve->subReserve($product->getTotal())
         ) {
             $this->entityManager->flush();
-            $this->logger->info('Сняли общий резерв и количество продукции в карточке при перемещении между складами', $context);
+            $this->logger->info('Перемещение: Сняли общий резерв и количество продукции в карточке при перемещении между складами', $context);
             return;
         }
 
-        $this->logger->critical('Невозможно общий резерв и количество продукции: карточка не найдена либо недостаточное количество резерва или остатка)', $context);
+        $this->logger->critical('Перемещение: Невозможно общий резерв и количество продукции: карточка не найдена либо недостаточное количество резерва или остатка)', $context);
     }
 }

@@ -81,8 +81,9 @@ final class AddQuantityProductStocksTotalByIncomingStock
     public function __invoke(ProductStockMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusIncoming::STATUS
             ]);
 

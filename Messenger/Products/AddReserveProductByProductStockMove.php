@@ -63,7 +63,7 @@ final class AddReserveProductByProductStockMove
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $productsProductLogger,
         DeduplicatorInterface $deduplicator
     ) {
         $this->productStocks = $productStocks;
@@ -72,7 +72,7 @@ final class AddReserveProductByProductStockMove
         $this->variationQuantity = $variationQuantity;
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $productsProductLogger;
 
         $this->deduplicator = $deduplicator;
     }
@@ -83,8 +83,9 @@ final class AddReserveProductByProductStockMove
     public function __invoke(ProductStockMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusMoving::STATUS
             ]);
 
@@ -192,10 +193,10 @@ final class AddReserveProductByProductStockMove
         if($ProductUpdateReserve && $ProductUpdateReserve->addReserve($product->getTotal()))
         {
             $this->entityManager->flush();
-            $this->logger->info('Добавили общий резерв продукции в карточке', $context);
+            $this->logger->info('Перемещение: Добавили общий резерв продукции в карточке', $context);
             return;
         }
 
-        $this->logger->critical('Невозможно добавить общий резерв продукции: карточка не найдена)', $context);
+        $this->logger->critical('Перемещение: Невозможно добавить общий резерв продукции (карточка не найдена)', $context);
     }
 }

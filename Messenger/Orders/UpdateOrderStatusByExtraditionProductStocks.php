@@ -56,7 +56,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         CurrentOrderEventInterface $currentOrderEvent,
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $ordersOrderLogger,
         DeduplicatorInterface $deduplicator
     ) {
 
@@ -64,7 +64,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         $this->currentOrderEvent = $currentOrderEvent;
         $this->OrderStatusHandler = $OrderStatusHandler;
         $this->CentrifugoPublish = $CentrifugoPublish;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $ordersOrderLogger;
         $this->deduplicator = $deduplicator;
     }
 
@@ -75,6 +75,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
     {
 
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusExtradition::STATUS

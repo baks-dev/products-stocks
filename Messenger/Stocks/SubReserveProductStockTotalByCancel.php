@@ -67,6 +67,7 @@ final class SubReserveProductStockTotalByCancel
     {
 
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusCancel::STATUS

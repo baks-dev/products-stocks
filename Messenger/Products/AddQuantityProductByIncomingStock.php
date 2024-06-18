@@ -59,7 +59,7 @@ final class AddQuantityProductByIncomingStock
         ProductOfferQuantityInterface $offerQuantity,
         ProductQuantityInterface $productQuantity,
         EntityManagerInterface $entityManager,
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $productsProductLogger,
         DeduplicatorInterface $deduplicator
     ) {
         $this->productStocks = $productStocks;
@@ -68,7 +68,7 @@ final class AddQuantityProductByIncomingStock
         $this->variationQuantity = $variationQuantity;
         $this->offerQuantity = $offerQuantity;
         $this->productQuantity = $productQuantity;
-        $this->logger = $productsStocksLogger;
+        $this->logger = $productsProductLogger;
         $this->deduplicator = $deduplicator;
     }
 
@@ -78,8 +78,9 @@ final class AddQuantityProductByIncomingStock
     public function __invoke(ProductStockMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusIncoming::STATUS
             ]);
 
@@ -154,11 +155,11 @@ final class AddQuantityProductByIncomingStock
             {
                 $ProductUpdateQuantity->addQuantity($product->getTotal());
                 $this->entityManager->flush();
-                $this->logger->info('Пополнили общий остаток модификации множественного варианта в карточке', $context);
+                $this->logger->info('Поступление на склад: Пополнили общий остаток модификации множественного варианта в карточке', $context);
             }
             else
             {
-                $this->logger->critical('Невозможно добавить общий остаток модификации множественного варианта: карточка не найдена)', $context);
+                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток модификации множественного варианта: карточка не найдена)', $context);
             }
 
             return;
@@ -182,11 +183,11 @@ final class AddQuantityProductByIncomingStock
             {
                 $ProductUpdateQuantity->addQuantity($product->getTotal());
                 $this->entityManager->flush();
-                $this->logger->info('Пополнили общий остаток множественного варианта в карточке', $context);
+                $this->logger->info('Поступление на склад: Пополнили общий остаток множественного варианта в карточке', $context);
             }
             else
             {
-                $this->logger->critical('Невозможно добавить общий остаток множественного варианта: карточка не найдена)', $context);
+                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток множественного варианта: карточка не найдена)', $context);
             }
 
             return;
@@ -209,11 +210,11 @@ final class AddQuantityProductByIncomingStock
             {
                 $ProductUpdateQuantity->addQuantity($product->getTotal());
                 $this->entityManager->flush();
-                $this->logger->info('Пополнили общий остаток торгового предложения в карточке', $context);
+                $this->logger->info('Поступление на склад: пополнили общий остаток торгового предложения в карточке', $context);
             }
             else
             {
-                $this->logger->critical('Невозможно добавить общий остаток торгового предложения: карточка не найдена)', $context);
+                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток торгового предложения: карточка не найдена)', $context);
             }
         }
 
@@ -232,11 +233,11 @@ final class AddQuantityProductByIncomingStock
         {
             $ProductUpdateQuantity->addQuantity($product->getTotal());
             $this->entityManager->flush();
-            $this->logger->info('Пополнили общий остаток продукции в карточке', $context);
+            $this->logger->info('Поступление на склад: Пополнили общий остаток продукции в карточке', $context);
         }
         else
         {
-            $this->logger->critical('Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
+            $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
         }
     }
 }

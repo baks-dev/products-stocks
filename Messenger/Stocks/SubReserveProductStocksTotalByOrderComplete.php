@@ -73,8 +73,9 @@ final class SubReserveProductStocksTotalByOrderComplete
     public function __invoke(OrderMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 OrderStatusCompleted::STATUS
             ]);
 

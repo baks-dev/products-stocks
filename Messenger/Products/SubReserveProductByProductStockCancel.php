@@ -86,8 +86,9 @@ final class SubReserveProductByProductStockCancel
     public function __invoke(ProductStockMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
-                $message->getId(),
+                (string) $message->getId(),
                 ProductStockStatusCancel::STATUS
             ]);
 
@@ -205,11 +206,11 @@ final class SubReserveProductByProductStockCancel
         if($ProductUpdateQuantityReserve && $ProductUpdateQuantityReserve->subReserve($product->getTotal()))
         {
             $this->entityManager->flush();
-            $this->logger->info('Отменили общий резерв в карточке при отмене складской заявки на перемещение', $context);
+            $this->logger->info('Перемещение: Отменили общий резерв в карточке при отмене складской заявки на перемещение', $context);
             return;
         }
 
-        $this->logger->critical('Невозможно отменить общий резерв продукции: карточка не найдена либо недостаточное количество резерва)', $context);
+        $this->logger->critical('Перемещение: Невозможно отменить общий резерв продукции: карточка не найдена либо недостаточное количество резерва)', $context);
 
     }
 }

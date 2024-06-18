@@ -55,14 +55,14 @@ final class CancelProductStocksByCancelOrder
     private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-        LoggerInterface $productsStocksLogger,
+        LoggerInterface $ordersOrderLogger,
         CurrentOrderEventInterface $currentOrderEvent,
         ProductStocksByOrderInterface $productStocksByOrder,
         CancelProductStockHandler $cancelProductStockHandler,
         DeduplicatorInterface $deduplicator
     ) {
 
-        $this->logger = $productsStocksLogger;
+        $this->logger = $ordersOrderLogger;
         $this->currentOrderEvent = $currentOrderEvent;
         $this->productStocksByOrder = $productStocksByOrder;
         $this->cancelProductStockHandler = $cancelProductStockHandler;
@@ -77,6 +77,7 @@ final class CancelProductStocksByCancelOrder
     public function __invoke(OrderMessage $message): void
     {
         $Deduplicator = $this->deduplicator
+            ->namespace(md5(self::class))
             ->deduplication([
                 (string) $message->getId(),
                 OrderStatusCanceled::class
