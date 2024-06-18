@@ -25,14 +25,10 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
 
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
-use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -43,20 +39,17 @@ final class SubProductStocksTotalAndReserve
     private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
     private SubProductStockInterface $updateProductStock;
-    private AppLockInterface $appLock;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ProductStockQuantityInterface $productStockMinQuantity,
         LoggerInterface $productsStocksLogger,
-        SubProductStockInterface $updateProductStock,
-        AppLockInterface $appLock
+        SubProductStockInterface $updateProductStock
     ) {
         $this->productStockMinQuantity = $productStockMinQuantity;
         $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
         $this->updateProductStock = $updateProductStock;
-        $this->appLock = $appLock;
     }
 
     /**
@@ -64,19 +57,6 @@ final class SubProductStocksTotalAndReserve
      */
     public function __invoke(SubProductStocksTotalAndReserveMessage $message): void
     {
-
-        $key = $message->getProfile().
-            $message->getProduct().
-            $message->getOffer().
-            $message->getVariation().
-            $message->getModification();
-
-        $lock = $this->appLock
-            ->createLock($key)
-            ->lifetime(30)
-            ->wait();
-
-
         $this->entityManager->clear();
 
         // Получаем одно место складирования продукции с минимальным количеством в наличии без учета резерва, но чтобы был резерв
@@ -107,8 +87,6 @@ final class SubProductStocksTotalAndReserve
         }
 
         $this->handle($ProductStockTotal);
-
-        $lock->release();
     }
 
     public function handle(ProductStockTotal $ProductStockTotal): void
