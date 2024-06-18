@@ -88,7 +88,6 @@ final class AddQuantityProductStocksTotalByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
         $Deduplicator = $this->deduplicator
             ->deduplication([
                 $message->getId(),
@@ -120,6 +119,8 @@ final class AddQuantityProductStocksTotalByIncomingStock
         {
             return;
         }
+
+
 
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());

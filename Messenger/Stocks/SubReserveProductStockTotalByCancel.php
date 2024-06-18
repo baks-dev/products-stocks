@@ -29,20 +29,11 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
-use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalCancelMessage;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserve;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
-use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -77,8 +68,8 @@ final class SubReserveProductStockTotalByCancel
 
         $Deduplicator = $this->deduplicator
             ->deduplication([
-                $key1,
-                $key2
+                (string) $message->getId(),
+                ProductStockStatusCancel::STATUS
             ]);
 
         if($Deduplicator->isExecuted())
