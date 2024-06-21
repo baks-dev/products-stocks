@@ -25,37 +25,24 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Edit;
 
-
-use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
+use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProductStockTotalEditHandler
+final readonly class ProductStockTotalEditHandler
 {
-
-    private EntityManagerInterface $entityManager;
-    private ValidatorCollectionInterface $validatorCollection;
-    private MessageDispatchInterface $messageDispatch;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ValidatorCollectionInterface $validatorCollection,
-        MessageDispatchInterface $messageDispatch
-    )
-    {
-        $this->entityManager = $entityManager;
-        $this->validatorCollection = $validatorCollection;
-        $this->messageDispatch = $messageDispatch;
-    }
+        private EntityManagerInterface $entityManager,
+        private ValidatorCollectionInterface $validatorCollection,
+        private MessageDispatchInterface $messageDispatch
+    ) {}
 
     /** @see ProductStock */
-    public function handle(
-        ProductStockTotalEditDTO $command
-    ): string|ProductStockTotal
+    public function handle(ProductStockTotalEditDTO|ProductStockStorageEditDTO $command): string|ProductStockTotal
     {
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
@@ -68,8 +55,7 @@ final class ProductStockTotalEditHandler
                 'class' => ProductStockTotal::class,
                 'id' => $command->getId(),
             ])
-        )
-        {
+        ) {
             return $this->validatorCollection->getErrorUniqid();
         }
 
@@ -83,13 +69,17 @@ final class ProductStockTotalEditHandler
 
         $this->entityManager->flush();
 
-        /** Отправляем сообщение в шину для пересчета продукции */
-        $this->messageDispatch->dispatch(new RecalculateProductMessage(
-            $command->getProduct(),
-            $command->getOffer(),
-            $command->getVariation(),
-            $command->getModification(),
-        ), transport: 'products-stocks');
+        if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
+        {
+            /** Отправляем сообщение в шину для пересчета продукции */
+            $this->messageDispatch->dispatch(new RecalculateProductMessage(
+                $command->getProduct(),
+                $command->getOffer(),
+                $command->getVariation(),
+                $command->getModification(),
+            ), transport: 'products-stocks');
+        }
+
 
         return $ProductStockTotal;
     }

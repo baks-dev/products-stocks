@@ -28,6 +28,21 @@ value="{{ item.stock_id }}">
 <div id="usecase-{{ item.stock_id }}-content" class="d-none">
     <ul class="leader list-group list-group-flush ">
 
+        {# Редактировать место складирвоания #}
+        {% if is_granted(ROLE~'_STORAGE') or is_granted('ROLE_ADMIN') %}
+
+            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
+                <a href="{{ path('products-stocks:admin.total.storage', {id: item.stock_id }) }}"
+                   class="text-decoration-none text-dark w-100 modal-link disabled"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal"
+                   title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
+                    Изменить место складирования
+                </a>
+            </li>
+
+        {% endif %}
+
         {# Редактировать #}
         {% if is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN') %}
 
@@ -37,11 +52,14 @@ value="{{ item.stock_id }}">
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
                    title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
-                    {{ 'btn.edit'|trans({}, 'core.btn') }}
+                    Редактировать остатки
                 </a>
             </li>
 
         {% endif %}
+
+
+
 
         {# Удалить #}
         {# {% if  is_granted(ROLE~'_DELETE') or is_granted('ROLE_ADMIN') %}

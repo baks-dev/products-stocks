@@ -16,6 +16,9 @@ ROLE_PRODUCT_STOCK_EDIT:
   name: 'Edit balances'
   desc: 'Edit warehouse balances and reserve'
 
+ROLE_PRODUCT_STOCK_STORAGE:
+  name: 'Edit storage location'
+  desc: 'Edit storage location'
 
 ROLE_PRODUCT_STOCK_CANCEL:
   name: 'Cancel'

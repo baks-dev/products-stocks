@@ -37,7 +37,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** @see ProductStockTotal */
 final class ProductStockTotalEditDTO
 {
-
     /** ID  */
     #[Assert\NotBlank]
     private readonly ProductStockTotalUid $id;
@@ -72,6 +71,10 @@ final class ProductStockTotalEditDTO
 
     /** Место складирования */
     private ?string $storage = null;
+
+
+    private bool $recalculate = false;
+
 
 
     /**
@@ -164,4 +167,18 @@ final class ProductStockTotalEditDTO
         return $this->profile;
     }
 
+
+    /**
+     * Recalculate
+     */
+    public function isRecalculate(): bool
+    {
+        return $this->recalculate;
+    }
+
+    public function setRecalculate(bool $recalculate): self
+    {
+        $this->recalculate = $recalculate;
+        return $this;
+    }
 }

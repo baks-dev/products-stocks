@@ -6,6 +6,7 @@ page:
   new: 'Add receipt order'
   edit: 'Edit receipt order'
   total: 'Edit warehouse accounting'
+  storage: 'Change storage location'
   delete: 'Delete receipt order'
   warehouse: 'Receipts to warehouse'
   moving: 'Moving'

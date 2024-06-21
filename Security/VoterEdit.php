@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.security.voter')]
 final class VoterEdit implements VoterInterface
 {
-    /** Отправить закупку на склад */
+    /** Изменить состояние склада */
     public const VOTER = 'EDIT';
 
     public static function getVoter(): string

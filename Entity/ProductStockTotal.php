@@ -33,6 +33,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use BaksDev\Users\UsersTable\Entity\UsersTableDayInterface;
@@ -98,8 +99,7 @@ class ProductStockTotal extends EntityState
         ?ProductVariationConst $variation,
         ?ProductModificationConst $modification,
         ?string $storage
-    )
-    {
+    ) {
         $this->id = clone new ProductStockTotalUid();
 
         $this->product = $product;
@@ -187,7 +187,7 @@ class ProductStockTotal extends EntityState
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if($dto instanceof ProductStockTotalEditDTO)
+        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof ProductStockStorageEditDTO)
         {
             return parent::getDto($dto);
         }
@@ -197,7 +197,7 @@ class ProductStockTotal extends EntityState
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof self)
+        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof ProductStockStorageEditDTO || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
