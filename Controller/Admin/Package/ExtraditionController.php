@@ -52,15 +52,17 @@ final class ExtraditionController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         ExtraditionProductStockHandler $ExtraditionProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
-    ): Response
-    {
+    ): Response {
+
         $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
         $ProductStockEvent->getDto($ExtraditionProductStockDTO);
 
         // Форма заявки
         $form = $this->createForm(ExtraditionProductStockForm::class, $ExtraditionProductStockDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.package.extradition',
-                ['id' => $ExtraditionProductStockDTO->getEvent()]),
+            'action' => $this->generateUrl(
+                'products-stocks:admin.package.extradition',
+                ['id' => $ExtraditionProductStockDTO->getEvent()]
+            ),
         ]);
 
         $form->handleRequest($request);
@@ -73,7 +75,8 @@ final class ExtraditionController extends AbstractController
 
             if($ProductStocks instanceof ProductStock)
             {
-                $this->addFlash('page.package',
+                $this->addFlash(
+                    'page.package',
                     'success.extradition',
                     'products-stocks.admin'
                 );
@@ -85,7 +88,8 @@ final class ExtraditionController extends AbstractController
                 'page.package',
                 'danger.extradition',
                 'products-stocks.admin',
-                $ProductStocks);
+                $ProductStocks
+            );
 
             return $this->redirectToReferer();
         }

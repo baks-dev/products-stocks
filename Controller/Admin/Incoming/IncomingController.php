@@ -46,14 +46,11 @@ final class IncomingController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
         IncomingProductStockHandler $IncomingProductStockHandler,
-        //ProductsByProductStocksInterface $productDetail,
         ProductStockQuantityInterface $productStockQuantity
-    ): Response
-    {
+    ): Response {
 
-        $IncomingProductStockDTO = new IncomingProductStockDTO(); // $this->getProfileUid()
+        $IncomingProductStockDTO = new IncomingProductStockDTO();
         $ProductStockEvent->getDto($IncomingProductStockDTO);
-        //$IncomingProductStockDTO->setComment(null); // обнуляем комментарий
 
 
         // Форма добавления
@@ -63,14 +60,13 @@ final class IncomingController extends AbstractController
 
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
+        if( $form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {
             $this->refreshTokenForm($form);
 
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
-            $this->addFlash
-            (
+            $this->addFlash(
                 'page.orders',
                 $handle instanceof ProductStock ? 'success.accept' : 'danger.accept',
                 'products-stocks.admin',

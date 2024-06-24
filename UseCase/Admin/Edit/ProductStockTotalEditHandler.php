@@ -47,7 +47,10 @@ final readonly class ProductStockTotalEditHandler
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
 
-        $ProductStockTotal = $this->entityManager->getRepository(ProductStockTotal::class)->find($command->getId());
+        /** @var ProductStockTotal $ProductStockTotal */
+        $ProductStockTotal = $this->entityManager
+            ->getRepository(ProductStockTotal::class)
+            ->find($command->getId());
 
         if(
             !$ProductStockTotal || false === $this->validatorCollection->add($ProductStockTotal, context: [
@@ -79,7 +82,6 @@ final readonly class ProductStockTotalEditHandler
                 $command->getModification(),
             ), transport: 'products-stocks');
         }
-
 
         return $ProductStockTotal;
     }
