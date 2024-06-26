@@ -118,7 +118,9 @@ final class UpdateOrderStatusByCompletedProductStocks
         /**
          * Получаем событие заказа.
          */
-        $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($ProductStockEvent->getOrder());
+        $OrderEvent = $this->currentOrderEvent
+            ->order($ProductStockEvent->getOrder())
+            ->getCurrentOrderEvent();
 
         if(!$OrderEvent)
         {

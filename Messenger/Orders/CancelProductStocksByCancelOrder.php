@@ -26,22 +26,17 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
-use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventByStatusInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCanceled;
 use BaksDev\Orders\Order\UseCase\Admin\Canceled\OrderCanceledDTO;
-use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
-use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -90,7 +85,9 @@ final class CancelProductStocksByCancelOrder
 
 
         /** Получаем активное состояние заказа */
-        $OrderEvent = $this->currentOrderEvent->getCurrentOrderEvent($message->getId());
+        $OrderEvent = $this->currentOrderEvent
+            ->order($message->getId())
+            ->getCurrentOrderEvent();
 
         if(!$OrderEvent)
         {

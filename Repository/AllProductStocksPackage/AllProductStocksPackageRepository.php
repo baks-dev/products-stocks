@@ -84,7 +84,6 @@ use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
 {
-
     private PaginatorInterface $paginator;
 
     private DBALQueryBuilder $DBALQueryBuilder;
@@ -96,8 +95,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
-    )
-    {
+    ) {
         $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
