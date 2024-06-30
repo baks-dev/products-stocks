@@ -163,7 +163,12 @@
 
             </div>
 
+
             {# Контент > #}
+
+            {% set count = 0 %}
+
+            {% if query.data %}
 
             <div class="fw-bold mt-3 accordion" id="accordionPackage">
                 {% set card = null %}
@@ -424,6 +429,25 @@
         </div>
 
         {#  Контент #}
+
+        {% else %}
+            <div class="alert alert-warning m-3" role="alert">
+                Информация о заказах на упаковку отсутствует
+            </div>
+        {% endif %}
+
+        {% set updatedQuery = {
+            page: query.page,
+            next: query.next,
+            previous: query.previous,
+            pagination: query.pagination,
+            limit: query.limit,
+            id: query.id,
+            data: query.data,
+            path: query.path,
+            counter: count,
+            options: query.options
+        } %}
 
         {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 
