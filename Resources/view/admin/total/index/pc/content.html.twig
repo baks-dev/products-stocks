@@ -18,9 +18,7 @@
 
             <div class="w-100 d-flex align-items-center justify-content-end gap-3">
 
-
-                {# {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE_NEW') or is_granted('ROLE_ADMIN') %}
-
+                 {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE_NEW') or is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('products-stocks:admin.purchase.new') }}"
                        class="btn btn-danger modal-link disabled"
                        data-bs-toggle="modal"
@@ -28,7 +26,7 @@
                        title="Добавить закупку">
                         {{ 'Добавить закупку'|trans({}, 'messages') }}
                     </a>
-                {% endif %} #}
+                {% endif %}
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
@@ -175,10 +173,12 @@
                     <div class="d-flex justify-content-end align-items-center my-1 gap-3">
 
                         {% if filter.all is defined %}
-                            <div>
 
+                            <div>
                                 <div class="d-flex justify-content-around radio-buttons clearfix"
-                                     data-buttons="true" style='clear: both'>
+                                     data-buttons="true"
+                                     style='clear: both'
+                                >
                                     <label class="btn p-1 border-dotted rounded-3 w-100 {{ filter.all.vars.data ? 'active' }}">
                                         <div class="d-flex align-items-center">
                                             <div class="flex-grow-1">
@@ -194,8 +194,8 @@
                                         </div>
                                     </label>
                                 </div>
-
                             </div>
+
                         {% endif %}
 
                         <div class="w-25">
@@ -205,7 +205,6 @@
                         {% if filter.vars.data.category %}
 
                             {% if filter.offer is defined %}
-
                                 <div class="w-25">
                                     {{ form_widget(filter.offer, { placeholder: filter.offer.vars.label~' ...' , attr: { 'data-select' : 'select2', class: 'mb-0' } }) }}
                                 </div>
@@ -301,84 +300,77 @@
 
             </div>
 
+
             {% if query.data %}
 
                 <table class="table table-striped table-borderless"
                        style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
-                    <thead>
-                    <tr>
 
-                        <th>#</th>
-                        <th class="text-center">Категория</th>
-                        <th class="w-75">Продукция</th>
-                        <th>Склад</th>
-
-                        <th class="text-center">Наличие</th>
-                        <th class="w-50">Место</th>
-
-                        <th class="text-center">Резерв</th>
-                        <th class="text-center">Доступно</th>
-
-                    </tr>
-                    </thead>
                     <tbody>
 
-                    {% set exist = 0 %}
-                    {% set reserve = 0 %}
-                    {% set access = 0 %}
-
-
-
                     {% set name = null %}
+                    {% set storage_count = 0 %}
                     {% set product_exist = 0 %}
                     {% set product_reserve = 0 %}
+                    {% set product_group = 0 %}
 
 
                     {% for item in query.data %}
 
-                        {% if name != item.product_name %}
+                        {% if product_group != item.product_article %}
 
-                            {% if name is not null %}
-                                {# Остатки указанной продукции #}
+                            {# Общие остатки указанной продукции #}
+                            {% if storage_count > 1 %}
                                 {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
-
-                                {% set product_exist = 0 %}
-                                {% set product_reserve = 0 %}
-
                             {% endif %}
 
+                            {% set storage_count = 0 %}
+                            {% set product_exist = 0 %}
+                            {% set product_reserve = 0 %}
+                            {% set product_group = item.product_article %}
 
+                            {# Модель #}
+                            {% if name != item.product_name %}
 
-                            {% set name = item.product_name %}
+                                {% set name = item.product_name %}
 
-                            <tr>
-                                <th colspan="8">
+                                <tr>
+                                    <th colspan="8">
                                     <span class="badge text-bg-primary">
                                         {{ item.product_name }}
                                     </span>
+                                    </th>
+                                </tr>
 
-                                </th>
+                            {% endif %}
+
+                            {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+
+                            <tr>
+                                <th>#</th>
+                                <th class="w-100">Склад</th>
+
+                                <th class="text-center">Наличие</th>
+                                <th class="">Место</th>
+
+                                <th class="text-center">Резерв</th>
+                                <th class="text-center w-100">Доступно</th>
                             </tr>
+
                         {% endif %}
 
-                        {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
-
-
+                        {% set storage_count = storage_count + 1 %}
                         {% set product_exist = product_exist + item.stock_total %}
                         {% set product_reserve = product_reserve + item.stock_reserve %}
 
-
-                        {% set exist = exist + item.stock_total %}
-                        {% set reserve = reserve + item.stock_reserve %}
+                        {{ include(_self|replace({ "content.html.twig": "storage.html.twig" })) }}
 
                     {% endfor %}
 
-
-                    {# Остатки указанной продукции #}
-                    {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
-
-                    {% set product_exist = 0 %}
-                    {% set product_reserve = 0 %}
+                    {# Общие остатки указанной продукции #}
+                    {% if storage_count > 1 %}
+                        {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
+                    {% endif %}
 
                     </tbody>
 

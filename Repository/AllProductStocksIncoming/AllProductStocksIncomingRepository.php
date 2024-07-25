@@ -144,7 +144,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 ProductStock::class,
                 'stock',
                 'stock.event = event.id'
-
             );
 
 

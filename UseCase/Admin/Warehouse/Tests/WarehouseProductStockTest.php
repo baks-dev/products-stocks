@@ -53,12 +53,10 @@ final class WarehouseProductStockTest extends KernelTestCase
      */
     public function testUseCase(): void
     {
-
         /** @var ProductStockStatusCollection $ProductStockStatusCollection */
 
         $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
         $ProductStockStatusCollection->cases();
-
 
         /** @var CurrentProductStocksInterface $CurrentProductStocksInterface */
         $CurrentProductStocksInterface = self::getContainer()->get(CurrentProductStocksInterface::class);
