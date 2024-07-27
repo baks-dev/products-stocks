@@ -44,12 +44,13 @@ final class IndexController extends AbstractController
         Request $request,
         AllProductStocksWarehouseInterface $allPurchase,
         int $page = 0
-    ): Response
-    {
+    ): Response {
 
         // Поиск
         $search = new SearchDTO($request);
-        $searchForm = $this->createForm(SearchForm::class, $search,
+        $searchForm = $this->createForm(
+            SearchForm::class,
+            $search,
             ['action' => $this->generateUrl('products-stocks:admin.warehouse.index')]
         );
         $searchForm->handleRequest($request);

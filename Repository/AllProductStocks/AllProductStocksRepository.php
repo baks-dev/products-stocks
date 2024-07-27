@@ -49,8 +49,10 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
@@ -60,7 +62,6 @@ use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
 {
-
     private ?int $limit = null;
 
     private PaginatorInterface $paginator;
@@ -74,9 +75,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
-
-    )
-    {
+    ) {
         $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
 
@@ -107,8 +106,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     public function fetchAllProductStocksAssociative(
         UserUid $user,
         UserProfileUid $profile,
-    ): PaginatorInterface
-    {
+    ): PaginatorInterface {
         /* */
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -431,6 +429,30 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             );
 
 
+        if($this->filter->getProperty())
+        {
+            $filterProperty = null;
+
+            /** @var ProductFilterPropertyDTO $property */
+            foreach($this->filter->getProperty() as $property)
+            {
+                if($property->getValue())
+                {
+                    $filterProperty = ['(product_property.field = :'.$property->getType().'_const AND product_property.value = :'.$property->getType().'_value )'];
+                    $dbal->setParameter($property->getType().'_const', $property->getConst());
+                    $dbal->setParameter($property->getType().'_value', $property->getValue());
+                }
+            }
+
+            $dbal->join(
+                'product',
+                ProductProperty::class,
+                'product_property',
+                'product_property.event = product.event '.($filterProperty ? ' AND '.implode(' AND ', $filterProperty) : '')
+            );
+        }
+
+
         // Поиск
         if($this->search?->getQuery())
         {
@@ -500,7 +522,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         $dbal->addOrderBy('product_offer.value');
         $dbal->addOrderBy('product_variation.value');
         $dbal->addOrderBy('product_variation.value');
-
 
 
         //$dbal->addOrderBy('stock_product.total');

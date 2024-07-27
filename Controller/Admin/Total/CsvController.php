@@ -24,14 +24,10 @@
 namespace BaksDev\Products\Stocks\Controller\Admin\Total;
 
 use BaksDev\Core\Controller\AbstractController;
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Twig\CallTwigFuncExtension;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
-use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterDTO;
-use BaksDev\Products\Stocks\Forms\WarehouseFilter\Admin\ProductsStocksFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,8 +48,8 @@ final class CsvController extends AbstractController
         Request $request,
         AllProductStocksInterface $allProductStocks,
         Environment $environment
-    ): Response
-    {
+    ): Response {
+
         /**
          * Фильтр продукции по ТП
          */
@@ -73,14 +69,14 @@ final class CsvController extends AbstractController
 
         if(empty($query->getData()))
         {
-            return new Response();
+            return $this->redirectToReferer();
         }
 
         $data = $query->getData();
 
         $call = $environment->getExtension(CallTwigFuncExtension::class);
 
-        $response = new StreamedResponse(function() use ($call, $data, $environment) {
+        $response = new StreamedResponse(function () use ($call, $data, $environment) {
 
             $handle = fopen('php://output', 'w+');
 

@@ -52,8 +52,10 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
@@ -79,8 +81,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
         PaginatorInterface $paginator,
-    )
-    {
+    ) {
         $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
@@ -133,7 +134,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 ProductStock::class,
                 'stock',
                 'stock.event = event.id'
-
             );
 
 
@@ -513,7 +513,31 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
                 (total.modification IS NULL OR total.modification = stock_product.modification) AND
                 total.total > 0
-            ');
+            '
+            );
+
+        if($this->filter->getProperty())
+        {
+            $filterProperty = null;
+
+            /** @var ProductFilterPropertyDTO $property */
+            foreach($this->filter->getProperty() as $property)
+            {
+                if($property->getValue())
+                {
+                    $filterProperty = ['(product_property.field = :'.$property->getType().'_const AND product_property.value = :'.$property->getType().'_value )'];
+                    $dbal->setParameter($property->getType().'_const', $property->getConst());
+                    $dbal->setParameter($property->getType().'_value', $property->getValue());
+                }
+            }
+
+            $dbal->join(
+                'product',
+                ProductProperty::class,
+                'product_property',
+                'product_property.event = product.event '.($filterProperty ? ' AND '.implode(' AND ', $filterProperty) : '')
+            );
+        }
 
 
         // Поиск
