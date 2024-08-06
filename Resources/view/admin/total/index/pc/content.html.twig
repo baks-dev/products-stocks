@@ -224,7 +224,9 @@
                             {% if name != item.product_name %}
 
                                 {% set name = item.product_name %}
-
+                                <tr>
+                                    <td style="background-color: unset; box-shadow: unset;">&nbsp;</td>
+                                </tr>
                                 <tr>
                                     <th colspan="8">
                                     <span class="badge text-bg-primary">
@@ -237,15 +239,16 @@
 
                             {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
 
-                            <tr>
-                                <th>#</th>
-                                <th class="w-100">Склад</th>
+                            <tr class="">
+                                <th class="small py-0">#</th>
+                                <th class="text-muted small py-0">Склад</th>
+                                <th class="w-100 py-0">&nbsp;</th>
 
-                                <th class="text-center">Наличие</th>
-                                <th class="">Место</th>
+                                <th class="text-center text-muted small py-0">Наличие</th>
+                                <th class="text-center small text-muted py-0">Место</th>
 
-                                <th class="text-center">Резерв</th>
-                                <th class="text-center w-100">Доступно</th>
+                                <th class="text-center text-muted small py-0">Резерв</th>
+                                <th class="text-center w-100 text-muted small py-0">Доступно</th>
                             </tr>
 
                         {% endif %}

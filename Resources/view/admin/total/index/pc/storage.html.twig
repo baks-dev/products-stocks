@@ -10,6 +10,7 @@
         {% endif %}
     </td>
 
+
     {#<td class="text-center">
         <a href="{{ path('products-product:user.catalog.category', {
             category: item.category_url
@@ -113,11 +114,15 @@
         </div>
     </td>
 
+    <td class="text-nowrap">
+        &nbsp;
+    </td>
+
     <td class="text-center">
         {{ item.stock_total }}
     </td>
 
-    <td class="">
+    <td class="text-center">
         {{ item.stock_storage ?: '-' }}
     </td>
 

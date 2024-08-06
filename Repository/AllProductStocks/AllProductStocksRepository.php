@@ -522,7 +522,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
         $dbal->addOrderBy('product_offer.value');
         $dbal->addOrderBy('product_variation.value');
-        $dbal->addOrderBy('product_variation.value');
+        $dbal->addOrderBy('product_modification.value');
         $dbal->addOrderBy('stock_product.total');
 
         if($this->limit)
