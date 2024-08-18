@@ -149,7 +149,7 @@ final class SubReserveProductStocksTotalByOrderComplete
         $this->logger->info(
             'Снимаем резерв и остаток на складе при выполненном заказа',
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'total' => $product->getTotal(),
                 'profile' => (string) $profile,
                 'product' => (string) $product->getProduct(),

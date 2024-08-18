@@ -128,7 +128,7 @@ final class AddQuantityProductByIncomingStock
     public function changeTotal(ProductStockProduct $product): void
     {
         $context = [
-            __FILE__.':'.__LINE__,
+            self::class.':'.__LINE__,
             'total' => $product->getTotal(),
             'ProductUid' => (string) $product->getProduct(),
             'ProductStockEventUid' => (string) $product->getEvent()->getId(),

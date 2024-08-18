@@ -32,15 +32,9 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 
-
 final class ProductStocksByOrderRepository implements ProductStocksByOrderInterface
 {
-    private ORMQueryBuilder $ORMQueryBuilder;
-
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
-    {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
+    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
     /**
      * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа

@@ -34,23 +34,21 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 
-
 final class ProductStocksTotalStorageRepository implements ProductStocksTotalStorageInterface
 {
-    private ORMQueryBuilder $ORMQueryBuilder;
-
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
-    {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
-
     private UserProfileUid|string $profile;
+
     private ProductUid|string $product;
 
     private ProductOfferConst|string|null $offer = null;
+
     private ProductVariationConst|string|null $variation = null;
+
     private ProductModificationConst|string|null $modification = null;
+
     private ?string $storage = null;
+
+    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
     public function profile(UserProfileUid|string $profile): self
     {

@@ -134,7 +134,7 @@ final class CancelProductStocksByCancelOrder
             }
 
             $this->logger->critical('Ошибка отмены складской заявки', [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'ProductStockEventUid' => (string) $ProductStockEvent->getId(),
                 'OrderUid' => (string) $message->getId()
             ]);

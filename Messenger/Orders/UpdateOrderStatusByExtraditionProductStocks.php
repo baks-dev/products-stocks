@@ -144,7 +144,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         $this->logger->info(
             'Обновили статус заказа на Extradition «Готов к выдаче»',
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'order' => (string) $ProductStockEvent->getOrder(),
                 'profile' => (string) $ProductStockEvent->getProfile()
             ]

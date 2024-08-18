@@ -25,17 +25,15 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Controller\Admin;
 
-
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
-use BaksDev\Manufacture\Part\Entity\ManufacturePart;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use chillerlan\QRCode\QRCode;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK')]
@@ -49,8 +47,7 @@ final class QrcodeController extends AbstractController
         Request $request,
         #[MapEntity] ProductStock $ProductStock,
         ?string $number = null
-    ): Response
-    {
+    ): Response {
         $data = sprintf('%s', $ProductStock->getId());
 
         return $this->render(

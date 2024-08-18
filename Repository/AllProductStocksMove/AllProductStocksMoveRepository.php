@@ -25,20 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
 
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-
-//use BaksDev\Products\Category\Entity as CategoryEntity;
-//use BaksDev\Products\Product\Entity as ProductEntity;
-//use BaksDev\Products\Stocks\Entity as ProductStockEntity;
+use BaksDev\Products\Category\Entity\CategoryProduct;
 use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
-use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
 use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Category\ProductCategory as ProductCategoryRoot;
@@ -62,11 +56,7 @@ use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Products\Stocks\Forms\WarehouseFilter\ProductsStocksFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-
-//use BaksDev\Users\Profile\UserProfile\Entity as UserProfileEntity;
-use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -74,17 +64,10 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
 {
-    private PaginatorInterface $paginator;
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    ) {
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
     private ?ProductFilterDTO $filter = null;
 

@@ -33,15 +33,9 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use InvalidArgumentException;
 
-
 final class ProductStocksTotalAccessRepository implements ProductStocksTotalAccessInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     private ProductUid $product;
 

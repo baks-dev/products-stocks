@@ -99,7 +99,7 @@ final class AddReserveProductStocksTotalByMove
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на перемещение не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            $this->logger->warning('Заявка на перемещение не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
@@ -112,7 +112,7 @@ final class AddReserveProductStocksTotalByMove
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на перемещение',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'total' => $product->getTotal(),
                     'number' => $ProductStockEvent->getNumber(),
                 ]

@@ -104,7 +104,7 @@ final class UpdateOrderStatusByCompletedProductStocks
             $this->logger
                 ->warning(
                     'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
-                    [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+                    [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
                 );
 
             return;
@@ -112,7 +112,7 @@ final class UpdateOrderStatusByCompletedProductStocks
 
         $this->logger->info(
             'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
-            [__FILE__.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+            [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
         );
 
         /**
@@ -150,7 +150,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         $this->logger->info(
             'Обновили статус заказа на Completed «Выдан по месту назначения»',
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'OrderUid' => (string) $ProductStockEvent->getOrder(),
                 'UserProfileUid' => (string) $ProductStockEvent->getProfile()
             ]

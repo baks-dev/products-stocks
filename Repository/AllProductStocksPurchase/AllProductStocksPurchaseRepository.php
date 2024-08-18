@@ -28,15 +28,11 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPurchase;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-
-//use BaksDev\Products\Category\Entity as CategoryEntity;
-//use BaksDev\Products\Product\Entity as ProductEntity;
-//use BaksDev\Products\Stocks\Entity as ProductStockEntity;
 use BaksDev\Products\Category\Entity\CategoryProduct;
 use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
@@ -64,18 +60,10 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksPurchaseRepository implements AllProductStocksPurchaseInterface
 {
-    private PaginatorInterface $paginator;
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    )
-    {
-
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
     public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
     {

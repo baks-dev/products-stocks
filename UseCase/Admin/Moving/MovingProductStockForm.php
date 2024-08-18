@@ -39,7 +39,7 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileCh
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -86,7 +86,7 @@ final class MovingProductStockForm extends AbstractType
         ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
         ProductWarehouseChoiceInterface $productWarehouseChoice,
         TokenStorageInterface $tokenStorage,
-        #[TaggedIterator('baks.reference.choice')] iterable $reference,
+        #[AutowireIterator('baks.reference.choice')] iterable $reference,
 
     )
     {

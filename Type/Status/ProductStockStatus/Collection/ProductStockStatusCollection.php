@@ -27,7 +27,7 @@ namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection;
 
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use InvalidArgumentException;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 final class ProductStockStatusCollection
 {
@@ -36,7 +36,7 @@ final class ProductStockStatusCollection
 
 
     public function __construct(
-        #[TaggedIterator('baks.product.stock.status')] iterable $status,
+        #[AutowireIterator('baks.product.stock.status')] iterable $status,
     )
     {
         $this->status = $status;

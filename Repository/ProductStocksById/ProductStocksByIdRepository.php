@@ -32,30 +32,15 @@ use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductStocksByIdRepository implements ProductStocksByIdInterface
 {
-    //    private EntityManagerInterface $entityManager;
-    //
-    //    public function __construct(EntityManagerInterface $entityManager)
-    //    {
-    //        $this->entityManager = $entityManager;
-    //    }
-
-
-    private ORMQueryBuilder $ORMQueryBuilder;
-
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
-    {
-
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
+    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
 
     private function builder()
@@ -93,8 +78,7 @@ final class ProductStocksByIdRepository implements ProductStocksByIdInterface
     public function getProductsByProductStocksStatus(
         ProductStockUid $id,
         ProductStockStatus|ProductStockStatusInterface|string $status
-    ): ?array
-    {
+    ): ?array {
         //        if(is_string($status))
         //        {
         //            $status = new $status;

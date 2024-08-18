@@ -25,21 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Controller\Admin;
 
-
 use BaksDev\Core\Controller\AbstractController;
-use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
-use BaksDev\Delivery\Entity\Delivery;
-use BaksDev\Delivery\Entity\Event\DeliveryEvent;
-use BaksDev\Delivery\UseCase\Admin\NewEdit\DeliveryDTO;
-use BaksDev\Delivery\UseCase\Admin\NewEdit\DeliveryForm;
-use BaksDev\Delivery\UseCase\Admin\NewEdit\DeliveryHandler;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsStocksAction\ProductsStocksActionInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
 //#[RoleSecurity('ROLE_PRODUCTS_STOCKS_EDIT')]
@@ -51,8 +44,7 @@ final class ProductsStocksAction extends AbstractController
         #[MapEntity] ProductStock $ProductStock,
         ProductsStocksActionInterface $productsStocksAction
         //ProductsStocksHandler $ProductsStocksHandler,
-    ): Response
-    {
+    ): Response {
         return $this->render([
             'actions' => $productsStocksAction->main($ProductStock)->findAll()
         ]);

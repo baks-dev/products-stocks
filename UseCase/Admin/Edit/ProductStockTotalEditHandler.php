@@ -54,7 +54,7 @@ final readonly class ProductStockTotalEditHandler
 
         if(
             !$ProductStockTotal || false === $this->validatorCollection->add($ProductStockTotal, context: [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'class' => ProductStockTotal::class,
                 'id' => $command->getId(),
             ])

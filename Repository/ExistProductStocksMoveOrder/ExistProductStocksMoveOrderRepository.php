@@ -29,19 +29,10 @@ use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity as EntityProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use Doctrine\DBAL\Connection;
 
 final class ExistProductStocksMoveOrderRepository implements ExistProductStocksMoveOrderInterface
 {
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод проверяет, имеется ли заявка на перемещение по заказу

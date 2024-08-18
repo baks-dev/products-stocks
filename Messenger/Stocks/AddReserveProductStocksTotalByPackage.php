@@ -101,7 +101,7 @@ final class AddReserveProductStocksTotalByPackage
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на упаковку не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            $this->logger->warning('Заявка на упаковку не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
@@ -115,7 +115,7 @@ final class AddReserveProductStocksTotalByPackage
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на упаковку',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'event' => (string) $message->getEvent(),
                     'profile' => (string) $UserProfileUid,
                     'product' => (string) $product->getProduct(),

@@ -121,7 +121,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на приход не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            $this->logger->warning('Заявка на приход не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
@@ -146,14 +146,16 @@ final class AddQuantityProductStocksTotalByIncomingStock
             if(!$ProductStockTotal)
             {
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
-                $User = $this->userByUserProfile->findUserByProfile($UserProfileUid);
+                $User = $this->userByUserProfile
+                    ->withProfile($UserProfileUid)
+                    ->findUser();
 
                 if(!$User)
                 {
                     $this->logger->error(
                         'Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
                         [
-                            __FILE__.':'.__LINE__,
+                            self::class.':'.__LINE__,
                             'profile' => (string) $UserProfileUid,
                         ]
                     );
@@ -178,7 +180,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
                 $this->logger->info(
                     'Место складирования не найдено! Создали новое место для указанной продукции',
                     [
-                        __FILE__.':'.__LINE__,
+                        self::class.':'.__LINE__,
                         'storage' => $product->getStorage(),
                         'profile' => (string) $UserProfileUid,
                         'product' => (string) $product->getProduct(),
@@ -191,7 +193,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
 
             $this->logger->info(
                 sprintf('Добавляем приход продукции по заявке %s', $ProductStockEvent->getNumber()),
-                [__FILE__.':'.__LINE__]
+                [self::class.':'.__LINE__]
             );
 
             $this->handle($ProductStockTotal, $product->getTotal());
@@ -217,7 +219,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
             $this->logger->critical(
                 'Ошибка при обновлении складских остатков',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]
             );
@@ -228,7 +230,7 @@ final class AddQuantityProductStocksTotalByIncomingStock
         $this->logger->info(
             'Добавили приход продукции на склад',
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]
         );

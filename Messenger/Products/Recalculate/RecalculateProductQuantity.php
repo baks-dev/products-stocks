@@ -141,7 +141,7 @@ final class RecalculateProductQuantity
             $this->logger->info(
                 'Складской учет: Обновили общее количество продукции в карточке',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'total' => $ProductStocksTotal,
                     'product' => (string) $product->getProduct(),
                     'offer' => (string) $product->getOffer(),

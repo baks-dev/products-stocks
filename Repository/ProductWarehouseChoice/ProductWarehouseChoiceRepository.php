@@ -25,11 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductWarehouseChoice;
 
-use BaksDev\Contacts\Region\Entity as ContactsRegionEntity;
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -39,27 +35,22 @@ use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
-use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use InvalidArgumentException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?UserUid $user = null;
+
     private ?ProductUid $product = null;
+
     private ?ProductOfferConst $offer = null;
+
     private ?ProductVariationConst $variation = null;
+
     private ?ProductModificationConst $modification = null;
 
-
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
-
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function user(UserUid|string $user): self
     {

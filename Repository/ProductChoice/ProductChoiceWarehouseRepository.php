@@ -28,30 +28,19 @@ namespace BaksDev\Products\Stocks\Repository\ProductChoice;
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 
 final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseInterface
 {
-
-    private ORMQueryBuilder $ORMQueryBuilder;
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        ORMQueryBuilder $ORMQueryBuilder
-    )
-    {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
-
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly ORMQueryBuilder $ORMQueryBuilder
+    ) {}
 
     /**
      * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе

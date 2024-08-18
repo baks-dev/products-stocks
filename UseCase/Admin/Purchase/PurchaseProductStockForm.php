@@ -26,7 +26,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
@@ -58,7 +58,7 @@ final class PurchaseProductStockForm extends AbstractType
         ProductOfferChoiceInterface $productOfferChoice,
         ProductVariationChoiceInterface $productVariationChoice,
         ProductModificationChoiceInterface $modificationChoice,
-        #[TaggedIterator('baks.reference.choice')] iterable $reference,
+        #[AutowireIterator('baks.reference.choice')] iterable $reference,
     )
     {
         // $this->warehouseChoice = $warehouseChoice;

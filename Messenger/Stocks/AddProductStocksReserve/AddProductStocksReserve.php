@@ -73,7 +73,7 @@ final class AddProductStocksReserve
             $this->logger->critical(
                 'Не найдено продукции на складе для резервирования',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
                     'product' => (string) $message->getProduct(),
                     'offer' => (string) $message->getOffer(),
@@ -102,7 +102,7 @@ final class AddProductStocksReserve
             $this->logger->critical(
                 'Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]
             );
@@ -113,7 +113,7 @@ final class AddProductStocksReserve
         $this->logger->info(
             sprintf('%s : Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]
         );

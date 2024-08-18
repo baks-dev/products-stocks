@@ -35,15 +35,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 
 final class ExistProductStocksStatusRepository implements ExistProductStocksStatusInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
-
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод проверяет, имеется ли другое событие с указанным статусом
@@ -52,8 +44,7 @@ final class ExistProductStocksStatusRepository implements ExistProductStocksStat
         ProductStockUid|string $stock,
         ProductStockEventUid|string $event,
         ProductStockStatus|ProductStockStatusInterface|string $status
-    ): bool
-    {
+    ): bool {
         if(is_string($stock))
         {
             $stock = new ProductStockUid($stock);

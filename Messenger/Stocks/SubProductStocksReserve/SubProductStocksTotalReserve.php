@@ -73,7 +73,7 @@ final class SubProductStocksTotalReserve
             $this->logger->critical(
                 'Не найдено продукции на складе для списания, либо нет резерва на указанную продукцию',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
                     'product' => (string) $message->getProduct(),
                     'offer' => (string) $message->getOffer(),
@@ -101,7 +101,7 @@ final class SubProductStocksTotalReserve
             $this->logger->critical(
                 'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]
             );
@@ -112,7 +112,7 @@ final class SubProductStocksTotalReserve
         $this->logger->info(
             sprintf('Место %s: Сняли резерв продукции на складе на одну единицу', $ProductStockTotal->getStorage()),
             [
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]
         );

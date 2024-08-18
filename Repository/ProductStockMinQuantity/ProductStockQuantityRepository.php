@@ -36,8 +36,6 @@ use InvalidArgumentException;
 
 final class ProductStockQuantityRepository implements ProductStockQuantityInterface
 {
-    private ORMQueryBuilder $ORMQueryBuilder;
-
     private ?UserProfileUid $profile = null;
 
     private ?ProductUid $product = null;
@@ -48,10 +46,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
     private ?ProductModificationConst $modification = null;
 
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
-    {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
+    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
 
     public function profile(UserProfileUid $profile): self

@@ -31,21 +31,13 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Doctrine\DBAL\ParameterType;
 use InvalidArgumentException;
 
-
 final class AddProductStockRepository implements AddProductStockInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?int $total = null;
 
     private ?int $reserve = null;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /** Указываем количество снятия резерва */
     public function reserve(?int $reserve): self

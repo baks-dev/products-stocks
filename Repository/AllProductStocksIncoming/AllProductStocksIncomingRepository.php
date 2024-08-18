@@ -65,17 +65,10 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksIncomingRepository implements AllProductStocksIncomingInterface
 {
-    private PaginatorInterface $paginator;
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    ) {
-
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
     private ?ProductFilterDTO $filter = null;
 
@@ -98,32 +91,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
     public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
-
-        //        // ProductStock
-        //        $dbal
-        //            ->select('stock.id')
-        //            ->addSelect('stock.event')
-        //            ->from(ProductStock::class, 'stock');
-        //
-        //        // ProductStockEvent
-        //        // $dbal->addSelect('event.total');
-        //        $dbal
-        //            ->addSelect('event.comment')
-        //            ->addSelect('event.status')
-        //            ->addSelect('event.number')
-        //            ->join(
-        //                'stock',
-        //                ProductStockEvent::class,
-        //                'event',
-        //                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-        //            )
-        //            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-        //            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
-        //
-        //
-        //
-        //
-
 
         $dbal
             ->addSelect('event.main AS id')

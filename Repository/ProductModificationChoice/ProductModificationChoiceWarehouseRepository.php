@@ -43,19 +43,13 @@ use InvalidArgumentException;
 
 final class ProductModificationChoiceWarehouseRepository implements ProductModificationChoiceWarehouseInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
 
     private ?UserUid $user = null;
     private ?ProductUid $product = null;
     private ?ProductOfferConst $offer = null;
     private ?ProductVariationConst $variation = null;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
 
     public function user(UserUid|string $user): self

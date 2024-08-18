@@ -25,8 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductsStocksAction;
 
-use BaksDev\Auth\Email\Entity\Account;
-use BaksDev\Auth\Email\Entity\Event\AccountEvent;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
@@ -39,16 +37,9 @@ use InvalidArgumentException;
 
 final class ProductsStocksActionRepository implements ProductsStocksActionInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?ProductStockUid $main = null;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function main(ProductStock|ProductStockUid|string $main): self
     {

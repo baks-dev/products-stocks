@@ -26,9 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductOfferChoice;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
-
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
@@ -39,22 +36,14 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 use InvalidArgumentException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceWarehouseInterface
 {
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?UserUid $user = null;
+
     private ?ProductUid $product = null;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function user(UserUid|string $user): self
     {

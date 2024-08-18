@@ -32,12 +32,7 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 
 final class CurrentProductStocksRepository implements CurrentProductStocksInterface
 {
-    private ORMQueryBuilder $ORMQueryBuilder;
-
-    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
-    {
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
+    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
     /**
      * Метод возвращает активное событие

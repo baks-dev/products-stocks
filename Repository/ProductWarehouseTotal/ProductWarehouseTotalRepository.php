@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductWarehouseTotal;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -33,17 +32,10 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
-
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод возвращает доступное количество данной продукции на указанном складе
@@ -54,8 +46,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ): int
-    {
+    ): int {
 
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
@@ -111,8 +102,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ): int
-    {
+    ): int {
 
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
@@ -168,8 +158,7 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
         ?ProductOfferConst $offer = null,
         ?ProductVariationConst $variation = null,
         ?ProductModificationConst $modification = null
-    ): int
-    {
+    ): int {
 
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 

@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
 
-
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
@@ -33,16 +32,14 @@ use BaksDev\Delivery\Entity\Event\DeliveryEvent;
 use BaksDev\Delivery\Entity\Trans\DeliveryTrans;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
-use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
-use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\CategoryProduct;
 use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
@@ -63,33 +60,25 @@ use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Entity\Value\UserProfileValue;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksPickupRepository implements AllProductStocksPickupInterface
 {
-    private PaginatorInterface $paginator;
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?SearchDTO $search = null;
 
     private ?ProductStockPickupFilterInterface $filter = null;
 
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    )
-    {
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
     public function search(SearchDTO $search): self
     {
@@ -493,13 +482,12 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
 
         if($this->filter !== null)
         {
-            if($this->filter->getDate())
+            if($this->filter->getDate() instanceof DateTimeImmutable)
             {
                 $delivery_condition .= ' AND order_delivery.delivery_date >= :delivery_date_start AND order_delivery.delivery_date < :delivery_date_end';
                 $dbal->setParameter('delivery_date_start', $this->filter->getDate(), Types::DATE_IMMUTABLE);
                 $dbal->setParameter('delivery_date_end', $this->filter->getDate()->modify('+1 day'), Types::DATE_IMMUTABLE);
             }
-
 
             if($this->filter->getDelivery())
             {

@@ -103,7 +103,7 @@ final class SubReserveProductStockTotalByCancel
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на отмену не имеет продукции в коллекции', [__FILE__.':'.__LINE__]);
+            $this->logger->warning('Заявка на отмену не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
@@ -116,7 +116,7 @@ final class SubReserveProductStockTotalByCancel
             $this->logger->info(
                 'Отменяем резерв на складе при отмене складской заявки',
                 [
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                     'number' => $ProductStockEvent->getNumber(),
                     'total' => $product->getTotal(),
                     'ProductStockEventUid' => (string) $message->getEvent(),
