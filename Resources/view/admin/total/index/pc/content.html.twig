@@ -206,7 +206,16 @@
                     {% set product_reserve = 0 %}
                     {% set product_group = 0 %}
 
+                    {% set total = 0 %}
+                    {% set total_reserve = 0 %}
+
+
                     {% for item in query.data %}
+
+                        {% set total = total + item.stock_total %}
+                        {% set total_reserve = total_reserve + item.stock_reserve %}
+
+
 
                         {% if product_group != item.product_article %}
 
@@ -223,15 +232,18 @@
                             {# Модель #}
                             {% if name != item.product_name %}
 
+                                {% if name is not null %}
+                                    <tr>
+                                        <td class="p-0" style="background-color: unset; box-shadow: unset;">&nbsp;</td>
+                                    </tr>
+                                {% endif %}
+
                                 {% set name = item.product_name %}
                                 <tr>
-                                    <td style="background-color: unset; box-shadow: unset;">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <th colspan="8">
-                                    <span class="badge text-bg-primary">
-                                        {{ item.product_name }}
-                                    </span>
+                                    <th colspan="8" class="p-0">
+                                        <span class="badge text-bg-primary">
+                                            {{ item.product_name }}
+                                        </span>
                                     </th>
                                 </tr>
 
@@ -251,6 +263,8 @@
                                 <th class="text-center w-100 text-muted small py-0">Доступно</th>
                             </tr>
 
+
+
                         {% endif %}
 
                         {% set storage_count = storage_count + 1 %}
@@ -259,20 +273,66 @@
 
                         {{ include(_self|replace({ "content.html.twig": "storage.html.twig" })) }}
 
+
+
+
+
                     {% endfor %}
+
+
 
                     {# Общие остатки указанной продукции #}
                     {% if storage_count > 1 %}
                         {{ include(_self|replace({ "content.html.twig": "_totals.html.twig" })) }}
                     {% endif %}
-
                     </tbody>
+
+                    <thead>
+
+                    <tr class="">
+                        <th class="small py-0" colspan="3">&nbsp;</th>
+                        <th class="text-center text-muted small py-0">Наличие</th>
+                        <th class="text-center small text-muted py-0">&nbsp;</th>
+
+                        <th class="text-center text-muted small py-0">Резерв</th>
+                        <th class="text-center w-100 text-muted small py-0">Доступно</th>
+                    </tr>
+                    <tr class="">
+                        <th colspan="3">&nbsp;</th>
+                        <th class="text-center text-muted small py-0">
+                            <h6>
+                                    <span class="badge text-bg-primary">
+                                        {{ total }}
+                                    </span>
+                            </h6>
+                        </th>
+                        <th class="text-center text-muted small py-0">&nbsp;</th>
+                        <th class="text-center text-muted small py-0">
+                            {% if total_reserve %}
+                                <h6>
+                                        <span class="badge text-bg-danger">
+                                            {{ total_reserve }}
+                                        </span>
+                                </h6>
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </th>
+                        <th class="text-center w-100 text-muted small py-0">
+                            <h6>
+                                    <span class="badge text-bg-success">
+                                        {{ total - total_reserve }}
+                                    </span>
+                            </h6>
+                        </th>
+                    </tr>
+                    </thead>
 
                 </table>
 
             {% else %}
                 <div class="alert alert-warning m-3" role="alert">
-                    Информация о складских остатках отстутствует
+                    Информация о складских остатках отсутствует
                 </div>
             {% endif %}
 
