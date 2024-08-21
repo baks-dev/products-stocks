@@ -33,8 +33,7 @@ use DomainException;
 
 final class IncomingProductStockHandler extends AbstractHandler
 {
-
-    public function handle(IncomingProductStockDTO $command,): string|ProductStock
+    public function handle(IncomingProductStockDTO $command): string|ProductStock
     {
 
         /** Валидация DTO  */
@@ -61,10 +60,12 @@ final class IncomingProductStockHandler extends AbstractHandler
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */
-        $this->messageDispatch->dispatch(
-            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'products-stocks'
-        );
+        $this->messageDispatch
+            ->addClearCacheOther('products-product')
+            ->dispatch(
+                message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+                transport: 'products-stocks'
+            );
 
         return $this->main;
     }

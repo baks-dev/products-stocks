@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Cancel;
 
-
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
@@ -37,8 +36,7 @@ final class CancelProductStockHandler extends AbstractHandler
     /** @see ProductStock */
     public function handle(
         CancelProductStockDTO $command
-    ): string|ProductStock
-    {
+    ): string|ProductStock {
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
 
@@ -63,10 +61,12 @@ final class CancelProductStockHandler extends AbstractHandler
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */
-        $this->messageDispatch->dispatch(
-            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'product-stock'
-        );
+        $this->messageDispatch
+            ->addClearCacheOther('products-product')
+            ->dispatch(
+                message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+                transport: 'product-stock'
+            );
 
         return $this->main;
     }
