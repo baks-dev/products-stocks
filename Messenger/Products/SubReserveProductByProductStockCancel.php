@@ -85,18 +85,6 @@ final class SubReserveProductByProductStockCancel
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusCancel::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
 
         if(!$message->getLast())
         {
@@ -128,15 +116,32 @@ final class SubReserveProductByProductStockCancel
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $this->productStocks->getProductsCancelStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-            $this->entityManager->clear();
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
 
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
-            {
-                $this->changeReserve($product);
-            }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusCancel::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $this->entityManager->clear();
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+            $this->changeReserve($product);
         }
 
         $Deduplicator->save();

@@ -314,7 +314,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal
             ->addSelect('product.id as product_id')
             ->addSelect('product.event as product_event')
-            ->join(
+            ->leftJoin(
                 'stock_product',
                 Product::class,
                 'product',
@@ -322,7 +322,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
         // Product Event
-        $dbal->join(
+        $dbal->leftJoin(
             'product',
             ProductEvent::class,
             'product_event',
@@ -342,7 +342,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
-            ->join(
+            ->leftJoin(
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
@@ -558,6 +558,17 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
 
+        /*$dbal->addSelect("
+			COALESCE(
+                NULLIF(COUNT(product_offer), 0),
+                NULLIF(COUNT(product_variation), 0),
+                NULLIF(COUNT(product_modification), 0),
+                0
+            ) AS offer_count
+		");*/
+
+
+
         // Категория
         $dbal->leftJoin(
             'product_event',
@@ -591,11 +602,14 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             );
 
 
+
+
+
         // ОТВЕТСТВЕННЫЙ
 
         // UserProfile
         $dbal->addSelect('users_profile.event as users_profile_event');
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfile::class,
             'users_profile',
@@ -603,7 +617,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
@@ -611,7 +625,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         );
 
         // Event
-        $dbal->join(
+        $dbal->leftJoin(
             'users_profile',
             UserProfileEvent::class,
             'users_profile_event',
@@ -621,7 +635,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         // Personal
         $dbal->addSelect('users_profile_personal.username AS users_profile_username');
 
-        $dbal->join(
+        $dbal->leftJoin(
             'users_profile_event',
             UserProfilePersonal::class,
             'users_profile_personal',
@@ -638,7 +652,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         // Группа
 
 
-        //$dbal->addSelect('NULL AS group_name'); // Название группы
+
+
 
         /** Проверка перемещения по заказу */
         $dbalExist = $this->DBALQueryBuilder->createQueryBuilder(self::class);
@@ -752,6 +767,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
 
+
+        //dump($dbal->analyze());
 
         ///$dbal->addGroupBy('ord.ord');
         //$dbal->allGroupByExclude();
@@ -1244,6 +1261,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         //        $dbal->setMaxResults(24);
         //        dd($dbal->fetchAllAssociative());
         //        dd($this->paginator->fetchAllAssociative($dbal));
+
 
         return $dbal
             //->enableCache('products-stocks')

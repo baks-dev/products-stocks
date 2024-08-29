@@ -66,19 +66,6 @@ final class SubReserveProductStockTotalByCancel
     public function __invoke(ProductStockMessage $message): void
     {
 
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusCancel::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
-
         if($message->getLast() === null)
         {
             return;
@@ -103,7 +90,20 @@ final class SubReserveProductStockTotalByCancel
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на отмену не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusCancel::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
             return;
         }
 

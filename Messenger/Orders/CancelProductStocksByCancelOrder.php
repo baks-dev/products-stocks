@@ -29,7 +29,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCanceled;
-use BaksDev\Orders\Order\UseCase\Admin\Canceled\OrderCanceledDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Canceled\CanceledOrderDTO;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
@@ -71,18 +71,6 @@ final class CancelProductStocksByCancelOrder
 
     public function __invoke(OrderMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                OrderStatusCanceled::class
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
 
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent
@@ -100,11 +88,23 @@ final class CancelProductStocksByCancelOrder
             return;
         }
 
-
         /** Получаем все заявки по идентификатору заказа */
         $stocks = $this->productStocksByOrder->findByOrder($message->getId());
 
         if(empty($stocks))
+        {
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                OrderStatusCanceled::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
         {
             return;
         }
@@ -118,7 +118,7 @@ final class CancelProductStocksByCancelOrder
                 continue;
             }
 
-            $OrderCanceledDTO = new OrderCanceledDTO(new UserProfileUid());
+            $OrderCanceledDTO = new CanceledOrderDTO(new UserProfileUid());
             $OrderEvent->getDto($OrderCanceledDTO);
 
             $CancelProductStockDTO = new CancelProductStockDTO();

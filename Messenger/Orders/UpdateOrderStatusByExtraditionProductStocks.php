@@ -73,20 +73,6 @@ final class UpdateOrderStatusByExtraditionProductStocks
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusExtradition::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
-
         /**
          * Получаем статус заявки.
          */
@@ -119,6 +105,19 @@ final class UpdateOrderStatusByExtraditionProductStocks
             ->getCurrentOrderEvent();
 
         if(!$OrderEvent)
+        {
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusExtradition::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
         {
             return;
         }

@@ -54,6 +54,7 @@ use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
@@ -92,10 +93,12 @@ final class AllProductStocksRepository implements AllProductStocksInterface
      * Метод возвращает полное состояние складских остатков продукции
      */
     public function fetchAllProductStocksAssociative(
-        UserUid $user,
+        User|UserUid $user,
         UserProfileUid $profile,
     ): PaginatorInterface {
-        /* */
+
+        $user = $user instanceof User ? $user->getId() : $user;
+
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();

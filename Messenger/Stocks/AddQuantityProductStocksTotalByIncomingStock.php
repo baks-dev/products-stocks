@@ -80,18 +80,6 @@ final class AddQuantityProductStocksTotalByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusIncoming::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
 
         /** Получаем статус заявки */
         $ProductStockEvent = $this->entityManager
@@ -113,15 +101,26 @@ final class AddQuantityProductStocksTotalByIncomingStock
             return;
         }
 
-
-
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на приход не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusIncoming::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
             return;
         }
 

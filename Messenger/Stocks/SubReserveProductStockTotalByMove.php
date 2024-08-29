@@ -71,18 +71,6 @@ final class SubReserveProductStockTotalByMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusMoving::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
         if($message->getLast() === null)
         {
             return;
@@ -117,7 +105,20 @@ final class SubReserveProductStockTotalByMove
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на перемещение не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusMoving::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
             return;
         }
 

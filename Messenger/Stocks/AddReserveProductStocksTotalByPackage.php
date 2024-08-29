@@ -69,18 +69,6 @@ final class AddReserveProductStocksTotalByPackage
     public function __invoke(ProductStockMessage $message): void
     {
 
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusPackage::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
         $this->entityManager->clear();
 
         $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
@@ -101,10 +89,23 @@ final class AddReserveProductStocksTotalByPackage
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка на упаковку не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusPackage::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
 
         /** Идентификатор профиля, куда была отправлена заявка на упаковку */
         $UserProfileUid = $ProductStockEvent->getProfile();
@@ -114,16 +115,7 @@ final class AddReserveProductStocksTotalByPackage
         {
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на упаковку',
-                [
-                    self::class.':'.__LINE__,
-                    'event' => (string) $message->getEvent(),
-                    'profile' => (string) $UserProfileUid,
-                    'product' => (string) $product->getProduct(),
-                    'offer' => (string) $product->getOffer(),
-                    'variation' => (string) $product->getVariation(),
-                    'modification' => (string) $product->getModification(),
-                    'total' => $product->getTotal(),
-                ]
+                ['total' => $product->getTotal()]
             );
 
 

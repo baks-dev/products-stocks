@@ -34,50 +34,20 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class WarehouseProductStockForm extends AbstractType
 {
-    //    private WarehouseChoiceInterface $warehouseChoice;
-    //
-    //    public function __construct(
-    //        WarehouseChoiceInterface $warehouseChoice,
-    //    ) {
-    //        $this->warehouseChoice = $warehouseChoice;
-    //    }
-
-    private UserProfileChoiceInterface $userProfileChoice;
-
-    public function __construct(UserProfileChoiceInterface $userProfileChoice)
-    {
-        $this->userProfileChoice = $userProfileChoice;
-    }
-
+    public function __construct(private readonly UserProfileChoiceInterface $userProfileChoice) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Склад
-
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function(FormEvent $event): void {
+            function (FormEvent $event): void {
                 /** @var WarehouseProductStockDTO $data */
                 $data = $event->getData();
                 $form = $event->getForm();
 
-
-                //                /dd($data);
-
-                //                if($data->getDestination())
-                //                {
-                //                    //$form->add('warehouse', HiddenType::class);
-                //                    return;
-                //                }
-
-
                 /** Все профили пользователя */
-
                 $profiles = $this->userProfileChoice->getActiveUserProfile($data->getUsr());
-
-
-                /** Список всех активных складов */
-                //$warehouses = $this->warehouseChoice->fetchAllWarehouse();
 
                 if(count($profiles) === 1)
                 {
@@ -88,10 +58,10 @@ final class WarehouseProductStockForm extends AbstractType
                 $form
                     ->add('profile', ChoiceType::class, [
                         'choices' => $profiles,
-                        'choice_value' => function(?UserProfileUid $profile) {
+                        'choice_value' => function (?UserProfileUid $profile) {
                             return $profile?->getValue();
                         },
-                        'choice_label' => function(UserProfileUid $profile) {
+                        'choice_label' => function (UserProfileUid $profile) {
                             return $profile->getAttr();
                         },
 

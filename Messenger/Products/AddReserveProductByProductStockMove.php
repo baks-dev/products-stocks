@@ -82,17 +82,6 @@ final class AddReserveProductByProductStockMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusMoving::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
 
         $this->entityManager->clear();
 
@@ -114,15 +103,31 @@ final class AddReserveProductByProductStockMove
         // Получаем всю продукцию в ордере со статусом Moving (перемещение)
         $products = $this->productStocks->getProductsMovingStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-            $this->entityManager->clear();
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
 
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
-            {
-                $this->changeReserve($product);
-            }
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusMoving::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $this->entityManager->clear();
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+            $this->changeReserve($product);
         }
 
         $Deduplicator->save();

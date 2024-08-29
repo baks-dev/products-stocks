@@ -18,89 +18,165 @@
 
 /** Добавить лист закупки */
 
-var limit_NMrsJxDFr = 1000;
+//var limit_NMrsJxDFr = 1000;
+//
+//setTimeout(function init_xXgmjezHJ()
+//{
+//
+//    var object_product = document.getElementById('purchase_product_stock_form_preProduct');
+//
+//    if(object_product)
+//    {
+//
+//        object_product.addEventListener('change', changeObjectProduct, false);
+//
+//        let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
+//
+//        $addButtonStock.addEventListener('click', addProductPurchase, false);
+//
+//        /* Имя формы */
+//        let purchaseForm = document.forms.purchase_product_stock_form;
+//
+//
+//        let forms = object_product.closest('form');
+//
+//
+//        /* событие отправки формы */
+//        // forms.addEventListener('submit', function (event) {
+//        //     event.preventDefault();
+//        //     return false;
+//        // });
+//
+//        document.getElementById('purchase_product_stock_form_purchase')
+//            .addEventListener('click', function(event)
+//            {
+//                if(event.key !== "Enter")
+//                {
+//                    submitModalForm(forms);
+//                }
+//                return false;
+//            });
+//
+//        document.getElementById("purchase_product_stock_form_preTotal")
+//            .addEventListener("keydown", function(event)
+//            {
+//
+//                if(event.key === "Enter")
+//                {
+//                    addProductPurchase();
+//                }
+//            });
+//
+//
+//        document.getElementById("purchase_product_stock_form_number")
+//            .addEventListener("keydown", function(event)
+//            {
+//
+//                if(event.key === "Enter")
+//                {
+//
+//                    event.preventDefault();
+//
+//                    var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
+//
+//                    if(input_preProduct)
+//                    {
+//                        document.getElementById('purchase_product_stock_form_preProduct_select2').click();
+//
+//                    }
+//                }
+//            });
+//
+//
+//        return;
+//    }
+//
+//    if(limit_NMrsJxDFr > 1000)
+//    {
+//        return;
+//    }
+//
+//    limit_NMrsJxDFr = limit_NMrsJxDFr * 2;
+//
+//    setTimeout(init_xXgmjezHJ, limit_NMrsJxDFr);
+//
+//}, 100);
 
-setTimeout(function init_xXgmjezHJ()
+
+executeFunc(function productStocsPurchase()
 {
 
     var object_product = document.getElementById('purchase_product_stock_form_preProduct');
 
-    if(object_product)
+    if(!object_product)
     {
-
-        object_product.addEventListener('change', changeObjectProduct, false);
-
-        let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
-
-        $addButtonStock.addEventListener('click', addProductPurchase, false);
-
-        /* Имя формы */
-        let purchaseForm = document.forms.purchase_product_stock_form;
-
-
-        let forms = object_product.closest('form');
-
-
-        /* событие отправки формы */
-        // forms.addEventListener('submit', function (event) {
-        //     event.preventDefault();
-        //     return false;
-        // });
-
-        document.getElementById('purchase_product_stock_form_purchase')
-            .addEventListener('click', function(event)
-            {
-                if(event.key !== "Enter")
-                {
-                    submitModalForm(forms);
-                }
-                return false;
-            });
-
-        document.getElementById("purchase_product_stock_form_preTotal")
-            .addEventListener("keydown", function(event)
-            {
-
-                if(event.key === "Enter")
-                {
-                    addProductPurchase();
-                }
-            });
-
-
-        document.getElementById("purchase_product_stock_form_number")
-            .addEventListener("keydown", function(event)
-            {
-
-                if(event.key === "Enter")
-                {
-
-                    event.preventDefault();
-
-                    var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
-
-                    if(input_preProduct)
-                    {
-                        document.getElementById('purchase_product_stock_form_preProduct_select2').click();
-
-                    }
-                }
-            });
-
-
-        return;
+        return false;
     }
 
-    if(limit_NMrsJxDFr > 1000)
-    {
-        return;
-    }
 
-    limit_NMrsJxDFr = limit_NMrsJxDFr * 2;
+    object_product.addEventListener('change', changeObjectProduct, false);
 
-    setTimeout(init_xXgmjezHJ, limit_NMrsJxDFr);
+    let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
 
-}, 100);
+    $addButtonStock.addEventListener('click', addProductPurchase, false);
+
+    /* Имя формы */
+    let purchaseForm = document.forms.purchase_product_stock_form;
+
+
+    let forms = object_product.closest('form');
+
+
+    /* событие отправки формы */
+    // forms.addEventListener('submit', function (event) {
+    //     event.preventDefault();
+    //     return false;
+    // });
+
+    document.getElementById('purchase_product_stock_form_purchase')
+        .addEventListener('click', function(event)
+        {
+            if(event.key !== "Enter")
+            {
+                submitModalForm(forms);
+            }
+            return false;
+        });
+
+    document.getElementById("purchase_product_stock_form_preTotal")
+        .addEventListener("keydown", function(event)
+        {
+
+            if(event.key === "Enter")
+            {
+                addProductPurchase();
+            }
+        });
+
+
+    document.getElementById("purchase_product_stock_form_number")
+        .addEventListener("keydown", function(event)
+        {
+
+            if(event.key === "Enter")
+            {
+
+                event.preventDefault();
+
+                var input_preProduct = document.getElementById('purchase_product_stock_form_preProduct_select2');
+
+                if(input_preProduct)
+                {
+                    document.getElementById('purchase_product_stock_form_preProduct_select2').click();
+
+                }
+            }
+        });
+
+
+    return true;
+
+})
 
 
 //modal.addEventListener('shown.bs.modal', function () {
@@ -144,6 +220,7 @@ setTimeout(function init_xXgmjezHJ()
 function changeObjectProduct()
 {
 
+
     let replaceId = 'purchase_product_stock_form_preOffer';
 
 
@@ -153,6 +230,8 @@ function changeObjectProduct()
 
     /* Имя формы */
     let purchaseForm = document.forms.purchase_product_stock_form;
+    disabledElementsForm(purchaseForm);
+
     let formData = new FormData();
     formData.append(this.getAttribute('name'), this.value);
 
@@ -195,6 +274,8 @@ function changeObjectProduct()
 
         }
 
+        enableElementsForm(purchaseForm);
+
         return false;
     });
 
@@ -214,6 +295,8 @@ function changeObjectOffer()
 
     /* Имя формы */
     let purchaseForm = document.forms.purchase_product_stock_form;
+    disabledElementsForm(purchaseForm);
+
     let formData = new FormData();
     formData.append(this.getAttribute('name'), this.value);
 
@@ -262,6 +345,8 @@ function changeObjectOffer()
 
         }
 
+        enableElementsForm(purchaseForm);
+
         return false;
     });
 
@@ -280,6 +365,7 @@ function changeObjectVariation()
 
     /* Имя формы */
     let purchaseForm = document.forms.purchase_product_stock_form;
+    disabledElementsForm(purchaseForm);
     let formData = new FormData();
     formData.append(this.getAttribute('name'), this.value);
 
@@ -328,6 +414,8 @@ function changeObjectVariation()
 
         }
 
+        enableElementsForm(purchaseForm);
+
         return false;
     });
 
@@ -338,6 +426,7 @@ function changeObjectVariation()
 
 function addProductPurchase()
 {
+
 
     /* Блок для новой коллекции КАТЕГОРИИ */
     let $blockCollectionStock = document.getElementById('collectionStock');

@@ -28,6 +28,8 @@ namespace BaksDev\Products\Stocks\Entity\Event;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Sign\Entity\Invariable\ProductSignInvariable;
+use BaksDev\Products\Stocks\Entity\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
@@ -91,11 +93,21 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
     private ?UserProfileUid $fixed = null;
 
-    /** Профиль пользователя */
+    /**
+     * Профиль пользователя
+     * @deprecated переносится в Invariable
+     */
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[ORM\Column(type: UserProfileUid::TYPE)]
     private UserProfileUid $profile;
+
+    /**
+     * Постоянная величина
+     */
+    #[ORM\OneToOne(targetEntity: ProductStocksInvariable::class, mappedBy: 'event', cascade: ['all'])]
+    private ?ProductSignInvariable $invariable = null;
+
 
     /** Профиль назначения (при перемещении) */
     #[ORM\OneToOne(targetEntity: ProductStockMove::class, mappedBy: 'event', cascade: ['all'])]

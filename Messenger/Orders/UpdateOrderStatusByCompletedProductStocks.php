@@ -71,19 +71,6 @@ final class UpdateOrderStatusByCompletedProductStocks
     public function __invoke(ProductStockMessage $message): void
     {
 
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusCompleted::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
-
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
@@ -110,11 +97,6 @@ final class UpdateOrderStatusByCompletedProductStocks
             return;
         }
 
-        $this->logger->info(
-            'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
-            [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
-        );
-
         /**
          * Получаем событие заказа.
          */
@@ -127,6 +109,23 @@ final class UpdateOrderStatusByCompletedProductStocks
             return;
         }
 
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusCompleted::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $this->logger->info(
+            'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
+            [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+        );
 
         /** Обновляем статус заказа на Completed «Выдан по месту назначения» */
 

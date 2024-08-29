@@ -43,8 +43,7 @@ final class PurchaseController extends AbstractController
     public function incoming(
         Request $request,
         PurchaseProductStockHandler $PurchaseProductStockHandler
-    ): Response
-    {
+    ): Response {
 
         if(!$this->getProfileUid())
         {
@@ -75,8 +74,7 @@ final class PurchaseController extends AbstractController
 
                 if(!$handle instanceof ProductStock)
                 {
-                    $this->addFlash
-                    (
+                    $this->addFlash(
                         'page.purchase',
                         'danger.purchase',
                         'products-stocks.admin',
@@ -85,8 +83,7 @@ final class PurchaseController extends AbstractController
                 }
             }
 
-            $this->addFlash
-            (
+            $this->addFlash(
                 'page.purchase',
                 'success.purchase',
                 'products-stocks.admin'

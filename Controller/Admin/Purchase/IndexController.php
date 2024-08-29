@@ -38,13 +38,14 @@ final class IndexController extends AbstractController
         Request $request,
         AllProductStocksPurchaseInterface $allPurchase,
         int $page = 0
-    ): Response
-    {
+    ): Response {
         $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
 
         // Поиск
         $search = new SearchDTO($request);
-        $searchForm = $this->createForm(SearchForm::class, $search,
+        $searchForm = $this->createForm(
+            SearchForm::class,
+            $search,
             ['action' => $this->generateUrl('products-stocks:admin.purchase.index')]
         );
         $searchForm->handleRequest($request);

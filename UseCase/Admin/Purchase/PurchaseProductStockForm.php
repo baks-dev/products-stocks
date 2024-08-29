@@ -45,29 +45,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class PurchaseProductStockForm extends AbstractType
 {
-    // private WarehouseChoiceInterface $warehouseChoice;
-    private ProductChoiceInterface $productChoice;
-    private ProductOfferChoiceInterface $productOfferChoice;
-    private ProductVariationChoiceInterface $productVariationChoice;
-    private ProductModificationChoiceInterface $modificationChoice;
-    private iterable $reference;
-
     public function __construct(
-        // WarehouseChoiceInterface $warehouseChoice,
-        ProductChoiceInterface $productChoice,
-        ProductOfferChoiceInterface $productOfferChoice,
-        ProductVariationChoiceInterface $productVariationChoice,
-        ProductModificationChoiceInterface $modificationChoice,
-        #[AutowireIterator('baks.reference.choice')] iterable $reference,
-    )
-    {
-        // $this->warehouseChoice = $warehouseChoice;
-        $this->productChoice = $productChoice;
-        $this->productOfferChoice = $productOfferChoice;
-        $this->productVariationChoice = $productVariationChoice;
-        $this->modificationChoice = $modificationChoice;
-        $this->reference = $reference;
-    }
+        #[AutowireIterator('baks.reference.choice')] private readonly iterable $reference,
+        private readonly ProductChoiceInterface $productChoice,
+        private readonly ProductOfferChoiceInterface $productOfferChoice,
+        private readonly ProductVariationChoiceInterface $productVariationChoice,
+        private readonly ProductModificationChoiceInterface $modificationChoice,
+    ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -78,13 +62,15 @@ final class PurchaseProductStockForm extends AbstractType
         $builder
             ->add('preProduct', ChoiceType::class, [
                 'choices' => $this->productChoice->fetchAllProduct(),
-                'choice_value' => function(?ProductUid $product) {
+                'choice_value' => function (?ProductUid $product) {
                     return $product?->getValue();
                 },
-                'choice_label' => function(ProductUid $product) {
+                'choice_label' => function (ProductUid $product) {
                     return $product->getAttr();
                 },
-
+                'choice_attr' => function (?ProductUid $product) {
+                    return $product?->getOption() ? ['data-filter' => ' ('.$product?->getOption().')'] : [];
+                },
 
                 'label' => false,
             ]);
@@ -102,16 +88,16 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preOffer')->addModelTransformer(
             new CallbackTransformer(
-                function($offer) {
+                function ($offer) {
                     return $offer instanceof ProductOfferConst ? $offer->getValue() : $offer;
                 },
-                function($offer) {
+                function ($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
                 }
             )
         );
 
-        $formOfferModifier = function(FormInterface $form, ProductUid $product = null) {
+        $formOfferModifier = function (FormInterface $form, ProductUid $product = null) {
             if(null === $product)
             {
                 return;
@@ -150,14 +136,14 @@ final class PurchaseProductStockForm extends AbstractType
             $form
                 ->add('preOffer', ChoiceType::class, [
                     'choices' => $offer,
-                    'choice_value' => function(?ProductOfferConst $offer) {
+                    'choice_value' => function (?ProductOfferConst $offer) {
                         return $offer?->getValue();
                     },
-                    'choice_label' => function(ProductOfferConst $offer) {
+                    'choice_label' => function (ProductOfferConst $offer) {
                         return $offer->getAttr();
                     },
 
-                    'choice_attr' => function(?ProductOfferConst $offer) {
+                    'choice_attr' => function (?ProductOfferConst $offer) {
                         return $offer?->getCharacteristic() ? ['data-filter' => $offer?->getCharacteristic()] : [];
                     },
 
@@ -170,7 +156,7 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preProduct')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function(FormEvent $event) use ($formOfferModifier) {
+            function (FormEvent $event) use ($formOfferModifier) {
                 $product = $event->getForm()->getData();
                 $formOfferModifier($event->getForm()->getParent(), $product);
             }
@@ -188,16 +174,16 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preVariation')->addModelTransformer(
             new CallbackTransformer(
-                function($variation) {
+                function ($variation) {
                     return $variation instanceof ProductVariationConst ? $variation->getValue() : $variation;
                 },
-                function($variation) {
+                function ($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
                 }
             )
         );
 
-        $formVariationModifier = function(FormInterface $form, ProductOfferConst $offer = null) {
+        $formVariationModifier = function (FormInterface $form, ProductOfferConst $offer = null) {
 
             if(null === $offer)
             {
@@ -237,14 +223,14 @@ final class PurchaseProductStockForm extends AbstractType
             $form
                 ->add('preVariation', ChoiceType::class, [
                     'choices' => $variations,
-                    'choice_value' => function(?ProductVariationConst $variation) {
+                    'choice_value' => function (?ProductVariationConst $variation) {
                         return $variation?->getValue();
                     },
-                    'choice_label' => function(ProductVariationConst $variation) {
+                    'choice_label' => function (ProductVariationConst $variation) {
                         return $variation->getAttr();
                     },
-                    'choice_attr' => function(?ProductVariationConst $variation) {
-                        return $variation?->getCharacteristic() ? ['data-filter' => $variation?->getCharacteristic()] : [];
+                    'choice_attr' => function (?ProductVariationConst $variation) {
+                        return $variation?->getCharacteristic() ? ['data-filter' => ' ('.$variation?->getCharacteristic().')'] : [];
                     },
                     'label' => $label,
                     'translation_domain' => $domain,
@@ -254,7 +240,7 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preOffer')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function(FormEvent $event) use ($formVariationModifier) {
+            function (FormEvent $event) use ($formVariationModifier) {
                 $offer = $event->getForm()->getData();
                 $formVariationModifier($event->getForm()->getParent(), $offer);
             }
@@ -272,16 +258,16 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preModification')->addModelTransformer(
             new CallbackTransformer(
-                function($modification) {
+                function ($modification) {
                     return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
-                function($modification) {
+                function ($modification) {
                     return $modification ? new ProductModificationConst($modification) : null;
                 }
             )
         );
 
-        $formModificationModifier = function(FormInterface $form, ProductVariationConst $variation = null) {
+        $formModificationModifier = function (FormInterface $form, ProductVariationConst $variation = null) {
             if(null === $variation)
             {
                 return;
@@ -319,13 +305,13 @@ final class PurchaseProductStockForm extends AbstractType
             $form
                 ->add('preModification', ChoiceType::class, [
                     'choices' => $modifications,
-                    'choice_value' => function(?ProductModificationConst $modification) {
+                    'choice_value' => function (?ProductModificationConst $modification) {
                         return $modification?->getValue();
                     },
-                    'choice_label' => function(ProductModificationConst $modification) {
+                    'choice_label' => function (ProductModificationConst $modification) {
                         return $modification->getAttr();
                     },
-                    'choice_attr' => function(?ProductModificationConst $modification) {
+                    'choice_attr' => function (?ProductModificationConst $modification) {
                         return $modification?->getCharacteristic() ? ['data-filter' => $modification?->getCharacteristic()] : [];
                     },
                     'label' => $label,
@@ -336,7 +322,7 @@ final class PurchaseProductStockForm extends AbstractType
 
         $builder->get('preVariation')->addEventListener(
             FormEvents::POST_SUBMIT,
-            function(FormEvent $event) use ($formModificationModifier) {
+            function (FormEvent $event) use ($formModificationModifier) {
                 $variation = $event->getForm()->getData();
                 $formModificationModifier($event->getForm()->getParent(), $variation);
             }

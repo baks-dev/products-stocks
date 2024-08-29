@@ -77,18 +77,6 @@ final class AddQuantityProductByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusIncoming::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
 
         $this->entityManager->clear();
 
@@ -107,20 +95,39 @@ final class AddQuantityProductByIncomingStock
             return;
         }
 
+
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
 
-        if($products)
+        if(empty($products))
         {
-            $this->entityManager->clear();
-
-            /** @var ProductStockProduct $product */
-            foreach($products as $product)
-            {
-                /** Снимаем резерв отмененного заказа */
-                $this->changeTotal($product);
-            }
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
         }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusIncoming::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
+        $this->entityManager->clear();
+
+        /** @var ProductStockProduct $product */
+        foreach($products as $product)
+        {
+            /** Снимаем резерв отмененного заказа */
+            $this->changeTotal($product);
+        }
+
 
         $Deduplicator->save();
     }

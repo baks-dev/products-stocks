@@ -12,12 +12,12 @@ page:
   moving: 'Moving'
   package: 'Packaging orders'
   pickup: 'Picking up orders'
+  cancel: 'Cancel order'
 
 
 breadcrumb:
   orders: 'Incoming orders'
   purchase: 'Purchase of products'
-
   index: 'Warehouse accounting of products'
   new: 'Add receipt order'
   edit: 'Edit receipt order'
@@ -26,7 +26,9 @@ breadcrumb:
   warehouse: 'Receipts to warehouse'
   moving: 'Moving between warehouses'
   package: 'Packaging orders for loading'
-  pickup: 'Issuing orders (pickup)'
+  pickup: 'Picking up orders'
+  cancel: 'Cancel order'
+
 
 success:
   new: 'Incoming order successfully added'
@@ -40,6 +42,8 @@ success:
   package: 'Packaging request added successfully'
   extradition: 'Request completed successfully'
   total: 'Skald accounting successfully updated'
+  cancel: 'Request successfully cancelled'
+  pickup: 'Order completed successfully'
 
 danger:
   new: '%s: Error adding incoming order'
@@ -53,3 +57,5 @@ danger:
   package: '%s: Error adding package request'
   extradition: '%s: Error building request'
   total: '%s: Error updating inventory records'
+  cancel: '%s: Error canceling order'
+  pickup: '%s: Error completing order'

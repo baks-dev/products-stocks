@@ -72,17 +72,6 @@ final class SubReserveProductStocksTotalByOrderComplete
      */
     public function __invoke(OrderMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace(md5(self::class))
-            ->deduplication([
-                (string) $message->getId(),
-                OrderStatusCompleted::STATUS
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
 
         $this->entityManager->clear();
 
@@ -102,6 +91,7 @@ final class SubReserveProductStocksTotalByOrderComplete
             return;
         }
 
+
         /**
          * Получаем склад, на который была отправлена заявка для сборки.
          *
@@ -109,14 +99,29 @@ final class SubReserveProductStocksTotalByOrderComplete
          */
         $UserProfileUid = $this->warehouseByOrder->getWarehouseByOrder($message->getId());
 
-        if($UserProfileUid)
+        if(!$UserProfileUid)
         {
-            /** @var OrderProduct $product */
-            foreach($OrderEvent->getProduct() as $product)
-            {
-                /* Снимаем резерв со склада при доставке */
-                $this->changeReserve($product, $UserProfileUid);
-            }
+            return;
+        }
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                OrderStatusCompleted::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        /** @var OrderProduct $product */
+        foreach($OrderEvent->getProduct() as $product)
+        {
+            /* Снимаем резерв со склада при доставке */
+            $this->changeReserve($product, $UserProfileUid);
         }
 
         $Deduplicator->save();
