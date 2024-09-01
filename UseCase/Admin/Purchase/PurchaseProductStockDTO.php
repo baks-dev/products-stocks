@@ -26,6 +26,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPurchase;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -83,7 +84,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     public function __construct(UserProfileUid $profile)
     {
         $this->profile = $profile;
-        $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusPurchase());
+        $this->status = new ProductStockStatus(ProductStockStatusPurchase::class);
         $this->product = new ArrayCollection();
     }
 

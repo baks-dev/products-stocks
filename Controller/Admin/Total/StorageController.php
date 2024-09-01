@@ -29,7 +29,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
-use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditHandler;

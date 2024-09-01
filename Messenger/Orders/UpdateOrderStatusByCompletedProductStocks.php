@@ -35,6 +35,7 @@ use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ExistProductStocksStatus\ExistProductStocksStatusInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -48,6 +49,7 @@ final class UpdateOrderStatusByCompletedProductStocks
     private CentrifugoPublishInterface $CentrifugoPublish;
     private LoggerInterface $logger;
     private DeduplicatorInterface $deduplicator;
+    private UserByUserProfileInterface $userByUserProfile;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -55,6 +57,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         LoggerInterface $ordersOrderLogger,
+        UserByUserProfileInterface $userByUserProfile,
         DeduplicatorInterface $deduplicator
     ) {
         $this->entityManager = $entityManager;
@@ -63,6 +66,7 @@ final class UpdateOrderStatusByCompletedProductStocks
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $ordersOrderLogger;
         $this->deduplicator = $deduplicator;
+        $this->userByUserProfile = $userByUserProfile;
     }
 
     /**
@@ -129,9 +133,14 @@ final class UpdateOrderStatusByCompletedProductStocks
 
         /** Обновляем статус заказа на Completed «Выдан по месту назначения» */
 
+        $User = $this->userByUserProfile
+            ->forProfile($ProductStockEvent->getProfile())
+            ->findUser();
+
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $OrderEvent->getId(),
+            $User,
             $ProductStockEvent->getProfile()
         );
 

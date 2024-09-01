@@ -106,7 +106,7 @@ class ProductStockEvent extends EntityEvent
      * Постоянная величина
      */
     #[ORM\OneToOne(targetEntity: ProductStocksInvariable::class, mappedBy: 'event', cascade: ['all'])]
-    private ?ProductSignInvariable $invariable = null;
+    private ?ProductStocksInvariable $invariable = null;
 
 
     /** Профиль назначения (при перемещении) */

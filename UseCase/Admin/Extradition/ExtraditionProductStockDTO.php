@@ -21,6 +21,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -51,7 +52,7 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     public function __construct()
     {
         $this->fixed = null;
-        $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusExtradition());
+        $this->status = new ProductStockStatus(ProductStockStatusExtradition::class);
     }
 
     public function getEvent(): ?ProductStockEventUid

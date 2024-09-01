@@ -37,6 +37,7 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ExistProductStocksStatus\ExistProductStocksStatusInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -50,12 +51,14 @@ final class UpdateOrderStatusByExtraditionProductStocks
     private CentrifugoPublishInterface $CentrifugoPublish;
     private LoggerInterface $logger;
     private DeduplicatorInterface $deduplicator;
+    private UserByUserProfileInterface $userByUserProfile;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         CurrentOrderEventInterface $currentOrderEvent,
         OrderStatusHandler $OrderStatusHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
+        UserByUserProfileInterface $userByUserProfile,
         LoggerInterface $ordersOrderLogger,
         DeduplicatorInterface $deduplicator
     ) {
@@ -66,6 +69,7 @@ final class UpdateOrderStatusByExtraditionProductStocks
         $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $ordersOrderLogger;
         $this->deduplicator = $deduplicator;
+        $this->userByUserProfile = $userByUserProfile;
     }
 
     /**
@@ -123,9 +127,15 @@ final class UpdateOrderStatusByExtraditionProductStocks
         }
 
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
+
+        $User = $this->userByUserProfile
+            ->forProfile($ProductStockEvent->getProfile())
+            ->findUser();
+
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusExtradition::class,
             $OrderEvent->getId(),
+            $User,
             $ProductStockEvent->getProfile()
         );
 

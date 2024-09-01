@@ -36,7 +36,9 @@ use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrder
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -44,24 +46,16 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class CancelProductStocksByCancelOrder
 {
     private LoggerInterface $logger;
-    private CurrentOrderEventInterface $currentOrderEvent;
-    private ProductStocksByOrderInterface $productStocksByOrder;
-    private CancelProductStockHandler $cancelProductStockHandler;
-    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
+        private readonly CurrentOrderEventInterface $currentOrderEvent,
+        private readonly ProductStocksByOrderInterface $productStocksByOrder,
+        private readonly CancelProductStockHandler $cancelProductStockHandler,
+        private readonly UserByUserProfileInterface $userByUserProfile,
+        private readonly DeduplicatorInterface $deduplicator,
         LoggerInterface $productStocksLogger,
-        CurrentOrderEventInterface $currentOrderEvent,
-        ProductStocksByOrderInterface $productStocksByOrder,
-        CancelProductStockHandler $cancelProductStockHandler,
-        DeduplicatorInterface $deduplicator
     ) {
-
         $this->logger = $productStocksLogger;
-        $this->currentOrderEvent = $currentOrderEvent;
-        $this->productStocksByOrder = $productStocksByOrder;
-        $this->cancelProductStockHandler = $cancelProductStockHandler;
-        $this->deduplicator = $deduplicator;
     }
 
 
@@ -118,7 +112,11 @@ final class CancelProductStocksByCancelOrder
                 continue;
             }
 
-            $OrderCanceledDTO = new CanceledOrderDTO(new UserProfileUid());
+            /**
+             * Присваиваем рандомные пользователя и профиль,
+             * т.к. при отмене заявки нам важен только комментарий
+             */
+            $OrderCanceledDTO = new CanceledOrderDTO(new UserUid(), new UserProfileUid());
             $OrderEvent->getDto($OrderCanceledDTO);
 
             $CancelProductStockDTO = new CancelProductStockDTO();

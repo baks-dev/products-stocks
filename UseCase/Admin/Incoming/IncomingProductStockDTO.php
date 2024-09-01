@@ -21,6 +21,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -53,7 +54,7 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     public function __construct()
     {
         //$this->profile = $profile;
-        $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming());
+        $this->status = new ProductStockStatus(ProductStockStatusIncoming::class);
         $this->product = new ArrayCollection();
     }
 

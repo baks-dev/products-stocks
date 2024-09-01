@@ -151,21 +151,12 @@ final class SubReserveProductStocksTotalByOrderComplete
             ->getRepository(ProductModification::class)
             ->find($product->getModification())?->getConst() : null;
 
-        $this->logger->info(
-            'Снимаем резерв и остаток на складе при выполненном заказа',
-            [
-                self::class.':'.__LINE__,
-                'total' => $product->getTotal(),
-                'profile' => (string) $profile,
-                'product' => (string) $product->getProduct(),
-                'offer' => (string) $product->getOffer(),
-                'variation' => (string) $product->getVariation(),
-                'modification' => (string) $product->getModification(),
+        /**
+         * Снимаем резерв и остаток продукции на складе по одной единице продукции
+         */
 
-            ]
-        );
+        $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа:');
 
-        /** Снимаем резерв и остаток продукции на складе по одной единице продукции */
         for($i = 1; $i <= $product->getTotal(); $i++)
         {
             $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(

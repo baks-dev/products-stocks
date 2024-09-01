@@ -22,6 +22,7 @@ use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -76,7 +77,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function __construct(User|UserUid $usr)
     {
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
-        $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse());
+        $this->status = new ProductStockStatus(ProductStockStatusWarehouse::class);
         $this->fixed = null;
         $this->product = new ArrayCollection();
     }

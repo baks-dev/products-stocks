@@ -58,7 +58,6 @@ final class PackageProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */

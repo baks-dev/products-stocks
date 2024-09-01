@@ -21,10 +21,12 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Type\UidType\Uid;
 use BaksDev\Orders\Order\Entity\Event\OrderEventInterface;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariableInterface;
 use BaksDev\Orders\Order\Type\Event\OrderEventUid;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -37,7 +39,10 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     /** Идентификатор */
     private ?ProductStockEventUid $id = null;
 
-    /** Ответственное лицо (Профиль пользователя) */
+    /**
+     * Ответственное лицо (Профиль пользователя)
+     * @deprecated Переносится в Invariable
+     */
     #[Assert\Uuid]
     private ?UserProfileUid $profile = null;
 
@@ -50,6 +55,11 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     #[Assert\Type('string')]
     #[Assert\Length(max: 36)]
     private string $number;
+
+    /** Постоянная величина */
+    #[Assert\Valid]
+    private readonly Invariable\PackageOrderInvariableDTO $invariable;
+
 
     //    /** Константа Целевого склада */
     //    #[Assert\NotBlank]
@@ -76,14 +86,27 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     private readonly UserUid $usr;
 
 
-    public function __construct(User|UserUid $usr)
+    public function __construct(User|UserUid $user)
     {
-        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
-        $this->status = new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage());
+        $user = $user instanceof User ? $user->getId() : $user;
+
+        $this->usr = $user;
+
+        $this->status = new ProductStockStatus(ProductStockStatusPackage::class);
         $this->product = new ArrayCollection();
-        $this->number = number_format(microtime(true) * 100, 0, '.', '.');
+
+        //$this->number = number_format(microtime(true) * 100, 0, '.', '.');
+
         $this->ord = new Orders\ProductStockOrderDTO();
+
+
+        $PackageOrderInvariable = new Invariable\PackageOrderInvariableDTO();
+        $PackageOrderInvariable->setUsr($user);
+
+        $this->invariable = $PackageOrderInvariable;
+
     }
+
 
     public function getEvent(): ?Uid
     {
@@ -143,6 +166,11 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
 
     public function setProfile(?UserProfileUid $profile): void
     {
+
+        /** Присваиваем постоянную величину  */
+        $PackageOrderInvariable = $this->getInvariable();
+        $PackageOrderInvariable->setProfile($profile);
+
         $this->profile = $profile;
     }
 
@@ -160,6 +188,7 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
 
     public function setNumber(string $number): void
     {
+        $this->invariable->setNumber($number);
         $this->number = $number;
     }
 
@@ -197,15 +226,13 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return $this->usr;
     }
 
+    /**
+     * Invariable
+     */
+    public function getInvariable(): Invariable\PackageOrderInvariableDTO
+    {
+        return $this->invariable;
+    }
 
-    //    /** Константа склада назначения при перемещении */
-    //    public function getDestination(): ?ContactsRegionCallConst
-    //    {
-    //        return $this->destination;
-    //    }
-    //
-    //    public function setDestination(?ContactsRegionCallConst $destination): void
-    //    {
-    //        $this->destination = $destination;
-    //    }
+
 }

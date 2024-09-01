@@ -32,7 +32,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use BaksDev\Products\Stocks\UseCase\Admin\Edit\ProductStockTotalEditDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;

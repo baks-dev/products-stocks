@@ -54,6 +54,9 @@ final class AddProductStockRepository implements AddProductStockInterface
     }
 
 
+
+
+
     /** Метод ДОБАВЛЯЕТ к складскому учету резерв либо остаток */
     public function updateById(ProductStockTotal|ProductStockTotalUid|string $id): int
     {
@@ -73,6 +76,7 @@ final class AddProductStockRepository implements AddProductStockInterface
         }
 
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
 
         $dbal
             ->update(ProductStockTotal::class)
