@@ -68,8 +68,8 @@ final class CancelProductStocksByCancelOrder
 
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent
-            ->order($message->getId())
-            ->getCurrentOrderEvent();
+            ->forOrder($message->getId())
+            ->find();
 
         if(!$OrderEvent)
         {
