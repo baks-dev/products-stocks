@@ -66,6 +66,9 @@ final class ProductStockStorageEditDTO
     /** Место складирования */
     private ?string $storage = null;
 
+    /** Комментарий */
+    private ?string $comment = null;
+
 
     /**
      * Storage
@@ -145,4 +148,20 @@ final class ProductStockStorageEditDTO
     {
         return $this->reserve;
     }
+
+    /**
+     * Comment
+     */
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
+
 }

@@ -84,7 +84,7 @@ final class IndexController extends AbstractController
         $query = $allProductStocks
             ->search($search)
             ->filter($filter)
-            ->fetchAllProductStocksAssociative(
+            ->findPaginator(
                 $this->getUsr()?->getId(),
                 $this->getProfileUid()
             );

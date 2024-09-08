@@ -62,7 +62,7 @@ final class CsvController extends AbstractController
         $query = $allProductStocks
             ->filter($filter)
             ->setLimit(1000)
-            ->fetchAllProductStocksAssociative(
+            ->findPaginator(
                 $this->getUsr()?->getId(),
                 $this->getProfileUid()
             );

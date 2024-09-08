@@ -83,6 +83,10 @@ class ProductStockTotal extends EntityState
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $storage = null;
 
+    /** Комментарий */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $comment = null;
+
     /** Общее количество на данном складе */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $total = 0;

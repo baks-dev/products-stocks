@@ -13,7 +13,7 @@ use BaksDev\Users\User\Type\Id\UserUid;
 interface AllProductStocksInterface
 {
     /** Метод возвращает полное состояние складских остатков продукции */
-    public function fetchAllProductStocksAssociative(
+    public function findPaginator(
         User|UserUid $user,
         UserProfileUid $profile
     ): PaginatorInterface;

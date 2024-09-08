@@ -92,7 +92,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     /**
      * Метод возвращает полное состояние складских остатков продукции
      */
-    public function fetchAllProductStocksAssociative(
+    public function findPaginator(
         User|UserUid $user,
         UserProfileUid $profile,
     ): PaginatorInterface {
@@ -108,6 +108,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('stock_product.total AS stock_total')
             ->addSelect('stock_product.storage AS stock_storage')
             ->addSelect('stock_product.reserve AS stock_reserve')
+            ->addSelect('stock_product.comment AS stock_comment')
             ->addSelect('stock_product.profile AS users_profile_id')
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('stock_product.total != 0')
