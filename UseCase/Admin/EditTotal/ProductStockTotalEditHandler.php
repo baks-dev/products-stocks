@@ -30,6 +30,9 @@ use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Entity\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
+use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -82,6 +85,8 @@ final readonly class ProductStockTotalEditHandler
                 $command->getModification(),
             ), transport: 'products-stocks');
         }
+
+        $this->messageDispatch->addClearCacheOther('products-stocks');
 
         return $ProductStockTotal;
     }
