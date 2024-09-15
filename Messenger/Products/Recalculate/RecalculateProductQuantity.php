@@ -36,37 +36,21 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 0)]
-final class RecalculateProductQuantity
+final readonly class RecalculateProductQuantity
 {
-    private EntityManagerInterface $entityManager;
-    private ProductModificationQuantityInterface $modificationQuantity;
-    private ProductVariationQuantityInterface $variationQuantity;
-    private ProductOfferQuantityInterface $offerQuantity;
-    private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private ProductStocksTotalInterface $productStocksTotal;
-    private AppCacheInterface $cache;
 
     public function __construct(
-        ProductModificationQuantityInterface $modificationQuantity,
-        ProductVariationQuantityInterface $variationQuantity,
-        ProductOfferQuantityInterface $offerQuantity,
-        ProductQuantityInterface $productQuantity,
-        ProductStocksTotalInterface $productStocksTotal,
-        EntityManagerInterface $entityManager,
+        private ProductModificationQuantityInterface $modificationQuantity,
+        private ProductVariationQuantityInterface $variationQuantity,
+        private ProductOfferQuantityInterface $offerQuantity,
+        private ProductQuantityInterface $productQuantity,
+        private ProductStocksTotalInterface $productStocksTotal,
+        private EntityManagerInterface $entityManager,
+        private AppCacheInterface $cache,
         LoggerInterface $productsProductLogger,
-        AppCacheInterface $cache
     ) {
-
-        $this->modificationQuantity = $modificationQuantity;
-        $this->variationQuantity = $variationQuantity;
-        $this->offerQuantity = $offerQuantity;
-        $this->productQuantity = $productQuantity;
-
-        $this->entityManager = $entityManager;
         $this->logger = $productsProductLogger;
-        $this->productStocksTotal = $productStocksTotal;
-        $this->cache = $cache;
     }
 
     /**

@@ -41,35 +41,21 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class AddQuantityProductByIncomingStock
+final readonly class AddQuantityProductByIncomingStock
 {
-    private ProductStocksByIdInterface $productStocks;
-    private EntityManagerInterface $entityManager;
-    private ProductModificationQuantityInterface $modificationQuantity;
-    private ProductVariationQuantityInterface $variationQuantity;
-    private ProductOfferQuantityInterface $offerQuantity;
-    private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-        ProductStocksByIdInterface $productStocks,
-        ProductModificationQuantityInterface $modificationQuantity,
-        ProductVariationQuantityInterface $variationQuantity,
-        ProductOfferQuantityInterface $offerQuantity,
-        ProductQuantityInterface $productQuantity,
-        EntityManagerInterface $entityManager,
+        private ProductStocksByIdInterface $productStocks,
+        private ProductModificationQuantityInterface $modificationQuantity,
+        private ProductVariationQuantityInterface $variationQuantity,
+        private ProductOfferQuantityInterface $offerQuantity,
+        private ProductQuantityInterface $productQuantity,
+        private EntityManagerInterface $entityManager,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $productsProductLogger,
-        DeduplicatorInterface $deduplicator
     ) {
-        $this->productStocks = $productStocks;
-        $this->entityManager = $entityManager;
-        $this->modificationQuantity = $modificationQuantity;
-        $this->variationQuantity = $variationQuantity;
-        $this->offerQuantity = $offerQuantity;
-        $this->productQuantity = $productQuantity;
         $this->logger = $productsProductLogger;
-        $this->deduplicator = $deduplicator;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,27 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use Symfony\Config\FrameworkConfig;
+use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
 
-return static function(FrameworkConfig $framework) {
+return static function (ContainerConfigurator $configurator): void {
+    $services = $configurator->services()
+        ->defaults()
+        ->autowire()
+        ->autoconfigure();
 
-    $messenger = $framework->messenger();
+    $NAMESPACE = BaksDevProductsStocksBundle::NAMESPACE;
+    $PATH = BaksDevProductsStocksBundle::PATH;
 
-    $messenger
-        ->transport('products-stocks')
-        ->dsn('redis://%env(REDIS_PASSWORD)%@%env(REDIS_HOST)%:%env(REDIS_PORT)%?auto_setup=true')
-        ->options(['stream' => 'products-stocks'])
-        ->failureTransport('failed-products-stocks')
-        ->retryStrategy()
-        ->maxRetries(3)
-        ->delay(1000)
-        ->maxDelay(0)
-        ->multiplier(3) // увеличиваем задержку перед каждой повторной попыткой
-        ->service(null);
+    $services->load($NAMESPACE, $PATH)
+        ->exclude([
+            $PATH.'{Entity,Resources,Type}',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Message.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*DTO.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Test.php',
+        ]);
 
-    $failure = $framework->messenger();
-
-    $failure->transport('failed-products-stocks')
-        ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
-        ->options(['queue_name' => 'failed-products-stocks']);
-
+    $services->load(
+        $NAMESPACE.'Type\Status\ProductStockStatus\\',
+        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Status', 'ProductStockStatus']) // .'Type/Status/ProductStockStatus'
+    );
 };

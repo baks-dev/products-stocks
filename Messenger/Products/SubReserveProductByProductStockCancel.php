@@ -45,39 +45,21 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * Снимает ТОЛЬКО! резерв продукции при отмене заявки Cancel «Отменен»
  */
 #[AsMessageHandler(priority: 1)]
-final class SubReserveProductByProductStockCancel
+final readonly class SubReserveProductByProductStockCancel
 {
-    private ProductStocksByIdInterface $productStocks;
-    private EntityManagerInterface $entityManager;
-    private ProductModificationQuantityInterface $modificationQuantity;
-    private ProductVariationQuantityInterface $variationQuantity;
-    private ProductOfferQuantityInterface $offerQuantity;
-    private ProductQuantityInterface $productQuantity;
     private LoggerInterface $logger;
-    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-        ProductStocksByIdInterface $productStocks,
-        ProductModificationQuantityInterface $modificationQuantity,
-        ProductVariationQuantityInterface $variationQuantity,
-        ProductOfferQuantityInterface $offerQuantity,
-        ProductQuantityInterface $productQuantity,
-        EntityManagerInterface $entityManager,
-        ProductStockStatusCollection $collection,
+        private ProductStocksByIdInterface $productStocks,
+        private ProductModificationQuantityInterface $modificationQuantity,
+        private ProductVariationQuantityInterface $variationQuantity,
+        private ProductOfferQuantityInterface $offerQuantity,
+        private ProductQuantityInterface $productQuantity,
+        private EntityManagerInterface $entityManager,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $productsStocksLogger,
-        DeduplicatorInterface $deduplicator
     ) {
-        $this->productStocks = $productStocks;
-        $this->entityManager = $entityManager;
-        $this->modificationQuantity = $modificationQuantity;
-        $this->variationQuantity = $variationQuantity;
-        $this->offerQuantity = $offerQuantity;
-        $this->productQuantity = $productQuantity;
-
-        // Инициируем статусы складских остатков
-        $collection->cases();
         $this->logger = $productsStocksLogger;
-        $this->deduplicator = $deduplicator;
     }
 
     /**

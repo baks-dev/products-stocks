@@ -38,7 +38,7 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalType;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use Symfony\Config\DoctrineConfig;
 
-return static function(ContainerConfigurator $container, DoctrineConfig $doctrine) {
+return static function (ContainerConfigurator $container, DoctrineConfig $doctrine) {
 
     $doctrine->dbal()->type(ProductStockUid::TYPE)->class(ProductStockType::class);
     $doctrine->dbal()->type(ProductStockEventUid::TYPE)->class(ProductStockEventType::class);
@@ -53,6 +53,6 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
         ->type('attribute')
         ->dir(BaksDevProductsStocksBundle::PATH.'Entity')
         ->isBundle(false)
-        ->prefix('BaksDev\Products\Stocks\Entity')
+        ->prefix(BaksDevProductsStocksBundle::NAMESPACE.'\\Entity')
         ->alias('products-stocks');
 };

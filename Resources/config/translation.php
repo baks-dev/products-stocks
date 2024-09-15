@@ -24,23 +24,12 @@
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
+use Symfony\Config\FrameworkConfig;
 
-return static function (ContainerConfigurator $configurator): void {
-    $services = $configurator->services()
-        ->defaults()
-        ->autowire()
-        ->autoconfigure();
+return static function (FrameworkConfig $config) {
 
-    $NAMESPACE = BaksDevProductsStocksBundle::NAMESPACE;
-    $PATH = BaksDevProductsStocksBundle::PATH;
+    $config
+        ->translator()
+        ->paths([BaksDevProductsStocksBundle::PATH.implode(DIRECTORY_SEPARATOR, ['Resources', 'translations', ''])]); // .'Resources/translations/']);
 
-    $services->load($NAMESPACE, $PATH)
-        ->exclude([
-            $PATH.'{Entity,Resources,Type}',
-            $PATH.'**/*Message.php',
-            $PATH.'**/*DTO.php',
-        ])
-    ;
-
-    $services->load($NAMESPACE.'Type\Status\ProductStockStatus\\', $PATH.'Type/Status/ProductStockStatus');
 };
