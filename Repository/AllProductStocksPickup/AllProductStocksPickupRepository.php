@@ -482,11 +482,14 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
 
         if($this->filter !== null)
         {
-            if($this->filter->getDate() instanceof DateTimeImmutable)
+            $dateFrom = $this->filter->getDate();
+            $dateTo = $dateFrom?->modify('+1 day');
+
+            if($dateFrom instanceof DateTimeImmutable && $dateTo instanceof DateTimeImmutable)
             {
                 $delivery_condition .= ' AND order_delivery.delivery_date >= :delivery_date_start AND order_delivery.delivery_date < :delivery_date_end';
-                $dbal->setParameter('delivery_date_start', $this->filter->getDate(), Types::DATE_IMMUTABLE);
-                $dbal->setParameter('delivery_date_end', $this->filter->getDate()->modify('+1 day'), Types::DATE_IMMUTABLE);
+                $dbal->setParameter('delivery_date_start', $dateFrom, Types::DATE_IMMUTABLE);
+                $dbal->setParameter('delivery_date_end', $dateTo, Types::DATE_IMMUTABLE);
             }
 
             if($this->filter->getDelivery())
