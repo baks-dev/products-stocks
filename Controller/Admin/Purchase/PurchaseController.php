@@ -50,7 +50,7 @@ final class PurchaseController extends AbstractController
             throw new UserNotFoundException('User Profile not found');
         }
 
-        $purchaseDTO = new PurchaseProductStockDTO($this->getProfileUid());
+        $purchaseDTO = new PurchaseProductStockDTO();
 
         // Форма добавления
         $form = $this->createForm(PurchaseProductStockForm::class, $purchaseDTO, [

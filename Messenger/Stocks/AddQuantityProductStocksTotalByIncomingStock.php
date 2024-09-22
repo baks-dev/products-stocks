@@ -42,37 +42,20 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class AddQuantityProductStocksTotalByIncomingStock
+final readonly class AddQuantityProductStocksTotalByIncomingStock
 {
-    private ProductStocksByIdInterface $productStocks;
-    private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
-    private UserByUserProfileInterface $userByUserProfile;
-    private ProductStocksTotalStorageInterface $productStocksTotalStorage;
-    private AddProductStockInterface $addProductStock;
-    private DeduplicatorInterface $deduplicator;
-
 
     public function __construct(
-        ProductStocksByIdInterface $productStocks,
-        EntityManagerInterface $entityManager,
-        ProductStockStatusCollection $ProductStockStatusCollection,
+        private ProductStocksByIdInterface $productStocks,
+        private EntityManagerInterface $entityManager,
+        private UserByUserProfileInterface $userByUserProfile,
+        private ProductStocksTotalStorageInterface $productStocksTotalStorage,
+        private AddProductStockInterface $addProductStock,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $productsStocksLogger,
-        UserByUserProfileInterface $userByUserProfile,
-        ProductStocksTotalStorageInterface $productStocksTotalStorage,
-        AddProductStockInterface $addProductStock,
-        DeduplicatorInterface $deduplicator
     ) {
-        // Инициируем статусы складских остатков
-        $ProductStockStatusCollection->cases();
-
-        $this->productStocks = $productStocks;
-        $this->entityManager = $entityManager;
-        $this->userByUserProfile = $userByUserProfile;
         $this->logger = $productsStocksLogger;
-        $this->productStocksTotalStorage = $productStocksTotalStorage;
-        $this->addProductStock = $addProductStock;
-        $this->deduplicator = $deduplicator;
     }
 
     /**

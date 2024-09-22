@@ -19,13 +19,42 @@
                 <div class="w-50">
                     {{ form_row(form.number, { label: 'Номер закупки' }) }}
                 </div>
+
                 <div class="w-50">
-                    {{ form_row(form.preProduct, { label: 'Продукт', placeholder: 'Выберите продукцию из списка...', attr: { 'data-select' : 'select2' } }) }}
+                    {{ form_row(form.category, {
+                        label: 'Категория',
+                        placeholder: 'Выберите категорию из списка...',
+                        attr: { 'data-select' : 'select2' } }) }}
                 </div>
+
             </div>
 
 
-            <div id="preOffer" class="d-flex w-100 gap-3">
+            <div class="d-flex gap-3 align-content-center">
+
+                <div class="w-100 d-none" id="preProduct">
+                    {{ form_row(form.preProduct, {
+                        label: 'Продукт',
+                        placeholder: 'Выберите продукцию из списка...',
+                        attr: { 'data-select' : 'select2', placeholder: form.preProduct.vars.data ?: 'Продукция на складе отстутсвует', } }) }}
+                </div>
+
+                <div class="w-100 d-none" id="preOffer">
+                    {{ form_row(form.preOffer) }}
+                </div>
+
+                <div class="w-100 d-none" id="preVariation">
+                    {{ form_row(form.preVariation) }}
+                </div>
+
+                <div class="w-100 d-none" id="preModification">
+                    {{ form_row(form.preModification) }}
+                </div>
+
+            </div>
+
+
+            {# <div id="preOffer" class="d-flex w-100 gap-3">
 
                 <div>{{ form_row(form.preOffer) }}</div>
 
@@ -37,7 +66,7 @@
                     </div>
                 </div>
 
-            </div>
+            </div> #}
 
 
             {# <div class="d-flex justify-content-evenly gap-1 align-items-end">
@@ -66,7 +95,7 @@
                 <div class="mb-3">
 
                     <button type="button" id="purchase_product_stock_form_addPurchase"
-                            class="btn btn-outline-primary border-0 text-nowrap"
+                            class="btn btn-outline-secondary border-0 text-nowrap"
                             data-index="0"
                             data-prototype="{{ include(_self|replace({ "content.html.twig": "prototype.product.html.twig"}))|e('html_attr') }}"
                     >

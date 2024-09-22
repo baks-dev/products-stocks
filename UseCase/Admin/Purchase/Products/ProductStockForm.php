@@ -102,7 +102,6 @@ final class ProductStockForm extends AbstractType
                     return $modification instanceof ProductModificationConst ? $modification->getValue() : $modification;
                 },
                 function ($modification) {
-
                     return $modification ? new ProductModificationConst($modification) : null;
                 }
             )

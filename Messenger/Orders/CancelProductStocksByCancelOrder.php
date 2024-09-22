@@ -43,16 +43,15 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class CancelProductStocksByCancelOrder
+final readonly class CancelProductStocksByCancelOrder
 {
     private LoggerInterface $logger;
 
     public function __construct(
-        private readonly CurrentOrderEventInterface $currentOrderEvent,
-        private readonly ProductStocksByOrderInterface $productStocksByOrder,
-        private readonly CancelProductStockHandler $cancelProductStockHandler,
-        private readonly UserByUserProfileInterface $userByUserProfile,
-        private readonly DeduplicatorInterface $deduplicator,
+        private CurrentOrderEventInterface $currentOrderEvent,
+        private ProductStocksByOrderInterface $productStocksByOrder,
+        private CancelProductStockHandler $cancelProductStockHandler,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $productStocksLogger,
     ) {
         $this->logger = $productStocksLogger;
@@ -116,7 +115,7 @@ final class CancelProductStocksByCancelOrder
              * Присваиваем рандомные пользователя и профиль,
              * т.к. при отмене заявки нам важен только комментарий
              */
-            $OrderCanceledDTO = new CanceledOrderDTO(new UserUid(), new UserProfileUid());
+            $OrderCanceledDTO = new CanceledOrderDTO();
             $OrderEvent->getDto($OrderCanceledDTO);
 
             $CancelProductStockDTO = new CancelProductStockDTO();

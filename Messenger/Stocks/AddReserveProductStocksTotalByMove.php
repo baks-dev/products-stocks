@@ -39,26 +39,20 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class AddReserveProductStocksTotalByMove
+final readonly class AddReserveProductStocksTotalByMove
 {
-    private ProductStocksByIdInterface $productStocks;
-    private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
-    private MessageDispatchInterface $messageDispatch;
-    private DeduplicatorInterface $deduplicator;
 
     public function __construct(
-        ProductStocksByIdInterface $productStocks,
-        EntityManagerInterface $entityManager,
+        private ProductStocksByIdInterface $productStocks,
+        private EntityManagerInterface $entityManager,
+        private MessageDispatchInterface $messageDispatch,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $productsStocksLogger,
-        MessageDispatchInterface $messageDispatch,
-        DeduplicatorInterface $deduplicator
     ) {
-        $this->productStocks = $productStocks;
-        $this->entityManager = $entityManager;
+
         $this->logger = $productsStocksLogger;
-        $this->messageDispatch = $messageDispatch;
-        $this->deduplicator = $deduplicator;
+
     }
 
     /**

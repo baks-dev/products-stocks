@@ -86,7 +86,8 @@ final class PurchaseProductStockTest extends KernelTestCase
      */
     public function testUseCase(): void
     {
-        $PurchaseProductStockDTO = new PurchaseProductStockDTO(clone new UserProfileUid());
+        $PurchaseProductStockDTO = new PurchaseProductStockDTO();
+        $PurchaseProductStockDTO->setProfile(clone new UserProfileUid());
 
         $PurchaseProductStockDTO->setComment('Comment');
         self::assertEquals('Comment', $PurchaseProductStockDTO->getComment());

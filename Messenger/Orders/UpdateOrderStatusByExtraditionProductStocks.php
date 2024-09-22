@@ -43,33 +43,19 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class UpdateOrderStatusByExtraditionProductStocks
+final readonly class UpdateOrderStatusByExtraditionProductStocks
 {
-    private EntityManagerInterface $entityManager;
-    private CurrentOrderEventInterface $currentOrderEvent;
-    private OrderStatusHandler $OrderStatusHandler;
-    private CentrifugoPublishInterface $CentrifugoPublish;
     private LoggerInterface $logger;
-    private DeduplicatorInterface $deduplicator;
-    private UserByUserProfileInterface $userByUserProfile;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        CurrentOrderEventInterface $currentOrderEvent,
-        OrderStatusHandler $OrderStatusHandler,
-        CentrifugoPublishInterface $CentrifugoPublish,
-        UserByUserProfileInterface $userByUserProfile,
+        private EntityManagerInterface $entityManager,
+        private CurrentOrderEventInterface $currentOrderEvent,
+        private OrderStatusHandler $OrderStatusHandler,
+        private CentrifugoPublishInterface $CentrifugoPublish,
+        private DeduplicatorInterface $deduplicator,
         LoggerInterface $ordersOrderLogger,
-        DeduplicatorInterface $deduplicator
     ) {
-
-        $this->entityManager = $entityManager;
-        $this->currentOrderEvent = $currentOrderEvent;
-        $this->OrderStatusHandler = $OrderStatusHandler;
-        $this->CentrifugoPublish = $CentrifugoPublish;
         $this->logger = $ordersOrderLogger;
-        $this->deduplicator = $deduplicator;
-        $this->userByUserProfile = $userByUserProfile;
     }
 
     /**
@@ -128,14 +114,9 @@ final class UpdateOrderStatusByExtraditionProductStocks
 
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
 
-        $User = $this->userByUserProfile
-            ->forProfile($ProductStockEvent->getProfile())
-            ->findUser();
-
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusExtradition::class,
             $OrderEvent->getId(),
-            $User,
             $ProductStockEvent->getProfile()
         );
 

@@ -31,35 +31,14 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class RecalculateProductMessage
+final readonly class RecalculateProductMessage
 {
-
-    /** Идентификатор */
-    #[Assert\Uuid]
-    private ProductUid $product;
-
-    #[Assert\Uuid]
-    private ?ProductOfferConst $offer;
-
-    #[Assert\Uuid]
-    private ?ProductVariationConst $variation;
-
-    #[Assert\Uuid]
-    private ?ProductModificationConst $modification;
-
-
     public function __construct(
-        ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
-    )
-    {
-        $this->product = $product;
-        $this->offer = $offer;
-        $this->variation = $variation;
-        $this->modification = $modification;
-    }
+        private ProductUid $product,
+        private ?ProductOfferConst $offer,
+        private ?ProductVariationConst $variation,
+        private ?ProductModificationConst $modification
+    ) {}
 
     /**
      * Product

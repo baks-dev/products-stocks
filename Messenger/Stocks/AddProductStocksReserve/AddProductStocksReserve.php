@@ -34,23 +34,17 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class AddProductStocksReserve
+final readonly class AddProductStocksReserve
 {
-    private ProductStockQuantityInterface $productStockMinQuantity;
-    private EntityManagerInterface $entityManager;
     private LoggerInterface $logger;
-    private AddProductStockInterface $addProductStock;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ProductStockQuantityInterface $productStockMinQuantity,
+        private EntityManagerInterface $entityManager,
+        private ProductStockQuantityInterface $productStockMinQuantity,
+        private AddProductStockInterface $addProductStock,
         LoggerInterface $productsStocksLogger,
-        AddProductStockInterface $addProductStock,
     ) {
-        $this->productStockMinQuantity = $productStockMinQuantity;
-        $this->entityManager = $entityManager;
         $this->logger = $productsStocksLogger;
-        $this->addProductStock = $addProductStock;
     }
 
     /**

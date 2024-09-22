@@ -35,11 +35,10 @@ final class ProductStockDispatch
 {
     public function __construct(private readonly AppCacheInterface $cache) {}
 
-    public function __invoke(ProductStockMessage $message): void {
-
+    public function __invoke(ProductStockMessage $message): void
+    {
         /// cacheClear
         $cache = $this->cache->init('products-product');
         $cache->clear();
-
     }
 }

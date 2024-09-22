@@ -33,29 +33,15 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see SubProductStocksTotalReserveMessage */
-final class SubProductStocksTotalAndReserveMessage
+final readonly class SubProductStocksTotalAndReserveMessage
 {
-    private UserProfileUid $profile;
-    private ProductUid $product;
-    private ?ProductOfferConst $offer;
-    private ?ProductVariationConst $variation;
-    private ?ProductModificationConst $modification;
-
     public function __construct(
-        UserProfileUid $profile,
-        ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
-    )
-    {
-
-        $this->profile = $profile;
-        $this->product = $product;
-        $this->offer = $offer;
-        $this->variation = $variation;
-        $this->modification = $modification;
-    }
+        private UserProfileUid $profile,
+        private ProductUid $product,
+        private ?ProductOfferConst $offer,
+        private ?ProductVariationConst $variation,
+        private ?ProductModificationConst $modification
+    ) {}
 
     /**
      * Profile

@@ -28,23 +28,13 @@ namespace BaksDev\Products\Stocks\Messenger;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 
-final class ProductStockMessage
+final readonly class ProductStockMessage
 {
-    /** Идентификатор */
-    private ProductStockUid $id;
-
-    /** Идентификатор события */
-    private ProductStockEventUid $event;
-
-    /** Идентификатор предыдущего события */
-    private ?ProductStockEventUid $last;
-
-    public function __construct(ProductStockUid $id, ProductStockEventUid $event, ?ProductStockEventUid $last = null)
-    {
-        $this->id = $id;
-        $this->event = $event;
-        $this->last = $last;
-    }
+    public function __construct(
+        private ProductStockUid $id,
+        private ProductStockEventUid $event,
+        private ?ProductStockEventUid $last = null
+    ) {}
 
     /** Идентификатор */
     public function getId(): ProductStockUid

@@ -19,6 +19,7 @@
 namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase;
 
 use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -63,8 +64,8 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     // Вспомогательные свойства
 
-    /** Склад */
-    //private ?ContactsRegionCallUid $preWarehouse = null;
+    /** Категория */
+    private ?CategoryProductUid $category = null;
 
     /** Продукт */
     private ?ProductUid $preProduct = null;
@@ -81,9 +82,8 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     /** Количество */
     private ?int $preTotal = null;
 
-    public function __construct(UserProfileUid $profile)
+    public function __construct()
     {
-        $this->profile = $profile;
         $this->status = new ProductStockStatus(ProductStockStatusPurchase::class);
         $this->product = new ArrayCollection();
     }
@@ -96,6 +96,20 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     public function setId(ProductStockEventUid $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * Category
+     */
+    public function getCategory(): ?CategoryProductUid
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?CategoryProductUid $category): self
+    {
+        $this->category = $category;
+        return $this;
     }
 
     /** Коллекция продукции  */
@@ -111,7 +125,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     public function addProduct(Products\ProductStockDTO $product): void
     {
-        $filter = $this->product->filter(function(Products\ProductStockDTO $element) use ($product) {
+        $filter = $this->product->filter(function (Products\ProductStockDTO $element) use ($product) {
             return $element->getProduct()->equals($product->getProduct()) &&
                 $element->getOffer()?->equals($product->getOffer()) &&
                 $element->getVariation()?->equals($product->getVariation()) &&
@@ -145,6 +159,13 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     {
         return $this->profile;
     }
+
+    public function setProfile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
+
 
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
