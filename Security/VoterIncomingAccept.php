@@ -32,7 +32,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 class VoterIncomingAccept implements VoterInterface
 {
     /** Добавить приход на склад */
-    public const VOTER = 'INCOMING_ACCEPT';
+    public const string VOTER = 'INCOMING_ACCEPT';
 
     public static function getVoter(): string
     {

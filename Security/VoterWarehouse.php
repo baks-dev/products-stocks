@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterWarehouse implements VoterInterface, MenuAdminInterface
 {
     /** Список поступлений на склад */
-    public const VOTER = 'WAREHOUSE';
+    public const string VOTER = 'WAREHOUSE';
 
     public static function getVoter(): string
     {

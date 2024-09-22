@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.security.voter')]
 final class VoterPickup implements VoterInterface, MenuAdminInterface
 {
-    public const VOTER = 'PICKUP';
+    public const string VOTER = 'PICKUP';
 
     public static function getVoter(): string
     {

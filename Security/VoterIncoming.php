@@ -35,7 +35,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterIncoming implements VoterInterface, MenuAdminInterface
 {
     /** Список приходных ордеров */
-    public const VOTER = 'INCOMING';
+    public const string VOTER = 'INCOMING';
 
     public static function getVoter(): string
     {

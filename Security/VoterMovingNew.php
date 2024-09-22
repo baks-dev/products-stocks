@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterMovingNew implements VoterInterface, MenuAdminInterface
 {
     /** Добавить заявку на перемещение */
-    public const VOTER = 'MOVING_NEW';
+    public const string VOTER = 'MOVING_NEW';
 
     public static function getVoter(): string
     {

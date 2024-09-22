@@ -54,6 +54,7 @@ final class DeleteProductStocksDTO implements ProductStockEventInterface
 
     public function __construct()
     {
+        /** При удалении присваиваем статус ошибки */
         $this->status = new ProductStockStatus(ProductStockStatusError::class);
         $this->modify = new Modify\ModifyDTO();
     }

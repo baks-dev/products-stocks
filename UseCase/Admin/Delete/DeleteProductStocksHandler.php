@@ -25,36 +25,20 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Delete;
 
-
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use DomainException;
 
 final class DeleteProductStocksHandler extends AbstractHandler
 {
-
     /** @see ProductStocks */
-    public function handle(
-        DeleteProductStocksDTO $command
-    ): string|ProductStock
+    public function handle(DeleteProductStocksDTO $command): string|ProductStock
     {
+        /** Добавляем command для валидации и гидрации */
+        $this->setCommand($command);
 
-        /** Валидация DTO  */
-        $this->validatorCollection->add($command);
-
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        try
-        {
-            $this->preRemove($command);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
+        $this->preEventRemove(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -62,7 +46,7 @@ final class DeleteProductStocksHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        $this->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

@@ -35,7 +35,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterStorage implements VoterInterface
 {
     /** Изменить место складирования */
-    public const VOTER = 'STORAGE';
+    public const string VOTER = 'STORAGE';
 
     public static function getVoter(): string
     {

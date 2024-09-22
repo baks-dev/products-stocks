@@ -172,7 +172,9 @@
         <div class="card mb-3 border-light">
             <div class="card-header bg-body border-light">
 
-                <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
+                <div class="card-title w-100 d-flex gap-3 justify-content-between text-secondary">
+
+                    {{ include(_self|replace({ "content.html.twig": "_usecase.html.twig" })) }}
 
                     <div>
                         <a href="{{ path('products-stocks:admin.action', { id: item.id }) }}"

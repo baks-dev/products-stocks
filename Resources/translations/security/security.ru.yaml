@@ -57,10 +57,15 @@ ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Закупки'
   desc: 'Закупки товаров'
 
-
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Добавить закупку'
   desc: 'Добавить закупку товара на склад'
+
+ROLE_PRODUCT_STOCK_PURCHASE_DELETE:
+  name: 'Удалить закупку'
+  desc: 'Удалить закупку'
+
+
 
 ROLE_PRODUCT_STOCK_WAREHOUSE:
   name: 'Поступления на склад'

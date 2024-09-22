@@ -52,6 +52,10 @@ ROLE_PRODUCT_STOCK_PURCHASE:
   name: 'Purchases'
   desc: 'Procurement of goods'
 
+ROLE_PRODUCT_STOCK_PURCHASE_DELETE:
+  name: 'Delete purchase'
+  desc: 'Delete purchase'
+
 
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Add purchase'

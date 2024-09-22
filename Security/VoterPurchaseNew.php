@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterPurchaseNew implements VoterInterface, MenuAdminInterface
 {
     /** Добавить закупку */
-    public const VOTER = 'PURCHASE_NEW';
+    public const string VOTER = 'PURCHASE_NEW';
 
     public static function getVoter(): string
     {

@@ -35,7 +35,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterEdit implements VoterInterface
 {
     /** Изменить состояние склада */
-    public const VOTER = 'EDIT';
+    public const string VOTER = 'EDIT';
 
     public static function getVoter(): string
     {

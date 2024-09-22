@@ -32,7 +32,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 class VoterWarehouseSend implements VoterInterface
 {
     /** Отправить закупку на склад */
-    public const VOTER = 'WAREHOUSE_SEND';
+    public const string VOTER = 'WAREHOUSE_SEND';
 
     public static function getVoter(): string
     {

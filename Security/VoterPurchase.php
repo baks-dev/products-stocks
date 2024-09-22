@@ -35,7 +35,7 @@ final class VoterPurchase implements VoterInterface, MenuAdminInterface
 {
 
     /** Закупки продукции */
-    public const VOTER = 'PURCHASE';
+    public const string VOTER = 'PURCHASE';
 
     public static function getVoter(): string
     {

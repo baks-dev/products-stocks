@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class VoterMoving implements VoterInterface, MenuAdminInterface
 {
     /** Список перемещений между складами */
-    public const VOTER = 'MOVING';
+    public const string VOTER = 'MOVING';
 
     public static function getVoter(): string
     {

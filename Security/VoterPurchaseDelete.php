@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
 
-
 use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
 use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
 use BaksDev\Users\Profile\Group\Security\RoleInterface;
@@ -32,9 +31,10 @@ use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-final class VoterPackage implements VoterInterface, MenuAdminInterface
+final class VoterPurchaseDelete implements VoterInterface
 {
-    public const string VOTER = 'PACKAGE';
+    /** Добавить закупку */
+    public const string VOTER = 'PURCHASE_DELETE';
 
     public static function getVoter(): string
     {
@@ -44,49 +44,5 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     public function equals(RoleInterface $role): bool
     {
         return $role->getRole() === Role::ROLE;
-    }
-
-    /**
-     * Добавляем раздел в меню администрирования.
-     */
-
-    /**
-     * Метод возвращает префикс роли доступа.
-     */
-    public function getRole(): string
-    {
-        return self::getVoter();
-    }
-
-    /** Метод возвращает PATH раздела */
-    public function getPath(): string
-    {
-        return 'products-stocks:admin.package.index';
-    }
-
-    /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
-    {
-        return new MenuGroupStocks();
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public function getSortMenu(): int
-    {
-        return 201;
-    }
-
-    /** Метод возвращает флаг "Показать в выпадающем меню"  */
-    public function getDropdownMenu(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Метод возвращает флаг "Модальное окно".
-     */
-    public function getModal(): bool
-    {
-        return false;
     }
 }
