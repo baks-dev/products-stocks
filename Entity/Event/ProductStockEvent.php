@@ -158,9 +158,19 @@ class ProductStockEvent extends EntityEvent
         return $this->number;
     }
 
+    /**
+     * @deprecated Используйте метод equalsProductStockStatus
+     * @see equalsProductStockStatus
+     */
     public function getStatus(): ProductStockStatus
     {
         return $this->status;
+    }
+
+
+    public function equalsProductStockStatus(mixed $status): bool
+    {
+        return $this->status->equals($status);
     }
 
     /**
@@ -214,10 +224,21 @@ class ProductStockEvent extends EntityEvent
 
     /**
      * Идентификатор ответственного.
+     * @deprecated использовать метод getStocksProfile
+     * @see getStocksProfile
      */
     public function getProfile(): UserProfileUid
     {
         return $this->profile;
+    }
+
+
+    /**
+     * Идентификатор ответственного.
+     */
+    public function getStocksProfile(): UserProfileUid
+    {
+        return $this->invariable->getProfile();
     }
 
     /**
