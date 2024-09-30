@@ -115,21 +115,6 @@ final readonly class AddQuantityProductByIncomingStock
 
     public function changeTotal(ProductStockProduct $product): void
     {
-        $CurrentProductDTO = $this->currentProductIdentifierByConst
-            ->forProduct($product->getProduct())
-            ->forOfferConst($product->getOffer())
-            ->forVariationConst($product->getVariation())
-            ->forModificationConst($product->getModification())
-            ->execute();
-
-        $rows = $this->addProductQuantity
-            ->forEvent($CurrentProductDTO->getEvent())
-            ->forOffer($CurrentProductDTO->getOffer())
-            ->forVariation($CurrentProductDTO->getVariation())
-            ->forModification($CurrentProductDTO->getModification())
-            ->addQuantity($product->getTotal())
-            ->addReserve(false)
-            ->update();
 
         $context = [
             self::class.':'.__LINE__,
@@ -140,6 +125,28 @@ final readonly class AddQuantityProductByIncomingStock
             'ProductVariationConst' => (string) $product->getVariation(),
             'ProductModificationConst' => (string) $product->getModification(),
         ];
+
+        $CurrentProductDTO = $this->currentProductIdentifierByConst
+            ->forProduct($product->getProduct())
+            ->forOfferConst($product->getOffer())
+            ->forVariationConst($product->getVariation())
+            ->forModificationConst($product->getModification())
+            ->execute();
+
+        if($CurrentProductDTO === false)
+        {
+            $this->logger->critical('Поступление на склад: Невозможно пополнить общий остаток (карточка не найдена)', $context);
+            return;
+        }
+
+        $rows = $this->addProductQuantity
+            ->forEvent($CurrentProductDTO->getEvent())
+            ->forOffer($CurrentProductDTO->getOffer())
+            ->forVariation($CurrentProductDTO->getVariation())
+            ->forModification($CurrentProductDTO->getModification())
+            ->addQuantity($product->getTotal())
+            ->addReserve(false)
+            ->update();
 
         if($rows)
         {
