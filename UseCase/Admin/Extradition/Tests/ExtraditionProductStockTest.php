@@ -28,7 +28,12 @@ use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHan
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Tests\PackageProductStockTest;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @group products-stocks
@@ -45,10 +50,11 @@ final class ExtraditionProductStockTest extends KernelTestCase
      */
     public function testProductStockDTO(): void
     {
-        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
+        // Бросаем событие консольной комманды
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
+        $dispatcher->dispatch($event, 'console.command');
 
-        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
-        $ProductStockStatusCollection->cases();
 
         /** @var CurrentProductStocksInterface $CurrentProductStocksInterface */
         $CurrentProductStocksInterface = self::getContainer()->get(CurrentProductStocksInterface::class);

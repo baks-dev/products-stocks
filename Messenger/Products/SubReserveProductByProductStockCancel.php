@@ -27,10 +27,12 @@ namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Lock\AppLockInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
+use BaksDev\Products\Product\Repository\UpdateProductQuantity\SubProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
@@ -50,6 +52,8 @@ final readonly class SubReserveProductByProductStockCancel
     private LoggerInterface $logger;
 
     public function __construct(
+        private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
+        private SubProductQuantityInterface $subProductQuantity,
         private ProductStocksByIdInterface $productStocks,
         private ProductModificationQuantityInterface $modificationQuantity,
         private ProductVariationQuantityInterface $variationQuantity,
@@ -63,7 +67,7 @@ final readonly class SubReserveProductByProductStockCancel
     }
 
     /**
-     * Снимает ТОЛЬКО! резерв продукции в карточке при отмене заявки без заказа
+     * Снимает ТОЛЬКО РЕЗЕРВ! продукции в карточке при отмене заявки без заказа
      */
     public function __invoke(ProductStockMessage $message): void
     {
@@ -84,7 +88,7 @@ final readonly class SubReserveProductByProductStockCancel
         }
 
         // Если Статус не является Cancel «Отменен».
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
         {
             return;
         }
@@ -103,7 +107,6 @@ final readonly class SubReserveProductByProductStockCancel
             $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
-
 
         $Deduplicator = $this->deduplicator
             ->namespace('products-stocks')
@@ -131,53 +134,23 @@ final readonly class SubReserveProductByProductStockCancel
 
     public function changeReserve(ProductStockProduct $product): void
     {
-        $ProductUpdateQuantityReserve = null;
+        $CurrentProductDTO = $this->currentProductIdentifierByConst
+            ->forProduct($product->getProduct())
+            ->forOfferConst($product->getOffer())
+            ->forVariationConst($product->getVariation())
+            ->forModificationConst($product->getModification())
+            ->execute();
 
-        // Количественный учет модификации множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getModification())
-        {
-            $this->entityManager->clear();
 
-            $ProductUpdateQuantityReserve = $this->modificationQuantity->getProductModificationQuantity(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification()
-            );
-        }
+        $rows = $this->subProductQuantity
+            ->forEvent($CurrentProductDTO->getEvent())
+            ->forOffer($CurrentProductDTO->getOffer())
+            ->forVariation($CurrentProductDTO->getVariation())
+            ->forModification($CurrentProductDTO->getModification())
+            ->subQuantity(false)
+            ->subReserve($product->getTotal())
+            ->update();
 
-        // Количественный учет множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getVariation())
-        {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantityReserve = $this->variationQuantity->getProductVariationQuantity(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation()
-            );
-        }
-
-        // Количественный учет торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getOffer())
-        {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantityReserve = $this->offerQuantity->getProductOfferQuantity(
-                $product->getProduct(),
-                $product->getOffer()
-            );
-        }
-
-        // Количественный учет продукта
-        if(null === $ProductUpdateQuantityReserve)
-        {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantityReserve = $this->productQuantity->getProductQuantity(
-                $product->getProduct()
-            );
-        }
 
         $context = [
             self::class.':'.__LINE__,
@@ -189,15 +162,14 @@ final readonly class SubReserveProductByProductStockCancel
             'ProductModificationConst' => (string) $product->getModification(),
         ];
 
-
-        if($ProductUpdateQuantityReserve && $ProductUpdateQuantityReserve->subReserve($product->getTotal()))
+        if($rows)
         {
-            $this->entityManager->flush();
             $this->logger->info('Перемещение: Отменили общий резерв в карточке при отмене складской заявки на перемещение', $context);
-            return;
         }
-
-        $this->logger->critical('Перемещение: Невозможно отменить общий резерв продукции: карточка не найдена либо недостаточное количество резерва)', $context);
+        else
+        {
+            $this->logger->critical('Перемещение: Невозможно отменить общий резерв продукции (карточка не найдена либо недостаточное количество резерва)', $context);
+        }
 
     }
 }

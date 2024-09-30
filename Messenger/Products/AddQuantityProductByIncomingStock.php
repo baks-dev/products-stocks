@@ -27,14 +27,18 @@ namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Lock\AppLockInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
+use BaksDev\Products\Product\Repository\UpdateProductQuantity\AddProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -46,12 +50,10 @@ final readonly class AddQuantityProductByIncomingStock
     private LoggerInterface $logger;
 
     public function __construct(
+        private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
+        private AddProductQuantityInterface $addProductQuantity,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private ProductStocksByIdInterface $productStocks,
-        private ProductModificationQuantityInterface $modificationQuantity,
-        private ProductVariationQuantityInterface $variationQuantity,
-        private ProductOfferQuantityInterface $offerQuantity,
-        private ProductQuantityInterface $productQuantity,
-        private EntityManagerInterface $entityManager,
         private DeduplicatorInterface $deduplicator,
         LoggerInterface $productsProductLogger,
     ) {
@@ -63,24 +65,20 @@ final readonly class AddQuantityProductByIncomingStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
-
-        $this->entityManager->clear();
-
-        $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
+        $ProductStockEvent = $this
+            ->ProductStocksEventRepository
             ->find($message->getEvent());
 
-        if(!$ProductStockEvent)
+        if($ProductStockEvent === false)
         {
             return;
         }
 
         // Если статус не является Incoming «Приход на склад»
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class))
         {
             return;
         }
-
 
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
@@ -104,13 +102,10 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
-
-        $this->entityManager->clear();
-
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-            /** Снимаем резерв отмененного заказа */
+            /** Пополняем наличие карточки */
             $this->changeTotal($product);
         }
 
@@ -120,6 +115,22 @@ final readonly class AddQuantityProductByIncomingStock
 
     public function changeTotal(ProductStockProduct $product): void
     {
+        $CurrentProductDTO = $this->currentProductIdentifierByConst
+            ->forProduct($product->getProduct())
+            ->forOfferConst($product->getOffer())
+            ->forVariationConst($product->getVariation())
+            ->forModificationConst($product->getModification())
+            ->execute();
+
+        $rows = $this->addProductQuantity
+            ->forEvent($CurrentProductDTO->getEvent())
+            ->forOffer($CurrentProductDTO->getOffer())
+            ->forVariation($CurrentProductDTO->getVariation())
+            ->forModification($CurrentProductDTO->getModification())
+            ->addQuantity($product->getTotal())
+            ->addReserve(false)
+            ->update();
+
         $context = [
             self::class.':'.__LINE__,
             'total' => $product->getTotal(),
@@ -130,107 +141,13 @@ final readonly class AddQuantityProductByIncomingStock
             'ProductModificationConst' => (string) $product->getModification(),
         ];
 
-        /**
-         * Количественный учет модификации множественного варианта торгового предложения
-         */
-        if($product->getModification())
+        if($rows)
         {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation(),
-                $product->getModification()
-            );
-
-            if($ProductUpdateQuantity)
-            {
-                $ProductUpdateQuantity->addQuantity($product->getTotal());
-                $this->entityManager->flush();
-                $this->logger->info('Поступление на склад: Пополнили общий остаток модификации множественного варианта в карточке', $context);
-            }
-            else
-            {
-                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток модификации множественного варианта: карточка не найдена)', $context);
-            }
-
-            return;
-        }
-
-
-        /**
-         * Количественный учет множественного варианта торгового предложения
-         */
-        if($product->getVariation())
-        {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantity = $this->variationQuantity->getProductVariationQuantity(
-                $product->getProduct(),
-                $product->getOffer(),
-                $product->getVariation()
-            );
-
-            if($ProductUpdateQuantity)
-            {
-                $ProductUpdateQuantity->addQuantity($product->getTotal());
-                $this->entityManager->flush();
-                $this->logger->info('Поступление на склад: Пополнили общий остаток множественного варианта в карточке', $context);
-            }
-            else
-            {
-                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток множественного варианта: карточка не найдена)', $context);
-            }
-
-            return;
-        }
-
-
-        /**
-         * Количественный учет торгового предложения
-         */
-        if($product->getOffer())
-        {
-            $this->entityManager->clear();
-
-            $ProductUpdateQuantity = $this->offerQuantity->getProductOfferQuantity(
-                $product->getProduct(),
-                $product->getOffer()
-            );
-
-            if($ProductUpdateQuantity)
-            {
-                $ProductUpdateQuantity->addQuantity($product->getTotal());
-                $this->entityManager->flush();
-                $this->logger->info('Поступление на склад: пополнили общий остаток торгового предложения в карточке', $context);
-            }
-            else
-            {
-                $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток торгового предложения: карточка не найдена)', $context);
-            }
-        }
-
-
-        /**
-         * Количественный учет продукта
-         */
-
-        $this->entityManager->clear();
-
-        $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
-            $product->getProduct()
-        );
-
-        if($ProductUpdateQuantity)
-        {
-            $ProductUpdateQuantity->addQuantity($product->getTotal());
-            $this->entityManager->flush();
-            $this->logger->info('Поступление на склад: Пополнили общий остаток продукции в карточке', $context);
+            $this->logger->info('Поступление на склад: Пополнили общий остаток в карточке', $context);
         }
         else
         {
-            $this->logger->critical('Поступление на склад: Невозможно добавить общий остаток продукции: карточка не найдена)', $context);
+            $this->logger->critical('Поступление на склад: Невозможно пополнить общий остаток (карточка не найдена)', $context);
         }
     }
 }

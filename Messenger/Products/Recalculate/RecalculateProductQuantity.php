@@ -58,8 +58,6 @@ final readonly class RecalculateProductQuantity
      */
     public function __invoke(RecalculateProductMessage $product): void
     {
-
-
         $ProductUpdateQuantity = null;
 
         // Количественный учет модификации множественного варианта торгового предложения
