@@ -4,6 +4,7 @@
 
 <div style="max-width: 850px">
 
+
     {% for item in query.data|filter(v => v.user_profile_id == app.user.profile) %}
 
         <div class="d-flex align-items-center w-100">

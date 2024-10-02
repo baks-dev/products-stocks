@@ -63,15 +63,12 @@ final class IndexController extends AbstractController
             'action' => $this->generateUrl('products-stocks:admin.moving.index'),
         ]);
         $filterForm->handleRequest($request);
-        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
-
 
         // Получаем список закупок ответственного лица
         $query = $allMove
             ->search($search)
             ->filter($filter)
             ->fetchAllProductStocksAssociative($this->getProfileUid());
-
 
         return $this->render(
             [

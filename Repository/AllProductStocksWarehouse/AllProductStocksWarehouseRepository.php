@@ -538,7 +538,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
                 ->addSearchLike('product_trans.name');
         }
 
-        $dbal->orderBy('modify.mod_date');
+        $dbal->orderBy('modify.mod_date', 'DESC');
 
         return $this->paginator->fetchAllAssociative($dbal);
 

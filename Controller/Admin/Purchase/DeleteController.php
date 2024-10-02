@@ -42,7 +42,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCKS_PURCHASE_DELETE')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_PURCHASE_DELETE')]
 final class DeleteController extends AbstractController
 {
     #[Route('/admin/product/stock/purchase/delete/{id}', name: 'admin.purchase.delete', methods: ['GET', 'POST'])]
