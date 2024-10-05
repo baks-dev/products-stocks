@@ -93,7 +93,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
          */
         $OrderEvent = $this->currentOrderEvent
             ->forOrder($ProductStockEvent->getOrder())
-            ->find();
+            ->execute();
 
         if(!$OrderEvent)
         {
