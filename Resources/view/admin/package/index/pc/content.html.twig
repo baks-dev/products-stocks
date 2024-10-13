@@ -360,18 +360,6 @@
                                     </a>
                                 </li>
 
-                                {% if constant('BaksDev\\Products\\Sign\\BaksDevProductsSignBundle::NAMESPACE') is defined %}
-                                    <li>
-                                        <a href="{{ path('products-sign:admin.print', { order : item.order_id }) }}"
-                                           class="dropdown-item prnt"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#modal"
-                                        >
-                                            Честный знак
-                                        </a>
-                                    </li>
-                                {% endif %}
-
                                 <li>
                                     <a href="{{ path('orders-order:admin.document.receipt', { id : item.order_id }) }}"
                                        class="dropdown-item prnt"
@@ -381,6 +369,33 @@
                                         Приходный ордер
                                     </a>
                                 </li>
+
+                                {% if constant('BaksDev\\Products\\Sign\\BaksDevProductsSignBundle::NAMESPACE') is defined %}
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+                                    <li><h6 class="dropdown-header">Честный знак</h6></li>
+
+                                    <li>
+                                        <a href="{{ path('products-sign:admin.print.orders', { order : item.order_id }) }}"
+                                           class="dropdown-item prnt"
+                                           data-bs-toggle="modal"
+                                           data-bs-target="#modal"
+                                        >
+                                            Печать честных знаков
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="{{ path('products-sign:admin.document.orders', { order : item.order_id }) }}"
+                                           class="dropdown-item"
+                                        >
+                                            Скачать список маркировок
+                                        </a>
+                                    </li>
+
+                                {% endif %}
                             </ul>
                         </div>
 
