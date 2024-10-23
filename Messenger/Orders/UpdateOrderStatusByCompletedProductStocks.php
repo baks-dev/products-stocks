@@ -34,7 +34,6 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
-use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -72,7 +71,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
         }
 
         /** Если складская заявка не является статусом Completed «Выдан по месту назначения» */
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCompleted::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class))
         {
             return;
         }
