@@ -1,11 +1,10 @@
-
 <tr>
     <td class="p-0" style="background-color: unset; box-shadow: unset;">&nbsp;</td>
 </tr>
 
 <tr class="vertical-middle">
 
-    {#<td class="text-nowrap">
+    {# <td class="text-nowrap">
     #}{# Пользовательское меню #}{#
     {% if app.user.profile == item.users_profile_id %}
     #}{# Пользовательское меню #}{#
@@ -13,7 +12,7 @@
 {% else %}
     &nbsp;
 {% endif %}
-</td>#}
+</td> #}
 
     <td class="text-center">
         <a href="{{ path('products-product:user.catalog.category', {
@@ -104,7 +103,7 @@
         </div>
     </td>
 
-    {#<td>
+    {# <td>
         <div
                 {{ item.users_profile_location ? 'style="cursor: help;"' }}
                 class="p-1 text-nowrap"
@@ -116,17 +115,17 @@
         >
             {{ item.users_profile_username }}
         </div>
-    </td>#}
+    </td> #}
 
-    {#<td class="text-center">
+    {# <td class="text-center">
         {{ item.stock_total }}
-    </td>#}
+    </td> #}
 
-    {#<td class="">
+    {# <td class="">
         {{ item.stock_storage ?: '-' }}
-    </td>#}
+    </td> #}
 
-    {#<td class="text-center">
+    {# <td class="text-center">
 
         {% if item.stock_reserve %}
 
@@ -146,10 +145,10 @@
             -
         {% endif %}
 
-    </td>#}
+    </td> #}
 
 
-    {#<td class="text-center">
+    {# <td class="text-center">
 
         {% if item.stock_total >= item.stock_reserve %}
             {{ item.stock_total - item.stock_reserve }}
@@ -165,6 +164,6 @@
         </span>
         {% endif %}
 
-    </td>#}
+    </td> #}
 
 </tr>

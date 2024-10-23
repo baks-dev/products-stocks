@@ -42,7 +42,8 @@ final class SubProductStocksTotalReserve
         private ProductStockQuantityInterface $productStockMinQuantity,
         private SubProductStockInterface $updateProductStock,
         LoggerInterface $productsStocksLogger,
-    ) {
+    )
+    {
         $this->logger = $productsStocksLogger;
     }
 
