@@ -60,7 +60,7 @@ final readonly class ProductStockByNumberRepository implements ProductStockByNum
                 ProductStockEvent::class,
                 'event',
                 'WITH',
-                'event.id = main.event'
+                'event.id = stock.event'
             );
 
         return $qb->getOneOrNullResult() ?: false;
