@@ -36,9 +36,6 @@ use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrder
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
-use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -65,6 +62,20 @@ final readonly class CancelProductStocksByCancelOrder
 
     public function __invoke(OrderMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                OrderStatusCanceled::STATUS,
+                self::class
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $this->logger->debug(self::class, [$message]);
 
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent
@@ -77,7 +88,7 @@ final readonly class CancelProductStocksByCancelOrder
         }
 
         /** Если статус заказа не Canceled «Отменен» - завершаем обработчик */
-        if(false === $OrderEvent->getStatus()->equals(OrderStatusCanceled::class))
+        if(false === $OrderEvent->isStatusEquals(OrderStatusCanceled::class))
         {
             return;
         }
@@ -86,19 +97,6 @@ final readonly class CancelProductStocksByCancelOrder
         $stocks = $this->productStocksByOrder->findByOrder($message->getId());
 
         if(empty($stocks))
-        {
-            return;
-        }
-
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                OrderStatusCanceled::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
         {
             return;
         }

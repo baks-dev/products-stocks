@@ -63,6 +63,20 @@ final readonly class SubReserveProductStocksTotalByOrderComplete
      */
     public function __invoke(OrderMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                OrderStatusCompleted::STATUS,
+                self::class
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        $this->logger->debug(self::class, [$message]);
 
         $this->entityManager->clear();
 
@@ -77,7 +91,7 @@ final readonly class SubReserveProductStocksTotalByOrderComplete
         }
 
         /** Если статус заказа не Completed «Выполнен» */
-        if(false === $OrderEvent->getStatus()->equals(OrderStatusCompleted::class))
+        if(false === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
         {
             return;
         }
@@ -95,18 +109,6 @@ final readonly class SubReserveProductStocksTotalByOrderComplete
             return;
         }
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                OrderStatusCompleted::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
 
         /** @var OrderProduct $product */
         foreach($OrderEvent->getProduct() as $product)
