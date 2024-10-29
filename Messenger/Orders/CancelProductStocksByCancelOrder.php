@@ -75,8 +75,6 @@ final readonly class CancelProductStocksByCancelOrder
             return;
         }
 
-        $this->logger->debug(self::class, [$message]);
-
         /** Получаем активное состояние заказа */
         $OrderEvent = $this->currentOrderEvent
             ->forOrder($message->getId())
@@ -105,7 +103,7 @@ final readonly class CancelProductStocksByCancelOrder
         foreach($stocks as $ProductStockEvent)
         {
             /** Если статус складской заявки Canceled «Отменен» - пропускаем */
-            if(true === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
+            if(true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
             {
                 continue;
             }

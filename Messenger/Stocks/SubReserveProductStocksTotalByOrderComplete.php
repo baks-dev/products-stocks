@@ -76,8 +76,6 @@ final readonly class SubReserveProductStocksTotalByOrderComplete
             return;
         }
 
-        $this->logger->debug(self::class, [$message]);
-
         $this->entityManager->clear();
 
         /** @var OrderEvent $OrderEvent */
@@ -108,7 +106,6 @@ final readonly class SubReserveProductStocksTotalByOrderComplete
         {
             return;
         }
-
 
         /** @var OrderProduct $product */
         foreach($OrderEvent->getProduct() as $product)
