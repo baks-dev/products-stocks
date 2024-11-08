@@ -28,14 +28,12 @@ namespace BaksDev\Products\Stocks\Messenger\Orders;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
-use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusExtradition;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
-use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -62,9 +60,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        /**
-         * Получаем статус заявки.
-         */
+        /** @var ProductStockEvent $ProductStockEvent */
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
@@ -103,7 +99,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusExtradition::STATUS,
-                md5(self::class)
+                self::class
             ]);
 
         if($Deduplicator->isExecuted())
@@ -116,8 +112,11 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusExtradition::class,
             $OrderEvent->getId(),
-            $ProductStockEvent->getProfile()
+            $ProductStockEvent->getStocksProfile()
         );
+
+        $ModifyDTO = $OrderStatusDTO->getModify();
+        $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
 
         $this->OrderStatusHandler->handle($OrderStatusDTO);
 
@@ -126,7 +125,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-            ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
+            ->addData(['profile' => (string) $ProductStockEvent->getStocksProfile()])
             ->send('orders');
 
 
@@ -135,7 +134,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
             [
                 self::class.':'.__LINE__,
                 'order' => (string) $ProductStockEvent->getOrder(),
-                'profile' => (string) $ProductStockEvent->getProfile()
+                'profile' => (string) $ProductStockEvent->getStocksProfile()
             ]
         );
 

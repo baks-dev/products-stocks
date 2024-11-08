@@ -61,6 +61,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
     public function __invoke(ProductStockMessage $message): void
     {
 
+        /** @var ProductStockEvent $ProductStockEvent */
         $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
@@ -104,7 +105,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusCompleted::STATUS,
-                md5(self::class)
+                self::class
             ]);
 
         if($Deduplicator->isExecuted())
@@ -117,12 +118,18 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
             [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
         );
 
-        /** Обновляем статус заказа на Completed «Выдан по месту назначения» */
+        /**
+         * Обновляем статус заказа на Completed «Выдан по месту назначения»
+         * присваиваем идентификатор профиля, кто выполнил
+         */
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $OrderEvent->getId(),
-            $ProductStockEvent->getProfile()
+            $ProductStockEvent->getStocksProfile()
         );
+
+        $ModifyDTO = $OrderStatusDTO->getModify();
+        $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
 
         $this->OrderStatusHandler->handle($OrderStatusDTO);
 
@@ -131,7 +138,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-            ->addData(['profile' => (string) $ProductStockEvent->getProfile()])
+            ->addData(['profile' => (string) $ProductStockEvent->getStocksProfile()])
             ->send('orders');
 
 
@@ -140,7 +147,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
             [
                 self::class.':'.__LINE__,
                 'OrderUid' => (string) $ProductStockEvent->getOrder(),
-                'UserProfileUid' => (string) $ProductStockEvent->getProfile()
+                'UserProfileUid' => (string) $ProductStockEvent->getStocksProfile()
             ]
         );
 
