@@ -20,45 +20,71 @@
 
     {% set order = null %}
 
-    {% for card in query.data %}
-
-        {% if order != card.id %}
-
-            {% if order != null %}
-                </table>
-
-                {% if loop.index0 is divisible by(5) %}
-                    {# Вставляем разрыв страницы #}
-                    <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
-                {% else %}
-                    <hr>
-                {% endif %}
-            {% endif %}
-
 
 <table class="table w-100 mb-2">
     <thead>
     <tr>
+
+
+        {# <th scope="col"> Дата доставки #}
+        {# <th scope="col"> Доставка #}
+
+    <tr>
+
         <th scope="col"> Заказ
-        <th scope="col"> Доставка
-        <th scope="col"> Дата доставки
+        <th scope="col"> &nbsp;
+        <th scope="col"> Продукция
+        <th scope="col"> Кол
+        <th scope="col"> Место
 
     <tbody>
 
-    <tr>
+    {# <tr>
         <td scope="row"> {{ card.number }}
         <td scope="row"> {{ card.delivery_name }}
-        <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+        <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }} #}
+
+
+
+    {# {% endif %} #}
+
+
+
+
+    {% for card in query.data %}
+
+    {# {% if loop.index0 is divisible by(10) %}
+    #}{# Вставляем разрыв страницы #}{#
+    <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
+{% endif %} #}
 
     <tr>
-        <th scope="row"> Продукция
-        <th scope="row"> Количество
-        <th scope="row"> Место складирования
 
+        {# {% if order != card.id %} #}
+
+        {# {% if order != null %}
+                </table>
+
+                {% if loop.index0 is divisible by(5) %}
+        #}{# Вставляем разрыв страницы #}{#
+        <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
+    {% else %}
+        <hr>
+    {% endif %}
+{% endif %} #}
+
+        <td>
+            {% if order is null or order != card.number %}
+                {{ card.number }}
+                {% set order = card.number %}
             {% endif %}
 
-    <tr>
-        <td scope="row">
+
+        <td>
+            <div class="border border-2" style="width: 20px; height: 20px;">
+            </div>
+
+        <td>
 
             {{ card.product_name }}
 
@@ -75,15 +101,13 @@
             {{ card.product_modification_postfix }}
 
 
-        <td scope="row"> {{ card.total }}
-        <td scope="row">  {{ card.stock_storage }}
+        <td>
+            <strong>{{ card.total }}</strong>
 
-            {% set order = card.id %}
+        <td>
+            {{ card.stock_storage }}
 
-            {# {% if loop.index is divisible by(5) %}
-            #}{# Вставляем разрыв страницы #}{#
-            <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
-        {% endif %} #}
+            {# {% set order = card.id %} #}
 
 
             {% endfor %}
