@@ -35,6 +35,7 @@ use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackage;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackageTransport;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
 use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDivide;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
@@ -253,6 +254,16 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 Order::class,
                 'orders',
                 'orders.id = ord.ord'
+            );
+
+        $dbal
+            ->addSelect('order_event.danger AS order_danger')
+            ->addSelect('order_event.comment AS order_comment')
+            ->leftJoin(
+                'ord',
+                OrderEvent::class,
+                'order_event',
+                'order_event.id = orders.event'
             );
 
         $dbal->leftJoin(
