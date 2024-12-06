@@ -23,9 +23,9 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity;
+namespace BaksDev\Products\Stocks\Entity\Stock;
 
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use Doctrine\ORM\Mapping as ORM;

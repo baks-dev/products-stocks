@@ -23,9 +23,8 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity;
+namespace BaksDev\Products\Stocks\Entity\Total;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Core\Entity\EntityState;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -36,7 +35,6 @@ use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
-use BaksDev\Users\UsersTable\Entity\UsersTableDayInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
@@ -55,14 +53,6 @@ class ProductStockTotal extends EntityState
     #[ORM\Column(type: ProductStockTotalUid::TYPE)]
     private ProductStockTotalUid $id;
 
-    /** ID пользователя */
-    #[ORM\Column(type: UserUid::TYPE, nullable: true, options: ['default' => null])]
-    private ?UserUid $usr = null;
-
-    /** ID профиля (склад) */
-    #[ORM\Column(type: UserProfileUid::TYPE)]
-    private UserProfileUid $profile;
-
     /** ID продукта */
     #[ORM\Column(type: ProductUid::TYPE)]
     private ProductUid $product;
@@ -79,13 +69,28 @@ class ProductStockTotal extends EntityState
     #[ORM\Column(type: ProductModificationConst::TYPE, nullable: true)]
     private ?ProductModificationConst $modification;
 
-    /** Место складирования */
-    #[ORM\Column(type: Types::STRING, nullable: true)]
-    private ?string $storage = null;
+
+    /** ID пользователя */
+    #[ORM\Column(type: UserUid::TYPE, nullable: true, options: ['default' => null])]
+    private ?UserUid $usr = null;
+
+    /** ID профиля (склад) */
+    #[ORM\Column(type: UserProfileUid::TYPE)]
+    private UserProfileUid $profile;
+
 
     /** Комментарий */
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $comment = null;
+
+    /** Стоимость продукции на указанном складе */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $price = 0;
+
+
+    /** Место складирования */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $storage = null;
 
     /** Общее количество на данном складе */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
@@ -94,6 +99,7 @@ class ProductStockTotal extends EntityState
     /** Зарезервировано на данном складе */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $reserve = 0;
+
 
     public function __construct(
         UserUid $usr,

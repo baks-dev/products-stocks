@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Package\Invariable;
 
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariableInterface;
-use BaksDev\Products\Stocks\Entity\Invariable\ProductStocksInvariableInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariableInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use ReflectionProperty;

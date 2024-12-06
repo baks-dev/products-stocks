@@ -23,7 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Repository\ProductStockByNumber;
 
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 
 interface ProductStockByNumberInterface
 {

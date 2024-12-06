@@ -23,14 +23,14 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity\Modify;
+namespace BaksDev\Products\Stocks\Entity\Stock\Modify;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Core\Type\Ip\IpAddress;
 use BaksDev\Core\Type\Modify\Modify\ModifyActionNew;
 use BaksDev\Core\Type\Modify\Modify\ModifyActionUpdate;
 use BaksDev\Core\Type\Modify\ModifyAction;
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use DateTimeImmutable;

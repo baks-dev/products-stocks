@@ -23,16 +23,16 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity\Event;
+namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Stocks\Entity\Invariable\ProductStocksInvariable;
-use BaksDev\Products\Stocks\Entity\Modify\ProductStockModify;
-use BaksDev\Products\Stocks\Entity\Move\ProductStockMove;
-use BaksDev\Products\Stocks\Entity\Orders\ProductStockOrder;
-use BaksDev\Products\Stocks\Entity\Products\ProductStockProduct;
-use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
+use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
+use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
+use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;

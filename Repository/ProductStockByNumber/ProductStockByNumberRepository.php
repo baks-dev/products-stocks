@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductStockByNumber;
 
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Invariable\ProductStocksInvariable;
-use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 
 
 final readonly class ProductStockByNumberRepository implements ProductStockByNumberInterface

@@ -23,11 +23,11 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity\Orders;
+namespace BaksDev\Products\Stocks\Entity\Stock\Orders;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;

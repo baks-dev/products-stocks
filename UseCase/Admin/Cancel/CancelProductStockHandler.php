@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Cancel;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Products\Stocks\Entity\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use DomainException;
 

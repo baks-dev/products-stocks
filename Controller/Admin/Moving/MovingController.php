@@ -26,7 +26,7 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Moving;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
-use BaksDev\Products\Stocks\Entity\ProductStock;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockForm;
