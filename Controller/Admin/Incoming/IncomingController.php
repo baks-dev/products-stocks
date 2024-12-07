@@ -59,11 +59,11 @@ final class IncomingController extends AbstractController
 
 
         // Форма добавления
-        $form = $this->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),
-        ]);
-
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
+                'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),
+            ])
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
         {

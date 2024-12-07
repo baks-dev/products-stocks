@@ -38,7 +38,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ExtraditionProductStockHandler extends AbstractHandler
 {
-    public function handle(ExtraditionProductStockDTO $command,): string|Entity\ProductStock
+    public function handle(ExtraditionProductStockDTO $command,): string|ProductStock
     {
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
