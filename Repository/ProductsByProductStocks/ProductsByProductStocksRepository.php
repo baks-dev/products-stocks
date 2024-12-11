@@ -25,11 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductsByProductStocks;
 
-use BaksDev\Contacts\Region\Entity\Call\ContactsRegionCall;
-use BaksDev\Contacts\Region\Entity\Call\Trans\ContactsRegionCallTrans;
-use BaksDev\Contacts\Region\Entity\ContactsRegion;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Delivery\Entity\Fields\DeliveryField;
 use BaksDev\Delivery\Entity\Fields\Trans\DeliveryFieldTrans;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
@@ -46,7 +42,6 @@ use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProdu
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
 use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
-use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
@@ -66,207 +61,151 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProductsByProductStocksRepository implements ProductsByProductStocksInterface
 {
-    private TranslatorInterface $translator;
-    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(
-        TranslatorInterface $translator,
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->translator = $translator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод возвращает информацию о продукции в складской заявке.
      */
     public function fetchAllProductsByProductStocksAssociative(ProductStockUid $stock): array|bool
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-        $locale = new Locale($this->translator->getLocale());
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
 
-        // $qb->select('*');
-
-        $qb->from(ProductStock::TABLE, 'stock');
-        $qb->where('stock.id = :stock');
-        $qb->setParameter('stock', $stock, ProductStockUid::TYPE);
-
-
-        $qb->addSelect('stock_event.number');//->addGroupBy('stock_event.number');
-        $qb->join(
-            'stock',
-            ProductStockEvent::TABLE,
-            'stock_event',
-            'stock_event.id = stock.event'
-        );
+        $dbal
+            ->from(ProductStock::class, 'stock')
+            ->where('stock.id = :stock')
+            ->setParameter('stock', $stock, ProductStockUid::TYPE);
 
 
-        $qb->addSelect('stock_product.total');//->addGroupBy('stock_product.total');
-        $qb->join(
-            'stock',
-            ProductStockProduct::TABLE,
-            'stock_product',
-            'stock_product.event = stock.event'
-        );
+        $dbal
+            ->addSelect('stock_event.number')
+            ->
+            join(
+                'stock',
+                ProductStockEvent::class,
+                'stock_event',
+                'stock_event.id = stock.event'
+            );
+
+
+        $dbal
+            ->addSelect('stock_product.total')
+            ->join(
+                'stock',
+                ProductStockProduct::class,
+                'stock_product',
+                'stock_product.event = stock.event'
+            );
 
 
         /** Информация о заказе */
 
-        //$qb->addSelect('stock_order.ord');
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'stock_event',
-            ProductStockOrder::TABLE,
+            ProductStockOrder::class,
             'stock_order',
             'stock_order.event = stock_event.id'
         );
 
 
-        $qb
+        $dbal
             ->leftJoin(
                 'stock_event',
-                ProductStockMove::TABLE,
+                ProductStockMove::class,
                 'stock_move',
                 'stock_move.event = stock_event.id'
             );
 
-
-        /*$qb->join(
+        $dbal->join(
             'stock_order',
-            Order::TABLE,
-            'orders',
-            'orders.id = stock_order.ord OR orders.id = stock_move.ord'
-        );*/
-
-
-        $qb->join(
-            'stock_order',
-            Order::TABLE,
+            Order::class,
             'orders',
             'orders.id = 
             
-            CASE
-                WHEN stock_move.ord IS NOT NULL THEN stock_move.ord
-               ELSE stock_order.ord
-            END
+                CASE
+                    WHEN stock_move.ord IS NOT NULL THEN stock_move.ord
+                   ELSE stock_order.ord
+                END
             
-            '
-        );
+            ');
 
 
-        /*$qb->join(
-            'stock_order',
-            Order::TABLE,
-            'orders',
-            'CASE
-                WHEN stock_move.ord IS NOT NULL THEN orders.id = stock_move.ord
-               ELSE  orders.id = stock_order.ord
-            END
-            
-        ');*/
+        $dbal
+            ->addSelect('destination.id AS destination')
+            ->leftJoin(
+                'stock_move',
+                UserProfile::class,
+                'destination',
+                'destination.id = stock_move.destination '
+            );
 
 
-        $qb->addSelect('destination.id AS destination');
-
-
-        $qb->leftJoin(
-            'stock_move',
-            UserProfile::TABLE,
-            'destination',
-            'destination.id = stock_move.destination '
-        );
-
-
-        $qb
+        $dbal
             ->addSelect('destination_personal.location AS destination_location')
             ->addSelect('destination_personal.latitude AS destination_latitude')
             ->addSelect('destination_personal.longitude AS destination_longitude')
             ->leftJoin(
                 'destination',
-                UserProfilePersonal::TABLE,
+                UserProfilePersonal::class,
                 'destination_personal',
                 'destination_personal.event = destination.event '
             );
 
 
-        //        /** Пункт назначения при перемещении */
-        //
-        //        $qb->addSelect('destination.id AS destination');//->addGroupBy('destination.id');
-        //        $qb->leftJoin(
-        //            'stock_move',
-        //            ContactsRegionCall::TABLE,
-        //            'destination',
-        //            'destination.const = stock_move.destination '
-        //        );
-        //
-        //// AND EXISTS(SELECT 1 FROM '.ContactsRegion::TABLE.' WHERE event = destination.event)
-        //
-        //        $qb->leftJoin(
-        //            'destination',
-        //            ContactsRegionCallTrans::TABLE,
-        //            'destination_trans',
-        //            'destination_trans.call = destination.id AND destination_trans.local = :local'
-        //        );
-        //
-        //        $qb->setParameter('local', $locale, Locale::TYPE);
-
-
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'orders',
-            OrderEvent::TABLE,
+            OrderEvent::class,
             'orders_event',
             'orders_event.id = orders.event'
         );
 
 
-        $qb->addSelect('order_user.profile AS order_client');//->addGroupBy('order_user.profile');
+        $dbal
+            ->addSelect('order_user.profile AS order_client')
+            ->leftJoin(
+                'orders',
+                OrderUser::class,
+                'order_user',
+                'order_user.event = orders.event'
+            );
 
 
-        $qb->leftJoin(
-            'orders',
-            OrderUser::TABLE,
+        $dbal->leftJoin(
             'order_user',
-            'order_user.event = orders.event'
-        );
-
-
-        $qb->leftJoin(
-            'order_user',
-            OrderDelivery::TABLE,
+            OrderDelivery::class,
             'order_delivery',
             'order_delivery.usr = order_user.id'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'order_delivery',
-            OrderDeliveryField::TABLE,
+            OrderDeliveryField::class,
             'order_delivery_fields',
             'order_delivery_fields.delivery = order_delivery.id'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'order_delivery',
-            DeliveryField::TABLE,
+            DeliveryField::class,
             'delivery_field',
             'delivery_field.id = order_delivery_fields.field'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'delivery_field',
-            DeliveryFieldTrans::TABLE,
+            DeliveryFieldTrans::class,
             'delivery_field_trans',
             'delivery_field_trans.field = delivery_field.id AND delivery_field_trans.local = :local'
         );
 
-        $qb->setParameter('local', $locale, Locale::TYPE);
-
 
         /* Информация о доставке  */
-        $qb->addSelect(
+        $dbal->addSelect(
             "JSON_AGG
             ( /*DISTINCT*/
 
@@ -285,45 +224,44 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
          * Продукция
          */
 
-        $qb
+        $dbal
             ->addSelect('product.id AS product_id')
             ->join(
                 'stock',
-                Product::TABLE,
+                Product::class,
                 'product',
                 'product.id = stock_product.product'
             );
 
 
-        $qb->addSelect('product_info.url AS product_url');//->addGroupBy('product_info.url');
-        $qb->join(
+        $dbal->addSelect('product_info.url AS product_url');//->addGroupBy('product_info.url');
+        $dbal->join(
             'product',
-            ProductInfo::TABLE,
+            ProductInfo::class,
             'product_info',
             'product_info.product = stock_product.product '
         );
 
 
-        $qb->addSelect('product_trans.name AS product_name');//->addGroupBy('product_trans.name');
-        $qb->leftJoin(
-            'product',
-            ProductTrans::TABLE,
-            'product_trans',
-            'product_trans.event = product.event AND product_trans.local = :local'
-        );
-
-        $qb->setParameter('local', $locale, Locale::TYPE);
+        $dbal
+            ->addSelect('product_trans.name AS product_name')
+            ->leftJoin(
+                'product',
+                ProductTrans::class,
+                'product_trans',
+                'product_trans.event = product.event AND product_trans.local = :local'
+            );
 
 
         /* Торговое предложение */
 
-        $qb
+        $dbal
             ->addSelect('product_offer.const AS product_offer_const')
             ->addSelect('product_offer.value AS product_offer_value')
             ->addSelect('product_offer.postfix AS product_offer_postfix')
             ->leftJoin(
                 'product',
-                ProductOffer::TABLE,
+                ProductOffer::class,
                 'product_offer',
                 'product_offer.const = stock_product.offer AND product_offer.event = product.event'
             );
@@ -331,20 +269,20 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         /* Тип торгового предложения */
 
-        $qb->addSelect('category_offer.reference AS product_offer_reference');//->addGroupBy('category_offer.reference');
-        $qb->addSelect('category_offer_trans.name AS product_offer_name');//->addGroupBy('category_offer_trans.name');
-
-        $qb->leftJoin(
-            'product_offer',
-            CategoryProductOffers::TABLE,
-            'category_offer',
-            'category_offer.id = product_offer.category_offer'
-        );
+        $dbal
+            ->addSelect('category_offer.reference AS product_offer_reference')
+            ->addSelect('category_offer_trans.name AS product_offer_name')
+            ->leftJoin(
+                'product_offer',
+                CategoryProductOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
 
         /* Название торгового предложения */
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'category_offer',
-            CategoryProductOffersTrans::TABLE,
+            CategoryProductOffersTrans::class,
             'category_offer_trans',
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
@@ -354,34 +292,34 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
          * Множественный вариант
          */
 
-        $qb
+        $dbal
             ->addSelect('product_variation.const AS product_variation_const')
             ->addSelect('product_variation.value AS product_variation_value')
             ->addSelect('product_variation.postfix AS product_variation_postfix')
             ->leftJoin(
                 'product_offer',
-                ProductVariation::TABLE,
+                ProductVariation::class,
                 'product_variation',
                 'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
             );
 
         /* Получаем тип множественного варианта */
 
-        $qb
+        $dbal
             ->addSelect('category_variation.reference AS product_variation_reference')
             ->leftJoin(
                 'product_variation',
-                CategoryProductVariation::TABLE,
+                CategoryProductVariation::class,
                 'category_variation',
                 'category_variation.id = product_variation.category_variation'
             );
 
         /* Получаем название множественного варианта */
-        $qb
+        $dbal
             ->addSelect('category_variation_trans.name AS product_variation_name')
             ->leftJoin(
                 'category_variation',
-                CategoryProductVariationTrans::TABLE,
+                CategoryProductVariationTrans::class,
                 'category_variation_trans',
                 'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
             );
@@ -391,33 +329,33 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
          * Модификация множественного варианта торгового предложения
          */
 
-        $qb
+        $dbal
             ->addSelect('product_modification.const AS product_modification_const')
             ->addSelect('product_modification.value AS product_modification_value')
             ->addSelect('product_modification.postfix AS product_modification_postfix')
             ->leftJoin(
                 'product_variation',
-                ProductModification::TABLE,
+                ProductModification::class,
                 'product_modification',
                 'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
             );
 
 
-        $qb
+        $dbal
             ->addSelect('category_modification.reference AS product_modification_reference')
             ->leftJoin(
                 'product_modification',
-                CategoryProductModification::TABLE,
+                CategoryProductModification::class,
                 'category_modification',
                 'category_modification.id = product_modification.category_modification'
             );
 
         /* Получаем название типа модификации */
-        $qb
+        $dbal
             ->addSelect('category_modification_trans.name AS product_modification_name')
             ->leftJoin(
                 'category_modification',
-                CategoryProductModificationTrans::TABLE,
+                CategoryProductModificationTrans::class,
                 'category_modification_trans',
                 'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
             );
@@ -425,44 +363,45 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         /* Фото продукта */
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product',
-            ProductPhoto::TABLE,
+            ProductPhoto::class,
             'product_photo',
             'product_photo.event = product.event AND product_photo.root = true'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_offer',
-            ProductOfferImage::TABLE,
+            ProductOfferImage::class,
             'product_offer_image',
             'product_offer_image.offer = product_offer.id AND product_offer_image.root = true'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_variation',
-            ProductVariationImage::TABLE,
+            ProductVariationImage::class,
             'product_variation_image',
             'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
         );
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'product_modification',
-            ProductModificationImage::TABLE,
+            ProductModificationImage::class,
             'product_modification_image',
             'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
         );
 
-        $qb->addSelect("
+        $dbal
+            ->addSelect("
          CASE
                WHEN product_modification_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_modification_image.name)
+                    CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_modification_image.name)
                WHEN product_variation_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_variation_image.name)
+                    CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
                WHEN product_offer_image.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_image.name)
+                    CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_image.name)
                WHEN product_photo.name IS NOT NULL THEN
-                    CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.name)
+                    CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
                ELSE NULL
             END
            AS product_image")
@@ -471,7 +410,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addGroupBy('product_offer_image.name')
             ->addGroupBy('product_photo.name');
 
-        $qb->addSelect('
+        $dbal->addSelect('
          CASE
                 WHEN product_modification_image.name IS NOT NULL THEN
                     product_modification_image.ext
@@ -489,7 +428,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             ->addGroupBy('product_offer_image.ext')
             ->addGroupBy('product_photo.ext');
 
-        $qb->addSelect('
+        $dbal->addSelect('
         CASE
                 WHEN product_modification_image.name IS NOT NULL THEN
                     product_modification_image.cdn
@@ -509,27 +448,27 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
 
         /* Категория */
-        $qb->join(
+        $dbal->join(
             'product',
-            ProductCategory::TABLE,
+            ProductCategory::class,
             'product_category',
             'product_category.event = product.event AND product_category.root = true'
         );
 
 
-        $qb->join(
+        $dbal->join(
             'product_category',
-            CategoryProduct::TABLE,
+            CategoryProduct::class,
             'category',
             'category.id = product_category.category'
         );
 
 
-        $qb
+        $dbal
             ->addSelect('category_info.url AS category_url')
             ->leftJoin(
                 'category',
-                CategoryProductInfo::TABLE,
+                CategoryProductInfo::class,
                 'category_info',
                 'category_info.event = category.event'
             );
@@ -537,11 +476,11 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
         /** Наличие и место на складе */
 
-        $qb
+        $dbal
             ->addSelect("STRING_AGG(stock_total.storage, ', ') AS stock_total_storage")
             ->leftJoin(
                 'product_modification',
-                ProductStockTotal::TABLE,
+                ProductStockTotal::class,
                 'stock_total',
                 '
                     stock_total.profile = stock_event.profile AND
@@ -553,15 +492,11 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             );
 
 
-        $qb->allGroupByExclude();
+        $dbal->allGroupByExclude();
 
-        return $qb
+        return $dbal
             ->enableCache('products-stocks', 86400)
             ->fetchAllAssociative();
-
-
-        //dd($this->connection->prepare('EXPLAIN (ANALYZE)  '.$qb->getSQL())->executeQuery($qb->getParameters())->fetchAllAssociativeIndexed());
-
 
     }
 }

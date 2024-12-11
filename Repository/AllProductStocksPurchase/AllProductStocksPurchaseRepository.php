@@ -292,13 +292,13 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 			CASE
 			 
 			 WHEN product_offer_modification_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductModificationImage::TABLE."' , '/', product_offer_modification_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_offer_modification_image.name)
 			   WHEN product_offer_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductVariationImage::TABLE."' , '/', product_offer_variation_image.name)
+					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_offer_variation_image.name)
 			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductOfferImage::TABLE."' , '/', product_offer_images.name)
+					CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
 			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".ProductPhoto::TABLE."' , '/', product_photo.name)
+					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
 		"
@@ -409,7 +409,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         // Avatar
 
         $dbal
-            ->addSelect("CONCAT ('/upload/".UserProfileAvatar::class."' , '/', users_profile_avatar.name) AS users_profile_avatar")
+            ->addSelect("CONCAT ('/upload/".$dbal->table(UserProfileAvatar::class)."' , '/', users_profile_avatar.name) AS users_profile_avatar")
             ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
             ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
             ->leftJoin(
@@ -426,15 +426,12 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         // Поиск
         if($search->getQuery())
         {
-
             $dbal
                 ->createSearchQueryBuilder($search)
                 ->addSearchLike('event.number');
-
         }
 
         $dbal->orderBy('modify.mod_date');
-        //$dbal->addOrderBy('stock.number', 'DESC');
 
         return $this->paginator->fetchAllAssociative($dbal);
 
