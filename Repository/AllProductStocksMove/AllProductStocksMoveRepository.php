@@ -484,7 +484,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ->addSelect("STRING_AGG(CONCAT(total.storage, ': [', total.total, ']'), ', ' ORDER BY total.total) AS stock_storage")
             ->leftJoin(
                 'stock_product',
-                ProductStockTotal::TABLE,
+                ProductStockTotal::class,
                 'total',
                 '
                 total.profile = :profile AND

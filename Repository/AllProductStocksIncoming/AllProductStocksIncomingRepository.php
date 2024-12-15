@@ -462,7 +462,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         // Avatar
 
         $dbal
-            ->addSelect("CONCAT ( '/upload/".UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar")
+            ->addSelect("CONCAT ( '/upload/".$dbal->table(UserProfileAvatar::class)."' , '/', users_profile_avatar.name) AS users_profile_avatar")
             ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
             ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
             ->leftJoin(

@@ -461,7 +461,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
         // Info
         $dbal->join(
             'event',
-            UserProfileInfo::TABLE,
+            UserProfileInfo::class,
             'users_profile_info',
             'users_profile_info.profile = event.profile'
         );
@@ -469,7 +469,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
         // Event
         $dbal->join(
             'users_profile',
-            UserProfileEvent::TABLE,
+            UserProfileEvent::class,
             'users_profile_event',
             'users_profile_event.id = users_profile.event'
         );
@@ -479,7 +479,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
             ->addSelect('users_profile_personal.username AS users_profile_username')
             ->join(
                 'users_profile_event',
-                UserProfilePersonal::TABLE,
+                UserProfilePersonal::class,
                 'users_profile_personal',
                 'users_profile_personal.event = users_profile_event.id'
             );
@@ -487,7 +487,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
         // Avatar
 
         $dbal
-            ->addSelect("CONCAT ( '/upload/".UserProfileAvatar::TABLE."' , '/', users_profile_avatar.name) AS users_profile_avatar")
+            ->addSelect("CONCAT ( '/upload/".$dbal->table(UserProfileAvatar::class)."' , '/', users_profile_avatar.name) AS users_profile_avatar")
             ->addSelect("CASE WHEN users_profile_avatar.cdn THEN  CONCAT ( 'small.', users_profile_avatar.ext) ELSE users_profile_avatar.ext END AS users_profile_avatar_ext")
             ->addSelect('users_profile_avatar.cdn AS users_profile_avatar_cdn')
             ->leftJoin(
