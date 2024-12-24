@@ -39,12 +39,16 @@ use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
+use BaksDev\Products\Product\Entity\Offers\Price\ProductOfferPrice;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Price\ProductModificationPrice;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\Price\ProductVariationPrice;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
+use BaksDev\Products\Product\Entity\Price\ProductPrice;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
@@ -412,6 +416,53 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'users_profile_personal',
                 'users_profile_personal.event = users_profile.event'
             );
+
+
+        /** Стоимость продукции */
+
+        /* Базовая Цена товара */
+        $dbal->leftJoin(
+            'product',
+            ProductPrice::class,
+            'product_price',
+            'product_price.event = product.event'
+        );
+
+        /* Цена торгового предположения */
+        $dbal
+            ->leftJoin(
+                'product_offer',
+                ProductOfferPrice::class,
+                'product_offer_price',
+                'product_offer_price.offer = product_offer.id'
+            );
+
+        /* Цена множественного варианта */
+        $dbal
+            ->leftJoin(
+                'product_variation',
+                ProductVariationPrice::class,
+                'product_variation_price',
+                'product_variation_price.variation = product_variation.id'
+            );
+
+        /* Цена модификации множественного варианта */
+        $dbal->leftJoin(
+            'product_modification',
+            ProductModificationPrice::class,
+            'product_modification_price',
+            'product_modification_price.modification = product_modification.id'
+        );
+
+        $dbal->addSelect('
+            COALESCE(
+                product_modification_price.price,
+                product_variation_price.price,
+                product_offer_price.price,
+                product_price.price
+            ) AS product_price
+        ');
+
 
         /**
          * Фильтр по свойства продукта

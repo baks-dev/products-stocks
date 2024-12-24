@@ -29,6 +29,7 @@ use BaksDev\Core\Twig\CallTwigFuncExtension;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
+use BaksDev\Reference\Money\Type\Money;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -50,7 +51,6 @@ final class CsvController extends AbstractController
         Environment $environment
     ): Response
     {
-
         /**
          * Фильтр продукции по ТП
          */
@@ -73,19 +73,19 @@ final class CsvController extends AbstractController
             return $this->redirectToReferer();
         }
 
-        $data = $query->getData();
+        $result = $query->getData();
 
         $call = $environment->getExtension(CallTwigFuncExtension::class);
 
-        $response = new StreamedResponse(function() use ($call, $data, $environment) {
+        $response = new StreamedResponse(function() use ($call, $result, $environment) {
 
             $handle = fopen('php://output', 'w+');
 
             // Запись заголовков
-            fputcsv($handle, ['Артикул', 'Наименование', 'Доступно', 'Место']);
+            fputcsv($handle, ['Артикул', 'Наименование', 'Стоимость', 'Наличие', 'Резерв', 'Доступно', 'Сумма', 'Место']);
 
             // Запись данных
-            foreach($data as $data)
+            foreach($result as $data)
             {
 
                 $name = $data['product_name'];
@@ -103,18 +103,26 @@ final class CsvController extends AbstractController
                 $name .= $data['product_variation_postfix'] ? ' '.$data['product_variation_postfix'] : null;
                 $name .= $data['product_modification_postfix'] ? ' '.$data['product_modification_postfix'] : null;
 
+                $Money = new Money($data['product_price'], true);
+                $quantity = ($data['stock_total'] - $data['stock_reserve']);
+                $total_price = ($Money->getValue() * $data['stock_total']);
+
                 fputcsv($handle, [
                     $data['product_article'],
                     $name,
-                    ($data['stock_total'] - $data['stock_reserve']),
-                    $data['stock_storage']
+                    $Money->getValue(),
+                    $data['stock_total'],
+                    $data['stock_reserve'],
+                    $quantity,
+                    $total_price,
+                    '. '.$data['stock_storage']
                 ]);
             }
 
             fclose($handle);
         });
 
-        $filename = current($data)['users_profile_username'].'.csv';
+        $filename = current($result)['users_profile_username'].'.csv';
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="'.$filename.'"');
 
