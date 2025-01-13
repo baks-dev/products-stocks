@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +36,13 @@ interface ProductStocksTotalStorageInterface
 
     public function product(ProductUid|string $product): self;
 
-    public function offer(ProductOfferConst|string|null $offer): self;
+    public function offer(ProductOfferConst|string|false|null $offer): self;
 
-    public function variation(ProductVariationConst|string|null $variation): self;
+    public function variation(ProductVariationConst|string|false|null $variation): self;
 
-    public function modification(ProductModificationConst|string|null $modification): self;
+    public function modification(ProductModificationConst|string|false|null $modification): self;
 
-    public function storage(string|null $storage): self;
+    public function storage(string|false|null $storage): self;
 
     /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
     public function find(): ?ProductStockTotal;

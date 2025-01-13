@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         return $this;
     }
 
-    public function offer(ProductOfferConst|string|null $offer): self
+    public function offer(ProductOfferConst|string|false|null $offer): self
     {
         if(empty($offer))
         {
+            $this->offer = null;
             return $this;
         }
 
@@ -91,10 +92,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         return $this;
     }
 
-    public function variation(ProductVariationConst|string|null $variation): self
+    public function variation(ProductVariationConst|string|false|null $variation): self
     {
         if(empty($variation))
         {
+            $this->variation = null;
             return $this;
         }
 
@@ -108,10 +110,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         return $this;
     }
 
-    public function modification(ProductModificationConst|string|null $modification): self
+    public function modification(ProductModificationConst|string|false|null $modification): self
     {
         if(empty($modification))
         {
+            $this->modification = null;
             return $this;
         }
 
@@ -126,10 +129,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
     }
 
 
-    public function storage(string|null $storage): self
+    public function storage(string|false|null $storage): self
     {
         if(empty($storage))
         {
+            $this->storage = null;
             return $this;
         }
 
