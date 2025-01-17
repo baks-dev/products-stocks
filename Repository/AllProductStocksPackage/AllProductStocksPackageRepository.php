@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@ use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackage;
 use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackageTransport;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
-use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDivide;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
@@ -69,6 +68,7 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDivide;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
@@ -149,6 +149,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
         $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
         $dbal->setParameter('error', new ProductStockStatus(new ProductStockStatus\ProductStockStatusError()), ProductStockStatus::TYPE);
+
+
         $dbal->setParameter('divide', new ProductStockStatus(new ProductStockStatusDivide()), ProductStockStatus::TYPE);
 
         $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
