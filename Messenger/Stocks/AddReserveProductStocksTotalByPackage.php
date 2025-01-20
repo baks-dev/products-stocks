@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -35,24 +35,20 @@ use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterf
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
 {
-    private LoggerInterface $logger;
-
     public function __construct(
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
         private CurrentProductStocksInterface $currentProductStocks,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
-        LoggerInterface $productsStocksLogger,
-    )
-    {
-        $this->logger = $productsStocksLogger;
-    }
+    ) {}
 
     /**
      * Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ"

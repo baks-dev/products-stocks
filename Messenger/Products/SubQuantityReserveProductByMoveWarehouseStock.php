@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterf
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -45,9 +46,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 1)]
 final readonly class SubQuantityReserveProductByMoveWarehouseStock
 {
-    private LoggerInterface $logger;
-
     public function __construct(
+        #[Target('productsProductLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private ProductModificationQuantityInterface $modificationQuantity,
         private ProductVariationQuantityInterface $variationQuantity,
@@ -55,13 +55,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         private ProductQuantityInterface $productQuantity,
         private EntityManagerInterface $entityManager,
         private DeduplicatorInterface $deduplicator,
-        LoggerInterface $productsProductLogger,
-    )
-    {
-
-        $this->logger = $productsProductLogger;
-
-    }
+    ) {}
 
     /**
      * Снимает резерв и отнимает количество продукции при перемещении между складами

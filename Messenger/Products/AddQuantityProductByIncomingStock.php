@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +26,28 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Core\Lock\AppLockInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\AddProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductByIncomingStock
 {
-    private LoggerInterface $logger;
-
     public function __construct(
+        #[Target('productsProductLogger')] private LoggerInterface $logger,
         private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
         private AddProductQuantityInterface $addProductQuantity,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private ProductStocksByIdInterface $productStocks,
         private DeduplicatorInterface $deduplicator,
-        LoggerInterface $productsProductLogger,
-    )
-    {
-        $this->logger = $productsProductLogger;
-    }
+    ) {}
 
     /**
      * Пополнение наличием продукции в карточке при поступлении на склад

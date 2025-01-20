@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,13 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Purchase;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use Doctrine\ORM\EntityManagerInterface;
 use DomainException;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class PurchaseProductStockHandler extends AbstractHandler
 {
-    //    private EntityManagerInterface $entityManager;
-    //
-    //    private ValidatorInterface $validator;
-    //
-    //    private LoggerInterface $logger;
-    //
-    //    private MessageDispatchInterface $messageDispatch;
-    //
-    //
-    //    public function __construct(
-    //        EntityManagerInterface $entityManager,
-    //        ValidatorInterface $validator,
-    //        LoggerInterface $logger,
-    //        MessageDispatchInterface $messageDispatch
-    //    )
-    //    {
-    //        $this->entityManager = $entityManager;
-    //        $this->validator = $validator;
-    //        $this->logger = $logger;
-    //        $this->messageDispatch = $messageDispatch;
-    //    }
-
     public function handle(PurchaseProductStockDTO $command): string|ProductStock
     {
         /** Валидация DTO  */

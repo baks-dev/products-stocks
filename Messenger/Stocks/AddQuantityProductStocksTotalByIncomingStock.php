@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -38,25 +38,21 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserPro
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksTotalByIncomingStock
 {
-    private LoggerInterface $logger;
-
     public function __construct(
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
         private UserByUserProfileInterface $userByUserProfile,
         private ProductStocksTotalStorageInterface $productStocksTotalStorage,
         private AddProductStockInterface $addProductStock,
         private DeduplicatorInterface $deduplicator,
-        LoggerInterface $productsStocksLogger,
-    )
-    {
-        $this->logger = $productsStocksLogger;
-    }
+    ) {}
 
     /**
      * Пополнение складских остатков при поступлении на склад
