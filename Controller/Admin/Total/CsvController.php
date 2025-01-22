@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -84,10 +84,12 @@ final class CsvController extends AbstractController
             // Запись заголовков
             fputcsv($handle, ['Артикул', 'Наименование', 'Стоимость', 'Наличие', 'Резерв', 'Доступно', 'Сумма', 'Место']);
 
+            $allTotal = 0;
+            $allPrice = 0;
+
             // Запись данных
             foreach($result as $data)
             {
-
                 $name = $data['product_name'];
 
                 $variation = $call->call($environment, $data['product_variation_value'], $data['product_variation_reference'].'_render');
@@ -107,6 +109,9 @@ final class CsvController extends AbstractController
                 $quantity = ($data['stock_total'] - $data['stock_reserve']);
                 $total_price = ($Money->getValue() * $data['stock_total']);
 
+                $allTotal += $data['stock_total'];
+                $allPrice += $total_price;
+
                 fputcsv($handle, [
                     $data['product_article'],
                     $name,
@@ -118,6 +123,18 @@ final class CsvController extends AbstractController
                     '. '.$data['stock_storage']
                 ]);
             }
+
+            /** Общее количество продукции и общая стоимость */
+            fputcsv($handle, [
+                '',
+                '',
+                '',
+                $allTotal,
+                '',
+                '',
+                $allPrice,
+                ''
+            ]);
 
             fclose($handle);
         });
