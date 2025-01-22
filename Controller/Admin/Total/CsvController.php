@@ -54,7 +54,7 @@ final class CsvController extends AbstractController
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO($request);
+        $filter = new ProductFilterDTO();
         $filterForm = $this->createForm(ProductFilterForm::class, $filter);
         $filterForm->handleRequest($request);
 
@@ -62,7 +62,7 @@ final class CsvController extends AbstractController
 
         $query = $allProductStocks
             ->filter($filter)
-            ->setLimit(1000)
+            ->setLimit(100000)
             ->findPaginator(
                 $this->getUsr()?->getId(),
                 $this->getProfileUid()
