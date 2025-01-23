@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse;
 
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
@@ -46,9 +47,10 @@ final class WarehouseController extends AbstractController
      */
     #[Route('/admin/product/stock/warehouse/{id}', name: 'admin.warehouse.send', methods: ['GET', 'POST'])]
     public function incoming(
+        #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
         WarehouseProductStockHandler $handler,
-        #[MapEntity] ProductStockEvent $Event
+        CentrifugoPublishInterface $publish,
     ): Response
     {
 
@@ -57,29 +59,35 @@ final class WarehouseController extends AbstractController
             throw new UserNotFoundException('User Profile not found');
         }
 
+        /** Скрываем идентификатор у остальных пользователей */
+        $publish
+            ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+            ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+            ->send('remove');
+
         $WarehouseProductStockDTO = new WarehouseProductStockDTO($this->getUsr());
 
-        $Event->getDto($WarehouseProductStockDTO);
+        $ProductStockEvent->getDto($WarehouseProductStockDTO);
 
         /**
          * Если заявка на перемещение - присваиваем склад назначения
          * и профиль пользователя, отпарившего заявку
          */
-        if($Event->getMoveDestination())
+        if($ProductStockEvent->getMoveDestination())
         {
-            $WarehouseProductStockDTO->setProfile($Event->getMoveDestination());
+            $WarehouseProductStockDTO->setProfile($ProductStockEvent->getMoveDestination());
             $WarehouseProductStockDTO->getMove()?->setDestination($this->getProfileUid());
         }
 
         // Форма добавления
-        $form = $this->createForm(WarehouseProductStockForm::class, $WarehouseProductStockDTO, [
-            'action' => $this->generateUrl(
-                'products-stocks:admin.warehouse.send',
-                ['id' => $WarehouseProductStockDTO->getEvent()]
-            ),
-        ]);
-
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(WarehouseProductStockForm::class, $WarehouseProductStockDTO, [
+                'action' => $this->generateUrl(
+                    'products-stocks:admin.warehouse.send',
+                    ['id' => $WarehouseProductStockDTO->getEvent()]
+                ),
+            ])
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('send'))
         {
@@ -87,17 +95,21 @@ final class WarehouseController extends AbstractController
 
             $handle = $handler->handle($WarehouseProductStockDTO);
 
-            $this->addFlash
-            (
+            /** Скрываем идентификатор у всех пользователей */
+            $publish
+                ->addData(['profile' => false]) // Скрывает у всех
+                ->addData(['identifier' => (string) $handle->getId()])
+                ->send('remove');
+
+            $flash = $this->addFlash(
                 'page.warehouse',
                 $handle instanceof ProductStock ? 'success.warehouse' : 'danger.warehouse',
                 'products-stocks.admin',
                 $handle
             );
 
-            return $this->redirectToReferer();
+            return $flash ?: $this->redirectToReferer();
 
-            //return $this->redirectToRoute('products-stocks:admin.purchase.index');
         }
 
         return $this->render(['form' => $form->createView()]);

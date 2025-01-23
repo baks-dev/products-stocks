@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Purchase;
 
+use BaksDev\Centrifugo\Services\Token\TokenUserGenerator;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
@@ -42,32 +43,33 @@ final class IndexController extends AbstractController
     public function incoming(
         Request $request,
         AllProductStocksPurchaseInterface $allPurchase,
+        TokenUserGenerator $tokenUserGenerator,
         int $page = 0
     ): Response
     {
-        $ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
-
         // Поиск
         $search = new SearchDTO($request);
-        $searchForm = $this->createForm(
-            SearchForm::class,
-            $search,
-            ['action' => $this->generateUrl('products-stocks:admin.purchase.index')]
-        );
-        $searchForm->handleRequest($request);
+        $searchForm = $this
+            ->createForm(
+                SearchForm::class,
+                $search,
+                ['action' => $this->generateUrl('products-stocks:admin.purchase.index')]
+            )
+            ->handleRequest($request);
 
-        // Фильтр
-        //        $filter = new StockFilterDTO($ROLE_ADMIN ? null : $this->getProfileUid(), $request);
-        //        $filterForm = $this->createForm(StockFilterForm::class, $filter);
-        //        $filterForm->handleRequest($request);
+        $this->isAdmin() ?: $allPurchase->profile($this->getProfileUid());
 
         // Получаем список закупок ответственного лица
-        $query = $allPurchase->fetchAllProductStocksAssociative($search, $ROLE_ADMIN ? null : $this->getProfileUid());
+        $query = $allPurchase
+            ->search($search)
+            ->findPaginator();
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
+                'current_profile' => $this->getCurrentProfileUid(),
+                'token' => $tokenUserGenerator->generate($this->getUsr()),
             ]
         );
     }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
@@ -60,12 +61,39 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksPurchaseRepository implements AllProductStocksPurchaseInterface
 {
+    private UserProfileUid|false $profile = false;
+
+    private SearchDTO|false $search = false;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
     ) {}
 
-    public function fetchAllProductStocksAssociative(SearchDTO $search, ?UserProfileUid $profile): PaginatorInterface
+    public function search(SearchDTO $search): self
+    {
+        $this->search = $search;
+        return $this;
+    }
+
+    public function profile(UserProfile|UserProfileUid|string $profile): self
+    {
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        if(is_string($profile))
+        {
+            $profile = new UserProfileUid($profile);
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function findPaginator(): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -89,13 +117,13 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'.($profile ? ' AND event.profile = :profile' : '')
+                'event.id = stock.event AND event.status = :status'.($this->profile ? ' AND event.profile = :profile' : '')
             );
 
 
-        if($profile)
+        if($this->profile)
         {
-            $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+            $dbal->setParameter('profile', $this->profile, UserProfileUid::TYPE);
         }
 
         $dbal->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPurchase()), ProductStockStatus::TYPE);
@@ -422,12 +450,11 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         // Группа
         $dbal->addSelect('NULL AS group_name'); // Название группы
 
-
         // Поиск
-        if($search->getQuery())
+        if($this->search && $this->search->getQuery())
         {
             $dbal
-                ->createSearchQueryBuilder($search)
+                ->createSearchQueryBuilder($this->search)
                 ->addSearchLike('event.number');
         }
 

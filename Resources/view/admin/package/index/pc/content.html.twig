@@ -183,7 +183,8 @@
         </div>
         {% endif %}
 
-        <div class="card mb-3 p-1 {{ item.products_move or item.order_danger ? 'shadow border-danger' : 'border-light' }}"
+        <div id="{{ item.id }}"
+             class="card mb-3 p-1 {{ item.products_move or item.order_danger ? 'shadow border-danger' : 'border-light' }}"
              style="{{ item.products_move ? '--bs-border-opacity: 0.2;' : '' }}">
 
             <div class="card-header bg-body border-0">

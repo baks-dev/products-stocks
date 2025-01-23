@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,9 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Pickup;
 
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
-use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackage;
-use BaksDev\DeliveryTransport\Repository\Package\ExistPackageProductStocks\ExistPackageProductStocksInterface;
-use BaksDev\DeliveryTransport\Repository\Package\PackageByProductStocks\PackageByProductStocksInterface;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedPackageDTO;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedPackageHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockForm;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockHandler;
@@ -39,7 +35,6 @@ use BaksDev\DeliveryTransport\UseCase\Admin\Package\Delivery\DeliveryProductStoc
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -58,8 +53,16 @@ final class CompletedController extends AbstractController
         #[MapEntity] ProductStock $ProductStock,
         CompletedProductStockHandler $CompletedProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
+        CentrifugoPublishInterface $publish,
     ): Response
     {
+
+        /** Скрываем идентификатор у остальных пользователей */
+        $publish
+            ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+            ->addData(['identifier' => (string) $ProductStock->getId()])
+            ->send('remove');
+
         /**
          * @var DeliveryProductStockDTO $DeliveryProductStockDTO
          */
@@ -73,25 +76,34 @@ final class CompletedController extends AbstractController
             'action' => $this->generateUrl(
                 'products-stocks:admin.pickup.completed',
                 ['id' => $ProductStock->getId()]
-            )]);
-
-        $form->handleRequest($request);
+            )])
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_package'))
         {
+
+
             $this->refreshTokenForm($form);
 
             $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
 
-            $this->addFlash
+            /** Скрываем идентификатор у всех пользователей */
+            $publish
+                ->addData(['profile' => false]) // Скрывает у всех
+                ->addData(['identifier' => (string) $handle->getId()])
+                ->send('remove');
+
+            $flash = $this->addFlash
             (
                 'page.pickup',
                 $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
                 'products-stocks.admin',
-                $handle
+                $handle,
+                200
             );
 
-            return $this->redirectToReferer();
+            return $flash ?: $this->redirectToReferer();
+
         }
 
         //dd($productDetail->fetchAllProductsByProductStocksAssociative($ProductStock->getId()));

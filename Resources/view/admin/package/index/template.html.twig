@@ -32,12 +32,54 @@
 <script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/copy.min.js?v={{ version }}" class="lazy"></script>
 
 
-    <script nonce="{{ csp_nonce() }}">
+ <script nonce="{{ csp_nonce() }}" class="lazy">
+ window.centrifugo_dsn = "{{ centrifugo_dsn }}";
+ window.centrifugo_token = "{{ token }}";
+ </script>
+
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/centrifugo/centrifuge.min.js?v={{ version }}" class='lazy'></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/centrifugo/socket.min.js?v={{ version }}" class='lazy'></script>
+
+
+
+<script nonce="{{ csp_nonce() }}">
 
         document.addEventListener("DOMContentLoaded", (event) =>
         {
-            const form = document.forms.product_stock_package_filter_form;
+             let pBEuFDfsW = 100;
+
+                setTimeout(function CMMpMfGP()
+                {
+                    if(typeof centrifuge !== 'object')
+                    {
+                        if(pBEuFDfsW > 1000) { return; }
+
+                        pBEuFDfsW = pBEuFDfsW * 2;
+                        return setTimeout(CMMpMfGP, pBEuFDfsW);
+                    }
+
+                    /** Удаляем из списка тикет у других */
+                    centrifuge.newSubscription('remove').on('publication', function(ctx)
+                    {
+                        if(ctx.data.profile === '{{ current_profile }}')
+                        {
+                            return;
+                        }
+
+                        let $identifier = document.getElementById(ctx.data.identifier);
+
+                        if($identifier)
+                        {
+                            $identifier.remove();
+                        }
+
+                    }).subscribe();
+
+                }, 100);
+
+             const form = document.forms.product_stock_package_filter_form;
             form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+
         });
 
         function changeDatapicker(input)

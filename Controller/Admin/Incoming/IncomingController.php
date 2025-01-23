@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
@@ -50,13 +51,18 @@ final class IncomingController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
         IncomingProductStockHandler $IncomingProductStockHandler,
-        ProductStockQuantityInterface $productStockQuantity
+        ProductStockQuantityInterface $productStockQuantity,
+        CentrifugoPublishInterface $publish,
     ): Response
     {
+        /** Скрываем идентификатор у остальных пользователей */
+        $publish
+            ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+            ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+            ->send('remove');
 
         $IncomingProductStockDTO = new IncomingProductStockDTO();
         $ProductStockEvent->getDto($IncomingProductStockDTO);
-
 
         // Форма добавления
         $form = $this
@@ -71,14 +77,20 @@ final class IncomingController extends AbstractController
 
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
-            $this->addFlash(
+            /** Скрываем идентификатор у всех пользователей */
+            $publish
+                ->addData(['profile' => false]) // Скрывает у всех
+                ->addData(['identifier' => (string) $handle->getId()])
+                ->send('remove');
+
+            $flash = $this->addFlash(
                 'page.orders',
                 $handle instanceof ProductStock ? 'success.accept' : 'danger.accept',
                 'products-stocks.admin',
                 $handle
             );
 
-            return $this->redirectToRoute('products-stocks:admin.warehouse.index');
+            return $flash ?: $this->redirectToReferer();
         }
 
 

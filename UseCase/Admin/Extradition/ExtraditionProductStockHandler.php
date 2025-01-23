@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,34 +26,21 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ExtraditionProductStockHandler extends AbstractHandler
 {
-    public function handle(ExtraditionProductStockDTO $command,): string|ProductStock
+    public function handle(ExtraditionProductStockDTO $command): string|ProductStock
     {
+        $this->setCommand($command);
+
         /** Валидация DTO  */
         $this->validatorCollection->add($command);
 
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        try
-        {
-            $this->preUpdate($command, true);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
+        $this->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -61,7 +48,10 @@ final class ExtraditionProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        if(false === $this->isPersist())
+        {
+            $this->flush();
+        }
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

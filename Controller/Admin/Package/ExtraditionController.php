@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Package;
 
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
@@ -52,8 +53,15 @@ final class ExtraditionController extends AbstractController
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         ExtraditionProductStockHandler $ExtraditionProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
+        CentrifugoPublishInterface $publish,
     ): Response
     {
+
+        /** Скрываем идентификатор у остальных пользователей */
+        $publish
+            ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+            ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+            ->send('remove');
 
         $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
         $ProductStockEvent->getDto($ExtraditionProductStockDTO);
@@ -72,27 +80,24 @@ final class ExtraditionController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $ProductStocks = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
+            $handle = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
-            if($ProductStocks instanceof ProductStock)
-            {
-                $this->addFlash(
-                    'page.package',
-                    'success.extradition',
-                    'products-stocks.admin'
-                );
+            /** Скрываем идентификатор у всех пользователей */
+            $publish
+                ->addData(['profile' => false]) // Скрывает у всех
+                ->addData(['identifier' => (string) $handle->getId()])
+                ->send('remove');
 
-                return $this->redirectToRoute('products-stocks:admin.package.index');
-            }
-
-            $this->addFlash(
+            $flash = $this->addFlash
+            (
                 'page.package',
-                'danger.extradition',
+                $handle instanceof ProductStock ? 'success.extradition' : 'danger.extradition',
                 'products-stocks.admin',
-                $ProductStocks
+                $handle,
+                200
             );
 
-            return $this->redirectToReferer();
+            return $flash ?: $this->redirectToReferer();
         }
 
         return $this->render([

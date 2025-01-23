@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
 
+use BaksDev\Centrifugo\Services\Token\TokenUserGenerator;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
@@ -44,6 +45,7 @@ final class IndexController extends AbstractController
     public function incoming(
         Request $request,
         AllProductStocksIncomingInterface $allIncoming,
+        TokenUserGenerator $tokenUserGenerator,
         int $page = 0
     ): Response
     {
@@ -79,6 +81,8 @@ final class IndexController extends AbstractController
                 'query' => $query,
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
+                'current_profile' => $this->getCurrentProfileUid(),
+                'token' => $tokenUserGenerator->generate($this->getUsr()),
             ]
         );
     }
