@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Controller\Admin\Total;
 
 use BaksDev\Core\Controller\AbstractController;
-use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditHandler;
@@ -84,12 +83,12 @@ final class StorageController extends AbstractController
             return $this->redirectToReferer();
         }
 
-        $ProductDetail = $productDetailByConst->fetchProductDetailByConstAssociative(
-            $ProductStocksDTO->getProduct(),
-            $ProductStocksDTO->getOffer(),
-            $ProductStocksDTO->getVariation(),
-            $ProductStocksDTO->getModification()
-        );
+        $ProductDetail = $productDetailByConst
+            ->product($ProductStocksDTO->getProduct())
+            ->offerConst($ProductStocksDTO->getOffer())
+            ->variationConst($ProductStocksDTO->getVariation())
+            ->modificationConst($ProductStocksDTO->getModification())
+            ->find();
 
         return $this->render([
             'form' => $form->createView(),

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -86,13 +86,12 @@ final class MovingController extends AbstractController
 
                     if($product->getTotal() > $ProductStockTotal)
                     {
-                        $productDetail = $productDetailByConst->fetchProductDetailByConstAssociative(
-                            $product->getProduct(),
-                            $product->getOffer(),
-                            $product->getVariation(),
-                            $product->getModification()
-                        );
-
+                        $productDetail = $productDetailByConst
+                            ->product($product->getProduct())
+                            ->offerConst($product->getOffer())
+                            ->variationConst($product->getVariation())
+                            ->modificationConst($product->getModification())
+                            ->find();
 
                         $msg = '<b>'.$productDetail['product_name'].'</b>';
                         $msg .= ' ('.$productDetail['product_article'].')';
