@@ -78,7 +78,7 @@ final class IncomingController extends AbstractController
             $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
             /** Скрываем идентификатор у всех пользователей */
-            $publish
+            $remove = $publish
                 ->addData(['profile' => false]) // Скрывает у всех
                 ->addData(['identifier' => (string) $handle->getId()])
                 ->send('remove');
@@ -87,10 +87,11 @@ final class IncomingController extends AbstractController
                 'page.orders',
                 $handle instanceof ProductStock ? 'success.accept' : 'danger.accept',
                 'products-stocks.admin',
-                $handle
+                $handle,
+                $remove ? 200 : 302
             );
 
-            return $flash ?: $this->redirectToReferer();
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.warehouse.index');
         }
 
 

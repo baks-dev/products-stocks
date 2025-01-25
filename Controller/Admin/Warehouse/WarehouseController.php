@@ -96,7 +96,7 @@ final class WarehouseController extends AbstractController
             $handle = $handler->handle($WarehouseProductStockDTO);
 
             /** Скрываем идентификатор у всех пользователей */
-            $publish
+            $remove = $publish
                 ->addData(['profile' => false]) // Скрывает у всех
                 ->addData(['identifier' => (string) $handle->getId()])
                 ->send('remove');
@@ -105,10 +105,11 @@ final class WarehouseController extends AbstractController
                 'page.warehouse',
                 $handle instanceof ProductStock ? 'success.warehouse' : 'danger.warehouse',
                 'products-stocks.admin',
-                $handle
+                $handle,
+                $remove ? 200 : 302
             );
 
-            return $flash ?: $this->redirectToReferer();
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.purchase.index');
 
         }
 

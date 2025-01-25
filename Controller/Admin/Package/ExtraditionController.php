@@ -83,7 +83,7 @@ final class ExtraditionController extends AbstractController
             $handle = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
             /** Скрываем идентификатор у всех пользователей */
-            $publish
+            $remove = $publish
                 ->addData(['profile' => false]) // Скрывает у всех
                 ->addData(['identifier' => (string) $handle->getId()])
                 ->send('remove');
@@ -94,10 +94,10 @@ final class ExtraditionController extends AbstractController
                 $handle instanceof ProductStock ? 'success.extradition' : 'danger.extradition',
                 'products-stocks.admin',
                 $handle,
-                200
+                $remove ? 200 : 302
             );
 
-            return $flash ?: $this->redirectToReferer();
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.package.index');
         }
 
         return $this->render([

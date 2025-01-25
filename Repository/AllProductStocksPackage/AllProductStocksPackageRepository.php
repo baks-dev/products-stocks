@@ -770,16 +770,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
 
-
-        //dump($dbal->analyze());
-
-        ///$dbal->addGroupBy('ord.ord');
-        //$dbal->allGroupByExclude();
-
-        //        $dbal->setMaxResults(24);
-        //        dd($dbal->fetchAllAssociative());
-        //        dd($this->paginator->fetchAllAssociative($dbal));
-
         return $this->paginator->fetchAllAssociative($dbal);
 
     }

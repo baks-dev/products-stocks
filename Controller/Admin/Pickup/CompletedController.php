@@ -81,14 +81,12 @@ final class CompletedController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_package'))
         {
-
-
             $this->refreshTokenForm($form);
 
             $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
 
             /** Скрываем идентификатор у всех пользователей */
-            $publish
+            $remove = $publish
                 ->addData(['profile' => false]) // Скрывает у всех
                 ->addData(['identifier' => (string) $handle->getId()])
                 ->send('remove');
@@ -99,14 +97,12 @@ final class CompletedController extends AbstractController
                 $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
                 'products-stocks.admin',
                 $handle,
-                200
+                $remove ? 200 : 302
             );
 
-            return $flash ?: $this->redirectToReferer();
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.pickup.index');
 
         }
-
-        //dd($productDetail->fetchAllProductsByProductStocksAssociative($ProductStock->getId()));
 
         return $this->render(
             [
