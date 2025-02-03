@@ -87,7 +87,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
 
         // Получаем всю продукцию в ордере которая перемещается со склада
         // Если поступила отмена заявки - массив продукции будет NULL
-        /** @see SubReserveProductStockTotalByCancel */
+        /** @see SubReserveMaterialStockTotalByCancel */
         $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
 
         if(empty($products))

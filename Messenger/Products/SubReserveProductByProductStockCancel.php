@@ -130,7 +130,7 @@ final readonly class SubReserveProductByProductStockCancel
             ->forOfferConst($product->getOffer())
             ->forVariationConst($product->getVariation())
             ->forModificationConst($product->getModification())
-            ->execute();
+            ->find();
 
 
         $rows = $this->subProductQuantity

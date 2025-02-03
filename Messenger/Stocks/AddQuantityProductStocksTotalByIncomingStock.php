@@ -126,7 +126,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
                 $User = $this->userByUserProfile
                     ->forProfile($UserProfileUid)
-                    ->findUser();
+                    ->find();
 
                 if(!$User)
                 {

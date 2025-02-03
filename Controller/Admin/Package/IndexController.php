@@ -54,11 +54,15 @@ final class IndexController extends AbstractController
     {
 
         // Поиск
-        $search = new SearchDTO($request);
-        $searchForm = $this->createForm(SearchForm::class, $search,
-            ['action' => $this->generateUrl('products-stocks:admin.package.index')]
-        );
-        $searchForm->handleRequest($request);
+        $search = new SearchDTO();
+
+        $searchForm = $this
+            ->createForm(
+                type: SearchForm::class,
+                data: $search,
+                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')]
+            )
+            ->handleRequest($request);
 
         // Фильтр
         $filter = new ProductStockPackageFilterDTO($request);

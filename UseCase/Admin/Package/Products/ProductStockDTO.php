@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @see ProductStockProduct
+ * @see MaterialStockMaterial
  * @see OrderProduct
  */
 final class ProductStockDTO implements ProductStockProductInterface, OrderProductInterface
@@ -68,9 +68,11 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         return $this->product;
     }
 
-    public function setProduct(ProductUid $product): void
+    public function setProduct(ProductUid $product): self
     {
         $this->product = $product;
+
+        return $this;
     }
 
     /** Торговое предложение */
@@ -79,9 +81,11 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         return $this->offer;
     }
 
-    public function setOffer(ProductOfferConst $offer): void
+    public function setOffer(ProductOfferConst|null|false $offer): self
     {
-        $this->offer = $offer;
+        $this->offer = empty($offer) ? null : $offer;
+
+        return $this;
     }
 
     /** Множественный вариант */
@@ -90,9 +94,11 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         return $this->variation;
     }
 
-    public function setVariation(?ProductVariationConst $variation): void
+    public function setVariation(ProductVariationConst|null|false $variation): self
     {
-        $this->variation = $variation;
+        $this->variation = empty($variation) ? null : $variation;
+
+        return $this;
     }
 
     /** Модификация множественного варианта */
@@ -101,9 +107,11 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         return $this->modification;
     }
 
-    public function setModification(?ProductModificationConst $modification): void
+    public function setModification(ProductModificationConst|null|false $modification): self
     {
-        $this->modification = $modification;
+        $this->modification = empty($modification) ? null : $modification;
+
+        return $this;
     }
 
     //    /** Стоимость и количество */

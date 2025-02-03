@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ class ProductStock
 
     public function __construct(AbstractUid|string|null $id = null)
     {
-        $this->id = new ProductStockUid($id);
+        $this->id = clone new ProductStockUid($id);
     }
 
     public function __toString(): string

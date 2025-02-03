@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,9 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 #[When(env: 'test')]
 final class IncomingControllerTest extends WebTestCase
 {
-    private const URL = '/admin/product/stock/incoming/%s';
+    private const string URL = '/admin/product/stock/incoming/%s';
 
-    private const ROLE = 'ROLE_PRODUCT_STOCK_INCOMING_ACCEPT';
+    private const string ROLE = 'ROLE_PRODUCT_STOCK_INCOMING_ACCEPT';
 
 
     private static ?ProductStockEventUid $identifier;

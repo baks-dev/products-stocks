@@ -33,7 +33,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStockEvent */
+/** @see MaterialStockEvent */
 final class DivideProductStockDTO implements ProductStockEventInterface, OrderEventInterface
 {
     /** Идентификатор */

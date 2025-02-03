@@ -50,7 +50,7 @@ final class SelectionController extends AbstractController
     {
 
         // Поиск
-        $search = new SearchDTO($request);
+        $search = new SearchDTO();
         //        $searchForm = $this->createForm(SearchForm::class, $search,
         //            ['action' => $this->generateUrl('products-stocks:admin.package.index')]
         //        );

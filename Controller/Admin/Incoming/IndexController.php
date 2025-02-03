@@ -52,13 +52,15 @@ final class IndexController extends AbstractController
         /*$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');*/
 
         // Поиск
-        $search = new SearchDTO($request);
-        $searchForm = $this->createForm(
-            SearchForm::class,
-            $search,
-            ['action' => $this->generateUrl('products-stocks:admin.incoming.index')]
-        );
-        $searchForm->handleRequest($request);
+        $search = new SearchDTO();
+
+        $searchForm = $this
+            ->createForm(
+                type: SearchForm::class,
+                data: $search,
+                options: ['action' => $this->generateUrl('products-stocks:admin.incoming.index')]
+            )
+            ->handleRequest($request);
 
         /**
          * Фильтр продукции по ТП

@@ -104,7 +104,6 @@ final readonly class AddQuantityProductByIncomingStock
 
     public function changeTotal(ProductStockProduct $product): void
     {
-
         $context = [
             self::class.':'.__LINE__,
             'total' => $product->getTotal(),
@@ -120,7 +119,7 @@ final readonly class AddQuantityProductByIncomingStock
             ->forOfferConst($product->getOffer())
             ->forVariationConst($product->getVariation())
             ->forModificationConst($product->getModification())
-            ->execute();
+            ->find();
 
         if($CurrentProductDTO === false)
         {

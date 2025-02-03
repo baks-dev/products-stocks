@@ -32,7 +32,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @see ProductStockProduct
+ * @see MaterialStockMaterial
  * @see OrderProduct
  */
 final class DivideProductStockProductDTO implements ProductStockProductInterface, OrderProductInterface

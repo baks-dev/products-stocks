@@ -28,7 +28,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Divide\Orders;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
 
-/** @see ProductStockOrder */
+/** @see MaterialStockOrder */
 final class DivideProductStockOrderDTO implements ProductStockOrderInterface
 {
     /** Идентификатор заказа для сборки */

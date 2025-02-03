@@ -31,21 +31,21 @@ use BaksDev\Orders\Order\Security\MenuGroupMarketplace;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.menu.admin')]
-final class HeaderOrders implements MenuAdminInterface
+final class HeaderStocks implements MenuAdminInterface
 {
 
     public function getRole(): string
     {
-        return VoterIndex::getVoter();
+        return Role::ROLE;
     }
 
     /**
      * Добавляем заголовок в меню администрирования.
      */
 
-    public function getPath(): ?string
+    public function getPath(): false
     {
-        return null;
+        return false;
     }
 
     /**
@@ -61,7 +61,7 @@ final class HeaderOrders implements MenuAdminInterface
      */
     public function getSortMenu(): int
     {
-        return 200;
+        return 100;
     }
 
     /**
