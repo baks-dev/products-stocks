@@ -94,7 +94,7 @@ final readonly class AddReserveProductStocksTotalByMove
         }
 
         /** Идентификатор профиля склада отгрузки */
-        $UserProfileUid = $ProductStockEvent->getProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +25,26 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests;
 
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Tests\PurchaseProductStockTest;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @group products-stocks
@@ -48,15 +56,24 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 #[When(env: 'test')]
 final class WarehouseProductStockTest extends KernelTestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        // Бросаем событие консольной комманды
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
+        $dispatcher->dispatch($event, 'console.command');
+    }
+
+
     /**
      * Тест нового закупочного листа
      */
     public function testUseCase(): void
     {
-        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
+        /* TODO: !!! */
+        //self::assertTrue(true);
+        //return;
 
-        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
-        $ProductStockStatusCollection->cases();
 
         /** @var CurrentProductStocksInterface $CurrentProductStocksInterface */
         $CurrentProductStocksInterface = self::getContainer()->get(CurrentProductStocksInterface::class);

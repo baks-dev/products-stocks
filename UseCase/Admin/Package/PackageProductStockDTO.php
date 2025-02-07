@@ -63,7 +63,7 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
 
     /** Постоянная величина */
     #[Assert\Valid]
-    private readonly Invariable\PackageOrderInvariableDTO $invariable;
+    private Invariable\PackageOrderInvariableDTO $invariable;
 
 
     //    /** Константа Целевого склада */

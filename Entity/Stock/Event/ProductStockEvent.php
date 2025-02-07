@@ -98,8 +98,8 @@ class ProductStockEvent extends EntityEvent
      */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    #[ORM\Column(type: UserProfileUid::TYPE)]
-    private UserProfileUid $profile;
+    #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
+    private ?UserProfileUid $profile = null;
 
     /**
      * Постоянная величина
@@ -219,18 +219,6 @@ class ProductStockEvent extends EntityEvent
     {
         return $this->move;
     }
-
-
-    /**
-     * Идентификатор ответственного.
-     * @deprecated использовать метод getStocksProfile
-     * @see getStocksProfile
-     */
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
-
 
     /**
      * Идентификатор ответственного.

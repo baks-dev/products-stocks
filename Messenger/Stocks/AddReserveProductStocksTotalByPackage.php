@@ -95,7 +95,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         }
 
         /** Идентификатор профиля, куда была отправлена заявка на упаковку */
-        $UserProfileUid = $ProductStockEvent->getProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $key => $product)

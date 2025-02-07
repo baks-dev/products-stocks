@@ -66,7 +66,7 @@ final class SubReserveProductStockTotalByMove
             ->find($message->getLast());
 
         /** Если статус предыдущего события заявки не является Moving «Перемещение» - завершаем обработчик*/
-        if(!$ProductStockEventLast || false === $ProductStockEventLast->getStatus()->equals(ProductStockStatusMoving::class))
+        if(!$ProductStockEventLast || false === $ProductStockEventLast->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
@@ -78,7 +78,7 @@ final class SubReserveProductStockTotalByMove
 
 
         /** Если статус активного события не является Warehouse «Отправили на склад» */
-        if(!$ProductStockEvent || false === $ProductStockEvent->getStatus()->equals(ProductStockStatusWarehouse::class))
+        if(!$ProductStockEvent || false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusWarehouse::class))
         {
             return;
         }
@@ -106,7 +106,7 @@ final class SubReserveProductStockTotalByMove
         }
 
         /** Идентификатор профиля склада отгрузки (из прошлого события!) */
-        $UserProfileUid = $ProductStockEventLast->getProfile();
+        $UserProfileUid = $ProductStockEventLast->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
@@ -118,7 +118,7 @@ final class SubReserveProductStockTotalByMove
                     self::class.':'.__LINE__,
                     'number' => $ProductStockEvent->getNumber(),
                     'event' => (string) $message->getEvent(),
-                    'profile' => (string) $ProductStockEvent->getProfile(),
+                    'profile' => (string) $ProductStockEvent->getStocksProfile(),
                     'product' => (string) $product->getProduct(),
                     'offer' => (string) $product->getOffer(),
                     'variation' => (string) $product->getVariation(),

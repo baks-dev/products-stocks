@@ -69,7 +69,7 @@ final readonly class SubReserveProductStockTotalByCancel
         }
 
         // Если статус события заявки не является Cancel «Отменен».
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusCancel::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
         {
             return;
         }
@@ -97,7 +97,7 @@ final readonly class SubReserveProductStockTotalByCancel
         }
 
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
-        $UserProfileUid = $ProductStockEvent->getProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

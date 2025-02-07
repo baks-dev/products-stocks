@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +30,36 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 
 final readonly class ProductStockMessage
 {
+    private string $id;
+    private string $event;
+    private ?string $last;
+
     public function __construct(
-        private ProductStockUid $id,
-        private ProductStockEventUid $event,
-        private ?ProductStockEventUid $last = null
-    ) {}
+        ProductStockUid|string $id,
+        ProductStockEventUid|string $event,
+        ProductStockEventUid|string|null $last = null
+    )
+    {
+        $this->id = (string) $id;
+        $this->event = (string) $event;
+        $this->last = empty($last) ?: (string) $last;
+    }
 
     /** Идентификатор */
     public function getId(): ProductStockUid
     {
-        return $this->id;
+        return new ProductStockUid($this->id);
     }
 
     /** Идентификатор события */
     public function getEvent(): ProductStockEventUid
     {
-        return $this->event;
+        return new ProductStockEventUid($this->event);
     }
 
     /** Идентификатор предыдущего события */
     public function getLast(): ?ProductStockEventUid
     {
-        return $this->last;
+        return $this->last ? new ProductStockEventUid($this->last) : null;
     }
 }

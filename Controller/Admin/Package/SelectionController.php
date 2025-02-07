@@ -49,6 +49,8 @@ final class SelectionController extends AbstractController
     ): Response
     {
 
+        return new Response('Page Not Found');
+
         // Поиск
         $search = new SearchDTO();
         //        $searchForm = $this->createForm(SearchForm::class, $search,

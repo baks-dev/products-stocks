@@ -60,6 +60,7 @@ use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
@@ -68,7 +69,6 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDivide;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
@@ -125,35 +125,52 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal->from(ProductStock::class, 'stock');
 
-        // ProductStockEvent
-        $dbal->addSelect('event.number');
-        $dbal->addSelect('event.comment');
-        $dbal->addSelect('event.status');
-
-        $dbal->join(
-            'stock',
-            ProductStockEvent::class,
-            'event',
+        $dbal
+            ->addSelect('invariable.number')
+            ->join(
+                'stock',
+                ProductStocksInvariable::class,
+                'invariable',
+                '
+                invariable.main = stock.id AND 
+                invariable.profile = :profile
             '
-            event.id = stock.event AND 
-            event.profile = :profile AND  
-            (
-                event.status = :package OR 
-                event.status = :move OR 
-                event.status = :divide OR 
+            )
+            ->setParameter(
+                key: 'profile',
+                value: $profile,
+                type: UserProfileUid::TYPE
+            );
+
+
+        // ProductStockEvent
+        //$dbal->addSelect('event.number');
+        $dbal
+            ->addSelect('event.comment')
+            ->addSelect('event.status')
+            ->join(
+                'stock',
+                ProductStockEvent::class,
+                'event',
+                '
+                event.id = stock.event AND 
+                event.status = :package
+                ');
+
+
+        /* (
+                event.status = :package OR
+                event.status = :move OR
+                event.status = :divide OR
                 event.status = :error
-                
-            )'
-        );
+
+            ) */
 
         $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
-        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
-        $dbal->setParameter('error', new ProductStockStatus(new ProductStockStatus\ProductStockStatusError()), ProductStockStatus::TYPE);
 
-
-        $dbal->setParameter('divide', new ProductStockStatus(new ProductStockStatusDivide()), ProductStockStatus::TYPE);
-
-        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+        //$dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+        ///$dbal->setParameter('error', new ProductStockStatus(new ProductStockStatus\ProductStockStatusError()), ProductStockStatus::TYPE);
+        //$dbal->setParameter('divide', new ProductStockStatus(new ProductStockStatusDivide()), ProductStockStatus::TYPE);
 
 
         /** Погрузка на доставку */
@@ -205,7 +222,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal
             ->addSelect('modify.mod_date')
-            ->join(
+            ->leftJoin(
                 'stock',
                 ProductStockModify::class,
                 'modify',
@@ -232,7 +249,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 ProductStockTotal::class,
                 'total',
                 '
-                total.profile = event.profile AND
+                total.profile = invariable.profile AND
                 total.product = stock_product.product AND 
                 (total.offer IS NULL OR total.offer = stock_product.offer) AND 
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
@@ -619,7 +636,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             'event',
             UserProfile::class,
             'users_profile',
-            'users_profile.id = event.profile'
+            'users_profile.id = invariable.profile'
         );
 
         // Info
@@ -627,7 +644,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = invariable.profile'
         );
 
         // Event

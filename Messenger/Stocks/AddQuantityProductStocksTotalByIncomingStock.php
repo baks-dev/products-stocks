@@ -105,7 +105,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
 
         /** Идентификатор профиля склада при поступлении */
-        $UserProfileUid = $ProductStockEvent->getProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
