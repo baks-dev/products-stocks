@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPurchase;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Invariable\PurchaseProductStocksInvariableDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -45,20 +46,15 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     #[Assert\IsNull]
     private ?ProductStockEventUid $id = null;
 
-    /** Ответственное лицо (Профиль пользователя) */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private readonly UserProfileUid $profile;
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private readonly UserProfileUid $profile;
 
     /** Статус заявки - ПРИХОД */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
-    /** Номер заявки */
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
-    #[Assert\Length(max: 36)]
-    private string $number;
 
     /** Коллекция продукции  */
     #[Assert\Valid]
@@ -66,6 +62,8 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
 
     /** Комментарий */
     private ?string $comment = null;
+
+    private PurchaseProductStocksInvariableDTO $invariable;
 
     // Вспомогательные свойства
 
@@ -91,6 +89,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     {
         $this->status = new ProductStockStatus(ProductStockStatusPurchase::class);
         $this->product = new ArrayCollection();
+        $this->invariable = new PurchaseProductStocksInvariableDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -159,17 +158,17 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Ответственное лицо (Профиль пользователя) */
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
-        return $this;
-    }
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    public function getProfile(): UserProfileUid
+    //    {
+    //        return $this->profile;
+    //    }
+    //
+    //    public function setProfile(UserProfileUid $profile): self
+    //    {
+    //        $this->profile = $profile;
+    //        return $this;
+    //    }
 
 
     /** Статус заявки - ПРИХОД */
@@ -178,17 +177,27 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         return $this->status;
     }
 
-    /** Номер заявки */
-
-    public function getNumber(): string
+    /**
+     * Invariable
+     */
+    public function getInvariable(): PurchaseProductStocksInvariableDTO
     {
-        return $this->number;
+        return $this->invariable;
     }
 
-    public function setNumber(string $number): void
-    {
-        $this->number = $number;
-    }
+
+
+    //    /** Номер заявки */
+    //
+    //    public function getNumber(): string
+    //    {
+    //        return $this->number;
+    //    }
+    //
+    //    public function setNumber(string $number): void
+    //    {
+    //        $this->number = $number;
+    //    }
 
 
     /** ВСПОМОГАТЕЛЬНЫЕ СВОЙСТВА */

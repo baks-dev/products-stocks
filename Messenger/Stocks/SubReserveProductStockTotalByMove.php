@@ -40,7 +40,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class SubReserveProductStockTotalByMove
+final readonly class SubReserveProductStockTotalByMove
 {
     public function __construct(
         #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,

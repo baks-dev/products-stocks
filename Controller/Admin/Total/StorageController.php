@@ -60,12 +60,14 @@ final class StorageController extends AbstractController
             throw new InvalidArgumentException('Invalid profile');
         }
 
-
         // Форма
-        $form = $this->createForm(ProductStockStorageEditForm::class, $ProductStocksDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.total.storage', ['id' => (string) $ProductStocksTotal]),
-        ]);
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(
+                type: ProductStockStorageEditForm::class,
+                data: $ProductStocksDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.total.storage', ['id' => (string) $ProductStocksTotal])]
+            )
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('product_stock_storage_edit'))
         {

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    /** Ответственное лицо (Профиль пользователя) */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private readonly UserProfileUid $profile;
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private readonly UserProfileUid $profile;
 
     /** Статус заявки - ПРИХОД */
     #[Assert\NotBlank]
@@ -86,12 +86,12 @@ final class IncomingProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Ответственное лицо (Профиль пользователя) */
-
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //
+    //    public function getProfile(): UserProfileUid
+    //    {
+    //        return $this->profile;
+    //    }
 
     /** Статус заявки - ПРИХОД */
 

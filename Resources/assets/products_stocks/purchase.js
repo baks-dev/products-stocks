@@ -1,106 +1,25 @@
 /*
- *  Copyright 2022.  Baks.dev <admin@baks.dev>
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *   limitations under the License.
- *
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ *  
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *  
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
  */
 
-
-/** Добавить лист закупки */
-
-//var limit_NMrsJxDFr = 1000;
-//
-//setTimeout(function init_xXgmjezHJ()
-//{
-//
-//    var object_product = document.getElementById('purchase_product_stock_form_preProduct');
-//
-//    if(object_product)
-//    {
-//
-//        object_product.addEventListener('change', changeObjectProduct, false);
-//
-//        let $addButtonStock = document.getElementById('purchase_product_stock_form_addPurchase');
-//
-//        $addButtonStock.addEventListener('click', addProductPurchase, false);
-//
-//        /* Имя формы */
-//        let purchaseForm = document.forms.purchase_product_stock_form;
-//
-//
-//        let forms = object_product.closest('form');
-//
-//
-//        /* событие отправки формы */
-//        // forms.addEventListener('submit', function (event) {
-//        //     event.preventDefault();
-//        //     return false;
-//        // });
-//
-//        document.getElementById('purchase_product_stock_form_purchase')
-//            .addEventListener('click', function(event)
-//            {
-//                if(event.key !== "Enter")
-//                {
-//                    submitModalForm(forms);
-//                }
-//                return false;
-//            });
-//
-//        document.getElementById("purchase_product_stock_form_preTotal")
-//            .addEventListener("keydown", function(event)
-//            {
-//
-//                if(event.key === "Enter")
-//                {
-//                    addProductPurchase();
-//                }
-//            });
-//
-//
-//        document.getElementById("purchase_product_stock_form_number")
-//            .addEventListener("keydown", function(event)
-//            {
-//
-//                if(event.key === "Enter")
-//                {
-//
-//                    event.preventDefault();
-//
-//                    var input_preProduct = document.getElementById('purchase_product_stock_form_select2');
-//
-//                    if(input_preProduct)
-//                    {
-//                        document.getElementById('purchase_product_stock_form_select2').click();
-//
-//                    }
-//                }
-//            });
-//
-//
-//        return;
-//    }
-//
-//    if(limit_NMrsJxDFr > 1000)
-//    {
-//        return;
-//    }
-//
-//    limit_NMrsJxDFr = limit_NMrsJxDFr * 2;
-//
-//    setTimeout(init_xXgmjezHJ, limit_NMrsJxDFr);
-//
-//}, 100);
 
 
 executeFunc(function productStocsPurchase()
@@ -130,7 +49,7 @@ executeFunc(function productStocsPurchase()
      * Если форма новая - фокусируем на номере
      * при клике Enter  - выделяем категорию
      */
-    let numberElement = document.getElementById(ChangePurchaseForm.name + '_number');
+    let numberElement = document.getElementById(ChangePurchaseForm.name + '_invariable_number');
     numberElement.focus();
 
     numberElement.addEventListener("keydown", function(event)
@@ -260,7 +179,7 @@ executeFunc(function _______________productStocsPurchase()
         });
 
 
-    document.getElementById("purchase_product_stock_form_number")
+    document.getElementById("purchase_product_stock_form_invariable_number")
         .addEventListener("keydown", function(event)
         {
             if(event.key === "Enter")
@@ -1021,7 +940,7 @@ function addProductPurchase()
     }
 
     /** Проверяем что заполнен номер квитанции */
-    let $number = document.getElementById(ChangePurchaseForm.name + '_number');
+    let $number = document.getElementById(ChangePurchaseForm.name + '_invariable_number');
 
     if($number.value.length === 0)
     {

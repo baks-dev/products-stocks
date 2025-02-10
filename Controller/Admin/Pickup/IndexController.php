@@ -67,8 +67,13 @@ final class IndexController extends AbstractController
 
         // Фильтр
         $filter = new ProductStockPickupFilterDTO($request);
-        $filterForm = $this->createForm(ProductStockPickupFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+        $filterForm = $this
+            ->createForm(
+                type: ProductStockPickupFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.index')]
+            )
+            ->handleRequest($request);
 
         if($filterForm->isSubmitted())
         {
@@ -89,7 +94,7 @@ final class IndexController extends AbstractController
         $Orders = $allProductStocksPickup
             ->search($search)
             ->filter($filter)
-            ->findAll($this->getProfileUid());
+            ->findPaginator();
 
         return $this->render(
             [

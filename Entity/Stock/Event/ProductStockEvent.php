@@ -65,12 +65,7 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: ProductStockUid::TYPE, nullable: false)]
     private ?ProductStockUid $main = null;
 
-    /** Номер заявки */
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
-    #[Assert\Length(max: 36)]
-    #[ORM\Column(type: Types::STRING)]
-    private string $number;
+
 
     /** Статус заявки */
     #[Assert\NotBlank]
@@ -96,10 +91,16 @@ class ProductStockEvent extends EntityEvent
      * Профиль пользователя
      * @deprecated переносится в Invariable
      */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
     #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
     private ?UserProfileUid $profile = null;
+
+    /**
+     * Номер заявки
+     * @deprecated переносится в Invariable
+     */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private string $number;
+
 
     /**
      * Постоянная величина
@@ -154,7 +155,7 @@ class ProductStockEvent extends EntityEvent
 
     public function getNumber(): string
     {
-        return $this->number;
+        return $this->invariable->getNumber();
     }
 
     /**

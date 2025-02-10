@@ -33,7 +33,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class ProductStockForm extends AbstractType
 {
-
     public function __construct(private readonly ProductDetailByConstInterface $productDetailByConst) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

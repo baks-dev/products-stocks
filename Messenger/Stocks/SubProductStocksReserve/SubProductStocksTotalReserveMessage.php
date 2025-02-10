@@ -30,25 +30,37 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see SubMaterialStocksTotalReserveMessage */
 final readonly class SubProductStocksTotalReserveMessage
 {
+    private string $profile;
+    private string $product;
+    private ?string $offer;
+    private ?string $variation;
+    private ?string $modification;
+
     public function __construct(
-        private UserProfileUid $profile,
-        private ProductUid $product,
-        private ?ProductOfferConst $offer,
-        private ?ProductVariationConst $variation,
-        private ?ProductModificationConst $modification
-    ) {}
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
+        ?ProductModificationConst $modification
+    )
+    {
+        $this->profile = (string) $profile;
+        $this->product = (string) $product;
+        $this->offer = $offer ? (string) $offer : null;
+        $this->variation = $variation ? (string) $variation : null;
+        $this->modification = $modification ? (string) $modification : null;
+    }
 
     /**
      * Profile
      */
     public function getProfile(): UserProfileUid
     {
-        return $this->profile;
+        return new UserProfileUid($this->profile);
     }
 
     /**
@@ -56,7 +68,7 @@ final readonly class SubProductStocksTotalReserveMessage
      */
     public function getProduct(): ProductUid
     {
-        return $this->product;
+        return new ProductUid($this->product);
     }
 
     /**
@@ -64,7 +76,7 @@ final readonly class SubProductStocksTotalReserveMessage
      */
     public function getOffer(): ?ProductOfferConst
     {
-        return $this->offer;
+        return $this->offer ? new ProductOfferConst($this->offer) : null;
     }
 
     /**
@@ -72,7 +84,7 @@ final readonly class SubProductStocksTotalReserveMessage
      */
     public function getVariation(): ?ProductVariationConst
     {
-        return $this->variation;
+        return $this->variation ? new ProductVariationConst($this->variation) : null;
     }
 
     /**
@@ -80,7 +92,7 @@ final readonly class SubProductStocksTotalReserveMessage
      */
     public function getModification(): ?ProductModificationConst
     {
-        return $this->modification;
+        return $this->modification ? new ProductModificationConst($this->modification) : null;
     }
 
 }

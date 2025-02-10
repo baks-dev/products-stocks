@@ -81,12 +81,11 @@ final class WarehouseController extends AbstractController
 
         // Форма добавления
         $form = $this
-            ->createForm(WarehouseProductStockForm::class, $WarehouseProductStockDTO, [
-                'action' => $this->generateUrl(
-                    'products-stocks:admin.warehouse.send',
-                    ['id' => $WarehouseProductStockDTO->getEvent()]
-                ),
-            ])
+            ->createForm(
+                WarehouseProductStockForm::class,
+                $WarehouseProductStockDTO,
+                ['action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $WarehouseProductStockDTO->getEvent()])]
+            )
             ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('send'))

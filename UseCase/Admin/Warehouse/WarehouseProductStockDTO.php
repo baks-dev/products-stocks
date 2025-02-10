@@ -51,10 +51,10 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     //    #[Assert\Uuid]
     //    private ?UserProfileUid $destination = null;
 
-    /** Ответственное лицо (Профиль пользователя) */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private UserProfileUid $profile;
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private UserProfileUid $profile;
 
     /** Статус заявки - ОТПАРВЛЕН НА СКЛАД */
     #[Assert\NotBlank]
@@ -63,8 +63,8 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    /** Вспомогательные свойства - для выбора доступных профилей */
-    private readonly UserUid $usr;
+    //    /** Вспомогательные свойства - для выбора доступных профилей */
+    //    private readonly UserUid $usr;
 
     /** Коллекция перемещения  */
     #[Assert\Valid]
@@ -79,12 +79,16 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     private ArrayCollection $product;
 
 
+    private Invariable\WarehouseProductStocksInvariableDTO $invariable;
+
+
     public function __construct(User|UserUid $usr)
     {
-        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
+        //$this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(ProductStockStatusWarehouse::class);
         $this->fixed = null;
         $this->product = new ArrayCollection();
+        $this->invariable = new Invariable\WarehouseProductStocksInvariableDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -108,17 +112,17 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Профиль назначения */
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
-        return $this;
-    }
+    //    /** Профиль назначения */
+    //    public function getProfile(): UserProfileUid
+    //    {
+    //        return $this->profile;
+    //    }
+    //
+    //    public function setProfile(UserProfileUid $profile): self
+    //    {
+    //        $this->profile = $profile;
+    //        return $this;
+    //    }
 
 
     /** Статус заявки - ПРИХОД */
@@ -171,5 +175,13 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function addProduct(Products\ProductStockDTO $product): void
     {
         $this->product->add($product);
+    }
+
+    /**
+     * Invariable
+     */
+    public function getInvariable(): Invariable\WarehouseProductStocksInvariableDTO
+    {
+        return $this->invariable;
     }
 }

@@ -38,10 +38,10 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    /** Ответственное лицо (Профиль пользователя) */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private readonly UserProfileUid $profile;
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Uuid]
+    //    private readonly UserProfileUid $profile;
 
     /** Фиксация заявки пользователем  */
     #[Assert\IsNull]
@@ -82,11 +82,11 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    /** Склад (Профиль пользователя) */
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
+    //    /** Склад (Профиль пользователя) */
+    //    public function getProfile(): UserProfileUid
+    //    {
+    //        return $this->profile;
+    //    }
 
     /** Фиксация заявки пользователем  */
     public function getFixed(): ?UserProfileUid

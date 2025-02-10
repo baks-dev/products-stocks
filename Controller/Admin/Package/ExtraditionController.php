@@ -67,14 +67,13 @@ final class ExtraditionController extends AbstractController
         $ProductStockEvent->getDto($ExtraditionProductStockDTO);
 
         // Форма заявки
-        $form = $this->createForm(ExtraditionProductStockForm::class, $ExtraditionProductStockDTO, [
-            'action' => $this->generateUrl(
-                'products-stocks:admin.package.extradition',
-                ['id' => $ExtraditionProductStockDTO->getEvent()]
-            ),
-        ]);
-
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(
+                type: ExtraditionProductStockForm::class,
+                data: $ExtraditionProductStockDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.package.extradition', ['id' => $ExtraditionProductStockDTO->getEvent()]),]
+            )
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('extradition'))
         {

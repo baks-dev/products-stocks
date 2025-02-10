@@ -63,14 +63,15 @@ final class IndexController extends AbstractController
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO($request);
-        $filter->allVisible();
+        $filter = new ProductFilterDTO()->allVisible();
 
-        $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('products-stocks:admin.total.index'),
-        ]);
-        $filterForm->handleRequest($request);
-        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
+        $filterForm = $this
+            ->createForm(
+                ProductFilterForm::class,
+                $filter,
+                ['action' => $this->generateUrl('products-stocks:admin.total.index'),]
+            )
+            ->handleRequest($request);
 
         /** Если ajax (печать) - показываем только свой склад */
         if($request->isXmlHttpRequest())
@@ -82,10 +83,7 @@ final class IndexController extends AbstractController
         $query = $allProductStocks
             ->search($search)
             ->filter($filter)
-            ->findPaginator(
-                $this->getUsr()?->getId(),
-                $this->getProfileUid()
-            );
+            ->findPaginator();
 
         return $this->render(
             [

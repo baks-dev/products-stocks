@@ -92,8 +92,8 @@
 
             <hr>
 
-            {% if form.profile is defined %}
-                {{ form_row(form.profile, {
+            {% if form.invariable.profile is defined %}
+                {{ form_row(form.invariable.profile, {
                     label: 'Склад значения', placeholder: 'Выберите склад из списка...', attr: { 'data-select' : 'select2' }
                 }) }}
             {% endif %}

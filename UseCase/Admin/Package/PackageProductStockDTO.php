@@ -55,11 +55,11 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
-    /** Номер заявки */
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
-    #[Assert\Length(max: 36)]
-    private string $number;
+    //    /** Номер заявки */
+    //    #[Assert\NotBlank]
+    //    #[Assert\Type('string')]
+    //    #[Assert\Length(max: 36)]
+    //    private string $number;
 
     /** Постоянная величина */
     #[Assert\Valid]
@@ -87,15 +87,15 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     /** Комментарий */
     private ?string $comment = null;
 
-    /** Вспомогательные свойства */
-    private readonly UserUid $usr;
+    //    /** Вспомогательные свойства */
+    //    private readonly UserUid $usr;
 
 
-    public function __construct(User|UserUid $user)
+    public function __construct(/*User|UserUid $user*/)
     {
-        $user = $user instanceof User ? $user->getId() : $user;
+        //$user = $user instanceof User ? $user->getId() : $user;
 
-        $this->usr = $user;
+        //$this->usr = $user;
 
         $this->status = new ProductStockStatus(ProductStockStatusPackage::class);
         $this->product = new ArrayCollection();
@@ -106,7 +106,7 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
 
 
         $PackageOrderInvariable = new Invariable\PackageOrderInvariableDTO();
-        $PackageOrderInvariable->setUsr($user);
+        //$PackageOrderInvariable->setUsr($user);
 
         $this->invariable = $PackageOrderInvariable;
 
@@ -163,21 +163,21 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         $this->comment = $comment;
     }
 
-    /** Ответственное лицо (Профиль пользователя) */
-    public function getProfile(): ?UserProfileUid
-    {
-        return $this->profile;
-    }
+    //    /** Ответственное лицо (Профиль пользователя) */
+    //    public function getProfile(): ?UserProfileUid
+    //    {
+    //        return $this->profile;
+    //    }
 
-    public function setProfile(?UserProfileUid $profile): void
-    {
-
-        /** Присваиваем постоянную величину  */
-        $PackageOrderInvariable = $this->getInvariable();
-        $PackageOrderInvariable->setProfile($profile);
-
-        $this->profile = $profile;
-    }
+    //    public function setProfile(?UserProfileUid $profile): void
+    //    {
+    //
+    //        /** Присваиваем постоянную величину  */
+    //        $PackageOrderInvariable = $this->getInvariable();
+    //        $PackageOrderInvariable->setProfile($profile);
+    //
+    //        $this->profile = $profile;
+    //    }
 
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
@@ -185,16 +185,16 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return $this->status;
     }
 
-    /** Номер заявки */
-    public function getNumber(): string
-    {
-        return $this->number;
-    }
+    //    /** Номер заявки */
+    //    public function getNumber(): string
+    //    {
+    //        return $this->number;
+    //    }
 
     public function setNumber(string $number): void
     {
         $this->invariable->setNumber($number);
-        $this->number = $number;
+        //$this->number = $number;
     }
 
     //    /** Константа Целевого склада */
@@ -223,13 +223,13 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     }
 
 
-    /**
-     * Usr
-     */
-    public function getUsr(): UserUid
-    {
-        return $this->usr;
-    }
+    //    /**
+    //     * Usr
+    //     */
+    //    public function getUsr(): UserUid
+    //    {
+    //        return $this->usr;
+    //    }
 
     /**
      * Invariable

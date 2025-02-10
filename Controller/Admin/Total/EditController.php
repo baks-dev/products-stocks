@@ -61,10 +61,13 @@ final class EditController extends AbstractController
         }
 
         // Форма
-        $form = $this->createForm(ProductStockTotalEditForm::class, $ProductStocksDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.total.edit', ['id' => (string) $ProductStocksTotal]),
-        ]);
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(
+                type: ProductStockTotalEditForm::class,
+                data: $ProductStocksDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.total.edit', ['id' => (string) $ProductStocksTotal]),]
+            )
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('product_stock_total_edit'))
         {

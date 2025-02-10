@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -51,16 +51,18 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
-use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksIncomingRepository implements AllProductStocksIncomingInterface
@@ -68,6 +70,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
     private ?ProductFilterDTO $filter = null;
@@ -88,41 +91,57 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
 
 
     /** Возвращает список всех принятых на склад продуктов */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
-        $dbal
-            ->addSelect('event.main AS id')
-            ->addSelect('event.id AS event')
-            ->addSelect('event.number')
-            ->addSelect('event.comment')
-            ->addSelect('event.status')
-            ->addSelect('event.profile AS user_profile_id')
-            ->from(ProductStockEvent::class, 'event')
-            ->andWhere('event.status = :status ')
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE)
-            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
 
         $dbal
+            ->addSelect('invariable.number')
+            ->addSelect('invariable.profile AS user_profile_id')
+            ->from(ProductStocksInvariable::class, 'invariable')
+            ->where('invariable.profile = :profile')
+            ->setParameter(
+                'profile',
+                $this->UserProfileTokenStorage->getProfile(),
+                UserProfileUid::TYPE
+            );
+
+        $dbal
+            ->addSelect('stock.id')
+            ->addSelect('stock.event')
             ->join(
-                'event',
+                'invariable',
                 ProductStock::class,
                 'stock',
-                'stock.event = event.id'
+                'stock.id = invariable.main'
             );
 
 
         $dbal
-            //->addSelect('move.destination AS move_destination')
+            ->addSelect('event.comment')
+            ->addSelect('event.status')
             ->leftJoin(
+                'stock',
+                ProductStockEvent::class,
                 'event',
-                ProductStockMove::class,
-                'move',
-                'move.event = event.id'
+                'event.id = stock.event AND event.status = :status'
+            )
+            ->setParameter(
+                'status',
+                ProductStockStatusIncoming::class,
+                ProductStockStatus::TYPE
             );
+
+
+        //        $dbal
+        //            //->addSelect('move.destination AS move_destination')
+        //            ->leftJoin(
+        //                'event',
+        //                ProductStockMove::class,
+        //                'move',
+        //                'move.event = event.id'
+        //            );
 
 
         // ProductStockModify
@@ -430,19 +449,19 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = event.profile'
+                'users_profile.id = invariable.profile'
             );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = invariable.profile'
         );
 
         // Event
-        $dbal->join(
+        $dbal->leftJoin(
             'users_profile',
             UserProfileEvent::class,
             'users_profile_event',
@@ -452,7 +471,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         // Personal
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
-            ->join(
+            ->leftJoin(
                 'users_profile_event',
                 UserProfilePersonal::class,
                 'users_profile_personal',

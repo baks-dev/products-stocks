@@ -37,7 +37,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class SubProductStocksTotalAndReserve
 {
     public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private ProductStockQuantityInterface $productStockMinQuantity,
         private SubProductStockInterface $updateProductStock,

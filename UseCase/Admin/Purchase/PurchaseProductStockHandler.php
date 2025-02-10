@@ -29,26 +29,14 @@ use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use DomainException;
 
 final class PurchaseProductStockHandler extends AbstractHandler
 {
     public function handle(PurchaseProductStockDTO $command): string|ProductStock
     {
-        /** Валидация DTO  */
-        $this->validatorCollection->add($command);
-
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        try
-        {
-            $command->getEvent() ? $this->preUpdate($command, true) : $this->prePersist($command);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -56,7 +44,7 @@ final class PurchaseProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        $this->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

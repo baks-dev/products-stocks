@@ -72,11 +72,12 @@ final class CompletedController extends AbstractController
         );
 
         // Форма
-        $form = $this->createForm(CompletedProductStockForm::class, $CompletedProductStockDTO, [
-            'action' => $this->generateUrl(
-                'products-stocks:admin.pickup.completed',
-                ['id' => $ProductStock->getId()]
-            )])
+        $form = $this
+            ->createForm(
+                type: CompletedProductStockForm::class,
+                data: $CompletedProductStockDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.completed', ['id' => $ProductStock->getId()])]
+            )
             ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_package'))

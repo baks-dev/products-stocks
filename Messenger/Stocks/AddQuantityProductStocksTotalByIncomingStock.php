@@ -75,7 +75,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         /**
          * Если Статус заявки не является Incoming «Приход на склад»
          */
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusIncoming::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class))
         {
             return;
         }

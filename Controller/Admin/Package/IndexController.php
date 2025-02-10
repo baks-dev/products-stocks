@@ -66,8 +66,14 @@ final class IndexController extends AbstractController
 
         // Фильтр
         $filter = new ProductStockPackageFilterDTO($request);
-        $filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
-        $filterForm->handleRequest($request);
+
+        $filterForm = $this
+            ->createForm(
+                type: ProductStockPackageFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')]
+            )
+            ->handleRequest($request);
 
         if($filterForm->isSubmitted())
         {
@@ -84,7 +90,6 @@ final class IndexController extends AbstractController
             }
         }
 
-
         /** Если ajax (печать) - показываем только свой склад */
         if($request->isXmlHttpRequest())
         {
@@ -95,8 +100,7 @@ final class IndexController extends AbstractController
         $query = $allPackage
             ->search($search)
             ->filter($filter)
-            ->findPaginator($this->getProfileUid());
-
+            ->findPaginator();
 
         return $this->render(
             [

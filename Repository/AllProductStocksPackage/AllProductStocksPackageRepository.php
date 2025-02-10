@@ -74,6 +74,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -87,6 +88,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
     public function search(SearchDTO $search): self
@@ -111,7 +113,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
     /**
      * Метод возвращает все заявки на упаковку заказов.
      */
-    public function findPaginator(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -138,7 +140,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             )
             ->setParameter(
                 key: 'profile',
-                value: $profile,
+                value: $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE
             );
 

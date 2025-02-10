@@ -66,9 +66,11 @@ final class IncomingController extends AbstractController
 
         // Форма добавления
         $form = $this
-            ->createForm(IncomingProductStockForm::class, $IncomingProductStockDTO, [
-                'action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),
-            ])
+            ->createForm(
+                type: IncomingProductStockForm::class,
+                data: $IncomingProductStockDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),]
+            )
             ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('incoming'))
@@ -95,14 +97,14 @@ final class IncomingController extends AbstractController
         }
 
 
-        /** Рекомендуемое место складирвоания */
+        /** Рекомендуемое место складирования */
 
         /** @var ProductStockDTO $ProductStockDTO */
 
         $ProductStockDTO = $IncomingProductStockDTO->getProduct()->current();
 
         $productStorage = $productStockQuantity
-            ->profile($IncomingProductStockDTO->getProfile())
+            ->profile($this->getProfileUid())
             ->product($ProductStockDTO->getProduct())
             ->offerConst($ProductStockDTO->getOffer())
             ->variationConst($ProductStockDTO->getVariation())

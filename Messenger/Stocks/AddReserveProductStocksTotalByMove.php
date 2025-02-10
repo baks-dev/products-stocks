@@ -66,7 +66,7 @@ final readonly class AddReserveProductStocksTotalByMove
         }
 
         // Если Статус не является Статус Moving «Перемещение»
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }

@@ -66,18 +66,21 @@ final class IndexController extends AbstractController
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO($request);
-        $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('products-stocks:admin.warehouse.index'),
-        ]);
+        $filter = new ProductFilterDTO();
 
-        $filterForm->handleRequest($request);
+        $filterForm = $this
+            ->createForm(
+                type: ProductFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('products-stocks:admin.warehouse.index'),]
+            )
+            ->handleRequest($request);
 
         /* Получаем список поступлений на склад */
         $query = $allPurchase
             ->search($search)
             ->filter($filter)
-            ->fetchAllProductStocksAssociative($this->getProfileUid());
+            ->findPaginator();
 
         return $this->render(
             [

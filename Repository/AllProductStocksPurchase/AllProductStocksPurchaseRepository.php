@@ -46,12 +46,13 @@ use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
-use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPurchase;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
@@ -107,32 +108,39 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             ->addSelect('stock.event')
             ->from(ProductStock::class, 'stock');
 
-        // ProductStockEvent
-        // $dbal->addSelect('event.total');
         $dbal
-            ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->join(
+            ->leftJoin(
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'.($this->profile ? ' AND event.profile = :profile' : '')
+                'event.id = stock.event AND event.status = :status'
+            )
+            ->setParameter(
+                'status',
+                ProductStockStatusPurchase::class,
+                ProductStockStatus::TYPE
             );
 
+        $dbal
+            ->addSelect('invariable.number')
+            ->leftJoin(
+                'stock',
+                ProductStocksInvariable::class,
+                'invariable',
+                'invariable.main = stock.id'.($this->profile ? ' AND invariable.profile = :profile' : '')
+            );
 
         if($this->profile)
         {
             $dbal->setParameter('profile', $this->profile, UserProfileUid::TYPE);
         }
 
-        $dbal->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPurchase()), ProductStockStatus::TYPE);
-
-
         // ProductStockModify
         $dbal
             ->addSelect('modify.mod_date')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockModify::class,
                 'modify',
@@ -142,12 +150,13 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         $dbal
             ->addSelect('stock_product.id as product_stock_id')
             ->addSelect('stock_product.total')
-            ->join(
+            ->leftJoin(
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
                 'stock_product.event = stock.event'
             );
+
 
 
         // Product
@@ -162,7 +171,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             );
 
         // Product Event
-        $dbal->join(
+        $dbal->leftJoin(
             'product',
             ProductEvent::class,
             'product_event',
@@ -181,7 +190,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
-            ->join(
+            ->leftJoin(
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
@@ -405,11 +414,11 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = event.profile'
+                'users_profile.id = invariable.profile'
             );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
@@ -417,7 +426,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         );
 
         // Event
-        $dbal->join(
+        $dbal->leftJoin(
             'users_profile',
             UserProfileEvent::class,
             'users_profile_event',
@@ -427,7 +436,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         // Personal
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
-            ->join(
+            ->leftJoin(
                 'users_profile_event',
                 UserProfilePersonal::class,
                 'users_profile_personal',

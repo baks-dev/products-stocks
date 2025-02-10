@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -51,16 +51,19 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksWarehouseRepository implements AllProductStocksWarehouseInterface
@@ -68,6 +71,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
 
@@ -91,34 +95,52 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
     /**
      * Метод возвращает список всех поступлений на склад
      */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
-
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
         $dbal
-            ->addSelect('event.main AS id')
-            ->addSelect('event.id AS event')
-            ->addSelect('event.number')
-            ->addSelect('event.comment')
-            ->addSelect('event.status')
-            ->addSelect('event.profile AS user_profile_id')
-            ->from(ProductStockEvent::class, 'event')
-            ->andWhere('event.status = :status ')
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE)
-            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
+            ->addSelect('invariable.number')
+            ->addSelect('invariable.profile AS user_profile_id')
+            ->from(ProductStocksInvariable::class, 'invariable')
+            ->where('invariable.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: $this->UserProfileTokenStorage->getProfile(),
+                type: UserProfileUid::TYPE
+            );
 
         $dbal
             ->join(
-                'event',
+                'invariable',
                 ProductStock::class,
                 'stock',
-                'stock.event = event.id'
+                'stock.id = invariable.main'
             );
+
+
+        $dbal
+            ->addSelect('event.main AS id')
+            ->addSelect('event.id AS event')
+            ->addSelect('event.comment')
+            ->addSelect('event.status')
+            ->leftJoin(
+                'invariable',
+                ProductStockEvent::class,
+                'event',
+                '
+                    event.id = invariable.event AND 
+                    event.status = :status
+                '
+            )
+            ->setParameter(
+                key: 'status',
+                value: ProductStockStatusWarehouse::class,
+                type: ProductStockStatus::TYPE
+            );
+
 
         $dbal
             //->addSelect('move.destination AS move_destination')
@@ -128,30 +150,6 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
                 'move',
                 'move.event = event.id'
             );
-
-
-        //        $dbal
-        //            ->select('stock.id')
-        //            ->addSelect('stock.event')
-        //            ->from(ProductStock::class, 'stock');
-        //
-        //
-        //
-        //        // ProductStockEvent
-        //        // $dbal->addSelect('event.total');
-        //        $dbal
-        //            ->addSelect('event.number')
-        //            ->addSelect('event.comment')
-        //            ->addSelect('event.status')
-        //            ->join(
-        //                'stock',
-        //                ProductStockEvent::class,
-        //                'event',
-        //                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
-        //            )
-        //            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-        //            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusWarehouse()), ProductStockStatus::TYPE);
-
 
         // ProductStockModify
         $dbal
@@ -455,7 +453,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = event.profile'
+                'users_profile.id = invariable.profile'
             );
 
         // Info
@@ -463,7 +461,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = invariable.profile'
         );
 
         // Event

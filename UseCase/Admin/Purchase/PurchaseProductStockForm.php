@@ -29,14 +29,11 @@ use BaksDev\Products\Product\Repository\ProductChoice\ProductChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductModificationChoice\ProductModificationChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductOfferChoice\ProductOfferChoiceInterface;
 use BaksDev\Products\Product\Repository\ProductVariationChoice\ProductVariationChoiceInterface;
-use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Invariable\PurchaseProductStocksInvariableForm;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Form\AbstractType;
@@ -46,9 +43,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -64,20 +59,11 @@ final class PurchaseProductStockForm extends AbstractType
         private readonly ProductOfferChoiceInterface $productOfferChoice,
         private readonly ProductVariationChoiceInterface $productVariationChoice,
         private readonly ProductModificationChoiceInterface $modificationChoice,
-        private readonly UserProfileTokenStorageInterface $userProfileTokenStorage
     ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Номер заявки
-        $builder->add('number', TextType::class);
-
-
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
-            /** @var PurchaseProductStockDTO $PurchaseProductStockDTO */
-            $PurchaseProductStockDTO = $event->getData();
-            $PurchaseProductStockDTO->setProfile($this->userProfileTokenStorage->getProfile());
-        });
+        $builder->add('invariable', PurchaseProductStocksInvariableForm::class);
 
         $builder->add('category', ChoiceType::class, [
             'choices' => $this->categoryChoice->findAll(),
@@ -90,7 +76,6 @@ final class PurchaseProductStockForm extends AbstractType
             'label' => false,
             'required' => false,
         ]);
-
 
         /**
          * Продукция категории

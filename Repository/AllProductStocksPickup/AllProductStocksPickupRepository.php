@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -54,17 +54,20 @@ use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Entity\Value\UserProfileValue;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -78,6 +81,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
     public function search(SearchDTO $search): self
@@ -92,35 +96,50 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         return $this;
     }
 
-    public function findAll(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
 
-        // ProductStock
+        $dbal
+            ->select('invariable.number')
+            ->from(ProductStocksInvariable::class, 'invariable')
+            ->where('invariable.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: $this->UserProfileTokenStorage->getProfile(),
+                type: UserProfileUid::TYPE
+            );
+
         $dbal
             ->select('stock.id AS stock_id')
             ->addSelect('stock.event AS stock_event')
-            ->from(ProductStock::class, 'stock');
+            ->join(
+                'invariable',
+                ProductStock::class,
+                'stock',
+                'stock.id = invariable.main'
+            );
 
-        // ProductStockEvent
-        // $dbal->addSelect('event.total');
         $dbal
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->addSelect('event.number')
             ->join(
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status AND event.profile = :profile'
+                'event.id = stock.event AND event.status = :status'
             )
-            ->setParameter('profile', $profile, UserProfileUid::TYPE)
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusExtradition()), ProductStockStatus::TYPE);
+            ->setParameter(
+                'status',
+                ProductStockStatusExtradition::class,
+                ProductStockStatus::TYPE
+            );
 
 
         // ProductStockModify
-        $dbal->addSelect('modify.mod_date')
-            ->join(
+        $dbal
+            ->addSelect('modify.mod_date')
+            ->leftJoin(
                 'event',
                 ProductStockModify::class,
                 'modify',
@@ -151,7 +170,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
         // Product Event
-        $dbal->join(
+        $dbal->leftJoin(
             'product',
             ProductEvent::class,
             'product_event',
@@ -170,7 +189,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         // Product Trans
         $dbal
             ->addSelect('product_trans.name as product_name')
-            ->join(
+            ->leftJoin(
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
@@ -412,7 +431,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
         // Info
-        $dbal->join(
+        $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
@@ -420,7 +439,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         );
 
         // Event
-        $dbal->join(
+        $dbal->leftJoin(
             'users_profile',
             UserProfileEvent::class,
             'users_profile_event',
@@ -430,7 +449,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         // Personal
         $dbal
             ->addSelect('users_profile_personal.username AS users_profile_username')
-            ->join(
+            ->leftJoin(
                 'users_profile_event',
                 UserProfilePersonal::class,
                 'users_profile_personal',
@@ -438,7 +457,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
 
-        $dbal->join(
+        $dbal->leftJoin(
             'stock',
             ProductStockOrder::class,
             'product_stock_order',

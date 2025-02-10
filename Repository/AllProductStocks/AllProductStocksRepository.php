@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -57,8 +57,8 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPro
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
@@ -72,6 +72,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
     public function search(SearchDTO $search): static
@@ -96,14 +97,8 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     /**
      * Метод возвращает полное состояние складских остатков продукции
      */
-    public function findPaginator(
-        User|UserUid $user,
-        UserProfileUid $profile,
-    ): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
-
-        $user = $user instanceof User ? $user->getId() : $user;
-
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
@@ -122,13 +117,22 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         if($this->filter->getAll())
         {
             $dbal->andWhere('stock_product.usr = :usr')
-                ->setParameter('usr', $user, UserUid::TYPE);
+                ->setParameter(
+                    key: 'usr',
+                    value: $this->UserProfileTokenStorage->getUser(),
+                    type: UserUid::TYPE
+                );
         }
         else
         {
             $dbal->andWhere('stock_product.profile = :profile')
-                ->setParameter('profile', $profile, UserProfileUid::TYPE);
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->UserProfileTokenStorage->getProfile(),
+                    type: UserProfileUid::TYPE
+                );
         }
+
 
         // Product
         $dbal
@@ -565,6 +569,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         {
             $this->paginator->setLimit($this->limit);
         }
+
 
         return $this
             ->paginator

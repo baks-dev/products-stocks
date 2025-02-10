@@ -29,7 +29,6 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -48,7 +47,7 @@ final readonly class AddProductStocksReserve
     /**
      * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия
      */
-    public function __invoke(AddProductStocksReserveMessage $message): void
+    public function __invoke(AddProductStocksReserveMessage $message): bool
     {
         $this->entityManager->clear();
 
@@ -64,21 +63,16 @@ final readonly class AddProductStocksReserve
         {
             $this->logger->critical(
                 'Не найдено продукции на складе для резервирования',
-                [
-                    self::class.':'.__LINE__,
-                    'profile' => (string) $message->getProfile(),
-                    'product' => (string) $message->getProduct(),
-                    'offer' => (string) $message->getOffer(),
-                    'variation' => (string) $message->getVariation(),
-                    'modification' => (string) $message->getModification()
-                ]
+                [$message, self::class.':'.__LINE__,]
             );
 
-            throw new DomainException('Невозможно добавить резерв на продукцию');
+            return false;
 
         }
 
         $this->handle($ProductStockTotal);
+
+        return true;
     }
 
     public function handle(ProductStockTotal $ProductStockTotal): void
