@@ -38,6 +38,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Создаем события на снятие резерва при отмене складской заявки
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByCancel
 {
@@ -49,9 +52,6 @@ final readonly class SubReserveProductStockTotalByCancel
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Создаем события на снятие резерва при отмене складской заявки
-     */
     public function __invoke(ProductStockMessage $message): void
     {
 

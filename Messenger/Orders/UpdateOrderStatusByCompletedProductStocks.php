@@ -39,6 +39,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Обновляет статус заказа при доставке (Completed «Выдан по месту назначения»)
+ */
 #[AsMessageHandler]
 final readonly class UpdateOrderStatusByCompletedProductStocks
 {
@@ -52,9 +55,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocks
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Обновляет статус заказа при доставке (Completed «Выдан по месту назначения»)
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
 

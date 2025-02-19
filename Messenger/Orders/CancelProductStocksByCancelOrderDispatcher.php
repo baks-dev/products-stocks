@@ -40,8 +40,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
-final readonly class CancelProductStocksByCancelOrder
+/**
+ * Отменяем складскую заявку на продукцию при отмене заказа
+ */
+#[AsMessageHandler(priority: 8)]
+final readonly class CancelProductStocksByCancelOrderDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
@@ -50,11 +53,6 @@ final readonly class CancelProductStocksByCancelOrder
         private CancelProductStockHandler $cancelProductStockHandler,
         private DeduplicatorInterface $deduplicator,
     ) {}
-
-
-    /**
-     * Отменяем складскую заявку при отмене заказа
-     */
 
     public function __invoke(OrderMessage $message): void
     {

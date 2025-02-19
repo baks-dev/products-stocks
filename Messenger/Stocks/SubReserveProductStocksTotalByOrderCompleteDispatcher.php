@@ -43,20 +43,20 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
-final readonly class SubReserveProductStocksTotalByOrderComplete
+/**
+ * Снимаем резерв и остаток со склада продукции при статусе заказа Completed «Выполнен»
+ */
+#[AsMessageHandler(priority: 60)]
+final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 {
     public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private ProductWarehouseByOrderInterface $warehouseByOrder,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Снимаем резерв и остаток со склада при статусе заказа Completed «Выполнен»
-     */
     public function __invoke(OrderMessage $message): void
     {
         $Deduplicator = $this->deduplicator

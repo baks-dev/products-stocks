@@ -427,7 +427,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = event.profile'
+                'users_profile.id = invariable.profile'
             );
 
         // Info
@@ -435,7 +435,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = invariable.profile'
         );
 
         // Event

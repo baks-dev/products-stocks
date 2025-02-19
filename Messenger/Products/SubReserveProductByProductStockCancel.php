@@ -43,7 +43,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Снимает ТОЛЬКО! резерв продукции при отмене заявки Cancel «Отменен»
+ * Снимает резерв продукции при отмене заявки Cancel «Отменен»
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductByProductStockCancel
@@ -57,12 +57,8 @@ final readonly class SubReserveProductByProductStockCancel
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Снимает ТОЛЬКО РЕЗЕРВ! продукции в карточке при отмене заявки без заказа
-     */
     public function __invoke(ProductStockMessage $message): void
     {
-
         if(!$message->getLast())
         {
             return;

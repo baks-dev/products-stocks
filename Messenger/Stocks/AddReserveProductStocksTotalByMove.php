@@ -38,6 +38,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Резервирование на складе продукции при перемещении
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByMove
 {
@@ -49,9 +52,7 @@ final readonly class AddReserveProductStocksTotalByMove
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Резервирование на складе продукции при перемещении
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
 

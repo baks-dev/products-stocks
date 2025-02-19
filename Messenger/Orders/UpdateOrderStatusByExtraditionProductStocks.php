@@ -39,6 +39,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Обновляет статус заказа при сборке на складе
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class UpdateOrderStatusByExtraditionProductStocks
 {
@@ -51,9 +54,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocks
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Обновляет статус заказа при сборке на складе
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
         /** @var ProductStockEvent $ProductStockEvent */

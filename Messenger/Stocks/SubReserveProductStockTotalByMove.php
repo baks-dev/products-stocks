@@ -39,20 +39,21 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Снимаем резерв и наличие со склада отгрузки при статусе Moving «Перемещение»
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByMove
 {
     public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Снимаем резерв и наличие со склада отгрузки при статусе Moving «Перемещение»
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
         if($message->getLast() === null)

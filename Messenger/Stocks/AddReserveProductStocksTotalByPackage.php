@@ -38,6 +38,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ"
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
 {
@@ -50,9 +53,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ"
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
 

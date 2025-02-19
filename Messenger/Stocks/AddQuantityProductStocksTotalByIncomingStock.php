@@ -41,6 +41,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Пополнение складских остатков при поступлении на склад
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksTotalByIncomingStock
 {
@@ -54,9 +57,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Пополнение складских остатков при поступлении на склад
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
 

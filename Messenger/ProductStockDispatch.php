@@ -29,6 +29,7 @@ use BaksDev\Core\Cache\AppCacheInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/** Сбрасывает кеш модуля products-product */
 #[AsMessageHandler]
 final readonly class ProductStockDispatch
 {
