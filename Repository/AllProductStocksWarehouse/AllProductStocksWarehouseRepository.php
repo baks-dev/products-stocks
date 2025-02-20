@@ -126,7 +126,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
             ->addSelect('event.id AS event')
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->leftJoin(
+            ->join(
                 'invariable',
                 ProductStockEvent::class,
                 'event',

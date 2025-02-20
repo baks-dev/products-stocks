@@ -111,7 +111,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         $dbal
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->leftJoin(
+            ->join(
                 'stock',
                 ProductStockEvent::class,
                 'event',
