@@ -150,7 +150,8 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
                 $ProductUid,
                 $ProductOfferConst,
                 $ProductVariationConst,
-                $ProductModificationConst
+                $ProductModificationConst,
+                $i
             );
 
             $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');

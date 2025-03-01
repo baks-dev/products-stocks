@@ -45,7 +45,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class SubReserveProductStockTotalByCancel
 {
     public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
         private MessageDispatchInterface $messageDispatch,
@@ -54,7 +54,6 @@ final readonly class SubReserveProductStockTotalByCancel
 
     public function __invoke(ProductStockMessage $message): void
     {
-
         if($message->getLast() === null)
         {
             return;
@@ -125,7 +124,8 @@ final readonly class SubReserveProductStockTotalByCancel
                     $product->getProduct(),
                     $product->getOffer(),
                     $product->getVariation(),
-                    $product->getModification()
+                    $product->getModification(),
+                    $i
                 );
 
                 $this->messageDispatch->dispatch($SubProductStocksTotalCancelMessage, transport: 'products-stocks');

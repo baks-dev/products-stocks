@@ -39,13 +39,15 @@ final readonly class SubProductStocksTotalReserveMessage
     private ?string $offer;
     private ?string $variation;
     private ?string $modification;
+    private int $iterate;
 
     public function __construct(
         UserProfileUid $profile,
         ProductUid $product,
         ?ProductOfferConst $offer,
         ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
+        ?ProductModificationConst $modification,
+        int $iterate
     )
     {
         $this->profile = (string) $profile;
@@ -53,6 +55,7 @@ final readonly class SubProductStocksTotalReserveMessage
         $this->offer = $offer ? (string) $offer : null;
         $this->variation = $variation ? (string) $variation : null;
         $this->modification = $modification ? (string) $modification : null;
+        $this->iterate = $iterate;
     }
 
     /**
@@ -93,6 +96,14 @@ final readonly class SubProductStocksTotalReserveMessage
     public function getModification(): ?ProductModificationConst
     {
         return $this->modification ? new ProductModificationConst($this->modification) : null;
+    }
+
+    /**
+     * Iterate
+     */
+    public function getIterate(): int
+    {
+        return $this->iterate;
     }
 
 }

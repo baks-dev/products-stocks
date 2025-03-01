@@ -23,47 +23,52 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve;
 
-use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final readonly class SubProductStocksTotalAndReserve
+final readonly class SubProductStocksTotalReserveDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private EntityManagerInterface $entityManager,
         private ProductStockQuantityInterface $productStockMinQuantity,
         private SubProductStockInterface $updateProductStock,
+        private DeduplicatorInterface $deduplicator
     ) {}
 
     /**
-     * Снимает наличие продукции и резерв с указанного склада с мест, начиная с минимального наличия
+     * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
      */
-    public function __invoke(SubProductStocksTotalAndReserveMessage $message): void
+    public function __invoke(SubProductStocksTotalReserveMessage $message): void
     {
-        $this->entityManager->clear();
+        $DeduplicatorExecuted = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([$message, self::class]);
 
-        // Получаем одно место складирования продукции с минимальным количеством в наличии без учета резерва, но чтобы был резерв
-        // списываем единицу продукции с минимальным числом остатка, затем с другого места где больше
+        if($DeduplicatorExecuted->isExecuted())
+        {
+            return;
+        }
+
+        /* Получаем одно место складирования с максимальным количеством продукции и резервом > 0 */
         $ProductStockTotal = $this->productStockMinQuantity
             ->profile($message->getProfile())
             ->product($message->getProduct())
             ->offerConst($message->getOffer())
             ->variationConst($message->getVariation())
             ->modificationConst($message->getModification())
-            ->findOneByTotalMin();
+            ->findOneByReserveMax();
 
         if(!$ProductStockTotal)
         {
             $this->logger->critical(
-                'Не найдено продукции на складе для списания',
+                'Не найдено продукции на складе для списания, либо нет резерва на указанную продукцию',
                 [
                     self::class.':'.__LINE__,
                     'profile' => (string) $message->getProfile(),
@@ -77,20 +82,15 @@ final readonly class SubProductStocksTotalAndReserve
             return;
         }
 
-        $this->handle($ProductStockTotal);
-    }
-
-    public function handle(ProductStockTotal $ProductStockTotal): void
-    {
         $rows = $this->updateProductStock
-            ->total(1)
+            ->total(null)
             ->reserve(1)
             ->updateById($ProductStockTotal);
 
         if(empty($rows))
         {
             $this->logger->critical(
-                'Невозможно снять резерв и остаток продукции, которой нет в наличии или заранее не зарезервирована',
+                'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
                     self::class.':'.__LINE__,
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
@@ -100,12 +100,16 @@ final readonly class SubProductStocksTotalAndReserve
             return;
         }
 
+        $DeduplicatorExecuted->save();
+
         $this->logger->info(
-            sprintf('место: %s : Сняли резерв и уменьшили количество на единицу продукции', $ProductStockTotal->getStorage()),
+            sprintf('Место %s: Сняли резерв продукции на складе на одну единицу', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]
         );
+
     }
+
 }

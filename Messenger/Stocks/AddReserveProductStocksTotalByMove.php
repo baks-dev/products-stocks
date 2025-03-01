@@ -119,7 +119,8 @@ final readonly class AddReserveProductStocksTotalByMove
                     $product->getProduct(),
                     $product->getOffer(),
                     $product->getVariation(),
-                    $product->getModification()
+                    $product->getModification(),
+                    $i
                 );
 
                 $this->messageDispatch->dispatch(
