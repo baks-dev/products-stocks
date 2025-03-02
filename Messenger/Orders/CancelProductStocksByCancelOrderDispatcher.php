@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCanceled;
@@ -60,7 +61,6 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                OrderStatusCanceled::STATUS,
                 self::class
             ]);
 
@@ -74,12 +74,14 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             ->forOrder($message->getId())
             ->find();
 
-        if(!$OrderEvent)
+        if(false === ($OrderEvent instanceof OrderEvent))
         {
             return;
         }
 
-        /** Если статус заказа не Canceled «Отменен» - завершаем обработчик */
+        /**
+         * Складскую заявку можно отменить только при условии, если заказ со статусом Canceled «Отменен»
+         */
         if(false === $OrderEvent->isStatusEquals(OrderStatusCanceled::class))
         {
             return;

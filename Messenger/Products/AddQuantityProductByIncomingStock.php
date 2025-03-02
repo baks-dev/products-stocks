@@ -26,8 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\AddProductQuantityInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
@@ -54,11 +56,23 @@ final readonly class AddQuantityProductByIncomingStock
 
     public function __invoke(ProductStockMessage $message): void
     {
+        $DeduplicatorExecuted = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                    (string) $message->getId(),
+                    self::class]
+            );
+
+        if($DeduplicatorExecuted->isExecuted())
+        {
+            return;
+        }
+
         $ProductStockEvent = $this
             ->ProductStocksEventRepository
             ->find($message->getEvent());
 
-        if($ProductStockEvent === false)
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -78,18 +92,6 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusIncoming::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
@@ -98,22 +100,11 @@ final readonly class AddQuantityProductByIncomingStock
             $this->changeTotal($product);
         }
 
-
-        $Deduplicator->save();
+        $DeduplicatorExecuted->save();
     }
 
     public function changeTotal(ProductStockProduct $product): void
     {
-        $context = [
-            self::class.':'.__LINE__,
-            'total' => $product->getTotal(),
-            'ProductUid' => (string) $product->getProduct(),
-            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
-            'ProductOfferConst' => (string) $product->getOffer(),
-            'ProductVariationConst' => (string) $product->getVariation(),
-            'ProductModificationConst' => (string) $product->getModification(),
-        ];
-
         $CurrentProductDTO = $this->currentProductIdentifierByConst
             ->forProduct($product->getProduct())
             ->forOfferConst($product->getOffer())
@@ -121,9 +112,13 @@ final readonly class AddQuantityProductByIncomingStock
             ->forModificationConst($product->getModification())
             ->find();
 
-        if($CurrentProductDTO === false)
+        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
         {
-            $this->logger->critical('Поступление на склад: Невозможно пополнить общий остаток (карточка не найдена)', $context);
+            $this->logger->critical(
+                'products-stocks: Невозможно пополнить общий остаток (карточка не найдена)',
+                [$product, self::class.':'.__LINE__]
+            );
+
             return;
         }
 
@@ -138,11 +133,17 @@ final readonly class AddQuantityProductByIncomingStock
 
         if($rows)
         {
-            $this->logger->info('Поступление на склад: Пополнили общий остаток в карточке', $context);
+            $this->logger->info(
+                'Пополнили общий остаток в карточке при поступлении на склад',
+                [$product, self::class.':'.__LINE__]
+            );
+
+            return;
         }
-        else
-        {
-            $this->logger->critical('Поступление на склад: Невозможно пополнить общий остаток (карточка не найдена)', $context);
-        }
+
+        $this->logger->critical(
+            'products-stocks: Невозможно пополнить общий остаток (карточка не найдена)',
+            [$product, self::class.':'.__LINE__]
+        );
     }
 }

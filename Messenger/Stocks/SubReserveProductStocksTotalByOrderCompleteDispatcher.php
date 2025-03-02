@@ -30,11 +30,14 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -51,15 +54,16 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private EntityManagerInterface $entityManager,
+        private CurrentOrderEventInterface $CurrentOrderEvent,
         private ProductWarehouseByOrderInterface $warehouseByOrder,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
+        private CurrentProductIdentifierInterface $CurrentProductIdentifier
     ) {}
 
     public function __invoke(OrderMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
+        $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
@@ -67,19 +71,15 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
                 self::class
             ]);
 
-        if($Deduplicator->isExecuted())
+        if($DeduplicatorExecuted->isExecuted())
         {
             return;
         }
 
-        $this->entityManager->clear();
 
-        /** @var OrderEvent $OrderEvent */
-        $OrderEvent = $this->entityManager
-            ->getRepository(OrderEvent::class)
-            ->find($message->getEvent());
+        $OrderEvent = $this->CurrentOrderEvent->forOrder($message->getId())->find();
 
-        if(!$OrderEvent)
+        if(false === ($OrderEvent instanceof OrderEvent))
         {
             return;
         }
@@ -89,7 +89,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         {
             return;
         }
-
 
         /**
          * Получаем склад, на который была отправлена заявка для сборки.
@@ -110,32 +109,28 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             $this->changeReserve($product, $UserProfileUid);
         }
 
-        $Deduplicator->save();
+        $DeduplicatorExecuted->save();
     }
 
     public function changeReserve(OrderProduct $product, UserProfileUid $profile): void
     {
-        /** Получаем продукт */
+        /** Получаем идентификаторы карточки */
+        $CurrentProductDTO = $this->CurrentProductIdentifier
+            ->forEvent($product->getProduct())
+            ->forOffer($product->getOffer())
+            ->forVariation($product->getVariation())
+            ->forModification($product->getModification())
+            ->find();
 
-        /** ID продукта */
-        $ProductUid = $this->entityManager
-            ->getRepository(ProductEvent::class)
-            ->find($product->getProduct())?->getMain();
+        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+        {
+            $this->logger->critical(
+                'products-stocks: Невозможно снять резерв и остаток на складе (карточка не найдена)',
+                [$product, self::class.':'.__LINE__]
+            );
 
-        /** Постоянный уникальный идентификатор ТП */
-        $ProductOfferConst = $product->getOffer() ? $this->entityManager
-            ->getRepository(ProductOffer::class)
-            ->find($product->getOffer())?->getConst() : null;
-
-        /** Постоянный уникальный идентификатор варианта */
-        $ProductVariationConst = $product->getVariation() ? $this->entityManager
-            ->getRepository(ProductVariation::class)
-            ->find($product->getVariation())?->getConst() : null;
-
-        /** Постоянный уникальный идентификатор модификации */
-        $ProductModificationConst = $product->getModification() ? $this->entityManager
-            ->getRepository(ProductModification::class)
-            ->find($product->getModification())?->getConst() : null;
+            return;
+        }
 
         /**
          * Снимаем резерв и остаток продукции на складе по одной единице продукции
@@ -147,14 +142,17 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         {
             $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
                 $profile,
-                $ProductUid,
-                $ProductOfferConst,
-                $ProductVariationConst,
-                $ProductModificationConst,
+                $CurrentProductDTO->getProduct(),
+                $CurrentProductDTO->getOfferConst(),
+                $CurrentProductDTO->getVariationConst(),
+                $CurrentProductDTO->getModificationConst(),
                 $i
             );
 
-            $this->messageDispatch->dispatch($SubProductStocksTotalMessage, transport: 'products-stocks');
+            $this->messageDispatch->dispatch(
+                $SubProductStocksTotalMessage,
+                transport: 'products-stocks'
+            );
 
             if($i === $product->getTotal())
             {

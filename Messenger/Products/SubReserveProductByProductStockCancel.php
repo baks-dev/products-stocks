@@ -26,18 +26,16 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
-use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\SubProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -51,25 +49,36 @@ final readonly class SubReserveProductByProductStockCancel
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
+        private CurrentProductStocksInterface $CurrentProductStocks,
         private SubProductQuantityInterface $subProductQuantity,
         private ProductStocksByIdInterface $productStocks,
-        private EntityManagerInterface $entityManager,
         private DeduplicatorInterface $deduplicator,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
     {
-        if(!$message->getLast())
+        if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
             return;
         }
 
-        /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
-            ->find($message->getEvent());
+        $DeduplicatorExecuted = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                self::class
+            ]);
 
-        if(!$ProductStockEvent)
+        if($DeduplicatorExecuted->isExecuted())
+        {
+            return;
+        }
+
+
+        /** Получаем статус заявки */
+        $ProductStockEvent = $this->CurrentProductStocks->getCurrentEvent($message->getId());
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -95,28 +104,13 @@ final readonly class SubReserveProductByProductStockCancel
             return;
         }
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                $message->getId(),
-                ProductStockStatusCancel::STATUS,
-                self::class
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
-        $this->entityManager->clear();
-
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
             $this->changeReserve($product);
         }
 
-        $Deduplicator->save();
+        $DeduplicatorExecuted->save();
     }
 
     public function changeReserve(ProductStockProduct $product): void
@@ -129,6 +123,16 @@ final readonly class SubReserveProductByProductStockCancel
             ->find();
 
 
+        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+        {
+            $this->logger->critical(
+                'products-stocks: Невозможно отменить общий резерв (карточка не найдена)',
+                [$product, self::class.':'.__LINE__]
+            );
+
+            return;
+        }
+
         $rows = $this->subProductQuantity
             ->forEvent($CurrentProductDTO->getEvent())
             ->forOffer($CurrentProductDTO->getOffer())
@@ -138,25 +142,19 @@ final readonly class SubReserveProductByProductStockCancel
             ->subReserve($product->getTotal())
             ->update();
 
-
-        $context = [
-            self::class.':'.__LINE__,
-            'total' => $product->getTotal(),
-            'ProductUid' => (string) $product->getProduct(),
-            'ProductStockEventUid' => (string) $product->getEvent()->getId(),
-            'ProductOfferConst' => (string) $product->getOffer(),
-            'ProductVariationConst' => (string) $product->getVariation(),
-            'ProductModificationConst' => (string) $product->getModification(),
-        ];
-
         if($rows)
         {
-            $this->logger->info('Перемещение: Отменили общий резерв в карточке при отмене складской заявки на перемещение', $context);
-        }
-        else
-        {
-            $this->logger->critical('Перемещение: Невозможно отменить общий резерв продукции (карточка не найдена либо недостаточное количество резерва)', $context);
+            $this->logger->info(
+                'Перемещение: Отменили общий резерв в карточке при отмене складской заявки на перемещение',
+                [$product, self::class.':'.__LINE__]
+            );
+
+            return;
         }
 
+        $this->logger->critical(
+            'products-stocks: Невозможно отменить общий резерв продукции (карточка не найдена либо недостаточное количество резерва)',
+            [$product, self::class.':'.__LINE__]
+        );
     }
 }

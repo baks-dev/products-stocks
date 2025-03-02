@@ -34,6 +34,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -64,7 +65,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
     public function __invoke(ProductStockMessage $message): void
     {
 
-        if(!$message->getLast())
+        if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
             return;
         }
@@ -74,13 +75,13 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             ->getRepository(ProductStockEvent::class)
             ->find($message->getLast());
 
-        if(!$lastProductStockEvent)
+        if(false === ($lastProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
 
         // Если предыдущий Статус не является Moving «Перемещение»
-        if(false === $lastProductStockEvent->getStatus()->equals(ProductStockStatusMoving::class))
+        if(false === $lastProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }

@@ -54,6 +54,19 @@ final readonly class SubReserveProductStockTotalByCancel
 
     public function __invoke(ProductStockMessage $message): void
     {
+        $DeduplicatorExecuted = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                self::class
+            ]);
+
+        if($DeduplicatorExecuted->isExecuted())
+        {
+            return;
+        }
+
+
         if($message->getLast() === null)
         {
             return;
@@ -82,18 +95,6 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusCancel::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
 
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
         $UserProfileUid = $ProductStockEvent->getStocksProfile();
@@ -106,13 +107,6 @@ final readonly class SubReserveProductStockTotalByCancel
                 [
                     self::class.':'.__LINE__,
                     'number' => $ProductStockEvent->getNumber(),
-                    'total' => $product->getTotal(),
-                    'ProductStockEventUid' => (string) $message->getEvent(),
-                    'UserProfileUid' => (string) $UserProfileUid,
-                    'ProductUid' => (string) $product->getProduct(),
-                    'ProductOfferConst' => (string) $product->getOffer(),
-                    'ProductVariationConst' => (string) $product->getVariation(),
-                    'ProductModificationConst' => (string) $product->getModification(),
                 ]
             );
 
@@ -128,7 +122,10 @@ final readonly class SubReserveProductStockTotalByCancel
                     $i
                 );
 
-                $this->messageDispatch->dispatch($SubProductStocksTotalCancelMessage, transport: 'products-stocks');
+                $this->messageDispatch->dispatch(
+                    $SubProductStocksTotalCancelMessage,
+                    transport: 'products-stocks'
+                );
 
                 if($i === $product->getTotal())
                 {
@@ -137,6 +134,6 @@ final readonly class SubReserveProductStockTotalByCancel
             }
         }
 
-        $Deduplicator->save();
+        $DeduplicatorExecuted->save();
     }
 }

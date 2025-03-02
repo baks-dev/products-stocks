@@ -27,13 +27,13 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -47,8 +47,7 @@ final readonly class AddReserveProductStocksTotalByPackage
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
-        private EntityManagerInterface $entityManager,
-        private CurrentProductStocksInterface $currentProductStocks,
+        private CurrentProductStocksInterface $CurrentProductStocksInterface,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -56,17 +55,26 @@ final readonly class AddReserveProductStocksTotalByPackage
 
     public function __invoke(ProductStockMessage $message): void
     {
+        $DeduplicatorExecuted = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                self::class
+            ]);
 
-        $this->entityManager->clear();
-
-        $ProductStockEvent = $this->currentProductStocks->getCurrentEvent($message->getId());
-
-        if(!$ProductStockEvent)
+        if($DeduplicatorExecuted->isExecuted())
         {
             return;
         }
 
-        if(false === $ProductStockEvent->getStatus()->equals(ProductStockStatusPackage::class))
+        $ProductStockEvent = $this->CurrentProductStocksInterface->getCurrentEvent($message->getId());
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class))
         {
             return;
         }
@@ -82,30 +90,16 @@ final readonly class AddReserveProductStocksTotalByPackage
         }
 
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusPackage::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
         /** Идентификатор профиля, куда была отправлена заявка на упаковку */
         $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
-        foreach($products as $key => $product)
+        foreach($products as $product)
         {
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на упаковку',
                 ['total' => $product->getTotal()]
             );
-
 
             /**
              * Создаем резерв на единицу продукции при упаковке
@@ -133,6 +127,6 @@ final readonly class AddReserveProductStocksTotalByPackage
             }
         }
 
-        $Deduplicator->save();
+        $DeduplicatorExecuted->save();
     }
 }
