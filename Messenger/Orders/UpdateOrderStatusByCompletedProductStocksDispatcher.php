@@ -123,8 +123,9 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $OrderEvent->getId(),
-            $ProductStockEvent->getStocksProfile()
-        );
+
+        )
+            ->setProfile($ProductStockEvent->getStocksProfile());
 
         $ModifyDTO = $OrderStatusDTO->getModify();
         $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
