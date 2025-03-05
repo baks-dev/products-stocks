@@ -113,7 +113,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 
         $this->logger->info(
             'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
-            [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+            [self::class.':'.__LINE__]
         );
 
         /**

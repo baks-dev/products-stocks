@@ -43,9 +43,9 @@ final readonly class AddProductStocksReserveMessage
     public function __construct(
         UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification,
+        ProductOfferConst|false|null $offer,
+        ProductVariationConst|false|null $variation,
+        ProductModificationConst|false|null $modification,
         int $iterator
     )
     {
