@@ -111,7 +111,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             );
 
         $dbal
-            ->select('stock.id AS stock_id')
+            ->addSelect('stock.id AS stock_id')
             ->addSelect('stock.event AS stock_event')
             ->join(
                 'invariable',
