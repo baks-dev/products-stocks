@@ -11,7 +11,7 @@
 {# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
 {% block content %}
     {{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
-
+{% endblock %}
 
 {% block javascript %}
 <script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/copy.min.js?v={{ version }}" class="lazy"></script>
