@@ -50,8 +50,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'product_stock_event')]
 class ProductStockEvent extends EntityEvent
 {
-    public const TABLE = 'product_stock_event';
-
     /** ID */
     #[Assert\NotBlank]
     #[Assert\Uuid]

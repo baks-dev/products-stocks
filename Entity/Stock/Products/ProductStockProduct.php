@@ -43,8 +43,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'product_stock_product')]
 class ProductStockProduct extends EntityEvent
 {
-    public const TABLE = 'product_stock_product';
-
     /** ID */
     #[Assert\NotBlank]
     #[Assert\Uuid]

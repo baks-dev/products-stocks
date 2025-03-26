@@ -38,8 +38,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'product_stock')]
 class ProductStock
 {
-    public const TABLE = 'product_stock';
-
     /** ID */
     #[Assert\NotBlank]
     #[Assert\Uuid]

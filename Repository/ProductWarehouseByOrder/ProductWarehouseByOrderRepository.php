@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,41 +25,84 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 
 final class ProductWarehouseByOrderRepository implements ProductWarehouseByOrderInterface
 {
-    private EntityManagerInterface $entityManager;
+    private OrderUid|false $order = false;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+    public function forOrder(Order|OrderUid|string $order): self
     {
-        $this->entityManager = $entityManager;
+
+        if(empty($order))
+        {
+            $this->order = false;
+            return $this;
+        }
+
+        if(is_string($order))
+        {
+            $order = new OrderUid($order);
+        }
+
+        if($order instanceof Order)
+        {
+            $order = $order->getId();
+        }
+
+        $this->order = $order;
+
+        return $this;
     }
 
     /**
      * Метод возвращает идентификатор склада (профиля), на который была отправлена заявки для сборки
      */
-    public function getWarehouseByOrder(OrderUid $order): ?UserProfileUid
+    public function getWarehouseByOrder(): UserProfileUid|false
     {
-        $qb = $this->entityManager->createQueryBuilder();
-        $select = sprintf('new %s(event.profile)', UserProfileUid::class);
+        if(false === ($this->order instanceof OrderUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument Order');
+        }
 
-        $qb->select($select);
-        $qb->from(ProductStockOrder::class, 'ord');
-        $qb->join(ProductStock::class, 'stock', 'WITH', 'stock.event = ord.event');
-        $qb->join(ProductStockEvent::class, 'event', 'WITH', 'event.id = stock.event');
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb->where('ord.ord = :order');
-        $qb->setParameter('order', $order, OrderUid::TYPE);
+        $dbal
+            ->from(ProductStockOrder::class, 'ord')
+            ->where('ord.ord = :order')
+            ->setParameter(
+                key: 'order',
+                value: $this->order,
+                type: OrderUid::TYPE
+            );
 
-        $qb->setMaxResults(1);
+        $dbal->join(
+            'ord',
+            ProductStock::class,
+            'stock',
+            'stock.event = ord.event'
+        );
 
-        return $qb->getQuery()->getOneOrNullResult();
+        $dbal
+            ->addSelect('invariable.profile AS value')
+            ->join(
+                'stock',
+                ProductStocksInvariable::class,
+                'invariable',
+                'invariable.main = stock.id'
+            );
+
+        $dbal->setMaxResults(1);
+
+        return $dbal->fetchHydrate(UserProfileUid::class);
     }
 }

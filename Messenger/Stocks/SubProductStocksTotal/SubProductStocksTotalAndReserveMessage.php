@@ -42,8 +42,8 @@ final readonly class SubProductStocksTotalAndReserveMessage
     private int $iterate;
 
     public function __construct(
-        UserProfileUid $profile,
-        ProductUid $product,
+        UserProfileUid|string $profile,
+        ProductUid|string $product,
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,

@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
@@ -95,9 +96,11 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
          *
          * @var UserProfileUid $UserProfileUid
          */
-        $UserProfileUid = $this->warehouseByOrder->getWarehouseByOrder($message->getId());
+        $UserProfileUid = $this->warehouseByOrder
+            ->forOrder($message->getId())
+            ->getWarehouseByOrder();
 
-        if(!$UserProfileUid)
+        if(false === ($UserProfileUid instanceof UserProfileUid))
         {
             return;
         }
@@ -141,17 +144,18 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         for($i = 1; $i <= $product->getTotal(); $i++)
         {
             $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
-                $profile,
-                $CurrentProductDTO->getProduct(),
-                $CurrentProductDTO->getOfferConst(),
-                $CurrentProductDTO->getVariationConst(),
-                $CurrentProductDTO->getModificationConst(),
-                $i
+                profile: $profile,
+                product: $CurrentProductDTO->getProduct(),
+                offer: $CurrentProductDTO->getOfferConst(),
+                variation: $CurrentProductDTO->getVariationConst(),
+                modification: $CurrentProductDTO->getModificationConst(),
+                iterate: $i
             );
 
             $this->messageDispatch->dispatch(
-                $SubProductStocksTotalMessage,
-                transport: 'products-stocks'
+                message: $SubProductStocksTotalMessage,
+                stamps: [new MessageDelay('3 seconds')],
+                transport: 'products-stocks',
             );
 
             if($i === $product->getTotal())
