@@ -32,17 +32,13 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
-use BaksDev\Products\Product\Entity\Event\ProductEvent;
-use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -109,13 +105,13 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         foreach($OrderEvent->getProduct() as $product)
         {
             /* Снимаем резерв со склада при доставке */
-            $this->changeReserve($product, $UserProfileUid);
+            $this->changeReserve($product, $UserProfileUid, $message->getId());
         }
 
         $DeduplicatorExecuted->save();
     }
 
-    public function changeReserve(OrderProduct $product, UserProfileUid $profile): void
+    public function changeReserve(OrderProduct $product, UserProfileUid $profile, OrderUid $order): void
     {
         /** Получаем идентификаторы карточки */
         $CurrentProductDTO = $this->CurrentProductIdentifier
@@ -149,7 +145,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
                 offer: $CurrentProductDTO->getOfferConst(),
                 variation: $CurrentProductDTO->getVariationConst(),
                 modification: $CurrentProductDTO->getModificationConst(),
-                iterate: $i
+                iterate: md5($i.$order)
             );
 
             $this->messageDispatch->dispatch(

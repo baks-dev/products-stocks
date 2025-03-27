@@ -47,8 +47,6 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
      */
     public function __invoke(SubProductStocksTotalAndReserveMessage $message): void
     {
-        $this->deduplicator->deduplication([$message, self::class]);
-
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([$message, self::class]);

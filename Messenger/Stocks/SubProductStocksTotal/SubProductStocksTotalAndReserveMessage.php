@@ -39,7 +39,7 @@ final readonly class SubProductStocksTotalAndReserveMessage
     private ?string $offer;
     private ?string $variation;
     private ?string $modification;
-    private int $iterate;
+    private string $iterate;
 
     public function __construct(
         UserProfileUid|string $profile,
@@ -47,7 +47,7 @@ final readonly class SubProductStocksTotalAndReserveMessage
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,
-        int $iterate
+        string $iterate
     )
     {
         $this->profile = (string) $profile;
@@ -101,7 +101,7 @@ final readonly class SubProductStocksTotalAndReserveMessage
     /**
      * Iterate
      */
-    public function getIterate(): int
+    public function getIterate(): string
     {
         return $this->iterate;
     }

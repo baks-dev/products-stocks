@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,15 +33,16 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 interface ProductStockQuantityInterface
 {
 
-    public function profile(UserProfileUid $profile): self;
+    public function profile(UserProfileUid|string $profile): self;
 
-    public function product(ProductUid $product): self;
+    public function product(ProductUid|string $product): self;
 
-    public function offerConst(?ProductOfferConst $offer): self;
+    public function offerConst(ProductOfferConst|string|null|false $offer): self;
 
-    public function variationConst(?ProductVariationConst $variation): self;
+    public function variationConst(ProductVariationConst|string|null|false $variation): self;
 
-    public function modificationConst(?ProductModificationConst $modification): self;
+    public function modificationConst(ProductModificationConst|string|null|false $modification): self;
+
 
 
     /**

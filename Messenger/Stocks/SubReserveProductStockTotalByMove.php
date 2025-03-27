@@ -132,12 +132,12 @@ final readonly class SubReserveProductStockTotalByMove
             for($i = 1; $i <= $product->getTotal(); $i++)
             {
                 $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
-                    $UserProfileUid,
-                    $product->getProduct(),
-                    $product->getOffer(),
-                    $product->getVariation(),
-                    $product->getModification(),
-                    $i
+                    profile: $UserProfileUid,
+                    product: $product->getProduct(),
+                    offer: $product->getOffer(),
+                    variation: $product->getVariation(),
+                    modification: $product->getModification(),
+                    iterate: md5($i.$message->getId())
                 );
 
                 $this->messageDispatch->dispatch(

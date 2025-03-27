@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductStockMinQuantity;
 
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -36,61 +37,122 @@ use InvalidArgumentException;
 
 final class ProductStockQuantityRepository implements ProductStockQuantityInterface
 {
-    private ?UserProfileUid $profile = null;
+    private UserProfileUid|false $profile = false;
 
-    private ?ProductUid $product = null;
+    private ProductUid|false $product = false;
 
-    private ?ProductOfferConst $offer = null;
+    private ProductOfferConst|false $offer = false;
 
-    private ?ProductVariationConst $variation = null;
+    private ProductVariationConst|false $variation = false;
 
-    private ?ProductModificationConst $modification = null;
+    private ProductModificationConst|false $modification = false;
 
-    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
+    public function __construct(
+        private readonly ORMQueryBuilder $ORMQueryBuilder
+    ) {}
 
 
-    public function profile(UserProfileUid $profile): self
+    public function profile(UserProfileUid|string $profile): self
     {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        if(is_string($profile))
+        {
+            $profile = new UserProfileUid($profile);
+        }
+
         $this->profile = $profile;
+
         return $this;
     }
 
-    public function product(ProductUid $product): self
+    public function product(ProductUid|string $product): self
     {
+        if(empty($product))
+        {
+            $this->product = false;
+            return $this;
+        }
+
+        if(is_string($product))
+        {
+            $product = new ProductUid($product);
+        }
+
         $this->product = $product;
+
         return $this;
     }
 
-    public function offerConst(?ProductOfferConst $offer): self
+    public function offerConst(ProductOfferConst|string|null|false $offer): self
     {
+        if(empty($offer))
+        {
+            $this->offer = false;
+            return $this;
+        }
+
+        if(is_string($offer))
+        {
+            $offer = new ProductOfferConst($offer);
+        }
+
         $this->offer = $offer;
+
         return $this;
     }
 
-    public function variationConst(?ProductVariationConst $variation): self
+    public function variationConst(ProductVariationConst|string|null|false $variation): self
     {
+        if(empty($variation))
+        {
+            $this->variation = false;
+            return $this;
+        }
+
+        if(is_string($variation))
+        {
+            $variation = new ProductVariationConst($variation);
+        }
+
         $this->variation = $variation;
+
         return $this;
     }
 
-    public function modificationConst(?ProductModificationConst $modification): self
+    public function modificationConst(ProductModificationConst|string|null|false $modification): self
     {
+        if(empty($modification))
+        {
+            $this->modification = false;
+            return $this;
+        }
+
+        if(is_string($modification))
+        {
+            $modification = new ProductModificationConst($modification);
+        }
+
         $this->modification = $modification;
+
         return $this;
     }
 
 
     private function builder(): ORMQueryBuilder
     {
-
-        if(!$this->profile)
+        if(false === ($this->profile instanceof UserProfileUid))
         {
-            throw new InvalidArgumentException('profile not found : ->profile(UserProfileUid $profile) ');
+            throw new InvalidArgumentException('Invalid Argument UserProfile');
         }
 
-        if(!$this->product)
+        if(false === ($this->product instanceof ProductUid))
         {
-            throw new InvalidArgumentException('product not found : ->product(ProductUid $product) ');
+            throw new InvalidArgumentException('Invalid Argument Product');
         }
 
 
@@ -102,18 +164,30 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
         $orm
             ->andWhere('stock.profile = :profile')
-            ->setParameter('profile', $this->profile, UserProfileUid::TYPE);
+            ->setParameter(
+                key: 'profile',
+                value: $this->profile,
+                type: UserProfileUid::TYPE
+            );
 
         $orm
             ->andWhere('stock.product = :product')
-            ->setParameter('product', $this->product, ProductUid::TYPE);
+            ->setParameter(
+                key: 'product',
+                value: $this->product,
+                type: ProductUid::TYPE
+            );
 
 
         if($this->offer)
         {
             $orm
                 ->andWhere('stock.offer = :offer')
-                ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->offer,
+                    type: ProductOfferConst::TYPE
+                );
         }
         else
         {
@@ -124,7 +198,11 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
         {
             $orm
                 ->andWhere('stock.variation = :variation')
-                ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->variation,
+                    type: ProductVariationConst::TYPE
+                );
         }
         else
         {
@@ -135,7 +213,11 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
         {
             $orm
                 ->andWhere('stock.modification = :modification')
-                ->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
+                ->setParameter(
+                    key: 'modification',
+                    value: $this->modification,
+                    type: ProductModificationConst::TYPE
+                );
         }
         else
         {

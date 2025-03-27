@@ -114,12 +114,12 @@ final readonly class SubReserveProductStockTotalByCancel
             for($i = 1; $i <= $product->getTotal(); $i++)
             {
                 $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
-                    $UserProfileUid,
-                    $product->getProduct(),
-                    $product->getOffer(),
-                    $product->getVariation(),
-                    $product->getModification(),
-                    $i
+                    profile: $UserProfileUid,
+                    product: $product->getProduct(),
+                    offer: $product->getOffer(),
+                    variation: $product->getVariation(),
+                    modification: $product->getModification(),
+                    iterate: md5($i.$message->getId())
                 );
 
                 $this->messageDispatch->dispatch(
