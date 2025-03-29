@@ -137,16 +137,21 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 
         $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа:');
 
-        for($i = 1; $i <= $product->getTotal(); $i++)
+        $productTotal = $product->getTotal();
+
+        $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
+            order: $order,
+            profile: $profile,
+            product: $CurrentProductDTO->getProduct(),
+            offer: $CurrentProductDTO->getOfferConst(),
+            variation: $CurrentProductDTO->getVariationConst(),
+            modification: $CurrentProductDTO->getModificationConst(),
+        );
+
+        for($i = 1; $i <= $productTotal; $i++)
         {
-            $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
-                profile: $profile,
-                product: $CurrentProductDTO->getProduct(),
-                offer: $CurrentProductDTO->getOfferConst(),
-                variation: $CurrentProductDTO->getVariationConst(),
-                modification: $CurrentProductDTO->getModificationConst(),
-                iterate: md5($i.$order)
-            );
+            $SubProductStocksTotalMessage
+                ->setIterate($i);
 
             $this->messageDispatch->dispatch(
                 message: $SubProductStocksTotalMessage,

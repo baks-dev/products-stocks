@@ -31,10 +31,12 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
+use BaksDev\Users\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -51,6 +53,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private UserByUserProfileInterface $userByUserProfile,
         private ProductStocksTotalStorageInterface $productStocksTotalStorage,
         private AddProductStockInterface $addProductStock,
@@ -60,15 +63,12 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
     public function __invoke(ProductStockMessage $message): void
     {
-
         /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
-            ->find($message->getEvent());
+        $ProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
 
-        $this->entityManager->clear();
-
-        if(!$ProductStockEvent)
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -83,7 +83,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $this->productStocks->getProductsIncomingStocks($message->getId());
-
 
         if(empty($products))
         {
@@ -111,7 +110,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-
             /** Получаем место для хранения указанной продукции данного профиля */
             $ProductStockTotal = $this->productStocksTotalStorage
                 ->profile($UserProfileUid)
@@ -122,14 +120,14 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                 ->storage($product->getStorage())
                 ->find();
 
-            if(!$ProductStockTotal)
+            if(false === ($ProductStockTotal instanceof ProductStockTotal))
             {
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
                 $User = $this->userByUserProfile
                     ->forProfile($UserProfileUid)
                     ->find();
 
-                if(!$User)
+                if(false === ($User instanceof User))
                 {
                     $this->logger->error(
                         'Ошибка при обновлении складских остатков. Не удалось получить пользователя по профилю.',
@@ -160,12 +158,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     'Место складирования не найдено! Создали новое место для указанной продукции',
                     [
                         self::class.':'.__LINE__,
-                        'storage' => $product->getStorage(),
                         'profile' => (string) $UserProfileUid,
-                        'product' => (string) $product->getProduct(),
-                        'offer' => (string) $product->getOffer(),
-                        'variation' => (string) $product->getVariation(),
-                        'modification' => (string) $product->getModification(),
+                        var_export($product, true)
                     ]
                 );
             }
@@ -176,7 +170,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             );
 
             $this->handle($ProductStockTotal, $product->getTotal());
-
 
         }
 
@@ -198,8 +191,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             $this->logger->critical(
                 'Ошибка при обновлении складских остатков',
                 [
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
                     self::class.':'.__LINE__,
-                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
                 ]
             );
 
@@ -209,8 +202,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         $this->logger->info(
             'Добавили приход продукции на склад',
             [
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
                 self::class.':'.__LINE__,
-                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
             ]
         );
     }

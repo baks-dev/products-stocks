@@ -26,13 +26,14 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -47,11 +48,10 @@ final readonly class AddReserveProductStocksTotalByPackage
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
-        private CurrentProductStocksInterface $CurrentProductStocksInterface,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
-
 
     public function __invoke(ProductStockMessage $message): void
     {
@@ -67,7 +67,10 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
-        $ProductStockEvent = $this->CurrentProductStocksInterface->getCurrentEvent($message->getId());
+        $ProductStockEvent = $this
+            ->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
@@ -79,7 +82,6 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
-
         // Получаем всю продукцию в ордере со статусом Package (УПАКОВКА)
         $products = $this->productStocks->getProductsPackageStocks($message->getId());
 
@@ -88,7 +90,6 @@ final readonly class AddReserveProductStocksTotalByPackage
             $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
-
 
         /** Идентификатор профиля, куда была отправлена заявка на упаковку */
         $UserProfileUid = $ProductStockEvent->getStocksProfile();
@@ -104,23 +105,30 @@ final readonly class AddReserveProductStocksTotalByPackage
             /**
              * Создаем резерв на единицу продукции при упаковке
              */
-            for($i = 1; $i <= $product->getTotal(); $i++)
+
+            $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                profile: $UserProfileUid,
+                product: $product->getProduct(),
+                offer: $product->getOffer(),
+                variation: $product->getVariation(),
+                modification: $product->getModification(),
+                stock: $message->getId()
+            );
+
+            $productTotal = $product->getTotal();
+
+            for($i = 1; $i <= $productTotal; $i++)
             {
-                $AddProductStocksReserve = new AddProductStocksReserveMessage(
-                    profile: $UserProfileUid,
-                    product: $product->getProduct(),
-                    offer: $product->getOffer(),
-                    variation: $product->getVariation(),
-                    modification: $product->getModification(),
-                    iterator: md5($i.$message->getId())
-                );
+                $AddProductStocksReserve
+                    ->setIterator($i);
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
+                    stamps: [new MessageDelay('1 seconds')],
                     transport: 'products-stocks'
                 );
 
-                if($i === $product->getTotal())
+                if($i === $productTotal)
                 {
                     break;
                 }

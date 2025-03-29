@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,15 @@
 namespace BaksDev\Products\Stocks\Repository\ProductStocksEvent;
 
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 
 interface ProductStocksEventInterface
 {
+    public function forEvent(ProductStock|ProductStockEvent|ProductStockEventUid|string $event): self;
+
     /**
      * Метод возвращает объект события складской заявки
      */
-    public function find(ProductStockEventUid|string $event): ProductStockEvent|false;
+    public function find(): ProductStockEvent|false;
 }

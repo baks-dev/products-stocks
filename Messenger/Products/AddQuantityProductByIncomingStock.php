@@ -70,7 +70,8 @@ final readonly class AddQuantityProductByIncomingStock
 
         $ProductStockEvent = $this
             ->ProductStocksEventRepository
-            ->find($message->getEvent());
+            ->forEvent($message->getEvent())
+            ->find();
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {

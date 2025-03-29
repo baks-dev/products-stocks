@@ -112,7 +112,6 @@ final readonly class SubReserveProductStockTotalByMove
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-
             $this->logger->info(
                 'Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции',
                 [
@@ -129,23 +128,29 @@ final readonly class SubReserveProductStockTotalByMove
             );
 
             /** Снимаем резерв и остаток на единицу продукции на складе грузоотправителя */
-            for($i = 1; $i <= $product->getTotal(); $i++)
+
+            $productTotal = $product->getTotal();
+
+            $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
+                order: $message->getId(),
+                profile: $UserProfileUid,
+                product: $product->getProduct(),
+                offer: $product->getOffer(),
+                variation: $product->getVariation(),
+                modification: $product->getModification(),
+            );
+
+            for($i = 1; $i <= $productTotal; $i++)
             {
-                $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
-                    profile: $UserProfileUid,
-                    product: $product->getProduct(),
-                    offer: $product->getOffer(),
-                    variation: $product->getVariation(),
-                    modification: $product->getModification(),
-                    iterate: md5($i.$message->getId())
-                );
+                $SubProductStocksTotalMessage
+                    ->setIterate($i);
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalMessage,
                     transport: 'products-stocks'
                 );
 
-                if($i === $product->getTotal())
+                if($i === $productTotal)
                 {
                     break;
                 }

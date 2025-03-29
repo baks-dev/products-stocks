@@ -26,14 +26,15 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -45,9 +46,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class AddReserveProductStocksTotalByMove
 {
     public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
-        private EntityManagerInterface $entityManager,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -57,11 +58,11 @@ final readonly class AddReserveProductStocksTotalByMove
     {
 
         /** Получаем статус заявки */
-        $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
-            ->find($message->getEvent());
+        $ProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
 
-        if(!$ProductStockEvent)
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -112,19 +113,26 @@ final readonly class AddReserveProductStocksTotalByMove
             /**
              * Добавляем резерв на единицу продукции (добавляем по одной для резерва от меньшего к большему)
              */
-            for($i = 1; $i <= $product->getTotal(); $i++)
+
+            $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                profile: $UserProfileUid,
+                product: $product->getProduct(),
+                offer: $product->getOffer(),
+                variation: $product->getVariation(),
+                modification: $product->getModification(),
+                stock: $message->getId()
+            );
+
+            $productTotal = $product->getTotal();
+
+            for($i = 1; $i <= $productTotal; $i++)
             {
-                $AddProductStocksReserve = new AddProductStocksReserveMessage(
-                    profile: $UserProfileUid,
-                    product: $product->getProduct(),
-                    offer: $product->getOffer(),
-                    variation: $product->getVariation(),
-                    modification: $product->getModification(),
-                    iterator: md5($i.$message->getId())
-                );
+                $AddProductStocksReserve
+                    ->setIterator($i);
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
+                    stamps: [new MessageDelay('1 seconds')],
                     transport: 'products-stocks'
                 );
 

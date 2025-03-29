@@ -29,33 +29,35 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /** @see SubMaterialStocksTotalReserveMessage */
 final readonly class SubProductStocksTotalReserveMessage
 {
+    private string $stock;
     private string $profile;
     private string $product;
     private ?string $offer;
     private ?string $variation;
     private ?string $modification;
-    private string $iterate;
+    private int $iterate;
 
     public function __construct(
+        ProductStockUid $stock,
         UserProfileUid $profile,
         ProductUid $product,
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,
-        string $iterate
     )
     {
+        $this->stock = (string) $stock;
         $this->profile = (string) $profile;
         $this->product = (string) $product;
         $this->offer = $offer ? (string) $offer : null;
         $this->variation = $variation ? (string) $variation : null;
         $this->modification = $modification ? (string) $modification : null;
-        $this->iterate = $iterate;
     }
 
     /**
@@ -98,12 +100,18 @@ final readonly class SubProductStocksTotalReserveMessage
         return $this->modification ? new ProductModificationConst($this->modification) : null;
     }
 
+    public function setIterate(int $iterate): self
+    {
+        $this->iterate = $iterate;
+        return $this;
+    }
+
     /**
      * Iterate
      */
     public function getIterate(): string
     {
-        return $this->iterate;
+        return md5($this->iterate.$this->stock);
     }
 
 }

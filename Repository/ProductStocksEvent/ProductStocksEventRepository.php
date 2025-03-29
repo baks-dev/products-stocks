@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,29 +27,61 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksEvent;
 
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use InvalidArgumentException;
 
 final class ProductStocksEventRepository implements ProductStocksEventInterface
 {
+    private ProductStockEventUid|false $event = false;
+
     public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
+
+    public function forEvent(ProductStock|ProductStockEvent|ProductStockEventUid|string $event): self
+    {
+        if(empty($event))
+        {
+            $this->event = false;
+            return $this;
+        }
+
+        if($event instanceof ProductStockEvent)
+        {
+            $event = $event->getId();
+        }
+
+        if($event instanceof ProductStock)
+        {
+            $event = $event->getEvent();
+        }
+
+        $this->event = $event;
+
+        return $this;
+    }
+
 
     /**
      * Метод возвращает объект события складской заявки
      */
-    public function find(ProductStockEventUid|string $event): ProductStockEvent|false
+    public function find(): ProductStockEvent|false
     {
-        if(is_string($event))
+        if(false === ($this->event instanceof ProductStockEventUid))
         {
-            $event = new ProductStockEventUid($event);
+            throw new InvalidArgumentException('Invalid Argument ProductStockEvent');
         }
 
-        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+        $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $qb->select('event')
+        $orm->select('event')
             ->from(ProductStockEvent::class, 'event')
             ->where('event.id = :event')
-            ->setParameter('event', $event, ProductStockEventUid::TYPE);
+            ->setParameter(
+                key: 'event',
+                value: $this->event,
+                type: ProductStockEventUid::TYPE
+            );
 
-        return $qb->getQuery()->getOneOrNullResult() ?: false;
+        return $orm->getQuery()->getOneOrNullResult() ?: false;
     }
 }

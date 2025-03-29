@@ -32,8 +32,8 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -47,7 +47,7 @@ final readonly class SubReserveProductStockTotalByCancel
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
-        private EntityManagerInterface $entityManager,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -72,10 +72,13 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        /** Активный статус складской заявки */
-        $ProductStockEvent = $this->entityManager->getRepository(ProductStockEvent::class)->find($message->getEvent());
 
-        if(!$ProductStockEvent)
+        /** Активный статус складской заявки */
+        $ProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -110,17 +113,24 @@ final readonly class SubReserveProductStockTotalByCancel
                 ]
             );
 
+
             /** Снимаем ТОЛЬКО резерв продукции на складе */
-            for($i = 1; $i <= $product->getTotal(); $i++)
+
+            $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
+                stock: $message->getId(),
+                profile: $UserProfileUid,
+                product: $product->getProduct(),
+                offer: $product->getOffer(),
+                variation: $product->getVariation(),
+                modification: $product->getModification(),
+            );
+
+            $productTotal = $product->getTotal();
+
+            for($i = 1; $i <= $productTotal; $i++)
             {
-                $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
-                    profile: $UserProfileUid,
-                    product: $product->getProduct(),
-                    offer: $product->getOffer(),
-                    variation: $product->getVariation(),
-                    modification: $product->getModification(),
-                    iterate: md5($i.$message->getId())
-                );
+                $SubProductStocksTotalCancelMessage
+                    ->setIterate($i);
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalCancelMessage,

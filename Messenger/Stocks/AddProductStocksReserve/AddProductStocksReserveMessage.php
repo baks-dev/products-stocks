@@ -29,16 +29,20 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final readonly class AddProductStocksReserveMessage
 {
     private string $profile;
     private string $product;
+    private string $stock;
+
     private ?string $offer;
     private ?string $variation;
     private ?string $modification;
-    private string $iterator;
+
+    private int $iterator;
 
     public function __construct(
         UserProfileUid $profile,
@@ -46,15 +50,17 @@ final readonly class AddProductStocksReserveMessage
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,
-        string $iterator
+        ProductStockUid $stock,
     )
     {
         $this->profile = (string) $profile;
         $this->product = (string) $product;
+        $this->stock = (string) $stock;
+
         $this->offer = $offer ? (string) $offer : null;
         $this->variation = $variation ? (string) $variation : null;
         $this->modification = $modification ? (string) $modification : null;
-        $this->iterator = $iterator;
+
     }
 
     /**
@@ -102,7 +108,12 @@ final readonly class AddProductStocksReserveMessage
      */
     public function getIterator(): string
     {
-        return $this->iterator;
+        return md5($this->iterator.$this->stock);
     }
 
+    public function setIterator(int $iterator): self
+    {
+        $this->iterator = $iterator;
+        return $this;
+    }
 }
