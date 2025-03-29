@@ -33,14 +33,16 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /** @see SubMaterialStocksTotalReserveMessage */
-final readonly class SubProductStocksTotalAndReserveMessage
+final  class SubProductStocksTotalAndReserveMessage
 {
-    private string $order;
-    private string $profile;
-    private string $product;
-    private ?string $offer;
-    private ?string $variation;
-    private ?string $modification;
+    private readonly string $order;
+    private readonly string $profile;
+    private readonly string $product;
+
+    private readonly ?string $offer;
+    private readonly ?string $variation;
+    private readonly ?string $modification;
+
     private int $iterate;
 
     public function __construct(

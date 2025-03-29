@@ -128,7 +128,7 @@ final readonly class AddReserveProductStocksTotalByMove
             for($i = 1; $i <= $productTotal; $i++)
             {
                 $AddProductStocksReserve
-                    ->setIterator($i);
+                    ->setIterate($i);
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,

@@ -32,17 +32,17 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final readonly class AddProductStocksReserveMessage
+final class AddProductStocksReserveMessage
 {
-    private string $profile;
-    private string $product;
-    private string $stock;
+    private readonly string $profile;
+    private readonly string $product;
+    private readonly string $stock;
 
-    private ?string $offer;
-    private ?string $variation;
-    private ?string $modification;
+    private readonly ?string $offer;
+    private readonly ?string $variation;
+    private readonly ?string $modification;
 
-    private int $iterator;
+    private int $iterate;
 
     public function __construct(
         UserProfileUid $profile,
@@ -106,14 +106,14 @@ final readonly class AddProductStocksReserveMessage
     /**
      * Iterator
      */
-    public function getIterator(): string
+    public function getIterate(): string
     {
-        return md5($this->iterator.$this->stock);
+        return md5($this->iterate.$this->stock);
     }
 
-    public function setIterator(int $iterator): self
+    public function setIterate(int $iterate): self
     {
-        $this->iterator = $iterator;
+        $this->iterate = $iterate;
         return $this;
     }
 }
