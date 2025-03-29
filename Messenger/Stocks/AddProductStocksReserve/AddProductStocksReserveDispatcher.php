@@ -51,7 +51,7 @@ final readonly class AddProductStocksReserveDispatcher
 
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
-            ->deduplication([$message->getIterate(), self::class]);
+            ->deduplication([$message, self::class]);
 
         if($DeduplicatorExecuted->isExecuted())
         {

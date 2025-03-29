@@ -38,9 +38,9 @@ final class AddProductStocksReserveMessage
     private readonly string $product;
     private readonly string $stock;
 
-    private readonly ?string $offer;
-    private readonly ?string $variation;
-    private readonly ?string $modification;
+    private readonly string|false $offer;
+    private readonly string|false $variation;
+    private readonly string|false $modification;
 
     private int $iterate;
 
@@ -58,9 +58,9 @@ final class AddProductStocksReserveMessage
         $this->product = (string) $product;
         $this->stock = (string) $stock;
 
-        $this->offer = empty($offer) ? null : (string) $offer;
-        $this->variation = empty($variation) ? null : (string) $variation;
-        $this->modification = empty($modification) ? null : (string) $modification;
+        $this->offer = empty($offer) ? false : (string) $offer;
+        $this->variation = empty($variation) ? false : (string) $variation;
+        $this->modification = empty($modification) ? false : (string) $modification;
 
     }
 
