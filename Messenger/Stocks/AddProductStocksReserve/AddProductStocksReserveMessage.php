@@ -45,21 +45,22 @@ final class AddProductStocksReserveMessage
     private int $iterate;
 
     public function __construct(
+        ProductStockUid $stock,
         UserProfileUid $profile,
         ProductUid $product,
+
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,
-        ProductStockUid $stock,
     )
     {
         $this->profile = (string) $profile;
         $this->product = (string) $product;
         $this->stock = (string) $stock;
 
-        $this->offer = $offer ? (string) $offer : null;
-        $this->variation = $variation ? (string) $variation : null;
-        $this->modification = $modification ? (string) $modification : null;
+        $this->offer = empty($offer) ? null : (string) $offer;
+        $this->variation = empty($variation) ? null : (string) $variation;
+        $this->modification = empty($modification) ? null : (string) $modification;
 
     }
 
@@ -82,25 +83,25 @@ final class AddProductStocksReserveMessage
     /**
      * Offer
      */
-    public function getOffer(): ?ProductOfferConst
+    public function getOffer(): ProductOfferConst|false
     {
-        return $this->offer ? new ProductOfferConst($this->offer) : null;
+        return $this->offer ? new ProductOfferConst($this->offer) : false;
     }
 
     /**
      * Variation
      */
-    public function getVariation(): ?ProductVariationConst
+    public function getVariation(): ProductVariationConst|false
     {
-        return $this->variation ? new ProductVariationConst($this->variation) : null;
+        return $this->variation ? new ProductVariationConst($this->variation) : false;
     }
 
     /**
      * Modification
      */
-    public function getModification(): ?ProductModificationConst
+    public function getModification(): ProductModificationConst|false
     {
-        return $this->modification ? new ProductModificationConst($this->modification) : null;
+        return $this->modification ? new ProductModificationConst($this->modification) : false;
     }
 
     /**

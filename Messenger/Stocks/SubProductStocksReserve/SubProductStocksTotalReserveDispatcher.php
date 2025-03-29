@@ -49,7 +49,7 @@ final readonly class SubProductStocksTotalReserveDispatcher
     {
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
-            ->deduplication([$message, self::class]);
+            ->deduplication([$message->getIterate(), self::class]);
 
         if($DeduplicatorExecuted->isExecuted())
         {

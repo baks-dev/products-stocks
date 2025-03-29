@@ -30,6 +30,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /** @see SubMaterialStocksTotalReserveMessage */
@@ -46,9 +47,10 @@ final  class SubProductStocksTotalAndReserveMessage
     private int $iterate;
 
     public function __construct(
-        OrderUid|string $order,
-        UserProfileUid|string $profile,
-        ProductUid|string $product,
+        OrderUid|ProductStockUid $order,
+        UserProfileUid $profile,
+        ProductUid $product,
+
         ProductOfferConst|false|null $offer,
         ProductVariationConst|false|null $variation,
         ProductModificationConst|false|null $modification,
@@ -57,9 +59,10 @@ final  class SubProductStocksTotalAndReserveMessage
         $this->order = (string) $order;
         $this->profile = (string) $profile;
         $this->product = (string) $product;
-        $this->offer = $offer ? (string) $offer : null;
-        $this->variation = $variation ? (string) $variation : null;
-        $this->modification = $modification ? (string) $modification : null;
+
+        $this->offer = empty($offer) ? null : (string) $offer;
+        $this->variation = empty($variation) ? null : (string) $variation;
+        $this->modification = empty($modification) ? null : (string) $modification;
     }
 
     /**
@@ -81,25 +84,25 @@ final  class SubProductStocksTotalAndReserveMessage
     /**
      * Offer
      */
-    public function getOffer(): ?ProductOfferConst
+    public function getOffer(): ProductOfferConst|false
     {
-        return $this->offer ? new ProductOfferConst($this->offer) : null;
+        return $this->offer ? new ProductOfferConst($this->offer) : false;
     }
 
     /**
      * Variation
      */
-    public function getVariation(): ?ProductVariationConst
+    public function getVariation(): ProductVariationConst|false
     {
-        return $this->variation ? new ProductVariationConst($this->variation) : null;
+        return $this->variation ? new ProductVariationConst($this->variation) : false;
     }
 
     /**
      * Modification
      */
-    public function getModification(): ?ProductModificationConst
+    public function getModification(): ProductModificationConst|false
     {
-        return $this->modification ? new ProductModificationConst($this->modification) : null;
+        return $this->modification ? new ProductModificationConst($this->modification) : false;
     }
 
     public function setIterate(int $iterate): self

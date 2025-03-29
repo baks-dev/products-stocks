@@ -107,12 +107,12 @@ final readonly class AddReserveProductStocksTotalByPackage
              */
 
             $AddProductStocksReserve = new AddProductStocksReserveMessage(
+                stock: $message->getId(),
                 profile: $UserProfileUid,
                 product: $product->getProduct(),
                 offer: $product->getOffer(),
                 variation: $product->getVariation(),
-                modification: $product->getModification(),
-                stock: $message->getId()
+                modification: $product->getModification()
             );
 
             $productTotal = $product->getTotal();
