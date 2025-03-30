@@ -31,8 +31,10 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
+use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -48,12 +50,18 @@ final readonly class SubReserveProductStockTotalByCancel
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
     {
+        if(false === ($message->getLast() instanceof ProductStockEventUid))
+        {
+            return;
+        }
+
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([
@@ -65,13 +73,6 @@ final readonly class SubReserveProductStockTotalByCancel
         {
             return;
         }
-
-
-        if($message->getLast() === null)
-        {
-            return;
-        }
-
 
         /** Активный статус складской заявки */
         $ProductStockEvent = $this->ProductStocksEventRepository
@@ -113,9 +114,6 @@ final readonly class SubReserveProductStockTotalByCancel
                 ]
             );
 
-
-            /** Снимаем ТОЛЬКО резерв продукции на складе */
-
             $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
                 stock: $message->getId(),
                 profile: $UserProfileUid,
@@ -125,16 +123,53 @@ final readonly class SubReserveProductStockTotalByCancel
                 modification: $product->getModification(),
             );
 
+
+            /** Поверяем количество мест складирования продукции на складе */
+
+            $storage = $this->CountProductStocksStorage
+                ->forProfile($UserProfileUid)
+                ->forProduct($product->getProduct())
+                ->forOffer($product->getOffer())
+                ->forVariation($product->getVariation())
+                ->forModification($product->getModification())
+                ->count();
+
+
+            /**
+             * Если на складе количество мест одно - снимаем сразу весь резерв
+             */
+
+            if($storage === 1)
+            {
+                $SubProductStocksTotalCancelMessage
+                    ->setIterate(1)
+                    ->setTotal($product->getTotal());
+
+                $this->messageDispatch->dispatch(
+                    $SubProductStocksTotalCancelMessage,
+                    transport: 'products-stocks-low'
+                );
+
+                continue;
+            }
+
+
+            /**
+             * Если на складе количество мест несколько - снимаем резерв на единицу продукции
+             * для резерва по местам от меньшего к большему
+             */
+
             $productTotal = $product->getTotal();
 
             for($i = 1; $i <= $productTotal; $i++)
             {
                 $SubProductStocksTotalCancelMessage
-                    ->setIterate($i);
+                    ->setIterate($i)
+                    ->setTotal(1);
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalCancelMessage,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks-low'
                 );
 
                 if($i === $product->getTotal())

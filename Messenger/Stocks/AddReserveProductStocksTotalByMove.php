@@ -32,6 +32,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
+use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
@@ -49,6 +50,7 @@ final readonly class AddReserveProductStocksTotalByMove
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -56,6 +58,18 @@ final readonly class AddReserveProductStocksTotalByMove
 
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusMoving::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
 
         /** Получаем статус заявки */
         $ProductStockEvent = $this->ProductStocksEventRepository
@@ -79,19 +93,6 @@ final readonly class AddReserveProductStocksTotalByMove
         if(empty($products))
         {
             $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
-            return;
-        }
-
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusMoving::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
             return;
         }
 
@@ -123,16 +124,45 @@ final readonly class AddReserveProductStocksTotalByMove
                 modification: $product->getModification()
             );
 
+
+            /** Поверяем количество мест складирования продукции на складе */
+
+            $storage = $this->CountProductStocksStorage
+                ->forProfile($UserProfileUid)
+                ->forProduct($product->getProduct())
+                ->forOffer($product->getOffer())
+                ->forVariation($product->getVariation())
+                ->forModification($product->getModification())
+                ->count();
+
             $productTotal = $product->getTotal();
+
+            /**
+             * Если на складе количество мест одно - обновляем сразу весь резерв
+             */
+
+            if($storage === 1)
+            {
+                $AddProductStocksReserve
+                    ->setIterate(1)
+                    ->setTotal($productTotal);
+
+                $this->messageDispatch->dispatch(
+                    $AddProductStocksReserve,
+                    transport: 'products-stocks'
+                );
+
+                continue;
+            }
 
             for($i = 1; $i <= $productTotal; $i++)
             {
                 $AddProductStocksReserve
-                    ->setIterate($i);
+                    ->setIterate($i)
+                    ->setTotal(1);
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
-                    stamps: [new MessageDelay('1 seconds')],
                     transport: 'products-stocks'
                 );
 

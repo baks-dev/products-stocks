@@ -26,12 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
+use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
@@ -49,6 +49,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -102,10 +103,6 @@ final readonly class AddReserveProductStocksTotalByPackage
                 ['total' => $product->getTotal()]
             );
 
-            /**
-             * Создаем резерв на единицу продукции при упаковке
-             */
-
             $AddProductStocksReserve = new AddProductStocksReserveMessage(
                 stock: $message->getId(),
                 profile: $UserProfileUid,
@@ -117,18 +114,54 @@ final readonly class AddReserveProductStocksTotalByPackage
 
             $productTotal = $product->getTotal();
 
-            for($i = 1; $i <= $productTotal; $i++)
+
+            /** Поверяем количество мест складирования продукции на складе */
+
+            $storage = $this->CountProductStocksStorage
+                ->forProfile($UserProfileUid)
+                ->forProduct($product->getProduct())
+                ->forOffer($product->getOffer())
+                ->forVariation($product->getVariation())
+                ->forModification($product->getModification())
+                ->count();
+
+
+            /**
+             * Если на складе количество мест одно - обновляем сразу весь резерв
+             */
+
+            if($storage === 1)
             {
                 $AddProductStocksReserve
-                    ->setIterate($i);
+                    ->setIterate(1)
+                    ->setTotal($productTotal);
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
-                    stamps: [new MessageDelay('1 seconds')],
                     transport: 'products-stocks'
                 );
 
-                if($i === $productTotal)
+                continue;
+            }
+
+
+            /**
+             * Если на складе количество мест несколько - создаем резерв на единицу продукции
+             * для резерва по местам от меньшего к большему
+             */
+
+            for($i = 1; $i <= $productTotal; $i++)
+            {
+                $AddProductStocksReserve
+                    ->setIterate($i)
+                    ->setTotal(1);
+
+                $this->messageDispatch->dispatch(
+                    $AddProductStocksReserve,
+                    transport: 'products-stocks'
+                );
+
+                if($i >= $productTotal)
                 {
                     break;
                 }

@@ -34,7 +34,7 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /** @see SubMaterialStocksTotalReserveMessage */
-final  class SubProductStocksTotalAndReserveMessage
+final class SubProductStocksTotalAndReserveMessage
 {
     private readonly string $order;
     private readonly string $profile;
@@ -45,6 +45,7 @@ final  class SubProductStocksTotalAndReserveMessage
     private readonly string|false $modification;
 
     private int $iterate;
+    private int $total;
 
     public function __construct(
         OrderUid|ProductStockUid $order,
@@ -117,5 +118,19 @@ final  class SubProductStocksTotalAndReserveMessage
     public function getIterate(): string
     {
         return md5($this->iterate.$this->order);
+    }
+
+    /**
+     * Total
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
     }
 }

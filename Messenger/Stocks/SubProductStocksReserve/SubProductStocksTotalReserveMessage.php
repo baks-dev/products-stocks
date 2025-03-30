@@ -44,6 +44,7 @@ final  class SubProductStocksTotalReserveMessage
     private readonly string|false $modification;
 
     private int $iterate;
+    private int $total;
 
     public function __construct(
         ProductStockUid $stock,
@@ -118,4 +119,17 @@ final  class SubProductStocksTotalReserveMessage
         return md5($this->iterate.$this->stock);
     }
 
+    /**
+     * Total
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
+    }
 }

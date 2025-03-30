@@ -83,8 +83,8 @@ final readonly class SubProductStocksTotalReserveDispatcher
         }
 
         $rows = $this->updateProductStock
-            ->total(null)
-            ->reserve(1)
+            ->total(false)
+            ->reserve($message->getTotal())
             ->updateById($ProductStockTotal);
 
         if(empty($rows))

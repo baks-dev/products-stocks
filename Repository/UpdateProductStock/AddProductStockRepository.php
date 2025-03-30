@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,23 +33,23 @@ use InvalidArgumentException;
 
 final class AddProductStockRepository implements AddProductStockInterface
 {
-    private ?int $total = null;
+    private int|false $total = false;
 
-    private ?int $reserve = null;
+    private int|false $reserve = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /** Указываем количество снятия резерва */
-    public function reserve(?int $reserve): self
+    public function reserve(int|false $reserve): self
     {
-        $this->reserve = $reserve ?: null;
+        $this->reserve = $reserve ?: false;
         return $this;
     }
 
     /** Указываем количество снятия остатка */
-    public function total(?int $total): self
+    public function total(int|false $total): self
     {
-        $this->total = $total ?: null;
+        $this->total = $total ?: false;
         return $this;
     }
 
@@ -81,6 +81,7 @@ final class AddProductStockRepository implements AddProductStockInterface
             ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
 
         /** Если указан остаток - добавляем */
+
         if($this->total)
         {
             $dbal
@@ -89,6 +90,7 @@ final class AddProductStockRepository implements AddProductStockInterface
         }
 
         /** Если указан резерв - добавляем */
+
         if($this->reserve)
         {
             $dbal

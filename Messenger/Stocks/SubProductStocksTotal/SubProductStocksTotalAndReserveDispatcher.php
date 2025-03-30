@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
 use Psr\Log\LoggerInterface;
@@ -66,17 +67,13 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
             ->modificationConst($message->getModification())
             ->findOneByTotalMin();
 
-        if(!$ProductStockTotal)
+        if(false === ($ProductStockTotal instanceof ProductStockTotal))
         {
             $this->logger->critical(
                 'Не найдено продукции на складе для списания',
                 [
+                    var_export($message, true),
                     self::class.':'.__LINE__,
-                    'profile' => (string) $message->getProfile(),
-                    'product' => (string) $message->getProduct(),
-                    'offer' => (string) $message->getOffer(),
-                    'variation' => (string) $message->getVariation(),
-                    'modification' => (string) $message->getModification()
                 ]
             );
 
@@ -84,9 +81,10 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
         }
 
         $rows = $this->updateProductStock
-            ->total(1)
-            ->reserve(1)
+            ->total($message->getTotal())
+            ->reserve($message->getTotal())
             ->updateById($ProductStockTotal);
+
 
         if(empty($rows))
         {
@@ -94,7 +92,8 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
                 'Невозможно снять резерв и остаток продукции, которой нет в наличии или заранее не зарезервирована',
                 [
                     self::class.':'.__LINE__,
-                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
+                    var_export($message, true),
+                    var_export($ProductStockTotal, true)
                 ]
             );
 
@@ -107,7 +106,8 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
             sprintf('место: %s : Сняли резерв и уменьшили количество на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
-                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
+                var_export($message, true),
+                var_export($ProductStockTotal, true)
             ]
         );
     }

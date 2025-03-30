@@ -63,6 +63,20 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
     public function __invoke(ProductStockMessage $message): void
     {
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getId(),
+                ProductStockStatusIncoming::STATUS,
+                md5(self::class)
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+
         /** Получаем статус заявки */
         $ProductStockEvent = $this->ProductStocksEventRepository
             ->forEvent($message->getEvent())
@@ -87,19 +101,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         if(empty($products))
         {
             $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
-            return;
-        }
-
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusIncoming::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
             return;
         }
 
@@ -179,11 +180,10 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
     public function handle(ProductStockTotal $ProductStockTotal, int $total): void
     {
-
         /** Добавляем приход на указанный профиль (склад) */
         $rows = $this->addProductStock
             ->total($total)
-            ->reserve(null)
+            ->reserve(false) // не обновляем резерв
             ->updateById($ProductStockTotal);
 
         if(empty($rows))

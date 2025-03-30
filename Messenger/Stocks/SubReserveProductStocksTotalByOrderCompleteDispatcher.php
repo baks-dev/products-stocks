@@ -37,6 +37,7 @@ use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
+use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
@@ -55,7 +56,8 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         private ProductWarehouseByOrderInterface $warehouseByOrder,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
-        private CurrentProductIdentifierInterface $CurrentProductIdentifier
+        private CurrentProductIdentifierInterface $CurrentProductIdentifier,
+        private CountProductStocksStorageInterface $CountProductStocksStorage,
     ) {}
 
     public function __invoke(OrderMessage $message): void
@@ -74,7 +76,9 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         }
 
 
-        $OrderEvent = $this->CurrentOrderEvent->forOrder($message->getId())->find();
+        $OrderEvent = $this->CurrentOrderEvent
+            ->forOrder($message->getId())
+            ->find();
 
         if(false === ($OrderEvent instanceof OrderEvent))
         {
@@ -88,7 +92,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         }
 
         /**
-         * Получаем склад, на который была отправлена заявка для сборки.
+         * Получаем склад (профиль), на который была отправлена заявка для сборки по идентификатору заказа.
          *
          * @var UserProfileUid $UserProfileUid
          */
@@ -104,65 +108,94 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         /** @var OrderProduct $product */
         foreach($OrderEvent->getProduct() as $product)
         {
-            /* Снимаем резерв со склада при доставке */
-            $this->changeReserve($product, $UserProfileUid, $message->getId());
+            /**
+             * Получаем идентификаторы карточки
+             * @note: в заказе идентификаторы события, для склада необходимы константы
+             */
+
+            $CurrentProductDTO = $this->CurrentProductIdentifier
+                ->forEvent($product->getProduct())
+                ->forOffer($product->getOffer())
+                ->forVariation($product->getVariation())
+                ->forModification($product->getModification())
+                ->find();
+
+            if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+            {
+                $this->logger->critical(
+                    'products-stocks: Невозможно снять резерв и остаток на складе (карточка не найдена)',
+                    [$product, self::class.':'.__LINE__]
+                );
+
+                return;
+            }
+
+            $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа:');
+
+            $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
+                order: $message->getId(),
+                profile: $UserProfileUid,
+                product: $CurrentProductDTO->getProduct(),
+                offer: $CurrentProductDTO->getOfferConst(),
+                variation: $CurrentProductDTO->getVariationConst(),
+                modification: $CurrentProductDTO->getModificationConst(),
+            );
+
+
+            /** Поверяем количество мест складирования продукции на складе */
+
+            $storage = $this->CountProductStocksStorage
+                ->forProfile($UserProfileUid)
+                ->forProduct($CurrentProductDTO->getProduct())
+                ->forOffer($CurrentProductDTO->getOfferConst())
+                ->forVariation($CurrentProductDTO->getVariationConst())
+                ->forModification($CurrentProductDTO->getModificationConst())
+                ->count();
+
+            /**
+             * Если на складе количество мест одно - обновляем сразу весь резерв
+             */
+
+            if($storage === 1)
+            {
+                $SubProductStocksTotalMessage
+                    ->setIterate(1)
+                    ->setTotal($product->getTotal());
+
+                $this->messageDispatch->dispatch(
+                    $SubProductStocksTotalMessage,
+                    transport: 'products-stocks-low',
+                );
+
+                continue;
+            }
+
+
+            /**
+             * Снимаем резерв и остаток продукции на складе по одной единице продукции
+             */
+
+            $productTotal = $product->getTotal();
+
+            for($i = 1; $i <= $productTotal; $i++)
+            {
+                $SubProductStocksTotalMessage
+                    ->setIterate($i)
+                    ->setTotal(1);
+
+                $this->messageDispatch->dispatch(
+                    message: $SubProductStocksTotalMessage,
+                    transport: 'products-stocks-low',
+                );
+
+                if($i === $product->getTotal())
+                {
+                    break;
+                }
+            }
         }
 
         $DeduplicatorExecuted->save();
     }
 
-    public function changeReserve(OrderProduct $product, UserProfileUid $profile, OrderUid $order): void
-    {
-        /** Получаем идентификаторы карточки */
-        $CurrentProductDTO = $this->CurrentProductIdentifier
-            ->forEvent($product->getProduct())
-            ->forOffer($product->getOffer())
-            ->forVariation($product->getVariation())
-            ->forModification($product->getModification())
-            ->find();
-
-        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
-        {
-            $this->logger->critical(
-                'products-stocks: Невозможно снять резерв и остаток на складе (карточка не найдена)',
-                [$product, self::class.':'.__LINE__]
-            );
-
-            return;
-        }
-
-        /**
-         * Снимаем резерв и остаток продукции на складе по одной единице продукции
-         */
-
-        $this->logger->info('Снимаем резерв и остаток на складе при выполненном заказа:');
-
-        $productTotal = $product->getTotal();
-
-        $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
-            order: $order,
-            profile: $profile,
-            product: $CurrentProductDTO->getProduct(),
-            offer: $CurrentProductDTO->getOfferConst(),
-            variation: $CurrentProductDTO->getVariationConst(),
-            modification: $CurrentProductDTO->getModificationConst(),
-        );
-
-        for($i = 1; $i <= $productTotal; $i++)
-        {
-            $SubProductStocksTotalMessage
-                ->setIterate($i);
-
-            $this->messageDispatch->dispatch(
-                message: $SubProductStocksTotalMessage,
-                stamps: [new MessageDelay('3 seconds')],
-                transport: 'products-stocks',
-            );
-
-            if($i === $product->getTotal())
-            {
-                break;
-            }
-        }
-    }
 }

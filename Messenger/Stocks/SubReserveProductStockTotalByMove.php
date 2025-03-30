@@ -31,10 +31,12 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
+use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -48,38 +50,62 @@ final readonly class SubReserveProductStockTotalByMove
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
-        private EntityManagerInterface $entityManager,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorage,
     ) {}
-
 
     public function __invoke(ProductStockMessage $message): void
     {
-        if($message->getLast() === null)
+        if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
             return;
         }
 
-        /** Получаем статус прошлого события заявки */
-        $ProductStockEventLast = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
-            ->find($message->getLast());
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                $message->getId(),
+                ProductStockStatusMoving::STATUS,
+                self::class
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        /**
+         * Получаем статус прошлого события заявки
+         */
+
+        $ProductStockEventLast = $this->ProductStocksEventRepository
+            ->forEvent($message->getLast())
+            ->find();
 
         /** Если статус предыдущего события заявки не является Moving «Перемещение» - завершаем обработчик*/
-        if(!$ProductStockEventLast || false === $ProductStockEventLast->equalsProductStockStatus(ProductStockStatusMoving::class))
+        if(
+            false === ($ProductStockEventLast instanceof ProductStockEvent) ||
+            false === $ProductStockEventLast->equalsProductStockStatus(ProductStockStatusMoving::class)
+        )
         {
             return;
         }
 
-        /** Получаем статус активного события заявки */
-        $ProductStockEvent = $this->entityManager
-            ->getRepository(ProductStockEvent::class)
-            ->find($message->getEvent());
+        /**
+         * Получаем статус активного события заявки
+         */
 
+        $ProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
 
         /** Если статус активного события не является Warehouse «Отправили на склад» */
-        if(!$ProductStockEvent || false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusWarehouse::class))
+        if(
+            false === ($ProductStockEvent instanceof ProductStockEvent) ||
+            false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusWarehouse::class)
+        )
         {
             return;
         }
@@ -93,19 +119,6 @@ final readonly class SubReserveProductStockTotalByMove
             return;
         }
 
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getId(),
-                ProductStockStatusMoving::STATUS,
-                md5(self::class)
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
         /** Идентификатор профиля склада отгрузки (из прошлого события!) */
         $UserProfileUid = $ProductStockEventLast->getStocksProfile();
 
@@ -113,21 +126,14 @@ final readonly class SubReserveProductStockTotalByMove
         foreach($products as $product)
         {
             $this->logger->info(
-                'Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции',
+                sprintf('%s: Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции', $ProductStockEvent->getNumber()),
                 [
                     self::class.':'.__LINE__,
-                    'number' => $ProductStockEvent->getNumber(),
-                    'event' => (string) $message->getEvent(),
-                    'profile' => (string) $ProductStockEvent->getStocksProfile(),
-                    'product' => (string) $product->getProduct(),
-                    'offer' => (string) $product->getOffer(),
-                    'variation' => (string) $product->getVariation(),
-                    'modification' => (string) $product->getModification(),
-                    'total' => $product->getTotal(),
+                    var_export($product, true)
                 ]
             );
 
-            /** Снимаем резерв и остаток на единицу продукции на складе грузоотправителя */
+            /** Снимаем резерв и остаток на складе грузоотправителя */
 
             $productTotal = $product->getTotal();
 
@@ -140,14 +146,48 @@ final readonly class SubReserveProductStockTotalByMove
                 modification: $product->getModification(),
             );
 
-            for($i = 1; $i <= $productTotal; $i++)
+            /** Поверяем количество мест складирования продукции на складе */
+
+            $storage = $this->CountProductStocksStorage
+                ->forProfile($UserProfileUid)
+                ->forProduct($product->getProduct())
+                ->forOffer($product->getOffer())
+                ->forVariation($product->getVariation())
+                ->forModification($product->getModification())
+                ->count();
+
+            /**
+             * Если на складе количество мест одно - обновляем сразу весь резерв
+             */
+
+            if($storage === 1)
             {
                 $SubProductStocksTotalMessage
-                    ->setIterate($i);
+                    ->setIterate(1)
+                    ->setTotal($product->getTotal());
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalMessage,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks-low',
+                );
+
+                continue;
+            }
+
+            /**
+             * Если на складе количество мест несколько - снимаем резерв на единицу продукции
+             * для резерва по местам от меньшего к большему
+             */
+
+            for($i = 1; $i <= $productTotal; $i++)
+            {
+                $SubProductStocksTotalMessage
+                    ->setIterate($i)
+                    ->setTotal(1);
+
+                $this->messageDispatch->dispatch(
+                    $SubProductStocksTotalMessage,
+                    transport: 'products-stocks-low'
                 );
 
                 if($i === $productTotal)

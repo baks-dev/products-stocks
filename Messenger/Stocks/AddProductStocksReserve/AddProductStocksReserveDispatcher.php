@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use Psr\Log\LoggerInterface;
@@ -48,7 +49,6 @@ final readonly class AddProductStocksReserveDispatcher
      */
     public function __invoke(AddProductStocksReserveMessage $message): bool
     {
-
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([$message, self::class]);
@@ -66,7 +66,7 @@ final readonly class AddProductStocksReserveDispatcher
             ->modificationConst($message->getModification())
             ->findOneBySubReserve();
 
-        if(!$ProductStockTotal)
+        if(false === ($ProductStockTotal instanceof ProductStockTotal))
         {
             $this->logger->critical(
                 'Не найдено продукции на складе для резервирования',
@@ -74,13 +74,12 @@ final readonly class AddProductStocksReserveDispatcher
             );
 
             return false;
-
         }
 
-        /** Добавляем в резерв единицу продукции */
+        /** Добавляем в резерв продукции */
         $rows = $this->addProductStock
-            ->total(null)
-            ->reserve(1)
+            ->total(false) // не обновляем остаток
+            ->reserve($message->getTotal())
             ->updateById($ProductStockTotal);
 
         if(empty($rows))

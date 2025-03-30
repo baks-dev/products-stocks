@@ -34,14 +34,15 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AddProductStocksReserveMessage
 {
+    private readonly string $stock;
     private readonly string $profile;
     private readonly string $product;
-    private readonly string $stock;
 
     private readonly string|false $offer;
     private readonly string|false $variation;
     private readonly string|false $modification;
 
+    private int $total;
     private int $iterate;
 
     public function __construct(
@@ -117,4 +118,20 @@ final class AddProductStocksReserveMessage
         $this->iterate = $iterate;
         return $this;
     }
+
+    /**
+     * Total
+     */
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,23 +33,23 @@ use InvalidArgumentException;
 
 final class SubProductStockRepository implements SubProductStockInterface
 {
-    private ?int $total = null;
+    private int|false $total = false;
 
-    private ?int $reserve = null;
+    private int|false $reserve = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /** Указываем количество снятия резерва */
-    public function reserve(?int $reserve): self
+    public function reserve(int|false $reserve): self
     {
         $this->reserve = $reserve ?: null;
         return $this;
     }
 
     /** Указываем количество снятия остатка */
-    public function total(?int $total): self
+    public function total(int|false $total): self
     {
-        $this->total = $total ?: null;
+        $this->total = $total ?: false;
         return $this;
     }
 
@@ -77,14 +77,22 @@ final class SubProductStockRepository implements SubProductStockInterface
         $dbal
             ->update(ProductStockTotal::class)
             ->where('id = :identifier')
-            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE);
+            ->setParameter(
+                key: 'identifier',
+                value: $id,
+                type: ProductStockTotalUid::TYPE
+            );
 
         /** Если указан остаток - снимаем */
         if($this->total)
         {
             $dbal
                 ->set('total', 'total - :total')
-                ->setParameter('total', $this->total, ParameterType::INTEGER);
+                ->setParameter(
+                    key: 'total',
+                    value: $this->total,
+                    type: ParameterType::INTEGER
+                );
 
             $dbal->andWhere('total != 0');
 
@@ -95,7 +103,11 @@ final class SubProductStockRepository implements SubProductStockInterface
         {
             $dbal
                 ->set('reserve', 'reserve - :reserve')
-                ->setParameter('reserve', $this->reserve, ParameterType::INTEGER);
+                ->setParameter(
+                    key: 'reserve',
+                    value: $this->reserve,
+                    type: ParameterType::INTEGER
+                );
 
             $dbal->andWhere('reserve != 0');
         }
@@ -125,7 +137,11 @@ final class SubProductStockRepository implements SubProductStockInterface
             ->where('id = :identifier')
             ->andWhere('total = 0')
             ->andWhere('reserve = 0')
-            ->setParameter('identifier', $id, ProductStockTotalUid::TYPE)
+            ->setParameter(
+                key: 'identifier',
+                value: $id,
+                type: ProductStockTotalUid::TYPE
+            )
             ->executeStatement();
     }
 }

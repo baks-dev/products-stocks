@@ -21,19 +21,29 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\UpdateProductStock;
+namespace BaksDev\Products\Stocks\Repository\CountProductStocksStorage;
 
-use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
-use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-interface AddProductStockInterface
+interface CountProductStocksStorageInterface
 {
-    /** Указываем количество снятия резерва */
-    public function reserve(int|false $reserve): self;
+    public function forProfile(UserProfileUid|string $profile): self;
 
-    /** Указываем количество снятия остатка */
-    public function total(int|false $total): self;
+    public function forProduct(ProductUid|string $product): self;
 
-    /** Метод ДОБАВЛЯЕТ к складскому учету резерв либо остаток */
-    public function updateById(ProductStockTotal|ProductStockTotalUid|string $id): int;
+    public function forOffer(ProductOfferConst|string|false|null $offer): self;
+
+    public function forVariation(ProductVariationConst|string|false|null $variation): self;
+
+    public function forModification(ProductModificationConst|string|false|null $modification): self;
+
+    /**
+     * Метод возвращает количество мест складирования продукции на указанном складе
+     */
+
+    public function count(): int;
 }

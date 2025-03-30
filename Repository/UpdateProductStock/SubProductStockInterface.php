@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,10 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 interface SubProductStockInterface
 {
     /** Указываем количество снятия резерва */
-    public function reserve(?int $reserve): self;
+    public function reserve(int|false $reserve): self;
 
     /** Указываем количество снятия остатка */
-    public function total(?int $total): self;
+    public function total(int|false $total): self;
 
     /** Метод СНИМАЕТ со складского учета резерв либо остаток */
     public function updateById(ProductStockTotal|ProductStockTotalUid|string $id): int;
