@@ -142,7 +142,7 @@ final readonly class AddReserveProductStocksTotalByMove
                     [
                         self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
-                        var_export($product, true),
+                        var_export($AddProductStocksReserve, true),
                     ]
                 );
 

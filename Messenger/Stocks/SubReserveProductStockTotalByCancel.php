@@ -142,7 +142,7 @@ final readonly class SubReserveProductStockTotalByCancel
                     [
                         self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
-                        var_export($product, true),
+                        var_export($SubProductStocksTotalCancelMessage, true),
                     ]
                 );
             }

@@ -163,7 +163,7 @@ final readonly class SubReserveProductStockTotalByMove
                     [
                         self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
-                        var_export($product, true),
+                        var_export($SubProductStocksTotalMessage, true),
                     ]
                 );
             }
