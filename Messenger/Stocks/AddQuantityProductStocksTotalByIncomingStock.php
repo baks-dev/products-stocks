@@ -30,6 +30,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
@@ -54,6 +55,9 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         private ProductStocksByIdInterface $productStocks,
         private EntityManagerInterface $entityManager,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CurrentProductStocksInterface $CurrentProductStocks,
+
+
         private UserByUserProfileInterface $userByUserProfile,
         private ProductStocksTotalStorageInterface $productStocksTotalStorage,
         private AddProductStockInterface $addProductStock,
@@ -105,8 +109,20 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         }
 
 
+        /**
+         * Определяем пользователя профилю в заявке
+         */
+
+        $CurrentProductStockEvent = $this->CurrentProductStocks
+            ->getCurrentEvent($message->getId());
+
+        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
         /** Идентификатор профиля склада при поступлении */
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

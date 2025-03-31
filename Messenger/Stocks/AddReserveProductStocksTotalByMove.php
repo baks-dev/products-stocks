@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
+use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
@@ -50,6 +51,7 @@ final readonly class AddReserveProductStocksTotalByMove
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksByIdInterface $productStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CurrentProductStocksInterface $CurrentProductStocks,
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
@@ -96,8 +98,21 @@ final readonly class AddReserveProductStocksTotalByMove
             return;
         }
 
-        /** Идентификатор профиля склада отгрузки */
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+
+        /**
+         * Определяем пользователя профилю в заявке
+         */
+
+        $CurrentProductStockEvent = $this->CurrentProductStocks
+            ->getCurrentEvent($message->getId());
+
+        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

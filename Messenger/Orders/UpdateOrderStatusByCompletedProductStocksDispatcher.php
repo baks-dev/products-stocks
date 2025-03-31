@@ -71,10 +71,10 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             return;
         }
 
-        /** @var ProductStockEvent $ProductStockEvent */
-        $ProductStockEvent = $this->CurrentProductStocks->getCurrentEvent($message->getId());
+        /** @var ProductStockEvent $CurrentProductStockEvent */
+        $CurrentProductStockEvent = $this->CurrentProductStocks->getCurrentEvent($message->getId());
 
-        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
@@ -82,17 +82,17 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         /**
          * Заказ обновляется только при условии, что заявка Completed «Выдан по месту назначения»
          */
-        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class))
+        if(false === $CurrentProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class))
         {
             return;
         }
 
-        if($ProductStockEvent->getMoveOrder() !== null)
+        if($CurrentProductStockEvent->getMoveOrder() !== null)
         {
             $this->logger
                 ->warning(
                     'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
-                    [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+                    [self::class.':'.__LINE__, 'number' => $CurrentProductStockEvent->getNumber()]
                 );
 
             return;
@@ -102,7 +102,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
          * Получаем событие заказа.
          */
         $OrderEvent = $this->currentOrderEvent
-            ->forOrder($ProductStockEvent->getOrder())
+            ->forOrder($CurrentProductStockEvent->getOrder())
             ->find();
 
         if(false === ($OrderEvent instanceof OrderEvent))
@@ -120,15 +120,18 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
          * Обновляем статус заказа на Completed «Выдан по месту назначения»
          * присваиваем идентификатор профиля, кто выполнил
          */
+
+        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $OrderEvent->getId(),
 
         )
-            ->setProfile($ProductStockEvent->getStocksProfile());
+            ->setProfile($UserProfileUid);
 
         $ModifyDTO = $OrderStatusDTO->getModify();
-        $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
+        $ModifyDTO->setUsr($CurrentProductStockEvent->getModifyUser());
 
         $handle = $this->OrderStatusHandler->handle($OrderStatusDTO);
 
@@ -146,16 +149,16 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
-            ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-            ->addData(['profile' => (string) $ProductStockEvent->getStocksProfile()])
+            ->addData(['order' => (string) $CurrentProductStockEvent->getOrder()])
+            ->addData(['profile' => (string) $UserProfileUid])
             ->send('orders');
 
         $this->logger->info(
             'Обновили статус заказа на Completed «Выдан по месту назначения»',
             [
                 self::class.':'.__LINE__,
-                'OrderUid' => (string) $ProductStockEvent->getOrder(),
-                'UserProfileUid' => (string) $ProductStockEvent->getStocksProfile()
+                'OrderUid' => (string) $CurrentProductStockEvent->getOrder(),
+                'UserProfileUid' => (string) $UserProfileUid
             ]
         );
 

@@ -36,6 +36,7 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -50,6 +51,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
     public function __construct(
         #[Target('ordersOrderLogger')] private LoggerInterface $logger,
         private CurrentProductStocksInterface $CurrentProductStocks,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentOrderEventInterface $currentOrderEvent,
         private OrderStatusHandler $OrderStatusHandler,
         private CentrifugoPublishInterface $CentrifugoPublish,
@@ -71,7 +73,9 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         }
 
         /** @var ProductStockEvent $ProductStockEvent */
-        $ProductStockEvent = $this->CurrentProductStocks->getCurrentEvent($message->getId());
+        $ProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getEvent())
+            ->find();
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
@@ -104,13 +108,25 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
+
+        $CurrentProductStockEvent = $this->CurrentProductStocks
+            ->getCurrentEvent($message->getId());
+
+        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
 
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusExtradition::class,
             $OrderEvent->getId()
         )
-            ->setProfile($ProductStockEvent->getStocksProfile());
+            ->setProfile($UserProfileUid);
+
 
         $ModifyDTO = $OrderStatusDTO->getModify();
         $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
@@ -132,7 +148,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         // Отправляем сокет для скрытия заказа у других менеджеров
         $this->CentrifugoPublish
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-            ->addData(['profile' => (string) $ProductStockEvent->getStocksProfile()])
+            ->addData(['profile' => (string) $UserProfileUid])
             ->send('orders');
 
 
@@ -141,7 +157,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             [
                 self::class.':'.__LINE__,
                 'order' => (string) $ProductStockEvent->getOrder(),
-                'profile' => (string) $ProductStockEvent->getStocksProfile()
+                'profile' => (string) $UserProfileUid
             ]
         );
 
