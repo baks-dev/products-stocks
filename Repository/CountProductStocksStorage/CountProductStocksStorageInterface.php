@@ -45,5 +45,5 @@ interface CountProductStocksStorageInterface
      * Метод возвращает количество мест складирования продукции на указанном складе
      */
 
-    public function count(): int;
+    public function count(): int|false;
 }

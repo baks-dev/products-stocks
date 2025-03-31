@@ -152,6 +152,18 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
                 ->forModification($CurrentProductDTO->getModificationConst())
                 ->count();
 
+            if(false === $storage)
+            {
+                $this->logger->critical(
+                    'Не найдено место складирования для полного списания продукции при выполненном заказе',
+                    [
+                        self::class.':'.__LINE__,
+                        'profile' => (string) $UserProfileUid,
+                        var_export($product, true),
+                    ]
+                );
+            }
+
             /**
              * Если на складе количество мест одно - обновляем сразу весь резерв
              */

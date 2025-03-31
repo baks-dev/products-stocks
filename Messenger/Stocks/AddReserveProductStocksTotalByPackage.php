@@ -125,6 +125,19 @@ final readonly class AddReserveProductStocksTotalByPackage
                 ->forModification($product->getModification())
                 ->count();
 
+            if(false === $storage)
+            {
+                $this->logger->critical(
+                    'Не найдено место складирования на складе для создания резерва при упаковке',
+                    [
+                        self::class.':'.__LINE__,
+                        'profile' => (string) $UserProfileUid,
+                        var_export($product, true),
+                    ]
+                );
+
+                continue;
+            }
 
             /**
              * Если на складе количество мест одно - обновляем сразу весь резерв

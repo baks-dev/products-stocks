@@ -135,6 +135,21 @@ final readonly class AddReserveProductStocksTotalByMove
                 ->forModification($product->getModification())
                 ->count();
 
+            if(false === $storage)
+            {
+                $this->logger->critical(
+                    'Не найдено место складирования на складе для создания резерва перемещения',
+                    [
+                        self::class.':'.__LINE__,
+                        'profile' => (string) $UserProfileUid,
+                        var_export($product, true),
+                    ]
+                );
+
+                continue;
+            }
+
+
             $productTotal = $product->getTotal();
 
             /**

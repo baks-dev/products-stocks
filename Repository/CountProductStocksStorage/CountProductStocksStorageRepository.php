@@ -130,7 +130,7 @@ final class CountProductStocksStorageRepository implements CountProductStocksSto
     /**
      * Метод возвращает количество мест складирования продукции
      */
-    public function count(): int
+    public function count(): int|false
     {
         if(false === ($this->profile instanceof UserProfileUid))
         {

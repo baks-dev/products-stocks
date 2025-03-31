@@ -156,6 +156,18 @@ final readonly class SubReserveProductStockTotalByMove
                 ->forModification($product->getModification())
                 ->count();
 
+            if(false === $storage)
+            {
+                $this->logger->critical(
+                    'Не найдено место складирования для списания резерва при перемещении',
+                    [
+                        self::class.':'.__LINE__,
+                        'profile' => (string) $UserProfileUid,
+                        var_export($product, true),
+                    ]
+                );
+            }
+
             /**
              * Если на складе количество мест одно - обновляем сразу весь резерв
              */

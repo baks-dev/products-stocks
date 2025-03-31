@@ -135,6 +135,18 @@ final readonly class SubReserveProductStockTotalByCancel
                 ->count();
 
 
+            if(false === $storage)
+            {
+                $this->logger->critical(
+                    'Не найдено место складирования на складе для списания резерва при отмене',
+                    [
+                        self::class.':'.__LINE__,
+                        'profile' => (string) $UserProfileUid,
+                        var_export($product, true),
+                    ]
+                );
+            }
+
             /**
              * Если на складе количество мест одно - снимаем сразу весь резерв
              */
