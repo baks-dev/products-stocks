@@ -104,7 +104,10 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning(
+                'Заявка не имеет продукции в коллекции',
+                [self::class.':'.__LINE__, var_export($message, true),]
+            );
             return;
         }
 
@@ -175,8 +178,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     'Место складирования не найдено! Создали новое место для указанной продукции',
                     [
                         self::class.':'.__LINE__,
-                        'profile' => (string) $UserProfileUid,
-                        var_export($product, true)
+                        'profile' => (string) $UserProfileUid
                     ]
                 );
             }

@@ -125,13 +125,6 @@ final readonly class SubReserveProductStockTotalByMove
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-            $this->logger->info(
-                sprintf('%s: Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции', $ProductStockEvent->getNumber()),
-                [
-                    self::class.':'.__LINE__,
-                    var_export($product, true)
-                ]
-            );
 
             /** Снимаем резерв и остаток на складе грузоотправителя */
 
@@ -144,6 +137,14 @@ final readonly class SubReserveProductStockTotalByMove
                 offer: $product->getOffer(),
                 variation: $product->getVariation(),
                 modification: $product->getModification(),
+            );
+
+            $this->logger->info(
+                sprintf('%s: Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции', $ProductStockEvent->getNumber()),
+                [
+                    self::class.':'.__LINE__,
+                    var_export($SubProductStocksTotalMessage, true)
+                ]
             );
 
             /** Поверяем количество мест складирования продукции на складе */
