@@ -222,9 +222,9 @@ class ProductStockEvent extends EntityEvent
     /**
      * Идентификатор ответственного.
      */
-    public function getStocksProfile(): UserProfileUid
+    public function getStocksProfile(): ?UserProfileUid
     {
-        return $this->invariable->getProfile();
+        return $this->invariable?->getProfile();
     }
 
     /**

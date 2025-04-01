@@ -37,6 +37,7 @@ use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterf
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -97,7 +98,10 @@ final readonly class SubReserveProductStockTotalByCancel
 
         if(empty($products))
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning('Заявка не имеет продукции в коллекции', [
+                self::class.':'.__LINE__,
+                var_export($message, true)
+            ]);
             return;
         }
 
@@ -106,26 +110,30 @@ final readonly class SubReserveProductStockTotalByCancel
          * Определяем пользователя профилю в заявке
          */
 
-        $CurrentProductStockEvent = $this->CurrentProductStocks
-            ->getCurrentEvent($message->getId());
-
-        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
         {
-            return;
+            $ProductStockEvent = $this->CurrentProductStocks
+                ->getCurrentEvent($message->getId());
+
+            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            {
+                return;
+            }
         }
 
+
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
-        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
             $this->logger->info(
-                'Отменяем резерв на складе при отмене складской заявки',
+                sprintf('%s: Отменяем резерв на складе при отмене складской заявки', $ProductStockEvent->getNumber()),
                 [
                     self::class.':'.__LINE__,
-                    'number' => $ProductStockEvent->getNumber(),
+                    var_export($message, true)
                 ]
             );
 
@@ -153,11 +161,10 @@ final readonly class SubReserveProductStockTotalByCancel
             if(false === $storage)
             {
                 $this->logger->critical(
-                    'Не найдено место складирования на складе для списания резерва при отмене',
+                    sprintf('%s: Не найдено место складирования на складе для списания резерва при отмене', $ProductStockEvent->getNumber()),
                     [
                         self::class.':'.__LINE__,
-                        'profile' => (string) $UserProfileUid,
-                        var_export($SubProductStocksTotalCancelMessage, true),
+                        var_export($message, true),
                     ]
                 );
             }

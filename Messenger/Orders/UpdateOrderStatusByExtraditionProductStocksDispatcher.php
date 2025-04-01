@@ -38,6 +38,7 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -52,7 +53,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         #[Target('ordersOrderLogger')] private LoggerInterface $logger,
         private CurrentProductStocksInterface $CurrentProductStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentOrderEventInterface $currentOrderEvent,
+        private CurrentOrderEventInterface $CurrentOrderEvent,
         private OrderStatusHandler $OrderStatusHandler,
         private CentrifugoPublishInterface $CentrifugoPublish,
         private DeduplicatorInterface $deduplicator,
@@ -96,34 +97,51 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
+
+        /** Получаем активное событие заявки на случай, если профиль не определен */
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        {
+            $ProductStockEvent = $this->CurrentProductStocks
+                ->getCurrentEvent($message->getId());
+
+            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            {
+                return;
+            }
+        }
+
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        {
+            $this->logger->critical(
+                'products-stocks: Профиль пользователя складской заявки не найден',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
+            return;
+        }
+
+
         /**
-         * Получаем событие заказа.
+         * Получаем активное событие заказа.
          */
-        $OrderEvent = $this->currentOrderEvent
+
+        $CurrentOrderEvent = $this->CurrentOrderEvent
             ->forOrder($ProductStockEvent->getOrder())
             ->find();
 
-        if(false === ($OrderEvent instanceof OrderEvent))
+        if(false === ($CurrentOrderEvent instanceof OrderEvent))
         {
             return;
         }
 
-
-        $CurrentProductStockEvent = $this->CurrentProductStocks
-            ->getCurrentEvent($message->getId());
-
-        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
-        {
-            return;
-        }
-
-        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
 
-        $OrderStatusDTO = new OrderStatusDTO(
-            OrderStatusExtradition::class,
-            $OrderEvent->getId()
+        $OrderStatusDTO = new OrderStatusDTO
+        (
+            status: OrderStatusExtradition::class,
+            id: $CurrentOrderEvent->getId()
         )
             ->setProfile($UserProfileUid);
 

@@ -66,7 +66,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                OrderStatusCompleted::STATUS,
                 self::class
             ]);
 

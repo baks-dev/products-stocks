@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocks
 use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -95,20 +96,19 @@ final readonly class AddReserveProductStocksTotalByPackage
         }
 
 
-        /**
-         * Определяем пользователя профилю в заявке
-         */
-
-        $CurrentProductStockEvent = $this->CurrentProductStocks
-            ->getCurrentEvent($message->getId());
-
-        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        /** Получаем текущее состояние заявки, в случае если событие изменилось  */
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
         {
-            return;
+            $ProductStockEvent = $this->CurrentProductStocks
+                ->getCurrentEvent($message->getId());
+
+            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            {
+                return;
+            }
         }
 
-        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
-
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

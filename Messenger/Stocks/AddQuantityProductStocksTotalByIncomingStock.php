@@ -37,6 +37,7 @@ use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTo
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
@@ -56,14 +57,11 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         private EntityManagerInterface $entityManager,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentProductStocksInterface $CurrentProductStocks,
-
-
         private UserByUserProfileInterface $userByUserProfile,
         private ProductStocksTotalStorageInterface $productStocksTotalStorage,
         private AddProductStockInterface $addProductStock,
         private DeduplicatorInterface $deduplicator,
     ) {}
-
 
     public function __invoke(ProductStockMessage $message): void
     {
@@ -71,7 +69,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                ProductStockStatusIncoming::STATUS,
                 md5(self::class)
             ]);
 
@@ -79,7 +76,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         {
             return;
         }
-
 
         /** Получаем статус заявки */
         $ProductStockEvent = $this->ProductStocksEventRepository
@@ -111,21 +107,20 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             return;
         }
 
-
-        /**
-         * Определяем пользователя профилю в заявке
-         */
-
-        $CurrentProductStockEvent = $this->CurrentProductStocks
-            ->getCurrentEvent($message->getId());
-
-        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        /** Получаем текущее состояние заявки, в случае если событие изменилось  */
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
         {
-            return;
+            $ProductStockEvent = $this->CurrentProductStocks
+                ->getCurrentEvent($message->getId());
+
+            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            {
+                return;
+            }
         }
 
         /** Идентификатор профиля склада при поступлении */
-        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
