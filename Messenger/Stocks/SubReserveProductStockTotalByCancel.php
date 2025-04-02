@@ -33,7 +33,6 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
-use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
@@ -50,7 +49,6 @@ final readonly class SubReserveProductStockTotalByCancel
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private ProductStocksByIdInterface $productStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentProductStocksInterface $CurrentProductStocks,
         private CountProductStocksStorageInterface $CountProductStocksStorage,

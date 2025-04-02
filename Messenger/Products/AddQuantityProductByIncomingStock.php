@@ -32,7 +32,6 @@ use BaksDev\Products\Product\Repository\UpdateProductQuantity\AddProductQuantity
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Repository\ProductStocksById\ProductStocksByIdInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use Psr\Log\LoggerInterface;
@@ -50,7 +49,6 @@ final readonly class AddQuantityProductByIncomingStock
         private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
         private AddProductQuantityInterface $addProductQuantity,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private ProductStocksByIdInterface $productStocks,
         private DeduplicatorInterface $deduplicator,
     ) {}
 
