@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\SubProductQuantityInterface;
@@ -90,17 +91,20 @@ final readonly class SubReserveProductByProductStockCancel
         }
 
         /** Если заявка по заказу - не снимаем резерв (будет снят при отмене заказа) */
-        if($ProductStockEvent->getOrder())
+        if($ProductStockEvent->getOrder() instanceof OrderUid)
         {
             return;
         }
 
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
-        $products = $this->productStocks->getProductsCancelStocks($message->getId());
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning(
+                'Заявка не имеет продукции в коллекции',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
             return;
         }
 

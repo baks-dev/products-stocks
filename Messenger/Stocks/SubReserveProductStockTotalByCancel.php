@@ -77,7 +77,6 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        /** Активный статус складской заявки */
         $ProductStockEvent = $this->ProductStocksEventRepository
             ->forEvent($message->getEvent())
             ->find();
@@ -93,15 +92,16 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
-        $products = $this->productStocks->getProductsCancelStocks($message->getId());
+        // Получаем всю продукцию в заявке
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
             $this->logger->warning('Заявка не имеет продукции в коллекции', [
                 self::class.':'.__LINE__,
                 var_export($message, true)
             ]);
+
             return;
         }
 

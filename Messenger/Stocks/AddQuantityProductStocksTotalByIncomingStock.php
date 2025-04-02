@@ -96,9 +96,9 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         }
 
         // Получаем всю продукцию в ордере со статусом Incoming
-        $products = $this->productStocks->getProductsIncomingStocks($message->getId());
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',

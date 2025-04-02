@@ -49,7 +49,6 @@ final readonly class SubReserveProductStockTotalByMove
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private ProductStocksByIdInterface $productStocks,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
         private ProductStocksEventInterface $ProductStocksEventRepository,
@@ -84,11 +83,13 @@ final readonly class SubReserveProductStockTotalByMove
             ->forEvent($message->getLast())
             ->find();
 
+        if(false === ($ProductStockEventLast instanceof ProductStockEvent))
+        {
+            return;
+        }
+
         /** Если статус предыдущего события заявки не является Moving «Перемещение» - завершаем обработчик*/
-        if(
-            false === ($ProductStockEventLast instanceof ProductStockEvent) ||
-            false === $ProductStockEventLast->equalsProductStockStatus(ProductStockStatusMoving::class)
-        )
+        if(false === $ProductStockEventLast->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
@@ -101,26 +102,34 @@ final readonly class SubReserveProductStockTotalByMove
             ->forEvent($message->getEvent())
             ->find();
 
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
         /** Если статус активного события не является Warehouse «Отправили на склад» */
-        if(
-            false === ($ProductStockEvent instanceof ProductStockEvent) ||
-            false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusWarehouse::class)
-        )
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusWarehouse::class))
         {
             return;
         }
 
         // Получаем всю продукцию в заявке которая перемещается со склада
-        $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning(
+                'Заявка не имеет продукции в коллекции',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
             return;
         }
 
+
         /** Идентификатор профиля склада отгрузки (из прошлого события!) */
         $UserProfileUid = $ProductStockEventLast->getStocksProfile();
+
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

@@ -85,14 +85,17 @@ final readonly class AddQuantityProductByIncomingStock
         }
 
         // Получаем всю продукцию в ордере со статусом Incoming
-        $products = $this->productStocks->getProductsIncomingStocks($message->getId());
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning(
+                'Заявка не имеет продукции в коллекции',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
             return;
         }
-
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

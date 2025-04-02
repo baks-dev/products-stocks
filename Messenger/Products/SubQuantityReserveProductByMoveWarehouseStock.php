@@ -49,7 +49,6 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
 {
     public function __construct(
         #[Target('productsProductLogger')] private LoggerInterface $logger,
-        private ProductStocksByIdInterface $productStocks,
         private ProductModificationQuantityInterface $modificationQuantity,
         private ProductVariationQuantityInterface $variationQuantity,
         private ProductOfferQuantityInterface $offerQuantity,
@@ -71,17 +70,17 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         }
 
         /** Получаем предыдущий статус заявки */
-        $lastProductStockEvent = $this->entityManager
+        $ProductStockEvent = $this->entityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getLast());
 
-        if(false === ($lastProductStockEvent instanceof ProductStockEvent))
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return;
         }
 
         // Если предыдущий Статус не является Moving «Перемещение»
-        if(false === $lastProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
+        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
@@ -89,14 +88,13 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         // Получаем всю продукцию в ордере которая перемещается со склада
         // Если поступила отмена заявки - массив продукции будет NULL
         /** @see SubReserveMaterialStockTotalByCancel */
-        $products = $this->productStocks->getProductsWarehouseStocks($message->getId());
+        $products = $ProductStockEvent->getProduct();
 
-        if(empty($products))
+        if($products->isEmpty())
         {
             $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
-
 
         $Deduplicator = $this->deduplicator
             ->namespace('products-stocks')
@@ -110,8 +108,6 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         {
             return;
         }
-
-        $this->entityManager->clear();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
