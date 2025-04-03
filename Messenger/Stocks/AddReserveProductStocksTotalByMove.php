@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
@@ -36,6 +35,7 @@ use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductSto
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -63,7 +63,7 @@ final readonly class AddReserveProductStocksTotalByMove
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusMoving::STATUS,
-                md5(self::class)
+                self::class
             ]);
 
         if($Deduplicator->isExecuted())
@@ -87,12 +87,17 @@ final readonly class AddReserveProductStocksTotalByMove
             return;
         }
 
-        // Получаем всю продукцию в ордере со статусом Moving (перемещение)
-        $products = $this->productStocks->getProductsMovingStocks($message->getId());
 
-        if(empty($products))
+        // Получаем всю продукцию в ордере со статусом Moving (перемещение)
+        $products = $ProductStockEvent->getProduct();
+
+        if($products->isEmpty())
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            $this->logger->warning(
+                'Заявка не имеет продукции в коллекции',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
             return;
         }
 
@@ -101,16 +106,19 @@ final readonly class AddReserveProductStocksTotalByMove
          * Определяем пользователя профилю в заявке
          */
 
-        $CurrentProductStockEvent = $this->CurrentProductStocks
-            ->getCurrentEvent($message->getId());
 
-        if(false === ($CurrentProductStockEvent instanceof ProductStockEvent))
+        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
         {
-            return;
+            $ProductStockEvent = $this->CurrentProductStocks
+                ->getCurrentEvent($message->getId());
+
+            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            {
+                return;
+            }
         }
 
-        $UserProfileUid = $CurrentProductStockEvent->getStocksProfile();
-
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
