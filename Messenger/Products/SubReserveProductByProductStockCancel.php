@@ -27,8 +27,8 @@ namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\SubProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
@@ -125,7 +125,7 @@ final readonly class SubReserveProductByProductStockCancel
             ->find();
 
 
-        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+        if(false === ($CurrentProductDTO instanceof CurrentProductIdentifierResult))
         {
             $this->logger->critical(
                 'products-stocks: Невозможно отменить общий резерв (карточка не найдена)',

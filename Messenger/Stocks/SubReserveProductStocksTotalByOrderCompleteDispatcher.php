@@ -34,8 +34,8 @@ use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
@@ -112,14 +112,14 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
              * @note: в заказе идентификаторы события, для склада необходимы константы
              */
 
-            $CurrentProductDTO = $this->CurrentProductIdentifier
+            $CurrentProductIdentifier = $this->CurrentProductIdentifier
                 ->forEvent($product->getProduct())
                 ->forOffer($product->getOffer())
                 ->forVariation($product->getVariation())
                 ->forModification($product->getModification())
                 ->find();
 
-            if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+            if(false === ($CurrentProductIdentifier instanceof CurrentProductIdentifierResult))
             {
                 $this->logger->critical(
                     'products-stocks: Невозможно снять резерв и остаток на складе (карточка не найдена)',
@@ -134,10 +134,10 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             $SubProductStocksTotalMessage = new SubProductStocksTotalAndReserveMessage(
                 order: $message->getId(),
                 profile: $UserProfileUid,
-                product: $CurrentProductDTO->getProduct(),
-                offer: $CurrentProductDTO->getOfferConst(),
-                variation: $CurrentProductDTO->getVariationConst(),
-                modification: $CurrentProductDTO->getModificationConst(),
+                product: $CurrentProductIdentifier->getProduct(),
+                offer: $CurrentProductIdentifier->getOfferConst(),
+                variation: $CurrentProductIdentifier->getVariationConst(),
+                modification: $CurrentProductIdentifier->getModificationConst(),
             );
 
 
@@ -145,10 +145,10 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 
             $storage = $this->CountProductStocksStorage
                 ->forProfile($UserProfileUid)
-                ->forProduct($CurrentProductDTO->getProduct())
-                ->forOffer($CurrentProductDTO->getOfferConst())
-                ->forVariation($CurrentProductDTO->getVariationConst())
-                ->forModification($CurrentProductDTO->getModificationConst())
+                ->forProduct($CurrentProductIdentifier->getProduct())
+                ->forOffer($CurrentProductIdentifier->getOfferConst())
+                ->forVariation($CurrentProductIdentifier->getVariationConst())
+                ->forModification($CurrentProductIdentifier->getModificationConst())
                 ->count();
 
             if(false === $storage)

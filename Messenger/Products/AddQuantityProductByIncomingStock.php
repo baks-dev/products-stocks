@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Product\Repository\UpdateProductQuantity\AddProductQuantityInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
@@ -114,7 +114,7 @@ final readonly class AddQuantityProductByIncomingStock
             ->forModificationConst($product->getModification())
             ->find();
 
-        if(false === ($CurrentProductDTO instanceof CurrentProductDTO))
+        if(false === ($CurrentProductDTO instanceof CurrentProductIdentifierResult))
         {
             $this->logger->critical(
                 'products-stocks: Невозможно пополнить общий остаток (карточка не найдена)',
