@@ -50,7 +50,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 {
     public function __construct(
-        #[Target('ordersOrderLogger')] private LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentProductStocksInterface $CurrentProductStocks,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentOrderEventInterface $CurrentOrderEvent,
@@ -108,18 +108,17 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             {
                 return;
             }
+
+            if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+            {
+                $this->logger->critical(
+                    'products-stocks: Профиль пользователя складской заявки не найден',
+                    [self::class.':'.__LINE__, var_export($message, true)]
+                );
+
+                return;
+            }
         }
-
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
-        {
-            $this->logger->critical(
-                'products-stocks: Профиль пользователя складской заявки не найден',
-                [self::class.':'.__LINE__, var_export($message, true)]
-            );
-
-            return;
-        }
-
 
         /**
          * Получаем активное событие заказа.
@@ -134,9 +133,13 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
-        /** Обновляем статус заказа на "Собран, готов к отправке" (Extradition) */
+        $this->logger->info(
+            'Обновляем статус заказа на "Собран, готов к отправке" (Extradition)',
+            [self::class.':'.__LINE__]
+        );
+
+        $UserProfileUid = $ProductStockEvent->getStocksProfile();
 
         $OrderStatusDTO = new OrderStatusDTO
         (

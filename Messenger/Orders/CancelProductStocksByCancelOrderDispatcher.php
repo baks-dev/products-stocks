@@ -76,6 +76,11 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 
         if(false === ($OrderEvent instanceof OrderEvent))
         {
+            $this->logger->critical(
+                'products-stocks: Не найдено событие OrderEvent',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
             return;
         }
 
