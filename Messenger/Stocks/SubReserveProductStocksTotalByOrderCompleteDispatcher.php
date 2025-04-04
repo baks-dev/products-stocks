@@ -32,13 +32,13 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Repository\OrderEvent\OrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusCompleted;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
-use BaksDev\Products\Stocks\Repository\ProductWarehouseByOrder\ProductWarehouseByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -52,8 +52,8 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
+        private OrderEventInterface $OrderEventRepository,
         private CurrentOrderEventInterface $CurrentOrderEvent,
-        private ProductWarehouseByOrderInterface $warehouseByOrder,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
         private CurrentProductIdentifierInterface $CurrentProductIdentifier,
@@ -74,10 +74,8 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             return;
         }
 
-
-        $OrderEvent = $this->CurrentOrderEvent
-            ->forOrder($message->getId())
-            ->find();
+        $OrderEvent = $this->OrderEventRepository
+            ->find($message->getEvent());
 
         if(false === ($OrderEvent instanceof OrderEvent))
         {
@@ -90,19 +88,36 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             return;
         }
 
-        /**
-         * Получаем склад (профиль), на который была отправлена заявка для сборки по идентификатору заказа.
-         *
-         * @var UserProfileUid $UserProfileUid
-         */
-        $UserProfileUid = $this->warehouseByOrder
-            ->forOrder($message->getId())
-            ->getWarehouseByOrder();
-
-        if(false === ($UserProfileUid instanceof UserProfileUid))
+        /** Получаем текущее состояние заказа, в случае если событие изменилось  */
+        if(false === ($OrderEvent->getOrderProfile() instanceof UserProfileUid))
         {
+            $OrderEvent = $this->CurrentOrderEvent
+                ->forOrder($message->getId())
+                ->find();
+
+            if(false === ($OrderEvent instanceof OrderEvent))
+            {
+                $this->logger->critical(
+                    'products-stocks: Не найдено событие OrderEvent',
+                    [self::class.':'.__LINE__, var_export($message, true)]
+                );
+
+                return;
+            }
+        }
+
+
+        if($OrderEvent->getProduct()->isEmpty())
+        {
+            $this->logger->critical(
+                'products-stocks: Не найдено продукции в заказе',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
             return;
         }
+
+        $UserProfileUid = $OrderEvent->getOrderProfile();
 
         /** @var OrderProduct $product */
         foreach($OrderEvent->getProduct() as $product)
@@ -111,7 +126,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
              * Получаем идентификаторы карточки
              * @note: в заказе идентификаторы события, для склада необходимы константы
              */
-
             $CurrentProductIdentifier = $this->CurrentProductIdentifier
                 ->forEvent($product->getProduct())
                 ->forOffer($product->getOffer())
