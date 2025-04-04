@@ -50,7 +50,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 {
     public function __construct(
-        #[Target('ordersOrderLogger')] private LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentProductStocksInterface $CurrentProductStocks,
         private CurrentOrderEventInterface $CurrentOrderEvent,
