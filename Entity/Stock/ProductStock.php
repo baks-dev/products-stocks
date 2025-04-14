@@ -53,7 +53,8 @@ class ProductStock
 
     public function __construct(AbstractUid|string|null $id = null)
     {
-        $this->id = clone new ProductStockUid($id);
+        //$this->id = clone new ProductStockUid($id);
+        $this->id = new ProductStockUid($id);
     }
 
     public function __toString(): string
