@@ -23,7 +23,9 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse\Tests;
 
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\User\Tests\TestUserAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -42,13 +44,18 @@ final class WarehouseControllerTest extends WebTestCase
 
     private const string ROLE = 'ROLE_PRODUCT_STOCK_WAREHOUSE_SEND';
 
-    //    private static ?ProductStockEventUid $identifier;
+    private static ?ProductStockEventUid $identifier;
 
-    //    public static function setUpBeforeClass(): void
-    //    {
-    //        $em = self::getContainer()->get(EntityManagerInterface::class);
-    //        self::$identifier = $em->getRepository(ProductStock::class)->findOneBy([], ['id' => 'DESC'])?->getEvent();
-    //    }
+    public static function setUpBeforeClass(): void
+    {
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $ProductStock = $em
+            ->getRepository(ProductStock::class)
+            ->find(ProductStockUid::TEST);
+
+        self::$identifier = $ProductStock->getEvent();
+    }
 
     /** Доступ по роли */
     public function testRoleSuccessful(): void
@@ -59,7 +66,7 @@ final class WarehouseControllerTest extends WebTestCase
         $usr = TestUserAccount::getModer(self::ROLE);
 
         $client->loginUser($usr, 'user');
-        $client->request('GET', sprintf(self::URL, ProductStockEventUid::TEST));
+        $client->request('GET', sprintf(self::URL, self::$identifier));
 
         self::assertResponseIsSuccessful();
 
@@ -75,7 +82,7 @@ final class WarehouseControllerTest extends WebTestCase
         $usr = TestUserAccount::getAdmin();
 
         $client->loginUser($usr, 'user');
-        $client->request('GET', sprintf(self::URL, ProductStockEventUid::TEST));
+        $client->request('GET', sprintf(self::URL, self::$identifier));
 
         self::assertResponseIsSuccessful();
 
@@ -91,7 +98,7 @@ final class WarehouseControllerTest extends WebTestCase
         $usr = TestUserAccount::getUsr();
 
         $client->loginUser($usr, 'user');
-        $client->request('GET', sprintf(self::URL, ProductStockEventUid::TEST));
+        $client->request('GET', sprintf(self::URL, self::$identifier));
 
         self::assertResponseStatusCodeSame(403);
 
@@ -103,7 +110,7 @@ final class WarehouseControllerTest extends WebTestCase
 
         self::ensureKernelShutdown();
         $client = static::createClient();
-        $client->request('GET', sprintf(self::URL, ProductStockEventUid::TEST));
+        $client->request('GET', sprintf(self::URL, self::$identifier));
 
         // Full authentication is required to access this resource
         self::assertResponseStatusCodeSame(401);
