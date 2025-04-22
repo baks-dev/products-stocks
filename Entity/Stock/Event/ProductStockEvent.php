@@ -63,8 +63,6 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: ProductStockUid::TYPE, nullable: false)]
     private ?ProductStockUid $main = null;
 
-
-
     /** Статус заявки */
     #[Assert\NotBlank]
     #[ORM\Column(type: ProductStockStatus::TYPE)]
@@ -103,7 +101,7 @@ class ProductStockEvent extends EntityEvent
     /**
      * Постоянная величина
      */
-    #[ORM\OneToOne(targetEntity: ProductStocksInvariable::class, mappedBy: 'event', cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: ProductStocksInvariable::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?ProductStocksInvariable $invariable = null;
 
 

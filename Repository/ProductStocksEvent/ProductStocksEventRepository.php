@@ -60,7 +60,6 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
         return $this;
     }
 
-
     /**
      * Метод возвращает объект события складской заявки
      */
@@ -73,7 +72,8 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
 
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $orm->select('event')
+        $orm
+            ->select('event')
             ->from(ProductStockEvent::class, 'event')
             ->where('event.id = :event')
             ->setParameter(
@@ -82,6 +82,8 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
                 type: ProductStockEventUid::TYPE
             );
 
-        return $orm->getQuery()->getOneOrNullResult() ?: false;
+        return $orm
+            ->enableCache('products-stocks', '1 day')
+            ->getOneOrNullResult() ?: false;
     }
 }
