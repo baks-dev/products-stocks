@@ -161,24 +161,35 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
 
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $orm->select('stock');
-
-        $orm->from(ProductStockTotal::class, 'stock');
+        $orm
+            ->select('stock')
+            ->from(ProductStockTotal::class, 'stock');
 
         $orm
             ->andWhere('stock.profile = :profile')
-            ->setParameter('profile', $this->profile, UserProfileUid::TYPE);
+            ->setParameter(
+                key: 'profile',
+                value: $this->profile,
+                type: UserProfileUid::TYPE
+            );
 
         $orm
             ->andWhere('stock.product = :product')
-            ->setParameter('product', $this->product, ProductUid::TYPE);
+            ->setParameter(
+                key: 'product',
+                value: $this->product,
+                type: ProductUid::TYPE
+            );
 
 
         if($this->storage)
         {
             $orm
                 ->andWhere('LOWER(stock.storage) = :storage')
-                ->setParameter('storage', $this->storage);
+                ->setParameter(
+                    key: 'storage',
+                    value: $this->storage
+                );
         }
         else
         {
@@ -189,7 +200,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         {
             $orm
                 ->andWhere('stock.offer = :offer')
-                ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->offer,
+                    type: ProductOfferConst::TYPE
+                );
         }
         else
         {
@@ -200,7 +215,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         {
             $orm
                 ->andWhere('stock.variation = :variation')
-                ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->variation,
+                    type: ProductVariationConst::TYPE
+                );
         }
         else
         {
@@ -211,7 +230,11 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
         {
             $orm
                 ->andWhere('stock.modification = :modification')
-                ->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
+                ->setParameter(
+                    key: 'modification',
+                    value: $this->modification,
+                    type: ProductModificationConst::TYPE
+                );
         }
         else
         {

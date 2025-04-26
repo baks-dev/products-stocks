@@ -61,7 +61,7 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
     }
 
     /**
-     * Метод возвращает объект события складской заявки
+     * Метод возвращает кешированный объект события складской заявки
      */
     public function find(): ProductStockEvent|false
     {

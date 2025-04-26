@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ final class CurrentProductStocksRepository implements CurrentProductStocksInterf
     public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
 
     /**
-     * Метод возвращает активное событие
+     * Метод возвращает активное событие складской заявки
      */
     public function getCurrentEvent(ProductStockUid $stock): ?ProductStockEvent
     {
@@ -55,6 +55,6 @@ final class CurrentProductStocksRepository implements CurrentProductStocksInterf
                 'event.id = main.event'
             );
 
-        return $qb->getQuery()->getOneOrNullResult();
+        return $qb->getOneOrNullResult();
     }
 }

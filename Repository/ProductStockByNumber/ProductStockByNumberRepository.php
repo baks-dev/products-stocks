@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ final readonly class ProductStockByNumberRepository implements ProductStockByNum
     public function __construct(private ORMQueryBuilder $ORMQueryBuilder) {}
 
     /**
-     * Метод возвращает складскую заявку номеру
+     * Метод возвращает активное событие складской заявки по номеру
      */
     public function find(string $number): ProductStockEvent|false
     {
@@ -45,7 +45,10 @@ final readonly class ProductStockByNumberRepository implements ProductStockByNum
         $qb
             ->from(ProductStocksInvariable::class, 'invariable')
             ->where('invariable.number = :number')
-            ->setParameter('number', $number);
+            ->setParameter(
+                key: 'number',
+                value: $number
+            );
 
         $qb->join(
             ProductStock::class,

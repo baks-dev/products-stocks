@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,9 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
     }
 
 
-    /** Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе */
+    /**
+     * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
+     */
     public function getProductsByWarehouse(ContactsRegionCallUid $warehouse): ?array
     {
         $qb = $this
@@ -113,7 +115,11 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
         $qb->where('stock.warehouse = :warehouse');
         $qb->andWhere('stock.total > 0');
 
-        $qb->setParameter('warehouse', $warehouse, ContactsRegionCallUid::TYPE);
+        $qb->setParameter(
+            key: 'warehouse',
+            value: $warehouse,
+            type: ContactsRegionCallUid::TYPE
+        );
 
         $qb->groupBy('stock.product');
         $qb->addGroupBy('trans.name');
@@ -133,8 +139,6 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
             'trans.event = product.event AND trans.local = :local'
         );
 
-
-        /* Кешируем результат ORM */
-        return $qb->enableCache('products-stocks', 86400)->getResult();
+        return $qb->getResult();
     }
 }

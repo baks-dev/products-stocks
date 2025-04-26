@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -53,9 +53,14 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
 
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $orm->select('event');
-
-        $orm->from(ProductStockOrder::class, 'ord');
+        $orm
+            ->from(ProductStockOrder::class, 'ord')
+            ->where('ord.ord = :ord')
+            ->setParameter(
+                key: 'ord',
+                value: $order,
+                type: OrderUid::TYPE
+            );
 
         $orm->join(
             ProductStock::class,
@@ -64,16 +69,15 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
             'stock.event = ord.event'
         );
 
-        $orm->join(
+        $orm
+            ->select('event')
+            ->join(
             ProductStockEvent::class,
             'event',
             'WITH',
             'event.id = stock.event'
         );
 
-        $orm->where('ord.ord = :ord');
-
-        $orm->setParameter('ord', $order, OrderUid::TYPE);
 
         return $orm->getResult();
     }
