@@ -59,7 +59,7 @@ final class WarehouseProductStocksInvariableForm extends AbstractType
 
                 $profiles = $this->userProfileChoice->getActiveUserProfile($UserUid);
 
-                if(count($profiles) === 1)
+                if($profiles && count($profiles) === 1)
                 {
                     $data->setProfile(current($profiles));
                 }
