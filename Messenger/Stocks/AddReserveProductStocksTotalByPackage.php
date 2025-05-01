@@ -147,9 +147,9 @@ final readonly class AddReserveProductStocksTotalByPackage
                 $this->logger->critical(
                     'Не найдено место складирования на складе для создания резерва при упаковке',
                     [
-                        self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
                         var_export($AddProductStocksReserve, true),
+                        self::class.':'.__LINE__,
                     ]
                 );
 

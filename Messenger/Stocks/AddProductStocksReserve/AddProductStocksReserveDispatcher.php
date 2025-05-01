@@ -70,7 +70,14 @@ final readonly class AddProductStocksReserveDispatcher
         {
             $this->logger->critical(
                 'Не найдено продукции на складе для резервирования',
-                [$message, self::class.':'.__LINE__,]
+                [
+                    'UserProfileUid' => (string) $message->getProfile(),
+                    'ProductUid' => (string) $message->getProduct(),
+                    'ProductOfferConst' => (string) $message->getOffer(),
+                    'ProductVariationConst' => (string) $message->getVariation(),
+                    'ProductModificationConst' => (string) $message->getModification(),
+
+                    self::class.':'.__LINE__,]
             );
 
             return false;
