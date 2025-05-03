@@ -103,21 +103,22 @@ class ProductStockTotal extends EntityState
         UserUid $usr,
         UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification,
+        ProductOfferConst|null|false $offer,
+        ProductVariationConst|null|false $variation,
+        ProductModificationConst|null|false $modification,
         ?string $storage
     )
     {
         $this->id = clone new ProductStockTotalUid();
 
         $this->product = $product;
-        $this->offer = $offer;
-        $this->variation = $variation;
-        $this->modification = $modification;
+        $this->offer = $offer ?: null;
+        $this->variation = $variation ?: null;
+        $this->modification = $modification ?: null;
+        $this->storage = $storage ?: null;
+
         $this->profile = $profile;
         $this->usr = $usr;
-        $this->storage = $storage ?: null;
     }
 
     /**
