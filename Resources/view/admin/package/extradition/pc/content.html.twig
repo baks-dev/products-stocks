@@ -40,7 +40,7 @@
                                 {% set image_path = img_host ~ img_dir ~ img_file %}
                             {% endif %}
 
-                            {% set product_href = path('products-product:user.detail', {
+                            {% set product_href = path('products-product:public.detail', {
                                 category: product.category_url,
                                 url: product.product_url,
                                 offer : product.product_offer_value,

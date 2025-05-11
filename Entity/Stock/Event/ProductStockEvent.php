@@ -149,18 +149,24 @@ class ProductStockEvent extends EntityEvent
         return $this->main;
     }
 
-    public function getNumber(): string
+    public function isInvariable(): bool
     {
-        return $this->invariable->getNumber();
+        return $this->invariable instanceof ProductStocksInvariable;
     }
 
-    /**
-     * @deprecated Используйте метод equalsProductStockStatus
-     * @see equalsProductStockStatus
-     */
-    public function getStatus(): ProductStockStatus
+    public function setInvariable(ProductStocksInvariable|false|null $invariable): self
     {
-        return $this->status;
+        if($invariable instanceof ProductStocksInvariable)
+        {
+            $this->invariable = $invariable;
+        }
+
+        return $this;
+    }
+
+    public function getInvariable(): ?ProductStocksInvariable
+    {
+        return $this->invariable;
     }
 
 
@@ -176,7 +182,6 @@ class ProductStockEvent extends EntityEvent
     {
         return $this->fixed === null;
     }
-
 
 
     //    /**
@@ -217,13 +222,11 @@ class ProductStockEvent extends EntityEvent
         return $this->move;
     }
 
-    /**
-     * Идентификатор ответственного.
-     */
-    public function getStocksProfile(): ?UserProfileUid
+    public function getNumber(): string
     {
-        return $this->invariable?->getProfile();
+        return $this->invariable?->getNumber();
     }
+
 
     /**
      * Product.

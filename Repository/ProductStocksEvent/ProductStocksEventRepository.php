@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksEvent;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Repository\ProductStocksInvariable\ProductStocksInvariableInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use InvalidArgumentException;
 
@@ -35,7 +36,10 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
 {
     private ProductStockEventUid|false $event = false;
 
-    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
+    public function __construct(
+        private readonly ORMQueryBuilder $ORMQueryBuilder,
+        private readonly ProductStocksInvariableInterface $ProductStocksInvariableRepository
+    ) {}
 
     public function forEvent(ProductStock|ProductStockEvent|ProductStockEventUid|string $event): self
     {
@@ -82,8 +86,24 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
                 type: ProductStockEventUid::TYPE
             );
 
-        return $orm
-            ->enableCache('products-stocks', '1 day')
-            ->getOneOrNullResult() ?: false;
+        /** @var ProductStockEvent $ProductStockEvent */
+        $ProductStockEvent = $orm->getOneOrNullResult();
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        {
+            return false;
+        }
+
+        /** Определяем Invariable складской заявки в случае если событие было изменено  */
+        if(false === $ProductStockEvent->isInvariable())
+        {
+            $ProductStocksInvariable = $this->ProductStocksInvariableRepository
+                ->forProductStocks($ProductStockEvent->getMain())
+                ->find();
+
+            $ProductStockEvent->setInvariable($ProductStocksInvariable);
+        }
+
+        return $ProductStockEvent;
     }
 }

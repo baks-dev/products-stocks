@@ -30,7 +30,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
@@ -54,7 +53,6 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentProductStocksInterface $CurrentProductStocks,
         private UserByUserProfileInterface $userByUserProfile,
         private ProductStocksTotalStorageInterface $productStocksTotalStorage,
         private AddProductStockInterface $addProductStock,
@@ -105,20 +103,20 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             return;
         }
 
-        /** Получаем текущее состояние заявки, в случае если событие изменилось  */
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
-        {
-            $ProductStockEvent = $this->CurrentProductStocks
-                ->getCurrentEvent($message->getId());
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
-            {
-                return;
-            }
+        if(false === $ProductStockEvent->isInvariable())
+        {
+            $this->logger->warning(
+                'Складская заявка не может определить ProductStocksInvariable',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
+            return;
         }
 
+
         /** Идентификатор профиля склада при поступлении */
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

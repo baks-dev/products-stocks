@@ -103,25 +103,19 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-
-        /**
-         * Определяем пользователя профилю в заявке
-         */
-
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        if(false === $ProductStockEvent->isInvariable())
         {
-            $ProductStockEvent = $this->CurrentProductStocks
-                ->getCurrentEvent($message->getId());
+            $this->logger->warning(
+                'Складская заявка не может определить ProductStocksInvariable',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
-            {
-                return;
-            }
+            return;
         }
 
 
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
 
         /** @var ProductStockProduct $product */

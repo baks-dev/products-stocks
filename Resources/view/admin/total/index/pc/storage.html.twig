@@ -12,7 +12,7 @@
 
 
     {# <td class="text-center">
-        <a href="{{ path('products-product:user.catalog.category', {
+        <a href="{{ path('products-product:public.catalog.category', {
             category: item.category_url
         }) }}" class="text-decoration-none" target="_detail">{{ item.category_name }}</a>
 
@@ -30,7 +30,7 @@
         {% set image_path = img_host ~ img_dir ~ img_file %}
     {% endif %}
 
-    {% set product_href = path('products-product:user.detail', {
+    {% set product_href = path('products-product:public.detail', {
         category: item.category_url,
         url: item.product_url,
         offer : item.product_offer_value,

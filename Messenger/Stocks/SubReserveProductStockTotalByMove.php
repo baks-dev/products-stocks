@@ -127,7 +127,7 @@ final readonly class SubReserveProductStockTotalByMove
 
 
         /** Идентификатор профиля склада отгрузки (из прошлого события!) */
-        $UserProfileUid = $ProductStockEventLast->getStocksProfile();
+        $UserProfileUid = $ProductStockEventLast->getInvariable()?->getProfile();
 
 
         /** @var ProductStockProduct $product */

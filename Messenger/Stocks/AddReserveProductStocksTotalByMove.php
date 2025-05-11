@@ -32,7 +32,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -49,7 +48,6 @@ final readonly class AddReserveProductStocksTotalByMove
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentProductStocksInterface $CurrentProductStocks,
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
@@ -101,24 +99,17 @@ final readonly class AddReserveProductStocksTotalByMove
             return;
         }
 
-
-        /**
-         * Определяем пользователя профилю в заявке
-         */
-
-
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        if(false === $ProductStockEvent->isInvariable())
         {
-            $ProductStockEvent = $this->CurrentProductStocks
-                ->getCurrentEvent($message->getId());
+            $this->logger->warning(
+                'Складская заявка не может определить ProductStocksInvariable',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
-            {
-                return;
-            }
+            return;
         }
 
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

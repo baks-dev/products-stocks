@@ -101,7 +101,7 @@ final class ExtraditionController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'name' => $ProductStockEvent->getNumber(),
+            'name' => $ProductStockEvent->getInvariable()?->getNumber(),
             'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
         ]);
     }

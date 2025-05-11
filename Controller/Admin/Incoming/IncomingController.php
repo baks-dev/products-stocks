@@ -114,7 +114,7 @@ final class IncomingController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'name' => $ProductStockEvent->getNumber(),
+            'name' => $ProductStockEvent->getInvariable()?->getNumber(),
             'order' => $ProductStockEvent->getOrder() !== null,
             'recommender' => $productStorage
             //'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())

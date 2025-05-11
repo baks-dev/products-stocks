@@ -109,7 +109,7 @@ class ProductStocksInvariable extends EntityReadonly
     }
 
     /**
-     * Profile
+     * Идентификатор ответственного склада
      */
     public function getProfile(): UserProfileUid
     {

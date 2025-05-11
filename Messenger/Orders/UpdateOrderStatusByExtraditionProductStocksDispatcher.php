@@ -97,27 +97,14 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
-
-        /** Получаем активное событие заявки на случай, если профиль не определен */
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        if(false === $ProductStockEvent->isInvariable())
         {
-            $ProductStockEvent = $this->CurrentProductStocks
-                ->getCurrentEvent($message->getId());
+            $this->logger->warning(
+                'Складская заявка не может определить ProductStocksInvariable',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
-            {
-                return;
-            }
-
-            if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
-            {
-                $this->logger->critical(
-                    'products-stocks: Профиль пользователя складской заявки не найден',
-                    [self::class.':'.__LINE__, var_export($message, true)]
-                );
-
-                return;
-            }
+            return;
         }
 
         /**
@@ -139,7 +126,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             [self::class.':'.__LINE__]
         );
 
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
         $OrderStatusDTO = new OrderStatusDTO
         (

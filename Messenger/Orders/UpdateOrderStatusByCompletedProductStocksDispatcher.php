@@ -35,7 +35,6 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -52,13 +51,11 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentProductStocksInterface $CurrentProductStocks,
         private CurrentOrderEventInterface $CurrentOrderEvent,
         private OrderStatusHandler $OrderStatusHandler,
         private CentrifugoPublishInterface $CentrifugoPublish,
         private DeduplicatorInterface $deduplicator,
     ) {}
-
 
     public function __invoke(ProductStockMessage $message): void
     {
@@ -103,29 +100,15 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             return;
         }
 
-
-        /** Получаем активное событие заявки на случай, если профиль не определен */
-        if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
+        if(false === $ProductStockEvent->isInvariable())
         {
-            $ProductStockEvent = $this->CurrentProductStocks
-                ->getCurrentEvent($message->getId());
+            $this->logger->warning(
+                'Складская заявка не может определить ProductStocksInvariable',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
-            {
-                return;
-            }
-
-            if(false === ($ProductStockEvent->getStocksProfile() instanceof UserProfileUid))
-            {
-                $this->logger->critical(
-                    'products-stocks: Профиль пользователя складской заявки не найден',
-                    [self::class.':'.__LINE__, var_export($message, true)]
-                );
-
-                return;
-            }
+            return;
         }
-
 
         /**
          * Получаем активное событие заказа.
@@ -145,13 +128,13 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             [self::class.':'.__LINE__]
         );
 
-        $UserProfileUid = $ProductStockEvent->getStocksProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $CurrentOrderEvent->getId(),
-        )
-            ->setProfile($UserProfileUid);
+        );
+        $OrderStatusDTO->setProfile($UserProfileUid);
 
         $ModifyDTO = $OrderStatusDTO->getModify();
         $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
