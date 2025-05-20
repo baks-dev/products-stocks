@@ -26,15 +26,11 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products\Recalculate;
 
 use BaksDev\Core\Cache\AppCacheInterface;
-use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
-use BaksDev\Products\Product\Entity\Price\ProductPrice;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
-use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
-use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Quantity\ProductModificationQuantity;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
+use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -46,11 +42,13 @@ final readonly class RecalculateProductQuantity
 {
     public function __construct(
         #[Target('productsProductLogger')] private LoggerInterface $logger,
+        private ProductModificationQuantityInterface $modificationQuantity,
+        private ProductVariationQuantityInterface $variationQuantity,
+        private ProductOfferQuantityInterface $offerQuantity,
+        private ProductQuantityInterface $productQuantity,
         private ProductStocksTotalInterface $productStocksTotal,
         private EntityManagerInterface $entityManager,
         private AppCacheInterface $cache,
-
-        private CurrentProductIdentifierByConstInterface $CurrentProductIdentifierByConst
     ) {}
 
     /**
@@ -58,22 +56,112 @@ final readonly class RecalculateProductQuantity
      */
     public function __invoke(RecalculateProductMessage $product): void
     {
-        $CurrentProductIdentifierResult = $this
-            ->CurrentProductIdentifierByConst
-            ->forProduct($product->getProduct())
-            ->forOfferConst($product->getOffer())
-            ->forVariationConst($product->getVariation())
-            ->forModificationConst($product->getModification())
-            ->find();
+        // Метод возвращает общее количество продукции на всех складах (без учета резерва)
+        $ProductStocksTotal = $this->productStocksTotal
+            ->product($product->getProduct())
+            ->offer($product->getOffer())
+            ->variation($product->getVariation())
+            ->modification($product->getModification())
+            ->get();
 
 
-        if(false === ($CurrentProductIdentifierResult instanceof CurrentProductIdentifierResult))
+        $ProductUpdateQuantity = null;
+
+        /* Чистим кеш модуля продукции */
+        $cache = $this->cache->init('products-product');
+        $cache->clear();
+
+
+        /**
+         * Количественный учет модификации множественного варианта торгового предложения
+         */
+
+        if(null === $ProductUpdateQuantity && $product->getModification())
         {
+
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->modificationQuantity->getProductModificationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation(),
+                $product->getModification(),
+            );
+
+            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            {
+                $this->logger->critical(
+                    'products-stocks: Ошибка при перерасчете общего количества модификации множественного варианта торгового предложения в карточке',
+                    [
+                        self::class.':'.__LINE__,
+                        'total' => $ProductStocksTotal,
+                        'modification' => (string) $product->getModification(),
+                    ],
+                );
+
+                return;
+            }
+
+
+            $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
+            $this->entityManager->flush();
+
             $this->logger->info(
-                'products-stocks: Карточка товара для перерасчета продукции не найдена',
+                'products-stocks: Обновили общее количество модификации множественного варианта торгового предложения в карточке',
                 [
                     self::class.':'.__LINE__,
-                    var_export($product, true),
+                    'total' => $ProductStocksTotal,
+                    'modification' => (string) $product->getModification(),
+                ],
+            );
+
+            return;
+
+        }
+
+
+
+
+
+        /**
+         * Количественный учет множественного варианта торгового предложения
+         */
+
+
+        if(null === $ProductUpdateQuantity && $product->getVariation())
+        {
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->variationQuantity->getProductVariationQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+                $product->getVariation(),
+            );
+
+
+            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            {
+                $this->logger->critical(
+                    'products-stocks: Ошибка при перерасчете общего количества множественного варианта торгового предложения в карточке',
+                    [
+                        self::class.':'.__LINE__,
+                        'total' => $ProductStocksTotal,
+                        'variation' => (string) $product->getVariation(),
+                    ],
+                );
+
+                return;
+            }
+
+            $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
+            $this->entityManager->flush();
+
+            $this->logger->info(
+                'products-stocks: Обновили общее количество множественного варианта торгового предложения в карточке',
+                [
+                    self::class.':'.__LINE__,
+                    'total' => $ProductStocksTotal,
+                    'variation' => (string) $product->getVariation(),
                 ],
             );
 
@@ -82,98 +170,90 @@ final readonly class RecalculateProductQuantity
 
 
         /**
-         * Метод возвращает общее количество продукции на всех складах (без учета резерва)
-         */
-        $ProductStocksTotal = $this->productStocksTotal
-            ->product($product->getProduct())
-            ->offer($product->getOffer())
-            ->variation($product->getVariation())
-            ->modification($product->getModification())
-            ->get();
-
-        /**
-         * Количественный учет модификации множественного варианта торгового предложения
-         */
-        if($CurrentProductIdentifierResult->getModification() instanceof ProductModificationUid)
-        {
-            $ProductModification = $this->entityManager
-                ->getRepository(ProductModification::class)
-                ->find($CurrentProductIdentifierResult->getModification());
-
-            if($ProductModification instanceof ProductModification)
-            {
-                $ProductModification->setQuantity($ProductStocksTotal);
-                $this->entityManager->flush();
-                $this->cacheClear();
-
-                return;
-            }
-        }
-
-        /**
-         * Количественный учет множественного варианта торгового предложения
-         */
-
-        if($CurrentProductIdentifierResult->getVariation() instanceof ProductVariationUid)
-        {
-            $ProductVariation = $this->entityManager
-                ->getRepository(ProductVariation::class)
-                ->find($CurrentProductIdentifierResult->getVariation());
-
-            if($ProductVariation instanceof ProductVariation)
-            {
-                $ProductVariation->setQuantity($ProductStocksTotal);
-                $this->entityManager->flush();
-                $this->cacheClear();
-
-                return;
-            }
-        }
-
-
-        /**
          * Количественный учет торгового предложения
          */
 
-        if($CurrentProductIdentifierResult->getOffer() instanceof ProductOfferUid)
+        if(null === $ProductUpdateQuantity && $product->getOffer())
         {
-            $ProductOffer = $this->entityManager
-                ->getRepository(ProductOffer::class)
-                ->find($CurrentProductIdentifierResult->getOffer());
+            $this->entityManager->clear();
 
-            if($ProductOffer instanceof ProductOffer)
+            $ProductUpdateQuantity = $this->offerQuantity->getProductOfferQuantity(
+                $product->getProduct(),
+                $product->getOffer(),
+            );
+
+            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
             {
-                $ProductOffer->setQuantity($ProductStocksTotal);
-                $this->entityManager->flush();
-                $this->cacheClear();
+                $this->logger->critical(
+                    'products-stocks: Ошибка при перерасчете общего количества торгового предложения в карточке',
+                    [
+                        self::class.':'.__LINE__,
+                        'total' => $ProductStocksTotal,
+                        'offer' => (string) $product->getOffer(),
+
+                    ],
+                );
 
                 return;
             }
+
+            $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
+            $this->entityManager->flush();
+
+            $this->logger->info(
+                'products-stocks: Обновили общее количество торгового предложения в карточке',
+                [
+                    self::class.':'.__LINE__,
+                    'total' => $ProductStocksTotal,
+                    'offer' => (string) $product->getOffer(),
+                ],
+            );
+
+            return;
         }
 
 
         /**
-         * Обновляем стоимость продукции
+         * Количественный учет продукта
          */
 
-        $ProductPrice = $this->entityManager
-            ->getRepository(ProductPrice::class)
-            ->find($CurrentProductIdentifierResult->getEvent());
-
-        if($ProductPrice instanceof ProductPrice)
+        if(null === $ProductUpdateQuantity)
         {
-            $ProductPrice->setQuantity($ProductStocksTotal);
+            $this->entityManager->clear();
+
+            $ProductUpdateQuantity = $this->productQuantity->getProductQuantity(
+                $product->getProduct(),
+            );
+
+
+            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            {
+                $this->logger->critical(
+                    'products-stocks: Ошибка при перерасчете общего количества продукции в карточке',
+                    [
+                        self::class.':'.__LINE__,
+                        'total' => $ProductStocksTotal,
+                        'product' => (string) $product->getProduct(),
+                    ],
+                );
+
+                return;
+            }
+
+
+            $ProductUpdateQuantity->setQuantity($ProductStocksTotal);
             $this->entityManager->flush();
-            $this->cacheClear();
+
+            $this->logger->info(
+                'products-stocks: Обновили общее количество продукции в карточке',
+                [
+                    self::class.':'.__LINE__,
+                    'total' => $ProductStocksTotal,
+                    'product' => (string) $product->getProduct(),
+                ],
+            );
+
         }
-
-    }
-
-    public function cacheClear(): void
-    {
-        /* Чистим кеш модуля продукции */
-        $cache = $this->cache->init('products-product');
-        $cache->clear();
 
     }
 }

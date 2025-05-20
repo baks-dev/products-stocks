@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\EditTotal;
 
+use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
@@ -33,13 +34,13 @@ use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMes
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class ProductStockTotalEditHandler
+final readonly class ProductStockTotalEditHandler extends AbstractHandler
 {
-    public function __construct(
-        private EntityManagerInterface $entityManager,
-        private ValidatorCollectionInterface $validatorCollection,
-        private MessageDispatchInterface $messageDispatch
-    ) {}
+    //    public function __construct(
+    //        private EntityManagerInterface $entityManager,
+    //        private ValidatorCollectionInterface $validatorCollection,
+    //        private MessageDispatchInterface $messageDispatch
+    //    ) {}
 
     /** @see ProductStock */
     public function handle(ProductStockTotalEditDTO|ProductStockStorageEditDTO $command): string|ProductStockTotal
@@ -48,7 +49,7 @@ final readonly class ProductStockTotalEditHandler
         $this->validatorCollection->add($command);
 
         /** @var ProductStockTotal $ProductStockTotal */
-        $ProductStockTotal = $this->entityManager
+        $ProductStockTotal = $this
             ->getRepository(ProductStockTotal::class)
             ->find($command->getId());
 
@@ -71,7 +72,7 @@ final readonly class ProductStockTotalEditHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        $this->flush();
 
         if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
         {
