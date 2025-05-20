@@ -26,22 +26,13 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\EditTotal;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
 use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
-use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class ProductStockTotalEditHandler extends AbstractHandler
+final class ProductStockTotalEditHandler extends AbstractHandler
 {
-    //    public function __construct(
-    //        private EntityManagerInterface $entityManager,
-    //        private ValidatorCollectionInterface $validatorCollection,
-    //        private MessageDispatchInterface $messageDispatch
-    //    ) {}
-
     /** @see ProductStock */
     public function handle(ProductStockTotalEditDTO|ProductStockStorageEditDTO $command): string|ProductStockTotal
     {
