@@ -36,6 +36,8 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
     /** Список поступлений на склад */
     public const string VOTER = 'WAREHOUSE';
 
+    public const string KEY = 'RwSvcPwpT';
+
     public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
@@ -63,6 +65,14 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
     public function getPath(): string
     {
         return 'products-stocks:admin.warehouse.index';
+    }
+
+    /**
+     * Метод возвращает ключ раздела (для меню телеграм)
+     */
+    public function getPathKey(): string
+    {
+        return self::KEY;
     }
 
 

@@ -36,6 +36,8 @@ final class VoterMoving implements VoterInterface, MenuAdminInterface
     /** Список перемещений между складами */
     public const string VOTER = 'MOVING';
 
+    public const string KEY = 'kVNMaJvmhM';
+
     public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
@@ -62,6 +64,14 @@ final class VoterMoving implements VoterInterface, MenuAdminInterface
     public function getPath(): string
     {
         return 'products-stocks:admin.moving.index';
+    }
+
+    /**
+     * Метод возвращает ключ раздела (для меню телеграм)
+     */
+    public function getPathKey(): string
+    {
+        return self::KEY;
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */

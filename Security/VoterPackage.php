@@ -36,6 +36,8 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
 {
     public const string VOTER = 'PACKAGE';
 
+    public const string KEY = 'mKFuBeagW';
+
     public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
@@ -62,6 +64,14 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     public function getPath(): string
     {
         return 'products-stocks:admin.package.index';
+    }
+
+    /**
+     * Метод возвращает ключ раздела (для меню телеграм)
+     */
+    public function getPathKey(): string
+    {
+        return self::KEY;
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */

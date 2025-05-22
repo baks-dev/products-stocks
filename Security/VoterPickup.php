@@ -37,6 +37,8 @@ final class VoterPickup implements VoterInterface, MenuAdminInterface
 {
     public const string VOTER = 'PICKUP';
 
+    public const string KEY = 'gffSfwdcg';
+
     public static function getVoter(): string
     {
         return Role::ROLE.'_'.self::VOTER;
@@ -63,6 +65,14 @@ final class VoterPickup implements VoterInterface, MenuAdminInterface
     public function getPath(): string
     {
         return 'products-stocks:admin.pickup.index';
+    }
+
+    /**
+     * Метод возвращает ключ раздела (для меню телеграм)
+     */
+    public function getPathKey(): string
+    {
+        return self::KEY;
     }
 
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
