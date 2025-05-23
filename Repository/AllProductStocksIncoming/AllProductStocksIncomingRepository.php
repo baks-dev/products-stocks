@@ -121,7 +121,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         $dbal
             ->addSelect('event.comment')
             ->addSelect('event.status')
-            ->leftJoin(
+            ->join(
                 'stock',
                 ProductStockEvent::class,
                 'event',
