@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,55 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalAccess;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 use InvalidArgumentException;
+use Symfony\Contracts\Service\ResetInterface;
 
-final class ProductStocksTotalAccessRepository implements ProductStocksTotalAccessInterface
+final class ProductStocksTotalAccessRepository implements ProductStocksTotalAccessInterface, ResetInterface
 {
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    private ProductUid $product;
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
+    ) {}
 
-    private ?ProductOfferConst $offer = null;
+    private UserProfileUid|false $profile = false;
 
-    private ?ProductVariationConst $variation = null;
+    private ProductUid|false $product = false;
 
-    private ?ProductModificationConst $modification = null;
+    private ProductOfferConst|false $offer = false;
 
+    private ProductVariationConst|false $variation = false;
 
-    public function product(ProductUid|string $product): self
+    private ProductModificationConst|false $modification = false;
+
+    public function forProfile(UserProfile|UserProfileUid $profile): self
     {
-        if(is_string($product))
+
+        if($profile instanceof UserProfile)
         {
-            $product = new ProductUid($product);
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function forProduct(Product|ProductUid $product): self
+    {
+        if($product instanceof Product)
+        {
+            $product = $product->getId();
         }
 
         $this->product = $product;
@@ -58,16 +82,12 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
         return $this;
     }
 
-    public function offer(ProductOfferConst|string|null $offer): self
+    public function forOfferConst(ProductOfferConst|null|false $offer): self
     {
         if(empty($offer))
         {
+            $this->offer = false;
             return $this;
-        }
-
-        if(is_string($offer))
-        {
-            $offer = new ProductOfferConst($offer);
         }
 
         $this->offer = $offer;
@@ -75,16 +95,12 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
         return $this;
     }
 
-    public function variation(ProductVariationConst|string|null $variation): self
+    public function forVariationConst(ProductVariationConst|null|false $variation): self
     {
         if(empty($variation))
         {
+            $this->variation = false;
             return $this;
-        }
-
-        if(is_string($variation))
-        {
-            $variation = new ProductVariationConst($variation);
         }
 
         $this->variation = $variation;
@@ -92,16 +108,12 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
         return $this;
     }
 
-    public function modification(ProductModificationConst|string|null $modification): self
+    public function forModificationConst(ProductModificationConst|null|false $modification): self
     {
         if(empty($modification))
         {
+            $this->modification = false;
             return $this;
-        }
-
-        if(is_string($modification))
-        {
-            $modification = new ProductModificationConst($modification);
         }
 
         $this->modification = $modification;
@@ -110,11 +122,11 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
     }
 
     /**
-     * Метод возвращает общее количество ДОСТУПНОЙ продукции на всех складах (за вычетом резерва)
+     * Метод возвращает общее количество ДОСТУПНОЙ продукции на складе (за вычетом резерва)
      */
     public function get(): int
     {
-        if(empty($this->product))
+        if(false === ($this->product instanceof ProductUid))
         {
             throw new InvalidArgumentException('Invalid Argument product');
         }
@@ -127,39 +139,86 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
 
-        if($this->offer)
+        $dbal
+            ->andWhere('stock.usr = :usr')
+            ->setParameter(
+                key: 'usr',
+                value: $this->UserProfileTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
+
+        /**
+         * Поиск только по определенному профилю пользователя
+         */
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->UserProfileTokenStorage->getProfile(),
+                    type: UserProfileUid::TYPE,
+                );
+        }
+
+        if($this->offer instanceof ProductOfferConst)
         {
             $dbal
                 ->andWhere('stock.offer = :offer')
-                ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->offer,
+                    type: ProductOfferConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.offer IS NULL');
         }
 
-        if($this->variation)
+        if($this->variation instanceof ProductVariationConst)
         {
             $dbal
                 ->andWhere('stock.variation = :variation')
-                ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->variation,
+                    type: ProductVariationConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.variation IS NULL');
         }
 
-        if($this->modification)
+        if($this->modification instanceof ProductModificationConst)
         {
             $dbal
                 ->andWhere('stock.modification = :modification')
-                ->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
+                ->setParameter(
+                    key: 'modification',
+                    value: $this->modification,
+                    type: ProductModificationConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.modification IS NULL');
         }
 
-        return $dbal->fetchOne() ?: 0;
+        return max($dbal->fetchOne(), 0);
+    }
+
+    /**
+     * Сбрасываем свойства после результата
+     */
+    public function reset(): void
+    {
+        $this->product =
+        $this->profile =
+        $this->offer =
+        $this->variation =
+        $this->modification =
+            false;
     }
 }
