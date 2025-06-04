@@ -183,6 +183,11 @@ class ProductStockEvent extends EntityEvent
         return $this->fixed === null;
     }
 
+    public function getFixed(): ?UserProfileUid
+    {
+        return $this->fixed;
+    }
+
 
     //    /**
     //     * Идентификатор склада.
