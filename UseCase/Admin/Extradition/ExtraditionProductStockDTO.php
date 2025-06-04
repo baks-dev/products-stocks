@@ -38,14 +38,9 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    //    /** Ответственное лицо (Профиль пользователя) */
-    //    #[Assert\NotBlank]
-    //    #[Assert\Uuid]
-    //    private readonly UserProfileUid $profile;
-
-    /** Фиксация заявки пользователем  */
-    #[Assert\IsNull]
-    private readonly ?UserProfileUid $fixed;
+    /** Ответственное лицо за упаковку (Профиль пользователя) */
+    #[Assert\Uuid]
+    private ?UserProfileUid $fixed;
 
     /** Статус заявки - Укомплектована для погрузки (выдачи) */
     #[Assert\NotBlank]
@@ -56,7 +51,6 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
 
     public function __construct()
     {
-        $this->fixed = null;
         $this->status = new ProductStockStatus(ProductStockStatusExtradition::class);
     }
 
@@ -82,13 +76,14 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    //    /** Склад (Профиль пользователя) */
-    //    public function getProfile(): UserProfileUid
-    //    {
-    //        return $this->profile;
-    //    }
+    /** Ответственное лицо за упаковку (Профиль пользователя) */
 
-    /** Фиксация заявки пользователем  */
+    public function setFixed(?UserProfileUid $fixed): self
+    {
+        $this->fixed = $fixed;
+        return $this;
+    }
+
     public function getFixed(): ?UserProfileUid
     {
         return $this->fixed;
@@ -99,5 +94,4 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     {
         return $this->status;
     }
-
 }

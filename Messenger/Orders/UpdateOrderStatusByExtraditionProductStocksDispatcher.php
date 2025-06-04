@@ -38,7 +38,9 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -52,6 +54,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentProductStocksInterface $CurrentProductStocks,
+        private UserByUserProfileInterface $UserByUserProfile,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CurrentOrderEventInterface $CurrentOrderEvent,
         private OrderStatusHandler $OrderStatusHandler,
@@ -65,7 +68,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -101,7 +104,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         {
             $this->logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -123,21 +126,46 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         $this->logger->info(
             'Обновляем статус заказа на "Собран, готов к отправке" (Extradition)',
-            [self::class.':'.__LINE__]
+            [self::class.':'.__LINE__],
         );
+
 
         $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 
         $OrderStatusDTO = new OrderStatusDTO
         (
             status: OrderStatusExtradition::class,
-            id: $CurrentOrderEvent->getId()
+            id: $CurrentOrderEvent->getId(),
         )
             ->setProfile($UserProfileUid);
 
 
-        $ModifyDTO = $OrderStatusDTO->getModify();
-        $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
+        /**
+         * Присваиваем ответственное лицо если указан FIXED
+         */
+        if(true === ($ProductStockEvent->getFixed() instanceof UserProfileUid))
+        {
+            $User = $this->UserByUserProfile
+                ->forProfile($ProductStockEvent->getFixed())
+                ->find();
+
+            if(false === ($User instanceof User))
+            {
+                $this->logger->critical(
+                    'orders-order: Пользователь ответственного лица не найден',
+                    [self::class.':'.__LINE__, 'fixed' => (string) $ProductStockEvent->getFixed()],
+                );
+
+                return;
+            }
+
+            $OrderStatusDTO
+                ->getModify()
+                ->setUsr($User->getId());
+        }
+
+        //$ModifyDTO = $OrderStatusDTO->getModify();
+        //$ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
 
         $handle = $this->OrderStatusHandler->handle($OrderStatusDTO);
 
@@ -145,7 +173,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         {
             $this->logger->critical(
                 'products-stocks: Ошибка при обновлении статуса заказа на Extradition «Готов к выдаче»',
-                [$handle, $message, self::class.':'.__LINE__]
+                [$handle, $message, self::class.':'.__LINE__],
             );
 
             return;
@@ -165,8 +193,8 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             [
                 self::class.':'.__LINE__,
                 'order' => (string) $ProductStockEvent->getOrder(),
-                'profile' => (string) $UserProfileUid
-            ]
+                'profile' => (string) $UserProfileUid,
+            ],
         );
 
     }
