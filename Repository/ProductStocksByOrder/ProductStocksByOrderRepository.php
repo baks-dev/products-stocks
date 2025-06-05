@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -31,24 +32,81 @@ use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class ProductStocksByOrderRepository implements ProductStocksByOrderInterface
 {
-    public function __construct(private readonly ORMQueryBuilder $ORMQueryBuilder) {}
+    private OrderUid|false $order = false;
+
+    private ProductStockStatus|false $status = false;
+
+    public function __construct(
+        private readonly ORMQueryBuilder $ORMQueryBuilder
+    ) {}
 
     /**
-     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     * Фильтр по заказу
      */
-    public function findByOrder(Order|OrderUid|string $order): ?array
+    public function onOrder(Order|OrderUid|string $order): self
     {
+        if(is_string($order))
+        {
+            $order = new OrderUid($order);
+        }
+
         if($order instanceof Order)
         {
             $order = $order->getId();
         }
 
-        if(is_string($order))
+        $this->order = $order;
+        return $this;
+    }
+
+    /**
+     * Фильтр по статусу
+     */
+    public function onStatus(ProductStockStatusInterface|string $status): self
+    {
+        $this->status = new ProductStockStatus($status);
+        return $this;
+    }
+
+    /**
+     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     *
+     * @return array<int, ProductStockEvent>|false
+     */
+    public function findAll(): array|false
+    {
+        $builder = $this->builder();
+        return $builder->getResult() ?? false;
+    }
+
+    /**
+     * @return array<int, ProductStockEvent>|null
+     * @deprecated
+     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     *
+     */
+    public function findByOrder(Order|OrderUid|string $order): array|null
+    {
+        $this->onOrder($order);
+        $builder = $this->builder();
+
+        return $builder->getResult();
+    }
+
+    private function builder(): ORMQueryBuilder
+    {
+        if(false === ($this->order instanceof OrderUid))
         {
-            $order = new OrderUid($order);
+            throw new \InvalidArgumentException(sprintf(
+                'Некорректной тип для параметра $this->order: `%s`. Ожидаемый тип %s',
+                var_export($this->order, true), OrderUid::class
+            ));
         }
 
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
@@ -58,7 +116,7 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
             ->where('ord.ord = :ord')
             ->setParameter(
                 key: 'ord',
-                value: $order,
+                value: $this->order,
                 type: OrderUid::TYPE
             );
 
@@ -69,16 +127,34 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
             'stock.event = ord.event'
         );
 
-        $orm
-            ->select('event')
-            ->join(
-            ProductStockEvent::class,
-            'event',
-            'WITH',
-            'event.id = stock.event'
-        );
+        /** Статус заявки */
+        if($this->status instanceof ProductStockStatus)
+        {
+            $orm
+                ->join(
+                    ProductStockEvent::class,
+                    'event',
+                    'WITH',
+                    '
+                        event.id = stock.event AND
+                        event.status = :status
+                        '
+                )
+                ->setParameter('status', $this->status, ProductStockStatus::TYPE);
+        }
+        else
+        {
+            $orm
+                ->join(
+                    ProductStockEvent::class,
+                    'event',
+                    'WITH',
+                    'event.id = stock.event'
+                );
+        }
 
+        $orm->select('event');
 
-        return $orm->getResult();
+        return $orm;
     }
 }
