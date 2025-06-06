@@ -235,6 +235,8 @@ class ProductStockEvent extends EntityEvent
 
     /**
      * Product.
+     *
+     * @return Collection<int,ProductStockProduct>
      */
     public function getProduct(): Collection
     {
