@@ -111,8 +111,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('stock_product.comment AS stock_comment')
             ->addSelect('stock_product.profile AS users_profile_id')
             ->from(ProductStockTotal::class, 'stock_product')
-            ->andWhere('stock_product.total != 0')
-            ->andWhere('stock_product.reserve >= 0');
+            ->andWhere('stock_product.total != 0');
 
         if($this->filter->getAll())
         {
