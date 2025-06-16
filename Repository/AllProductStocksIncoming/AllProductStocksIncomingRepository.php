@@ -55,7 +55,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Entity\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
@@ -64,6 +64,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\DBAL\ArrayParameterType;
 
 final class AllProductStocksIncomingRepository implements AllProductStocksIncomingInterface
 {
@@ -125,12 +126,12 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'
+                'event.id = stock.event AND event.status IN (:status)',
             )
             ->setParameter(
                 'status',
-                ProductStockStatusIncoming::class,
-                ProductStockStatus::TYPE
+                [ProductStockStatusIncoming::STATUS, ProductStockStatusCompleted::STATUS],
+                ArrayParameterType::STRING,
             );
 
 
@@ -524,8 +525,11 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number')
-                ->addSearchLike('product_trans.name');
+                ->addSearchLike('invariable.number')
+                ->addSearchLike('product_info.article')
+                ->addSearchLike('product_offer.article')
+                ->addSearchLike('product_modification.article')
+                ->addSearchLike('product_variation.article');
         }
 
         $dbal->orderBy('modify.mod_date', 'DESC');
