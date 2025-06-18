@@ -200,19 +200,36 @@
                 <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
                     <div>
 
-                        {% if app.user.profile == item.user_profile_id %}
+                        {% if item.status == 'incoming' %}
 
                             <button
                                     class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modal"
                                     data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                    title="Приход на склад"
+                                    title="Приходный ордер"
                             >
                                 <span class="badge text-bg-success me-3">Приход</span> # {{ item.number }}
                             </button>
 
-                        {% else %}
+                        {% endif %}
+
+                        {% if item.status == 'completed' %}
+
+                            <button
+                                    class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+                                    title="Расходный ордер"
+                            >
+                                <span class="badge text-bg-danger me-3">Расход</span> # {{ item.number }}
+                            </button>
+
+                        {% endif %}
+
+
+                        {# {% else %}
 
                             <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
                                     data-bs-toggle="modal"
@@ -223,7 +240,7 @@
                                 <span class="badge text-bg-danger me-3">Отгрузка</span> # {{ item.number }}
                             </button>
 
-                        {% endif %}
+                        {% endif %} #}
 
                         <div class="text-nowrap fw-normal small">
                             {{ item.mod_date|date('d.m.Y H:i') }}
