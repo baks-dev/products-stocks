@@ -19,7 +19,6 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- *
  */
 
 declare(strict_types=1);
@@ -34,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use InvalidArgumentException;
 
 final class ProductStocksByOrderRepository implements ProductStocksByOrderInterface
 {
@@ -48,13 +48,8 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
     /**
      * Фильтр по заказу
      */
-    public function onOrder(Order|OrderUid|string $order): self
+    public function onOrder(Order|OrderUid $order): self
     {
-        if(is_string($order))
-        {
-            $order = new OrderUid($order);
-        }
-
         if($order instanceof Order)
         {
             $order = $order->getId();
@@ -104,7 +99,7 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
     {
         if(false === ($this->order instanceof OrderUid))
         {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Некорректной тип для параметра $this->order: `%s`. Ожидаемый тип %s',
                 var_export($this->order, true), OrderUid::class
             ));
