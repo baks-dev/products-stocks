@@ -26,6 +26,8 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductStocksByOrder\Tests;
 
+use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDelivery;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -43,18 +45,16 @@ class ProductStockByOrderRepositoryTest extends KernelTestCase
         /** @var ProductStocksByOrderInterface $ProductStocksByOrderInterface */
         $ProductStocksByOrderInterface = self::getContainer()->get(ProductStocksByOrderInterface::class);
 
-        self::assertTrue(true);
-        return;
 
-        $orderID = '';
-        $status = '';
+        $orderID = new OrderUid();
+        $status = ProductStockStatusDelivery::class;
 
         $result = $ProductStocksByOrderInterface
             ->onOrder($orderID)
             ->onStatus($status)
-            ->find();
+            ->findAll();
 
-        dd($result);
+        self::assertTrue(true);
     }
 
 }

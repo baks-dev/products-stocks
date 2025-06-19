@@ -32,14 +32,16 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 interface ProductStocksByOrderInterface
 {
     /**
-     * Фильтр по статусу
-     */
-    public function onStatus(ProductStockStatusInterface|string $status): self;
-
-    /**
      * Фильтр по заказу
      */
     public function onOrder(Order|OrderUid|string $order): self;
+
+    /**
+     * Фильтр по статусу
+     *
+     * @param ProductStockStatusInterface|class-string $status
+     */
+    public function onStatus(ProductStockStatusInterface|string $status): self;
 
     /**
      * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
@@ -50,7 +52,7 @@ interface ProductStocksByOrderInterface
 
     /**
      * @return array<int, ProductStockEvent>|null
-     * @deprecated
+     *@deprecated
      * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
      *
      */

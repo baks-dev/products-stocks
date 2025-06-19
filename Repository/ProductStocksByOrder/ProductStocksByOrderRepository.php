@@ -34,7 +34,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class ProductStocksByOrderRepository implements ProductStocksByOrderInterface
 {
@@ -67,6 +66,8 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
 
     /**
      * Фильтр по статусу
+     *
+     * @param ProductStockStatusInterface|class-string $status
      */
     public function onStatus(ProductStockStatusInterface|string $status): self
     {
