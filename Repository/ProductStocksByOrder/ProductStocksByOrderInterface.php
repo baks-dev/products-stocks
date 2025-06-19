@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +19,42 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\Repository\ProductStocksByOrder;
 
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
 
 interface ProductStocksByOrderInterface
 {
     /**
-     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     * Фильтр по заказу
      */
-    public function findByOrder(Order|OrderUid|string $order): ?array;
+    public function onOrder(Order|OrderUid|string $order): self;
+
+    /**
+     * Фильтр по статусу
+     *
+     * @param ProductStockStatusInterface|class-string $status
+     */
+    public function onStatus(ProductStockStatusInterface|string $status): self;
+
+    /**
+     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     *
+     * @return array<int, ProductStockEvent>|false
+     */
+    public function findAll(): array|false;
+
+    /**
+     * @return array<int, ProductStockEvent>|null
+     *@deprecated
+     * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     *
+     */
+    public function findByOrder(Order|OrderUid|string $order): array|null;
 }
