@@ -93,7 +93,9 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         }
 
         /** Получаем все заявки по идентификатору заказа */
-        $stocks = $this->productStocksByOrder->findByOrder($message->getId());
+        $stocks = $this->productStocksByOrder
+            ->onOrder($message->getId())
+            ->findAll();
 
         if(empty($stocks))
         {
