@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInterface
+final readonly class ProductWarehouseTotalRepository implements ProductWarehouseTotalInterface
 {
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    public function __construct(private DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод возвращает доступное количество данной продукции на указанном складе
@@ -43,9 +43,9 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
     public function getProductProfileTotal(
         UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null
+        ProductOfferConst|false|null $offer = null,
+        ProductVariationConst|false|null $variation = null,
+        ProductModificationConst|false|null $modification = null
     ): int
     {
 
@@ -55,36 +55,41 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
 
         $qb->from(ProductStockTotal::class, 'stock');
 
-        $qb->andWhere('stock.profile = :profile');
-        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
+        $qb
+            ->andWhere('stock.profile = :profile')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
-        $qb->andWhere('stock.product = :product');
-        $qb->setParameter('product', $product, ProductUid::TYPE);
+        $qb
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $product, ProductUid::TYPE);
 
-        if($offer)
+        if(true === ($offer instanceof ProductOfferConst))
         {
-            $qb->andWhere('stock.offer = :offer');
-            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+            $qb
+                ->andWhere('stock.offer = :offer')
+                ->setParameter('offer', $offer, ProductOfferConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if($variation)
+        if(true === ($variation instanceof ProductVariationConst))
         {
-            $qb->andWhere('stock.variation = :variation');
-            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+            $qb
+                ->andWhere('stock.variation = :variation')
+                ->setParameter('variation', $variation, ProductVariationConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if($modification)
+        if(true === ($modification instanceof ProductModificationConst))
         {
-            $qb->andWhere('stock.modification = :modification');
-            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+            $qb
+                ->andWhere('stock.modification = :modification')
+                ->setParameter('modification', $modification, ProductModificationConst::TYPE);
         }
         else
         {
@@ -100,9 +105,9 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
     public function getProductProfileReserve(
         UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null
+        ProductOfferConst|false|null $offer = null,
+        ProductVariationConst|false|null $variation = null,
+        ProductModificationConst|false|null $modification = null
     ): int
     {
 
@@ -112,36 +117,41 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
 
         $qb->from(ProductStockTotal::class, 'stock');
 
-        $qb->andWhere('stock.profile = :profile');
-        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
+        $qb
+            ->andWhere('stock.profile = :profile')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
-        $qb->andWhere('stock.product = :product');
-        $qb->setParameter('product', $product, ProductUid::TYPE);
+        $qb
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $product, ProductUid::TYPE);
 
-        if($offer)
+        if(true === ($offer instanceof ProductOfferConst))
         {
-            $qb->andWhere('stock.offer = :offer');
-            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+            $qb
+                ->andWhere('stock.offer = :offer')
+                ->setParameter('offer', $offer, ProductOfferConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if($variation)
+        if(true === ($variation instanceof ProductVariationConst))
         {
-            $qb->andWhere('stock.variation = :variation');
-            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+            $qb
+                ->andWhere('stock.variation = :variation')
+                ->setParameter('variation', $variation, ProductVariationConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if($modification)
+        if(true === ($modification instanceof ProductModificationConst))
         {
-            $qb->andWhere('stock.modification = :modification');
-            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+            $qb
+                ->andWhere('stock.modification = :modification')
+                ->setParameter('modification', $modification, ProductModificationConst::TYPE);
         }
         else
         {
@@ -157,9 +167,9 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
     public function getProductProfileTotalNotReserve(
         UserProfileUid $profile,
         ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null
+        ProductOfferConst|false|null $offer = null,
+        ProductVariationConst|false|null $variation = null,
+        ProductModificationConst|false|null $modification = null
     ): int
     {
 
@@ -169,36 +179,41 @@ final class ProductWarehouseTotalRepository implements ProductWarehouseTotalInte
 
         $qb->from(ProductStockTotal::class, 'stock');
 
-        $qb->andWhere('stock.profile = :profile');
-        $qb->setParameter('profile', $profile, UserProfileUid::TYPE);
+        $qb
+            ->andWhere('stock.profile = :profile')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
-        $qb->andWhere('stock.product = :product');
-        $qb->setParameter('product', $product, ProductUid::TYPE);
+        $qb
+            ->andWhere('stock.product = :product')
+            ->setParameter('product', $product, ProductUid::TYPE);
 
-        if($offer)
+        if(true === ($offer instanceof ProductOfferConst))
         {
-            $qb->andWhere('stock.offer = :offer');
-            $qb->setParameter('offer', $offer, ProductOfferConst::TYPE);
+            $qb
+                ->andWhere('stock.offer = :offer')
+                ->setParameter('offer', $offer, ProductOfferConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.offer IS NULL');
         }
 
-        if($variation)
+        if(true === ($variation instanceof ProductVariationConst))
         {
-            $qb->andWhere('stock.variation = :variation');
-            $qb->setParameter('variation', $variation, ProductVariationConst::TYPE);
+            $qb
+                ->andWhere('stock.variation = :variation')
+                ->setParameter('variation', $variation, ProductVariationConst::TYPE);
         }
         else
         {
             $qb->andWhere('stock.variation IS NULL');
         }
 
-        if($modification)
+        if(true === ($modification instanceof ProductModificationConst))
         {
-            $qb->andWhere('stock.modification = :modification');
-            $qb->setParameter('modification', $modification, ProductModificationConst::TYPE);
+            $qb
+                ->andWhere('stock.modification = :modification')
+                ->setParameter('modification', $modification, ProductModificationConst::TYPE);
         }
         else
         {
