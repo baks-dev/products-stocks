@@ -1,0 +1,37 @@
+<tr>
+
+    {# <td class="text-nowrap">
+    #}{# Пользовательское меню #}{#
+    {% if app.user.profile == item.users_profile_id %}
+    #}{# Пользовательское меню #}{#
+    {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
+{% else %}
+    &nbsp;
+{% endif %}
+</td> #}
+
+    <td colspan="3"></td>
+    <td class="text-center"><strong class="text-primary">{{ product_exist }}</strong></td>
+    <td></td>
+
+    <td class="text-center">
+        <strong class="{{ product_reserve ? 'text-danger' }}">{{ product_reserve ?: '-' }}</strong>
+    </td>
+    <td class="text-center text-success fw-bolder">
+
+        {% if product_exist >= product_reserve %}
+            {{ (product_exist - product_reserve) ?: '-' }}
+        {% else %}
+            0 <span
+                class="pointer badge text-bg-danger text-white"
+                role="tooltip"
+                data-bs-toggle="tooltip"
+                data-bs-placement="bottom"
+                data-bs-delay='{"show":600,"hide":100}'
+                title='Ожидается поступление'
+        > + {{ product_exist - product_reserve }}
+                            </span>
+        {% endif %}
+
+    </td>
+</tr>

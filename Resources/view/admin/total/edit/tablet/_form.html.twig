@@ -1,0 +1,152 @@
+{% trans_default_domain 'products-stocks.admin' %}
+
+{% set arr_property = card.category_section_field|json_decode %}
+
+<div class="modal-dialog modal-dialog-centered" style="max-width: 700px;">
+
+    {{ form_start(form) }}
+
+    <div class="modal-content p-3 border-bottom border-5 border-primary">
+
+        <div class="modal-header">
+            <h5 class="modal-title">
+                {{ 'page.total'|trans }}
+            </h5>
+        </div>
+
+        <div class="modal-body d-flex justify-content-between gap-3">
+
+            <div class="modal-header border-0">
+                <div class="d-flex gap-3 align-items-center">
+                    <div>
+
+                        {# Обложка  #}
+                        {% set image_path = '/assets/img/blank.svg' %}
+
+                        {% if card.product_image_ext is defined and card.product_image_ext is not null %}
+                            {% set img_host =  card.product_image_cdn == true  ? CDN_HOST : '' %}
+                            {% set img_dir = card.product_image %}
+                            {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ card.product_image_ext %}
+                            {% set image_path = img_host ~ img_dir ~ img_file %}
+                        {% endif %}
+
+                        {% set product_href = path('products-product:public.detail', {
+                            category: card.category_url,
+                            url: card.product_url,
+                            offer : card.product_offer_value,
+                            variation : card.product_variation_value,
+                            modification : card.product_modification_value,
+                            postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
+                        }) %}
+
+                        <a href="{{ product_href }}"
+                           target="_detail" class="icon rounded-3 bg-contain lazy p-1"
+                           style="width: 50px; height: 50px;"
+                           data-bg="{{ image_path }}">
+                        </a>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-start">
+
+                        <a href="{{ product_href }}"
+
+                           target="_detail"
+                           class="text-decoration-none text-dark mb-0 d-flex align-items-center justify-content-start gap-1">
+
+                            {{ card.product_name }}
+
+                            {# Значение множественного варианта ТП #}
+                            {{ card.product_variation_value|call_twig_func(card.product_variation_reference~'_render')
+                            ~ card.product_modification_value|call_twig_func(card.product_modification_reference~'_render') }}
+
+                            {# Значение торгового предложения #}
+                            {{ card.product_offer_value|call_twig_func(card.product_offer_reference~'_render') }}
+
+                            {# Постфикс торгового предложения #}
+                            {{ card.product_offer_postfix }}
+                            {# Постфикс множественного варианта #}
+                            {{ card.product_variation_postfix }}
+                            {# Постфикс модификации #}
+                            {{ card.product_modification_postfix }}
+
+                            {# Свойства, учавствующие в названии #}
+                            {% for name_property in arr_property | filter(props => props.field_name == true) %}
+                                {{ name_property.field_value|call_twig_func(name_property.field_type) }}
+                            {% endfor %}
+
+                        </a>
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="d-flex align-items-center gap-1 text-primary pointer copy small"
+                                 data-copy="{{ card.product_article }}">
+
+                                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="14"
+                                     height="14" fill="currentColor" viewBox="0 0 115.77 122.88">
+                                    <path d="M89.62,13.96v7.73h12.19h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02v0.02 v73.27v0.01h-0.02c-0.01,3.84-1.57,7.33-4.1,9.86c-2.51,2.5-5.98,4.06-9.82,4.07v0.02h-0.02h-61.7H40.1v-0.02 c-3.84-0.01-7.34-1.57-9.86-4.1c-2.5-2.51-4.06-5.98-4.07-9.82h-0.02v-0.02V92.51H13.96h-0.01v-0.02c-3.84-0.01-7.34-1.57-9.86-4.1 c-2.5-2.51-4.06-5.98-4.07-9.82H0v-0.02V13.96v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07V0h0.02h61.7 h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02V13.96L89.62,13.96z M79.04,21.69v-7.73v-0.02h0.02 c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v64.59v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h12.19V35.65 v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07v-0.02h0.02H79.04L79.04,21.69z M105.18,108.92V35.65v-0.02 h0.02c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v73.27v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h61.7h0.02 v0.02c0.91,0,1.75-0.39,2.37-1.01c0.61-0.61,1-1.46,1-2.37h-0.02V108.92L105.18,108.92z"></path>
+                                </svg>
+
+                                Артикул: {{ card.product_article }}
+                            </div>
+
+                            {# Свойства, учавствующие в превью карточки #}
+                            {% for name_property in  arr_property | filter(props => props.field_card is defined and props.field_card == true) %}
+                                {{ name_property.field_value|call_twig_func(name_property.field_type~'_render') }}
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {{ form_row(form.total, { label: 'Наличие', attr: { min : 0 } }) }}
+
+            {{ form_row(form.reserve, {label: 'Резерв', attr: { min : 0 }}) }}
+
+            {{ form_row(form.storage, { label: 'Место' }) }}
+
+        </div>
+
+        <div class="modal-footer ">
+
+            <div class="flex-grow-1 d-flex align-items-center gap-2" data-buttons="true">
+
+                <label class="btn p-3 border-dotted rounded-3 w-100 {{ form.recalculate.vars.data ? 'active' }}">
+                    <div class="form-check d-flex h3 align-items-center">
+                        {{ form_widget(form.recalculate, { label: false }) }}
+                        <div class='d-flex flex-column' style='font-size: 1.2rem;'>
+                            <div class='w-100 text-start'>
+                                {# Цена по запросу #}
+                                {{ 'Выполнить перерасчет наличия в карточке'|trans }}
+                            </div>
+                            <div class="text-danger small">
+                                <small>Внимание! Выбирайте осознанно данный функционал!</small>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            {# <div class="d-flex justify-content-around pb-3 radio-buttons " data-buttons="true">
+
+            </div> #}
+
+            <div class="mt-3 gap-3 d-flex">
+                {# Отмена #}
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                </button>
+
+                {# Сохранить #}
+                {{ form_widget(form.product_stock_total_edit, { label: '
+                    <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
+                    <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
+			    '}) }}
+            </div>
+        </div>
+
+    </div>
+
+    {{ form_end(form) }}
+</div>
+
