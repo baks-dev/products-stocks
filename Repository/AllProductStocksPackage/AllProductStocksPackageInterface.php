@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage;
 
 use BaksDev\Core\Form\Search\SearchDTO;

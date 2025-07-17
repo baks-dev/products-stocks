@@ -143,7 +143,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         // ProductStockEvent
-        //$dbal->addSelect('event.number');
         $dbal
             ->addSelect('event.comment')
             ->addSelect('event.status')

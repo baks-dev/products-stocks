@@ -49,7 +49,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @group products-stocks
  * @group products-stocks-warehouse
- * @group products-stocks-repository
  *
  * @depends BaksDev\Products\Stocks\UseCase\Admin\Purchase\Tests\PurchaseProductStockTest::class
  * @see     PurchaseProductStockTest

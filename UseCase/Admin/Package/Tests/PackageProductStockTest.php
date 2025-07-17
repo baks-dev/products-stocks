@@ -50,7 +50,6 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 /**
  * @group products-stocks
  * @group products-stocks-package
- * @group products-stocks-repository
  *
  * @depends BaksDev\Products\Stocks\UseCase\Admin\Incoming\Tests\IncomingProductStockTest::class
  * @see     IncomingProductStockTest

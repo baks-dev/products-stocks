@@ -45,7 +45,6 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 /**
  * @group products-stocks
  * @group products-stocks-purchase
- * @group products-stocks-repository
  */
 #[When(env: 'test')]
 final class PurchaseProductStockTest extends KernelTestCase
