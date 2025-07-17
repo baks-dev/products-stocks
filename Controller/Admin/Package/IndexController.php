@@ -28,6 +28,9 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Manufacture\Part\UseCase\Admin\AddProduct\ManufactureSelectionPartProductsForm;
+use BaksDev\Orders\Order\Forms\SalesInvoice\SalesInvoiceForm;
+use BaksDev\Orders\Order\Forms\SalesInvoice\SalesInvoiceOrderDTO;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageInterface;
@@ -100,7 +103,7 @@ final class IndexController extends AbstractController
         $query = $allPackage
             ->search($search)
             ->filter($filter)
-            ->findPaginator();
+            ->findResultPaginator();
 
         return $this->render(
             [
@@ -109,6 +112,7 @@ final class IndexController extends AbstractController
                 'filter' => $filterForm->createView(),
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
+                'add_selected_order_form_name' => $this->createForm(type: SalesInvoiceForm::class)->getName(),
             ]
         );
     }
