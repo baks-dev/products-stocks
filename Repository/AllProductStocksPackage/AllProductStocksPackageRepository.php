@@ -345,7 +345,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
             );
 
-
         // Product
         $dbal
             ->addSelect('product.id as product_id')
@@ -590,17 +589,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 		'
         );
 
-
-        /*$dbal->addSelect("
-			COALESCE(
-                NULLIF(COUNT(product_offer), 0),
-                NULLIF(COUNT(product_variation), 0),
-                NULLIF(COUNT(product_modification), 0),
-                0
-            ) AS offer_count
-		");*/
-
-
         // Категория
         $dbal->leftJoin(
             'product_event',
@@ -793,8 +781,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
-//        dd($dbal->fetchAllHydrate(AllProductStocksPackageResult::class)->current());
-//dd($this->paginator->fetchAllHydrate($dbal, AllProductStocksPackageResult::class)->getData());
+
         return $dbal;
     }
 

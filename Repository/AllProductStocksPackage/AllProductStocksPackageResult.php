@@ -35,6 +35,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModifi
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use BaksDev\Users\Profile\UserProfile\Type\Event\UserProfileEventUid;
 
 final readonly class AllProductStocksPackageResult
@@ -89,9 +90,9 @@ final readonly class AllProductStocksPackageResult
         private ?bool $printed,
     ) {}
 
-    public function getId(): string
+    public function getId(): ProductStockUid
     {
-        return $this->id;
+        return new ProductStockUid($this->id);
     }
 
     public function getEvent(): ProductStockEventUid
@@ -124,9 +125,9 @@ final readonly class AllProductStocksPackageResult
         return $this->mod_date;
     }
 
-    public function getProductStockId(): ProductStockUid
+    public function getProductStockId(): ProductStockCollectionUid
     {
-        return new ProductStockUid($this->product_stock_id);
+        return new ProductStockCollectionUid($this->product_stock_id);
     }
 
     public function getTotal(): int
