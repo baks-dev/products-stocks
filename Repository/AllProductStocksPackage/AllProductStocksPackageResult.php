@@ -1,17 +1,17 @@
 <?php
 /*
- * Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,11 +32,12 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Event\UserProfileEventUid;
+use DateTimeImmutable;
 
 final readonly class AllProductStocksPackageResult
 {
@@ -110,19 +111,19 @@ final readonly class AllProductStocksPackageResult
         return $this->comment;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ProductStockStatus
     {
-        return $this->status;
+        return new ProductStockStatus($this->status);
     }
 
-    public function getDatePackage(): ?string
+    public function getDatePackage(): ?DateTimeImmutable
     {
-        return $this->date_package;
+        return empty($this->date_package) ? null : new DateTimeImmutable($this->date_package);
     }
 
-    public function getModDate(): ?string
+    public function getModDate(): ?DateTimeImmutable
     {
-        return $this->mod_date;
+        return empty($this->mod_date) ? null : new DateTimeImmutable($this->mod_date);
     }
 
     public function getProductStockId(): ProductStockCollectionUid
@@ -160,9 +161,9 @@ final readonly class AllProductStocksPackageResult
         return $this->order_comment;
     }
 
-    public function getDeliveryDate(): string
+    public function getDeliveryDate(): DateTimeImmutable
     {
-        return $this->delivery_date;
+        return new DateTimeImmutable($this->delivery_date);
     }
 
     public function getDeliveryName(): ?string
