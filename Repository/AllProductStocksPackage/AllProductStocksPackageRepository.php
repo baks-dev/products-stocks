@@ -36,6 +36,7 @@ use BaksDev\DeliveryTransport\Entity\Package\DeliveryPackageTransport;
 use BaksDev\DeliveryTransport\Entity\Package\Stocks\DeliveryPackageStocks;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Entity\Print\OrderPrint;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\CategoryProduct;
@@ -109,11 +110,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         return $this;
     }
 
-
-    /**
-     * Метод возвращает все заявки на упаковку заказов.
-     */
-    public function findPaginator(): PaginatorInterface
+    private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -146,7 +143,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         // ProductStockEvent
-        //$dbal->addSelect('event.number');
         $dbal
             ->addSelect('event.comment')
             ->addSelect('event.status')
@@ -287,6 +283,15 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_event.id = orders.event'
             );
 
+        $dbal
+            ->addSelect('order_print.printed as printed')
+            ->leftJoin(
+                'order_event',
+                OrderPrint::class,
+                'order_print',
+                'order_print.event = order_event.id'
+            );
+
         $dbal->leftJoin(
             'orders',
             OrderUser::class,
@@ -308,13 +313,11 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 $dbal->setParameter('delivery_date_end', $this->filter->getDate()?->modify('+1 day'), Types::DATE_IMMUTABLE);
             }
 
-
             if($this->filter->getDelivery() instanceof DeliveryUid)
             {
                 $delivery_condition .= ' AND order_delivery.delivery = :delivery';
                 $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
             }
-
         }
 
         $dbal
@@ -340,7 +343,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'delivery_trans',
                 'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
             );
-
 
         // Product
         $dbal
@@ -586,17 +588,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 		'
         );
 
-
-        /*$dbal->addSelect("
-			COALESCE(
-                NULLIF(COUNT(product_offer), 0),
-                NULLIF(COUNT(product_variation), 0),
-                NULLIF(COUNT(product_modification), 0),
-                0
-            ) AS offer_count
-		");*/
-
-
         // Категория
         $dbal->leftJoin(
             'product_event',
@@ -790,8 +781,28 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addGroupBy('ord.ord');
         $dbal->allGroupByExclude();
 
-        return $this->paginator->fetchAllAssociative($dbal);
+        return $dbal;
+    }
 
+
+    /**
+     * Метод возвращает все заявки на упаковку заказов в виде массива.
+     */
+    public function findPaginator(): PaginatorInterface
+    {
+        $dbal = $this->builder();
+
+        return $this->paginator->fetchAllAssociative($dbal);
+    }
+
+    /**
+     * Метод возвращает все заявки на упаковку заказов в виде коллекции объектов.
+     */
+    public function findResultPaginator(): PaginatorInterface
+    {
+        $dbal = $this->builder();
+
+        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksPackageResult::class);
     }
 
 

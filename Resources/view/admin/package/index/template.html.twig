@@ -14,6 +14,8 @@
 {% block stylesheets %}
     <link href="/assets/plugins/nice-select2/nice-select2.min.css" rel="stylesheet" type="text/css">
     <link href="/assets/plugins/datepicker/datepicker.min.css" rel="stylesheet">
+    <link href="/assets/css/print.min.css" rel="stylesheet">
+
 {% endblock %}
 
 
@@ -26,7 +28,7 @@
 {% block javascript %}
 
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
-<script nonce='{{ csp_nonce() }}' async data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/js/print.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/plugins/datepicker/datepicker.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/products_stocks/moving.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/copy.min.js?v={{ version }}" class="lazy"></script>
@@ -88,5 +90,70 @@
             forms.submit();
         }
 
-    </script>
+
+        /** Обработчики кнопок выбора товаров */
+        let select_all_to_invoice = document.querySelector("#select-all-to-invoice");
+        let add_all_to_invoice = document.querySelector("#add-all-to-invoice");
+
+        /** Выбор из списка ответов */
+        select_all_to_invoice?.addEventListener("click", function() {
+
+            // Выбрать все
+            select_all_to_invoice.classList.toggle("selected");
+
+            if(select_all_to_invoice.classList.contains("selected"))
+            {
+                select_all_to_invoice.innerText = "Снять выбор";
+                select_all_to_invoice.classList.remove("btn-outline-primary");
+                select_all_to_invoice.classList.add("btn-primary");
+            }
+            else
+           {
+               select_all_to_invoice.innerText = "Выбрать все";
+               select_all_to_invoice.classList.add("btn-outline-primary");
+               select_all_to_invoice.classList.remove("btn-primary");
+           }
+
+
+
+
+
+    const orders = document.querySelectorAll(".add-all-to-invoice");
+
+    // Выбрать все НЕ disabled (т.е. те, которые не на производстве)
+    orders.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_invoice.classList.contains("selected");} } );
+
+    const checkboxes = document.querySelectorAll(".add-all-to-invoice");
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+    if (atLeastOneChecked) {
+        add_all_to_invoice.classList.remove("d-none");
+    }
+    else {
+        add_all_to_invoice.classList.add("d-none");
+    }
+
+});
+
+var checkboxs_all_to_invoice = document.querySelectorAll(".add-all-to-invoice");
+
+/** Скрыть или показать кнопку "Добавить выбранные" */
+for (checkbox_all_to_invoice of checkboxs_all_to_invoice) {
+
+    checkbox_all_to_invoice?.addEventListener("click", function() {
+
+        const checkboxes = document.querySelectorAll(".add-all-to-invoice");
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+        if (atLeastOneChecked) {
+           add_all_to_invoice.classList.remove("d-none");
+        }
+        else {
+            add_all_to_invoice.classList.add("d-none");
+        }
+
+    });
+}
+
+</script>
 {% endblock %}

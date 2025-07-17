@@ -175,17 +175,17 @@
 
                 {% for item in query.data %}
 
-                {% if card != item.id %}
+                    {% if card != item.id %}
 
-                {% if card is not null %}
+                        {% if card is not null %}
                 </table>
             </div>
         </div>
-        {% endif %}
+                        {% endif %}
 
         <div id="{{ item.id }}"
-             class="card mb-3 p-1 {{ item.products_move or item.order_danger ? 'shadow border-danger' : 'border-light' }}"
-             style="{{ item.products_move ? '--bs-border-opacity: 0.2;' : '' }}">
+             class="card mb-3 p-1 {{ item.isProductsMove or item.isOrderDanger ? 'shadow border-danger' : 'border-light' }}"
+             style="{{ item.isProductsMove ? '--bs-border-opacity: 0.2;' : '' }}">
 
             <div class="card-header bg-body border-0">
 
@@ -204,6 +204,27 @@
 
                         <div class="w-100 d-flex gap-3 justify-content-between align-items-center">
 
+                            {% set identifier = item.orderId %}
+
+                            <div class="w-100 d-flex gap-3 align-items-center">
+
+                            {# Чекбокс добавления заказа в накладную #}
+                            {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
+
+                                {# Чекбокс для множественного добавления заказов в накладную #}
+                                <div class="h5">
+                                    <input
+                                            id="check-{{ identifier }}"
+                                            type="checkbox"
+                                            class="form-check-input add-all-to-invoice btn-outline-danger"
+
+                                            {# Данные, отправляемые POST #}
+                                            data-formname="{{ add_selected_order_form_name }}"
+                                            data-order="{{ identifier }}"
+                                    >
+                                </div>
+
+                            {% endif %}
 
                             {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
                                 <div style="width: 28px;">
@@ -213,37 +234,41 @@
                             {% endif %}
 
 
+
+
+                            </div>
+
                             <div>
 
-                                <button data-href='{{ item.order_id ? path('orders-order:admin.detail', { id: item.order_id }) : '#' }}'
-                                        data-id='{{ item.order_id }}'
+                                <button data-href='{{ item.orderId ? path('orders-order:admin.detail', { id: item.orderId }) : '#' }}'
+                                        data-id='{{ item.orderId }}'
                                         class="btn btn-sm btn-link fw-bolder text-decoration-none product-name offcanvas-link text-nowrap p-0"
                                 >
 
-                                    {% if item.status == 'package' or item.status == 'divide' %}
+                                {% if item.status == 'package' or item.status == 'divide' %}
 
-                                        {% if date('now')|date('Ymd') == item.delivery_date|date('Ymd') %}
+                                    {% if date('now')|date('Ymd') == item.deliveryDate|date('Ymd') %}
                                             <span class="badge text-bg-warning me-3">
                                                 Опоздание
                                             </span>
-                                        {% elseif date('now')|date('Ymd') > item.delivery_date|date_modify("-1 days")|date('Ymd') %}
+                                    {% elseif date('now')|date('Ymd') > item.deliveryDate|date_modify("-1 days")|date('Ymd') %}
                                             <span class="badge text-bg-danger me-3">
                                                 Просрочен
                                             </span>
-                                        {% else %}
+                                    {% else %}
                                             <span class="badge me-3" style="background-color: #8000FF;">
                                             Сборка
                                         </span>
-                                        {% endif %}
-
                                     {% endif %}
 
+                                {% endif %}
 
-                                    {% if item.status == 'moving' %}
+
+                                {% if item.status == 'moving' %}
                                         <span class="badge text-bg-danger me-3">
                                             Перемещение
                                         </span>
-                                    {% endif %}
+                                {% endif %}
 
                                     {{ item.number }}
 
@@ -251,13 +276,13 @@
 
                                 <div class="fw-normal text-nowrap">
 
-                                    {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                {% if item.deliveryDate|date('Ymd') == date('now')|date('Ymd') %}
                                         <strong class="text-success">Сегодня
-                                            ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}
+                                            ({{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }}
                                             )</strong>
-                                    {% else %}
-                                        <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
-                                    {% endif %}
+                                {% else %}
+                                        <strong>{{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                {% endif %}
 
                                 </div>
                             </div>
@@ -267,40 +292,40 @@
 
                             <div class="text-nowrap">
                                 <span class="text-muted opacity-50">Склад: </span>
-                                &nbsp; <strong>{{ item.users_profile_username }}</strong>
+                                &nbsp; <strong>{{ item.usersProfileUsername }}</strong>
 
 
                                 {% if item.status != 'moving' %}
 
 
-                                    {% if item.delivery_name %}
+                                    {% if item.deliveryName %}
                                         <div class="text-dark text-nowrap">
                                             <span class="text-muted opacity-50">
                                                 Доставка: &nbsp;
                                             </span>
-                                            {{ item.delivery_name }}
+                                            {{ item.deliveryName }}
                                         </div>
                                     {% endif %}
 
 
-                                    {% if item.products_move %}
+                                    {% if item.productsMove %}
                                         <div class="text-dark text-nowrap">
                                             <span class="text-muted opacity-50">
                                                 Ожидание: &nbsp;
                                             </span>
-                                            {{ item.users_profile_move }}
+                                            {{ item.usersProfileMove }}
                                         </div>
                                     {% endif %}
 
                                 {% endif %}
 
 
-                                {% if item.users_profile_destination %}
+                                {% if item.usersProfileDestination %}
                                     <div class="text-dark text-nowrap">
                                         <span class="text-muted opacity-50">
                                             Пункт назначения: &nbsp;
                                         </span>
-                                        {{ item.users_profile_destination }}
+                                        {{ item.usersProfileDestination }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -314,9 +339,9 @@
                         </div>
 
                         {# Комментарий  #}
-                        {% if item.comment is not empty or item.order_comment is not empty %}
+                        {% if item.comment is not empty or item.orderComment is not empty %}
 
-                            {% if item.order_comment is not empty %}
+                            {% if item.orderComment is not empty %}
                                 <div class="text-danger fw-bolder mt-1">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
@@ -327,11 +352,11 @@
                                         <rect x="6" y="7" width="12" height="2" rx="1" fill="currentColor"></rect>
                                     </svg>
 
-                                    &nbsp; {{ item.order_comment }}
+                                    &nbsp; {{ item.orderComment }}
                                 </div>
                             {% endif %}
 
-                            {% if item.comment is not empty and item.order_comment != item.comment %}
+                            {% if item.comment is not empty and item.orderComment != item.comment %}
                                 <div class="text-danger fw-bolder mt-1">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
@@ -359,7 +384,7 @@
                                     aria-expanded="false"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-printer-fill" viewBox="0 0 16 16">
+                                     class="bi bi-printer-fill {{ item.isPrinted ? "text-primary" : "text-secondary" }}" viewBox="0 0 16 16">
                                     <path
                                             d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path>
                                     <path
@@ -369,17 +394,33 @@
 
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a href="{{ path('orders-order:admin.document.sales', { id : item.order_id }) }}"
-                                       class="dropdown-item prnt"
+
+                                    {# Данные, отправляемые POST #}
+                                    {#data-formname="{{ add_selected_order_form_name }}"
+                                    data-order="{{ identifier }}"#}
+
+
+                                    <a href="{{ path('orders-order:admin.document.sales', { print: true }) }}"
+
+                                       class="dropdown-item"
                                        data-bs-toggle="modal"
                                        data-bs-target="#modal"
+
+                                       data-method="post"
+                                       data-formname="{{ add_selected_order_form_name }}"
+                                       data-order="{{ item.orderId }}"
+
+
+                                       data-collection-form="order_form_data" {# name коллекции из DTO #}
+                                       data-post-class="add-one-to-collection" {# признак одного элемента #}
+
                                     >
                                         Накладная
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="{{ path('orders-order:admin.document.receipt', { id : item.order_id }) }}"
+                                    <a href="{{ path('orders-order:admin.document.receipt', { id : item.orderId }) }}"
                                        class="dropdown-item prnt"
                                        data-bs-toggle="modal"
                                        data-bs-target="#modal"
@@ -394,6 +435,7 @@
                                     </li>
 
                                     <li>
+
                                         <div class="d-flex gap-3 align-items-center justify-content-between w-100 p-2">
                                             <h6 class="dropdown-header">Честный знак</h6>
 
@@ -425,7 +467,7 @@
 
                         {% else %}
 
-                            {% if (not item.products_move or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN')) %}
+                            {% if (not item.productsMove or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN')) %}
 
 
                                 <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"
@@ -436,7 +478,7 @@
                                     Укомплектовать
                                 </a>
 
-                            {% elseif item.products_move %}
+                            {% elseif item.productsMove %}
 
                                 <button
                                         class="btn btn-danger text-nowrap"
@@ -469,8 +511,9 @@
                     {% endif %}
                     {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
 
-                    {% endfor %}
+                {% endfor %}
                 </table>
+
             </div>
         </div>
 
@@ -494,6 +537,52 @@
             counter: count,
             options: query.options
         } %}
+
+
+        {% if query.data %}
+
+            <div class="position-absolute mt-2 pt-1 small">
+                <strong class="">Множественный выбор:</strong>
+            </div>
+
+            <div class="to-invoice-actions d-flex gap-2 sticky-bottom ps-5 pb-3 pt-2" style="margin-left: 130px;">
+
+                <button
+                        class="btn btn-sm btn-outline-primary text-nowrap mb-2"
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Выбрать все"
+                        id="select-all-to-invoice"
+                >
+                    Выбрать все
+                </button>
+
+                <a
+                        class="btn btn-sm btn-danger opacity-75 text-nowrap mb-2 d-none"
+                        role="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Накладная для выбранных"
+                        id="add-all-to-invoice"
+
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+
+                        data-post-class="add-all-to-invoice"
+
+                        data-method="post"
+                        data-collection-form="order_form_data"
+
+                        href="{{ path('orders-order:admin.document.sales', { print: true } ) }}"
+
+                >
+                    Накладная для выбранных
+                </a>
+
+            </div>
+        {% endif %}
 
         {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 
