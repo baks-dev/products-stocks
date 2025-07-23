@@ -175,13 +175,13 @@
 
                 {% for item in query.data %}
 
-                    {% if card != item.id %}
+                {% if card != item.id %}
 
-                        {% if card is not null %}
+                {% if card is not null %}
                 </table>
             </div>
         </div>
-                        {% endif %}
+        {% endif %}
 
         <div id="{{ item.id }}"
              class="card mb-3 p-1 {{ item.isProductsMove or item.isOrderDanger ? 'shadow border-danger' : 'border-light' }}"
@@ -208,32 +208,30 @@
 
                             <div class="w-100 d-flex gap-3 align-items-center">
 
-                            {# Чекбокс добавления заказа в накладную #}
-                            {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
+                                {# Чекбокс добавления заказа в накладную #}
+                                {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
 
-                                {# Чекбокс для множественного добавления заказов в накладную #}
-                                <div class="h5">
-                                    <input
-                                            id="check-{{ identifier }}"
-                                            type="checkbox"
-                                            class="form-check-input add-all-to-invoice btn-outline-danger"
+                                    {# Чекбокс для множественного добавления заказов в накладную #}
+                                    <div class="h5">
+                                        <input
+                                                id="check-{{ identifier }}"
+                                                type="checkbox"
+                                                class="form-check-input add-all-to-invoice btn-outline-danger"
 
-                                            {# Данные, отправляемые POST #}
-                                            data-formname="{{ add_selected_order_form_name }}"
-                                            data-order="{{ identifier }}"
-                                    >
-                                </div>
+                                                {# Данные, отправляемые POST #}
+                                                data-formname="{{ add_selected_order_form_name }}"
+                                                data-order="{{ identifier }}"
+                                        >
+                                    </div>
 
-                            {% endif %}
+                                {% endif %}
 
-                            {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
-                                <div style="width: 28px;">
-                                    {# Пользовательское меню #}
-                                    {{ include(_self|replace({ "content.html.twig": "_usecase.html.twig" })) }}
-                                </div>
-                            {% endif %}
-
-
+                                {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
+                                    <div style="width: 28px;">
+                                        {# Пользовательское меню #}
+                                        {{ include(_self|replace({ "content.html.twig": "_usecase.html.twig" })) }}
+                                    </div>
+                                {% endif %}
 
 
                             </div>
@@ -245,30 +243,30 @@
                                         class="btn btn-sm btn-link fw-bolder text-decoration-none product-name offcanvas-link text-nowrap p-0"
                                 >
 
-                                {% if item.status == 'package' or item.status == 'divide' %}
+                                    {% if item.status == 'package' or item.status == 'divide' %}
 
-                                    {% if date('now')|date('Ymd') == item.deliveryDate|date('Ymd') %}
+                                        {% if date('now')|date('Ymd') == item.deliveryDate|date('Ymd') %}
                                             <span class="badge text-bg-warning me-3">
                                                 Опоздание
                                             </span>
-                                    {% elseif date('now')|date('Ymd') > item.deliveryDate|date_modify("-1 days")|date('Ymd') %}
+                                        {% elseif date('now')|date('Ymd') > item.deliveryDate|date_modify("-1 days")|date('Ymd') %}
                                             <span class="badge text-bg-danger me-3">
                                                 Просрочен
                                             </span>
-                                    {% else %}
+                                        {% else %}
                                             <span class="badge me-3" style="background-color: #8000FF;">
                                             Сборка
                                         </span>
+                                        {% endif %}
+
                                     {% endif %}
 
-                                {% endif %}
 
-
-                                {% if item.status == 'moving' %}
+                                    {% if item.status == 'moving' %}
                                         <span class="badge text-bg-danger me-3">
                                             Перемещение
                                         </span>
-                                {% endif %}
+                                    {% endif %}
 
                                     {{ item.number }}
 
@@ -276,13 +274,13 @@
 
                                 <div class="fw-normal text-nowrap">
 
-                                {% if item.deliveryDate|date('Ymd') == date('now')|date('Ymd') %}
+                                    {% if item.deliveryDate|date('Ymd') == date('now')|date('Ymd') %}
                                         <strong class="text-success">Сегодня
                                             ({{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }}
                                             )</strong>
-                                {% else %}
+                                    {% else %}
                                         <strong>{{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }}</strong>
-                                {% endif %}
+                                    {% endif %}
 
                                 </div>
                             </div>
@@ -384,7 +382,8 @@
                                     aria-expanded="false"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-printer-fill {{ item.isPrinted ? "text-primary" : "text-secondary" }}" viewBox="0 0 16 16">
+                                     class="bi bi-printer-fill {{ item.isPrinted ? "text-primary" : "text-secondary" }}"
+                                     viewBox="0 0 16 16">
                                     <path
                                             d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path>
                                     <path
@@ -396,8 +395,8 @@
                                 <li>
 
                                     {# Данные, отправляемые POST #}
-                                    {#data-formname="{{ add_selected_order_form_name }}"
-                                    data-order="{{ identifier }}"#}
+                                    {# data-formname="{{ add_selected_order_form_name }}"
+                                    data-order="{{ identifier }}" #}
 
 
                                     <a href="{{ path('orders-order:admin.document.sales', { print: true }) }}"
@@ -440,7 +439,7 @@
                                             <h6 class="dropdown-header">Честный знак</h6>
 
                                             <a
-                                                    class="btn btn-sm btn-light disabled prnt text-muted"
+                                                    class="btn btn-sm btn-light disabled prnt text-muted text-nowrap"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modal"
                                                     href="{{ path('products-sign:document.print.orders', { order: item.orderId }) }}">
@@ -511,7 +510,7 @@
                     {% endif %}
                     {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
 
-                {% endfor %}
+                    {% endfor %}
                 </table>
 
             </div>
