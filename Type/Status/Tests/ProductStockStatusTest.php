@@ -85,7 +85,9 @@ final class ProductStockStatusTest extends KernelTestCase
 
 
             $WbOrderStatusType = new ProductStockStatusType();
-            $platform = $this->getMockForAbstractClass(AbstractPlatform::class);
+            $platform = $this
+                ->getMockBuilder(AbstractPlatform::class)
+                ->getMock();
 
             $convertToDatabase = $WbOrderStatusType->convertToDatabaseValue($WbOrderStatus, $platform);
             self::assertEquals($WbOrderStatus->getProductStockStatusValue(), $convertToDatabase);
