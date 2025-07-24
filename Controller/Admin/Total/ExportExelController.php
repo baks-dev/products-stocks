@@ -106,6 +106,9 @@ final class ExportExelController extends AbstractController
 
         $key = 2;
 
+        $allTotal = 0;
+        $allPrice = 0;
+
         foreach($result as $data)
         {
             $name = $data['product_name'];
