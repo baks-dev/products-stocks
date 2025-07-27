@@ -160,14 +160,14 @@
         {% if item.stock_total >= item.stock_reserve %}
             {{ item.stock_total - item.stock_reserve }}
         {% else %}
-            0 <span
+            <span
                 class="pointer badge text-bg-danger"
                 role="tooltip"
                 data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
                 data-bs-delay='{"show":600,"hide":100}'
                 title='Ожидается поступление'
-        > + {{ item.stock_reserve - item.stock_total }}
+            > {{ item.stock_total - item.stock_reserve }}
         </span>
         {% endif %}
 
