@@ -61,7 +61,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -78,7 +78,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         {
             $this->logger->critical(
                 'products-stocks: Не найдено событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -130,11 +130,13 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
                 continue;
             }
 
-            $this->logger->critical('Ошибка отмены складской заявки', [
-                self::class.':'.__LINE__,
-                'ProductStockEventUid' => (string) $ProductStockEvent->getId(),
-                'OrderUid' => (string) $message->getId()
-            ]);
+            $this->logger->critical(
+                sprintf('products-stocks: Ошибка %s отмены складской заявки при отмене заказа %s', $ProductStock, $ProductStockEvent->getNumber()),
+                [
+                    self::class.':'.__LINE__,
+                    'ProductStockEventUid' => (string) $ProductStockEvent->getId(),
+                    'OrderUid' => (string) $message->getId(),
+                ]);
         }
 
         $Deduplicator->save();
