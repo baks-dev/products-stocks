@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,27 +43,34 @@ class ProductStockStatusFilterForm extends AbstractType
 
     private string $sessionKey;
 
-    public function __construct(
-        private readonly RequestStack $request,
-        private readonly TranslatorInterface $translator
-    ) {
+    public function __construct(private readonly RequestStack $request)
+    {
         $this->sessionKey = md5(self::class);
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
 
-        // Задаем только два статуса
-        $choices = [ProductStockStatusIncoming::STATUS, ProductStockStatusCompleted::STATUS];
+        $builder->add('status', ChoiceType::class, [
+            'choices' => [
+                new ProductStockStatus(ProductStockStatusIncoming::class),
+                new ProductStockStatus(ProductStockStatusCompleted::class),
+            ],
+            'choice_value' => function(?ProductStockStatus $status) {
+                return $status instanceof ProductStockStatus ? $status->getProductStockStatusValue() : null;
+            },
+            'choice_label' => function(ProductStockStatus $status) {
+                return $status->getProductStockStatusValue();
+            },
+            'label' => false,
+            'required' => false,
+            'translation_domain' => 'status.product.stock',
+        ]);
 
-        $builder->add('status', HiddenType::class);
-
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) use ($choices): void {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
 
             /** @var ProductStockStatusFilterDTO $data */
             $data = $event->getData();
-
-            $builder = $event->getForm();
 
             if($this->session === false)
             {
@@ -83,7 +90,6 @@ class ProductStockStatusFilterForm extends AbstractType
                 $this->session = false;
             }
 
-
             if($this->session)
             {
                 $sessionData = $this->request->getSession()->get($this->sessionKey);
@@ -97,24 +103,6 @@ class ProductStockStatusFilterForm extends AbstractType
                 }
             }
 
-
-            /** Если жестко не указан status - выводим список для выбора */
-            if($data)
-            {
-
-                $builder->add('status', ChoiceType::class, [
-                    'choices' => $choices,
-                    'choice_value' => function(?string $status) {
-                        return $status;
-                    },
-                    'choice_label' => function(?string $status) {
-                        return $this->translator->trans($status, domain: 'status.product.stock');
-                    },
-                    'label' => false,
-                    'required' => false,
-                ]);
-
-            }
         });
 
 
@@ -150,13 +138,7 @@ class ProductStockStatusFilterForm extends AbstractType
                     $this->session->remove($this->sessionKey);
                 }
 
-            }
-        );
-
-
-        $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
-            function(FormEvent $event): void {}
+            },
         );
     }
 
@@ -168,7 +150,7 @@ class ProductStockStatusFilterForm extends AbstractType
                 'validation_groups' => false,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-            ]
+            ],
         );
     }
 }

@@ -66,7 +66,9 @@ final class IndexController extends AbstractController
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO();
+        $filter = new ProductFilterDTO()
+            ->hiddenMaterials();
+
         $filterForm = $this
             ->createForm(
                 type: ProductFilterForm::class,
