@@ -529,7 +529,7 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number')
+                ->addSearchLike('event.invariable')
                 ->addSearchLike('product_trans.name');
         }
 

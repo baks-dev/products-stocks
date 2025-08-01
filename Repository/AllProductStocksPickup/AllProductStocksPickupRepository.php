@@ -557,7 +557,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number')
+                ->addSearchLike('event.invariable')
                 ->addSearchLike('product_modification.article')
                 ->addSearchLike('product_variation.article')
                 ->addSearchLike('product_offer.article')

@@ -55,6 +55,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Avatar\UserProfileAvatar;
@@ -76,6 +77,8 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
 
     private ?ProductFilterDTO $filter = null;
 
+    private ?ProductStockStatusFilterDTO $filter_status = null;
+
     private ?SearchDTO $search = null;
 
     public function search(SearchDTO $search): static
@@ -89,6 +92,13 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
         $this->filter = $filter;
         return $this;
     }
+
+    public function filterStatus(ProductStockStatusFilterDTO $filter_status): static
+    {
+        $this->filter_status = $filter_status;
+        return $this;
+    }
+
 
 
     /** Возвращает список всех принятых на склад продуктов */
@@ -130,7 +140,8 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             )
             ->setParameter(
                 'status',
-                [ProductStockStatusIncoming::STATUS, ProductStockStatusCompleted::STATUS],
+                $this->filter_status->getStatus() ? [$this->filter_status->getStatus()] :
+                    [ProductStockStatusIncoming::STATUS, ProductStockStatusCompleted::STATUS], // по умолчанию
                 ArrayParameterType::STRING,
             );
 
