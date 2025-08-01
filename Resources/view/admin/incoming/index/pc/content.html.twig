@@ -173,6 +173,12 @@
                     {% include Template('@products-product/admin/filter/'~baks_settings.device~'/filter.html.twig') %}
                 </div>
 
+                {# Фильтр по статусам #}
+                <div class="m-1 ms-2">
+                    {{ include(_self|replace({ "content.html.twig": "/filter/filter-status.html.twig" })) }}
+                </div>
+
+
             </div>
 
             {# Текстовый результат фильтра #}

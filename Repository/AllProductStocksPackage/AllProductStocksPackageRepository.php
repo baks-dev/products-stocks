@@ -765,7 +765,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('event.number')
+                ->addSearchLike('event.invariable')
                 ->addSearchLike('invariable.number')
                 ->addSearchLike('product_modification.article')
                 ->addSearchLike('product_variation.article')

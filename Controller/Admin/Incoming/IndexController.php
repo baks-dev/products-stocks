@@ -30,6 +30,8 @@ use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
+use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO;
+use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksIncoming\AllProductStocksIncomingInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -73,10 +75,24 @@ final class IndexController extends AbstractController
             )
             ->handleRequest($request);
 
+        /**
+         * Фильтр статусов
+         */
+        $filter_status = new ProductStockStatusFilterDTO();
+
+        $filterStatusForm = $this
+            ->createForm(
+                type: ProductStockStatusFilterForm::class,
+                data: $filter_status,
+                options: ['action' => $this->generateUrl('products-stocks:admin.incoming.index'),]
+            )
+            ->handleRequest($request);
+
         // Получаем список приходов ответственного лица
         $query = $allIncoming
             ->search($search)
             ->filter($filter)
+            ->filterStatus($filter_status)
             ->findPaginator();
 
         return $this->render(
@@ -84,6 +100,7 @@ final class IndexController extends AbstractController
                 'query' => $query,
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
+                'filter_status' => $filterStatusForm->createView(),
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
             ]
