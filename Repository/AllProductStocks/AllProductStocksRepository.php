@@ -55,10 +55,12 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
@@ -68,6 +70,10 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     private ?ProductFilterDTO $filter = null;
 
     private ?SearchDTO $search = null;
+
+    private UserProfileUid|false $profile = false;
+
+    private UserUid|false $user = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
@@ -93,6 +99,30 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         return $this;
     }
 
+    public function forProfile(UserProfileUid|UserProfile $profile): self
+    {
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function forUser(User|UserUid $user): self
+    {
+        if($user instanceof User)
+        {
+            $user = $user->getId();
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
 
     /**
      * Метод возвращает полное состояние складских остатков продукции
@@ -113,13 +143,13 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('stock_product.total != 0');
 
-        if($this->filter->getAll())
+        if(($this->filter instanceof ProductFilterDTO) && $this->filter->getAll())
         {
             $dbal->andWhere('stock_product.usr = :usr')
                 ->setParameter(
                     key: 'usr',
-                    value: $this->UserProfileTokenStorage->getUser(),
-                    type: UserUid::TYPE
+                    value: $this->user instanceof UserUid ? $this->user : $this->UserProfileTokenStorage->getUser(),
+                    type: UserUid::TYPE,
                 );
         }
         else
@@ -127,8 +157,8 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             $dbal->andWhere('stock_product.profile = :profile')
                 ->setParameter(
                     key: 'profile',
-                    value: $this->UserProfileTokenStorage->getProfile(),
-                    type: UserProfileUid::TYPE
+                    value: $this->profile instanceof UserProfileUid ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
+                    type: UserProfileUid::TYPE,
                 );
         }
 
@@ -141,7 +171,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -149,7 +179,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
         $dbal
@@ -158,7 +188,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_event',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         // Product Trans
@@ -168,7 +198,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         // Торговое предложение
@@ -181,7 +211,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
         if($this->filter?->getOffer())
@@ -198,7 +228,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
         // Множественные варианты торгового предложения
@@ -211,13 +241,17 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
         if($this->filter?->getVariation())
         {
-            $dbal->andWhere('product_variation.value = :variation');
-            $dbal->setParameter('variation', $this->filter->getVariation());
+            $dbal
+                ->andWhere('product_variation.value = :variation')
+                ->setParameter(
+                    'variation',
+                    $this->filter->getVariation(),
+                );
         }
 
         // Получаем тип множественного варианта
@@ -227,7 +261,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_variation',
-                'category_variation.id = product_variation.category_variation'
+                'category_variation.id = product_variation.category_variation',
             );
 
         // Модификация множественного варианта торгового предложения
@@ -240,7 +274,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id  AND product_modification.const = stock_product.modification'
+                'product_modification.variation = product_variation.id  AND product_modification.const = stock_product.modification',
             );
 
         if($this->filter?->getModification())
@@ -256,7 +290,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_modification',
                 CategoryProductModification::class,
                 'category_offer_modification',
-                'category_offer_modification.id = product_modification.category_modification'
+                'category_offer_modification.id = product_modification.category_modification',
             );
 
         // Артикул продукта
@@ -279,7 +313,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             '
 			product_modification_image.modification = product_modification.id AND
 			product_modification_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -289,7 +323,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             '
 			product_variation_image.variation = product_variation.id AND
 			product_variation_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -300,7 +334,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 			product_variation_image.name IS NULL AND
 			product_offer_images.offer = product_offer.id AND
 			product_offer_images.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -311,7 +345,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 			product_offer_images.name IS NULL AND
 			product_photo.event = product_event.id AND
 			product_photo.root = true
-			'
+			',
         );
 
         $dbal->addSelect(
@@ -328,7 +362,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         // Расширение файла
@@ -343,7 +377,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 			   ELSE NULL
 			   
 			END AS product_image_ext
-		"
+		",
         );
 
         // Флаг загрузки файла CDN
@@ -358,7 +392,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 					product_photo.cdn
 			   ELSE NULL
 			END AS product_image_cdn
-		'
+		',
         );
 
         // Категория
@@ -366,7 +400,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_event',
             ProductCategory::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true'
+            'product_event_category.event = product_event.id AND product_event_category.root = true',
         );
 
         if($this->filter?->getCategory())
@@ -379,7 +413,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_event_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_event_category.category'
+            'category.id = product_event_category.category',
         );
 
         $dbal
@@ -388,7 +422,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'category',
                 CategoryProductTrans::class,
                 'category_trans',
-                'category_trans.event = category.event AND category_trans.local = :local'
+                'category_trans.event = category.event AND category_trans.local = :local',
             );
 
         $dbal
@@ -397,7 +431,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
 
         /** Ответственное лицо (Склад) */
@@ -407,7 +441,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'stock_product',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = stock_product.profile'
+                'users_profile.id = stock_product.profile',
             );
 
         $dbal
@@ -417,7 +451,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'users_profile',
                 UserProfilePersonal::class,
                 'users_profile_personal',
-                'users_profile_personal.event = users_profile.event'
+                'users_profile_personal.event = users_profile.event',
             );
 
 
@@ -428,7 +462,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product',
             ProductPrice::class,
             'product_price',
-            'product_price.event = product.event'
+            'product_price.event = product.event',
         );
 
         /* Цена торгового предположения */
@@ -437,7 +471,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_offer',
                 ProductOfferPrice::class,
                 'product_offer_price',
-                'product_offer_price.offer = product_offer.id'
+                'product_offer_price.offer = product_offer.id',
             );
 
         /* Цена множественного варианта */
@@ -446,7 +480,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 'product_variation',
                 ProductVariationPrice::class,
                 'product_variation_price',
-                'product_variation_price.variation = product_variation.id'
+                'product_variation_price.variation = product_variation.id',
             );
 
         /* Цена модификации множественного варианта */
@@ -454,7 +488,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_modification',
             ProductModificationPrice::class,
             'product_modification_price',
-            'product_modification_price.modification = product_modification.id'
+            'product_modification_price.modification = product_modification.id',
         );
 
         $dbal->addSelect('
@@ -467,10 +501,58 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         ');
 
 
+        /** Персональная скидка из профиля авторизованного пользователя */
+        if(true === $dbal->bindCurrentProfile())
+        {
+            $dbal
+                ->join(
+                    'product',
+                    UserProfile::class,
+                    'current_profile',
+                    '
+                        current_profile.id = :'.$dbal::CURRENT_PROFILE_KEY,
+                );
+
+            $dbal
+                ->addSelect('current_profile_discount.value AS profile_discount')
+                ->leftJoin(
+                    'current_profile',
+                    UserProfileDiscount::class,
+                    'current_profile_discount',
+                    '
+                        current_profile_discount.event = current_profile.event
+                        ',
+                );
+        }
+
+        /** Общая скидка (наценка) из профиля магазина */
+        if(true === $dbal->bindProjectProfile())
+        {
+
+            $dbal
+                ->join(
+                    'product',
+                    UserProfile::class,
+                    'project_profile',
+                    '
+                        project_profile.id = :'.$dbal::PROJECT_PROFILE_KEY,
+                );
+
+            $dbal
+                ->addSelect('project_profile_discount.value AS project_discount')
+                ->leftJoin(
+                    'project_profile',
+                    UserProfileDiscount::class,
+                    'project_profile_discount',
+                    '
+                        project_profile_discount.event = project_profile.event',
+                );
+        }
+
         /**
          * Фильтр по свойства продукта
          */
-        if($this->filter->getProperty())
+        if(($this->filter instanceof ProductFilterDTO) && $this->filter->getProperty())
         {
             /** @var ProductFilterPropertyDTO $property */
             foreach($this->filter->getProperty() as $property)
@@ -483,7 +565,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                         'product_property_'.$property->getType(),
                         'product_property_'.$property->getType().'.event = product.event AND 
                         product_property_'.$property->getType().'.field = :'.$property->getType().'_const AND 
-                        product_property_'.$property->getType().'.value = :'.$property->getType().'_value'
+                        product_property_'.$property->getType().'.value = :'.$property->getType().'_value',
                     );
 
                     $dbal->setParameter($property->getType().'_const', $property->getConst());
@@ -494,7 +576,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
 
         // Поиск
-        if($this->search?->getQuery())
+        if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
             //            for ($i = 0; $i <= 2; $i++) {
             //
@@ -569,10 +651,9 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             $this->paginator->setLimit($this->limit);
         }
 
-
         return $this
             ->paginator
-            ->fetchAllAssociative($dbal);
+            ->fetchAllHydrate($dbal, AllProductStocksResult::class);
 
     }
 }

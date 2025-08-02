@@ -26,12 +26,20 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocks;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 
 interface AllProductStocksInterface
 {
     public function search(SearchDTO $search): static;
 
     public function filter(ProductFilterDTO $filter): static;
+
+    public function forProfile(UserProfileUid|UserProfile $profile): self;
+
+    public function forUser(User|UserUid $user): self;
 
     /** Метод возвращает полное состояние складских остатков продукции */
     public function findPaginator(): PaginatorInterface;

@@ -1,23 +1,15 @@
+{# @var item \BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksResult #}
+
 <tr>
     <td class="p-0" style="background-color: unset; box-shadow: unset;">&nbsp;</td>
 </tr>
 
 <tr class="vertical-middle">
 
-    {# <td class="text-nowrap">
-    #}{# Пользовательское меню #}{#
-    {% if app.user.profile == item.users_profile_id %}
-    #}{# Пользовательское меню #}{#
-    {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
-{% else %}
-    &nbsp;
-{% endif %}
-</td> #}
-
     <td class="text-center">
         <a href="{{ path('products-product:public.catalog.category', {
-            category: item.category_url
-        }) }}" class="text-decoration-none" target="_detail">{{ item.category_name }}</a>
+            category: item.categoryUrl
+        }) }}" class="text-decoration-none" target="_detail">{{ item.categoryName }}</a>
 
     </td>
 
@@ -25,27 +17,27 @@
         <div class="d-flex gap-3 align-items-center">
 
             {# Обложка #}
-            {% set image_path = '/assets/img/blank.svg' %}
+            {# {% set image_path = '/assets/img/blank.svg' %}
 
             {% if item.product_image_ext is defined and item.product_image_ext is not null %}
                 {% set img_host =  item.product_image_cdn == true  ? CDN_HOST : '' %}
                 {% set img_dir = item.product_image %}
                 {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ item.product_image_ext %}
                 {% set image_path = img_host ~ img_dir ~ img_file %}
-            {% endif %}
+            {% endif %} #}
 
             {% set product_href = path('products-product:public.detail', {
-                category: item.category_url,
-                url: item.product_url,
-                offer : item.product_offer_value,
-                variation : item.product_variation_value,
-                modification : item.product_modification_value,
-                postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
+                category: item.categoryUrl,
+                url: item.productUrl,
+                offer : item.productOfferValue,
+                variation : item.productVariationValue,
+                modification : item.productModificationValue,
+                postfix:  (item.productModificationPostfix ?: item.productVariationPostfix ?: item.productOfferPostfix ?: null )|replace({ '/': '-' })
             }) %}
 
             <div>
                 <a href="{{ product_href }}" class="icon rounded-3 lazy bg-contain p-1"
-                   data-bg="{{ image_path }}"
+                   data-bg="{{ cdn_image_path(item.productImage, item.productImageExt, item.productImageCdn, 'min') }}"
                    style="width: 45px; height: 45px;"
                    target="_detail"
                 ></a>
@@ -59,21 +51,21 @@
                    target="_detail"
                 >
 
-                    {{ item.product_name }}
+                    {{ item.productName }}
 
                     {# Значение множественного варианта ТП #}
-                    {{ item.product_variation_value|call_twig_func(item.product_variation_reference~'_render')
-                    ~ item.product_modification_value|call_twig_func(item.product_modification_reference~'_render') }}
+                    {{ item.productVariationValue|call_twig_func(item.productVariationReference~'_render')
+                    ~ item.productModificationValue|call_twig_func(item.productModificationReference~'_render') }}
 
                     {# Значение торгового предложения #}
-                    {{ item.product_offer_value|call_twig_func(item.product_offer_reference~'_render') }}
+                    {{ item.productOfferValue|call_twig_func(item.productOfferReference~'_render') }}
 
                     {# Постфикс торгового предложения #}
-                    {{ item.product_offer_postfix }}
+                    {{ item.productOfferPostfix }}
                     {# Постфикс множественного варианта #}
-                    {{ item.product_variation_postfix }}
+                    {{ item.productVariationPostfix }}
                     {# Постфикс модификации #}
-                    {{ item.product_modification_postfix }}
+                    {{ item.productModificationPostfix }}
 
                     {# Свойства, учавствующие в названии #}
                     {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
@@ -89,14 +81,14 @@
 
                 {# Артикул #}
                 <div class="d-flex align-items-center gap-1 text-primary pointer copy small"
-                     data-copy="{{ item.product_article }}">
+                     data-copy="{{ item.productArticle }}">
 
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="14"
                          height="14" fill="currentColor" viewBox="0 0 115.77 122.88">
                         <path d="M89.62,13.96v7.73h12.19h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02v0.02 v73.27v0.01h-0.02c-0.01,3.84-1.57,7.33-4.1,9.86c-2.51,2.5-5.98,4.06-9.82,4.07v0.02h-0.02h-61.7H40.1v-0.02 c-3.84-0.01-7.34-1.57-9.86-4.1c-2.5-2.51-4.06-5.98-4.07-9.82h-0.02v-0.02V92.51H13.96h-0.01v-0.02c-3.84-0.01-7.34-1.57-9.86-4.1 c-2.5-2.51-4.06-5.98-4.07-9.82H0v-0.02V13.96v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07V0h0.02h61.7 h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02V13.96L89.62,13.96z M79.04,21.69v-7.73v-0.02h0.02 c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v64.59v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h12.19V35.65 v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07v-0.02h0.02H79.04L79.04,21.69z M105.18,108.92V35.65v-0.02 h0.02c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v73.27v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h61.7h0.02 v0.02c0.91,0,1.75-0.39,2.37-1.01c0.61-0.61,1-1.46,1-2.37h-0.02V108.92L105.18,108.92z"></path>
                     </svg>
 
-                    Артикул: {{ item.product_article }}
+                    Артикул: {{ item.productArticle }}
                 </div>
             </div>
 
@@ -104,7 +96,7 @@
     </td>
 
     <td>
-        {{ money(item.product_price) }}
+        {{ money(item.productPrice) }}
     </td>
 
     {# <td>

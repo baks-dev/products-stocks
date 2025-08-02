@@ -58,6 +58,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AllProductStocksPurchaseRepository implements AllProductStocksPurchaseInterface
@@ -69,6 +70,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
 
     public function search(SearchDTO $search): self
@@ -115,12 +117,12 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'
+                'event.id = stock.event AND event.status = :status',
             )
             ->setParameter(
                 'status',
                 ProductStockStatusPurchase::class,
-                ProductStockStatus::TYPE
+                ProductStockStatus::TYPE,
             );
 
         $dbal
@@ -129,13 +131,15 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'stock',
                 ProductStocksInvariable::class,
                 'invariable',
-                'invariable.main = stock.id'.($this->profile ? ' AND invariable.profile = :profile' : '')
+                'invariable.main = stock.id AND invariable.profile = :profile',
             );
 
-        if($this->profile)
-        {
-            $dbal->setParameter('profile', $this->profile, UserProfileUid::TYPE);
-        }
+        $dbal->setParameter(
+            'profile',
+            $this->profile ?: $this->UserProfileTokenStorage->getProfile(),
+            UserProfileUid::TYPE,
+        );
+
 
         // ProductStockModify
         $dbal
@@ -144,7 +148,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = stock.event'
+                'modify.event = stock.event',
             );
 
         $dbal
@@ -154,9 +158,8 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             );
-
 
 
         // Product
@@ -167,7 +170,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -175,7 +178,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
         $dbal
@@ -184,7 +187,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_event',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         // Product Trans
@@ -194,7 +197,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         // Торговое предложение
@@ -207,7 +210,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
         // Получаем тип торгового предложения
@@ -217,7 +220,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
         // Множественные варианты торгового предложения
@@ -230,7 +233,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_offer',
                 ProductVariation::class,
                 'product_offer_variation',
-                'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation'
+                'product_offer_variation.offer = product_offer.id AND product_offer_variation.const = stock_product.variation',
             );
 
         // Получаем тип множественного варианта
@@ -240,7 +243,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_offer_variation',
                 CategoryProductVariation::class,
                 'category_offer_variation',
-                'category_offer_variation.id = product_offer_variation.category_variation'
+                'category_offer_variation.id = product_offer_variation.category_variation',
             );
 
         // Модификация множественного варианта торгового предложения
@@ -253,7 +256,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_offer_variation',
                 ProductModification::class,
                 'product_offer_modification',
-                'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification'
+                'product_offer_modification.variation = product_offer_variation.id AND product_offer_modification.const = stock_product.modification',
             );
 
         // Получаем тип модификации множественного варианта
@@ -263,7 +266,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'product_offer_modification',
                 CategoryProductModification::class,
                 'category_offer_modification',
-                'category_offer_modification.id = product_offer_modification.category_modification'
+                'category_offer_modification.id = product_offer_modification.category_modification',
             );
 
         // Артикул продукта
@@ -277,7 +280,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 			   WHEN product_info.article IS NOT NULL THEN product_info.article
 			   ELSE NULL
 			END AS product_article
-		'
+		',
         );
 
         // Фото продукта
@@ -289,7 +292,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             '
 			product_offer_modification_image.modification = product_offer_modification.id AND
 			product_offer_modification_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -299,7 +302,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             '
 			product_offer_variation_image.variation = product_offer_variation.id AND
 			product_offer_variation_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -310,7 +313,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 			product_offer_variation_image.name IS NULL AND
 			product_offer_images.offer = product_offer.id AND
 			product_offer_images.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -321,7 +324,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 			product_offer_images.name IS NULL AND
 			product_photo.event = product_event.id AND
 			product_photo.root = true
-			'
+			',
         );
 
         $dbal->addSelect(
@@ -338,7 +341,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         // Расширение файла
@@ -354,7 +357,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 			   ELSE NULL
 			   
 			END AS product_image_ext
-		"
+		",
         );
 
         // Флаг загрузки файла CDN
@@ -369,7 +372,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
 					product_photo.cdn
 			   ELSE NULL
 			END AS product_image_cdn
-		'
+		',
         );
 
         // Категория
@@ -377,14 +380,14 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             'product_event',
             ProductCategory::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true'
+            'product_event_category.event = product_event.id AND product_event_category.root = true',
         );
 
         $dbal->leftJoin(
             'product_event_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_event_category.category'
+            'category.id = product_event_category.category',
         );
 
         $dbal
@@ -393,7 +396,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'category',
                 CategoryProductTrans::class,
                 'category_trans',
-                'category_trans.event = category.event AND category_trans.local = :local'
+                'category_trans.event = category.event AND category_trans.local = :local',
             );
 
         $dbal
@@ -402,8 +405,9 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
+
 
         // ОТВЕТСТВЕННЫЙ
 
@@ -414,15 +418,16 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = invariable.profile'
+                'users_profile.id = invariable.profile',
             );
+
 
         // Info
         $dbal->leftJoin(
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = event.profile'
+            'users_profile_info.profile = event.profile',
         );
 
         // Event
@@ -430,7 +435,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
             'users_profile',
             UserProfileEvent::class,
             'users_profile_event',
-            'users_profile_event.id = users_profile.event'
+            'users_profile_event.id = users_profile.event',
         );
 
         // Personal
@@ -440,7 +445,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'users_profile_event',
                 UserProfilePersonal::class,
                 'users_profile_personal',
-                'users_profile_personal.event = users_profile_event.id'
+                'users_profile_personal.event = users_profile_event.id',
             );
 
         // Avatar
@@ -453,7 +458,7 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
                 'users_profile_event',
                 UserProfileAvatar::class,
                 'users_profile_avatar',
-                'users_profile_avatar.event = users_profile_event.id'
+                'users_profile_avatar.event = users_profile_event.id',
             );
 
         // Группа

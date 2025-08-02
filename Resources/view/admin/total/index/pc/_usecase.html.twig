@@ -1,8 +1,10 @@
 {# Пользовательское меню #}
 
+{# @var item \BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksResult #}
+
 
 <button class="btn btn-link btn-sm p-0"
-        id="usecase-{{ item.stock_id }}"
+        id="usecase-{{ item.stockId }}"
         data-bs-container="body"
         data-bs-toggle="popover"
         data-bs-placement="right"
@@ -25,14 +27,14 @@ value="{{ item.stock_id }}">
 </label> #}
 
 
-<div id="usecase-{{ item.stock_id }}-content" class="d-none">
+<div id="usecase-{{ item.stockId }}-content" class="d-none">
     <ul class="leader list-group list-group-flush ">
 
         {# Редактировать место складирвоания #}
         {% if is_granted(ROLE~'_STORAGE') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.storage', {id: item.stock_id }) }}"
+                <a href="{{ path('products-stocks:admin.total.storage', {id: item.stockId }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
@@ -47,7 +49,7 @@ value="{{ item.stock_id }}">
         {% if is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.edit', {id: item.stock_id }) }}"
+                <a href="{{ path('products-stocks:admin.total.edit', {id: item.stockId }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
