@@ -29,23 +29,46 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class RecalculateProductMessage
 {
+    private string $profile;
+    private string $product;
+    private ?string $offer;
+    private ?string $variation;
+    private ?string $modification;
+
     public function __construct(
-        private ProductUid $product,
-        private ?ProductOfferConst $offer,
-        private ?ProductVariationConst $variation,
-        private ?ProductModificationConst $modification
-    ) {}
+        UserProfileUid $profile,
+        ProductUid $product,
+        ?ProductOfferConst $offer,
+        ?ProductVariationConst $variation,
+        ?ProductModificationConst $modification
+    )
+    {
+        $this->profile = (string) $profile;
+        $this->product = (string) $product;
+        $this->offer = $offer instanceof ProductOfferConst ? (string) $offer : null;
+        $this->variation = $variation instanceof ProductVariationConst ? (string) $variation : null;
+        $this->modification = $modification instanceof ProductModificationConst ? (string) $modification : null;
+    }
+
+    /**
+     *  Profile
+     */
+    public function getProfile(): UserProfileUid
+    {
+        return new UserProfileUid($this->profile);
+    }
 
     /**
      * Product
      */
     public function getProduct(): ProductUid
     {
-        return $this->product;
+        return new ProductUid($this->product);
     }
 
     /**
@@ -53,7 +76,7 @@ final readonly class RecalculateProductMessage
      */
     public function getOffer(): ProductOfferConst|false
     {
-        return $this->offer ?: false;
+        return $this->offer ? new ProductOfferConst($this->offer) : false;
     }
 
     /**
@@ -61,7 +84,7 @@ final readonly class RecalculateProductMessage
      */
     public function getVariation(): ProductVariationConst|false
     {
-        return $this->variation ?: false;
+        return $this->variation ? new ProductVariationConst($this->variation) : false;
     }
 
     /**
@@ -69,7 +92,7 @@ final readonly class RecalculateProductMessage
      */
     public function getModification(): ProductModificationConst|false
     {
-        return $this->modification ?: false;
+        return $this->modification ? new ProductModificationConst($this->modification) : false;
     }
 
 }

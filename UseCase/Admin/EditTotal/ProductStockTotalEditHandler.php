@@ -44,8 +44,14 @@ final class ProductStockTotalEditHandler extends AbstractHandler
             ->getRepository(ProductStockTotal::class)
             ->find($command->getId());
 
+        if(false === ($ProductStockTotal instanceof ProductStockTotal))
+        {
+            return $this->validatorCollection->getErrorUniqid();
+        }
+
+
         if(
-            !$ProductStockTotal || false === $this->validatorCollection->add($ProductStockTotal, context: [
+            false === $this->validatorCollection->add($ProductStockTotal, context: [
                 self::class.':'.__LINE__,
                 'class' => ProductStockTotal::class,
                 'id' => $command->getId(),
@@ -69,6 +75,7 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         {
             /** Отправляем сообщение в шину для пересчета продукции */
             $this->messageDispatch->dispatch(new RecalculateProductMessage(
+                $ProductStockTotal->getProfile(),
                 $command->getProduct(),
                 $command->getOffer(),
                 $command->getVariation(),

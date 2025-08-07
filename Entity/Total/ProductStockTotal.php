@@ -129,6 +129,11 @@ class ProductStockTotal extends EntityState
         return $this->id;
     }
 
+    public function getProfile(): UserProfileUid
+    {
+        return $this->profile;
+    }
+
 
     /** Количество */
 

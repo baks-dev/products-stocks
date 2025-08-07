@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,9 @@ interface ProductStocksTotalInterface
     public function variation(ProductVariationConst|string|null $variation): self;
 
     public function modification(ProductModificationConst|string|null $modification): self;
+
+    /** Только на логистических складах */
+    public function onlyLogisticWarehouse(): self;
 
     /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
     public function get(): int;

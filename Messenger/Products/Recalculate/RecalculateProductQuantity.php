@@ -56,12 +56,14 @@ final readonly class RecalculateProductQuantity
      */
     public function __invoke(RecalculateProductMessage $product): void
     {
-        // Метод возвращает общее количество продукции на всех складах (без учета резерва)
+
+        // Метод возвращает общее количество продукции на всех Логистических складах (без учета резерва)
         $ProductStocksTotal = $this->productStocksTotal
             ->product($product->getProduct())
             ->offer($product->getOffer())
             ->variation($product->getVariation())
             ->modification($product->getModification())
+            ->onlyLogisticWarehouse()
             ->get();
 
 
