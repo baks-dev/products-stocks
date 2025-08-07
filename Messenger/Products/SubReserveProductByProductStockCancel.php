@@ -36,6 +36,8 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -52,6 +54,7 @@ final readonly class SubReserveProductByProductStockCancel
         private CurrentProductStocksInterface $CurrentProductStocks,
         private SubProductQuantityInterface $subProductQuantity,
         private DeduplicatorInterface $deduplicator,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -93,6 +96,27 @@ final readonly class SubReserveProductByProductStockCancel
         {
             return;
         }
+
+        /**
+         * Проверяем, является ли данный профиль логистическим складом
+         */
+
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
+
+        if(false === ($UserProfileUid instanceof UserProfileUid))
+        {
+            return;
+        }
+
+        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
+            ->forProfile($UserProfileUid)
+            ->isLogisticWarehouse();
+
+        if(false === $isLogisticWarehouse)
+        {
+            return;
+        }
+
 
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $ProductStockEvent->getProduct();

@@ -35,6 +35,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -54,6 +55,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         private ProductQuantityInterface $productQuantity,
         private EntityManagerInterface $entityManager,
         private DeduplicatorInterface $deduplicator,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
     ) {}
 
     /**
@@ -62,6 +64,8 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        /* TODO: ОТКЛЮЧЕНО !!! */
+        return;
 
         if(false === ($message->getLast() instanceof ProductStockEventUid))
         {

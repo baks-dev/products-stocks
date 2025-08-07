@@ -34,6 +34,8 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -50,6 +52,7 @@ final readonly class AddQuantityProductByIncomingStock
         private AddProductQuantityInterface $addProductQuantity,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private DeduplicatorInterface $deduplicator,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -66,6 +69,7 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
+
         $ProductStockEvent = $this
             ->ProductStocksEventRepository
             ->forEvent($message->getEvent())
@@ -78,6 +82,26 @@ final readonly class AddQuantityProductByIncomingStock
 
         // Если статус не является Incoming «Приход на склад»
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class))
+        {
+            return;
+        }
+
+        /**
+         * Проверяем, является ли данный профиль логистическим складом
+         */
+
+        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
+
+        if(false === ($UserProfileUid instanceof UserProfileUid))
+        {
+            return;
+        }
+
+        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
+            ->forProfile($UserProfileUid)
+            ->isLogisticWarehouse();
+
+        if(false === $isLogisticWarehouse)
         {
             return;
         }

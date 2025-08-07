@@ -34,6 +34,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -53,6 +54,7 @@ final readonly class AddReserveProductByProductStockMove
         private ProductQuantityInterface $productQuantity,
         private EntityManagerInterface $entityManager,
         private DeduplicatorInterface $deduplicator,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
     ) {}
 
     /**
@@ -60,6 +62,22 @@ final readonly class AddReserveProductByProductStockMove
      */
     public function __invoke(ProductStockMessage $message): void
     {
+        /* TODO: ОТКЛЮЧЕНО !!! */
+        return;
+
+        //        /**
+        //         * Проверяем, является ли данный профиль логистическим складом
+        //         */
+        //        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
+        //            ->forProfile($UserProfileUid)
+        //            ->isLogisticWarehouse()
+        //        ;
+        //
+        //        if(false === $isLogisticWarehouse)
+        //        {
+        //            return;
+        //        }
+
 
         $this->entityManager->clear();
 
