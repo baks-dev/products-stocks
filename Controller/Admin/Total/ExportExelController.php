@@ -29,7 +29,9 @@ use BaksDev\Core\Twig\CallTwigFuncExtension;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
+use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksResult;
 use BaksDev\Reference\Money\Type\Money;
+use Generator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\Request;
@@ -72,6 +74,7 @@ final class ExportExelController extends AbstractController
             return $this->redirectToReferer();
         }
 
+        /** @var Generator<int, AllProductStocksResult> $result */
         $result = $query->getData();
 
 
@@ -109,41 +112,42 @@ final class ExportExelController extends AbstractController
         $allTotal = 0;
         $allPrice = 0;
 
+
+        /** @var AllProductStocksResult $data */
+
         foreach($result as $data)
         {
-            $name = $data['product_name'];
+            $name = $data->getProductName();
 
-            $variation = $call->call($environment, $data['product_variation_value'], $data['product_variation_reference'].'_render');
+            $variation = $call->call($environment, $data->getProductVariationValue(), $data->getProductVariationReference().'_render');
             $name .= $variation ? ' '.trim($variation) : null;
 
-            $modification = $call->call($environment, $data['product_modification_value'], $data['product_modification_reference'].'_render');
+            $modification = $call->call($environment, $data->getProductModificationValue(), $data->getProductModificationReference().'_render');
             $name .= $modification ? trim($modification) : null;
 
-            $offer = $call->call($environment, $data['product_offer_value'], $data['product_offer_reference'].'_render');
+            $offer = $call->call($environment, $data->getProductOfferValue(), $data->getProductOfferReference().'_render');
             $name .= $offer ? ' '.trim($offer) : null;
 
-            $name .= $data['product_offer_postfix'] ? ' '.trim($data['product_offer_postfix']) : null;
-            $name .= $data['product_variation_postfix'] ? ' '.trim($data['product_variation_postfix']) : null;
-            $name .= $data['product_modification_postfix'] ? ' '.trim($data['product_modification_postfix']) : null;
+            $name .= $data->getProductOfferPostfix();
+            $name .= $data->getProductVariationPostfix();
+            $name .= $data->getProductModificationPostfix();
 
-            $Money = new Money($data['product_price'], true);
-            $quantity = ($data['stock_total'] - $data['stock_reserve']);
-            $total_price = ($Money->getValue() * $data['stock_total']);
+            $Money = $data->getProductPrice();
+            $total_price = $data->getProductPrice()->multiplication($data->getStockTotal());
 
-
-            $sheet->setCellValue('A'.$key, trim($data['product_article'])); // Артикул
+            $sheet->setCellValue('A'.$key, trim($data->getProductArticle())); // Артикул
             $sheet->setCellValue('B'.$key, trim($name)); // Наименование товара
             $sheet->setCellValue('C'.$key, $Money->getValue()); // Стоимость
-            $sheet->setCellValue('D'.$key, $data['stock_total']); // Наличие
-            $sheet->setCellValue('E'.$key, $data['stock_reserve']); // Резерв
-            $sheet->setCellValue('F'.$key, $quantity); // Доступно
+            $sheet->setCellValue('D'.$key, $data->getStockTotal()); // Наличие
+            $sheet->setCellValue('E'.$key, $data->getStockReserve()); // Резерв
+            $sheet->setCellValue('F'.$key, $data->getQuantity()); // Доступно
             $sheet->setCellValue('G'.$key, $total_price); // Сумма
-            $sheet->setCellValue('H'.$key, $data['stock_storage']); // Место
+            $sheet->setCellValue('H'.$key, $data->getStockStorage()); // Место
 
 
             /** Подсчет ИТОГО */
-            $allTotal += $data['stock_total'];
-            $allPrice += $total_price;
+            $allTotal += $data->getStockTotal();
+            $allPrice += $total_price->getValue();
 
             $key++;
         }
@@ -160,7 +164,8 @@ final class ExportExelController extends AbstractController
          * Отдаем результат для скачивания
          */
 
-        $filename = current($result)['users_profile_username'].'.xlsx';
+        /** @var AllProductStocksResult $data */
+        $filename = $data->getUsersProfileUsername().'.xlsx';
 
         $response = new StreamedResponse(function() use ($writer) {
             $writer->save('php://output');

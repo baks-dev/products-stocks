@@ -97,6 +97,11 @@ final class AllProductStocksResult
         return $this->stock_reserve ?: 0;
     }
 
+    public function getQuantity(): int
+    {
+        return $this->getStockTotal() - $this->getStockReserve();
+    }
+
     public function getStockComment(): ?string
     {
         return $this->stock_comment;
