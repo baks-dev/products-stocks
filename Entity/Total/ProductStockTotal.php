@@ -138,15 +138,17 @@ class ProductStockTotal extends EntityState
     /** Количество */
 
     // Увеличиваем количество
-    public function addTotal(int $total): void
+    public function addTotal(int $total): self
     {
         $this->total += $total;
+        return $this;
     }
 
     // Уменьшаем количество
-    public function subTotal(int $total): void
+    public function subTotal(int $total): self
     {
         $this->total -= $total;
+        return $this;
     }
 
     public function setTotal(int $total): self
@@ -163,13 +165,14 @@ class ProductStockTotal extends EntityState
     /** Резервирование */
 
     // Увеличиваем количество
-    public function addReserve(int $reserve): void
+    public function addReserve(int $reserve): self
     {
         $this->reserve += $reserve;
+        return $this;
     }
 
     // Уменьшаем количество
-    public function subReserve(int $reserve): void
+    public function subReserve(int $reserve): self
     {
         $this->reserve -= $reserve;
 
@@ -178,6 +181,7 @@ class ProductStockTotal extends EntityState
             $this->reserve = 0;
         }
 
+        return $this;
     }
 
     public function getReserve(): int

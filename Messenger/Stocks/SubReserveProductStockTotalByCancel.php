@@ -29,6 +29,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
@@ -36,7 +37,11 @@ use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocks
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -54,6 +59,8 @@ final readonly class SubReserveProductStockTotalByCancel
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
+        private UserByUserProfileInterface $UserByUserProfileRepository,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -67,7 +74,7 @@ final readonly class SubReserveProductStockTotalByCancel
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -97,7 +104,7 @@ final readonly class SubReserveProductStockTotalByCancel
         {
             $this->logger->warning('Заявка не имеет продукции в коллекции', [
                 self::class.':'.__LINE__,
-                var_export($message, true)
+                var_export($message, true),
             ]);
 
             return;
@@ -107,7 +114,7 @@ final readonly class SubReserveProductStockTotalByCancel
         {
             $this->logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -125,8 +132,8 @@ final readonly class SubReserveProductStockTotalByCancel
                 sprintf('%s: Отменяем резерв на складе при отмене складской заявки', $ProductStockEvent->getNumber()),
                 [
                     self::class.':'.__LINE__,
-                    var_export($message, true)
-                ]
+                    var_export($message, true),
+                ],
             );
 
             $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
@@ -152,13 +159,47 @@ final readonly class SubReserveProductStockTotalByCancel
 
             if(false === $storage)
             {
-                $this->logger->critical(
-                    sprintf('%s: Не найдено место складирования на складе для списания резерва при отмене', $ProductStockEvent->getNumber()),
-                    [
-                        self::class.':'.__LINE__,
-                        var_export($message, true),
-                    ]
-                );
+                /**
+                 * Если при отмене нет остатка (например возврат) - создаем с новым остатком и таким же резервом
+                 */
+
+                /* Получаем идентификатор пользователя профиля */
+                $User = $this->UserByUserProfileRepository
+                    ->forProfile($UserProfileUid)
+                    ->find();
+
+                if(true === ($User instanceof User))
+                {
+                    /* Создаем новое место складирования на указанный профиль и пользователя */
+                    $ProductStockTotal = new ProductStockTotal(
+                        $User->getId(),
+                        $UserProfileUid,
+                        $product->getProduct(),
+                        $product->getOffer(),
+                        $product->getVariation(),
+                        $product->getModification(),
+                        $product->getStorage(),
+                    );
+
+                    $ProductStockTotal
+                        ->addTotal($product->getTotal())
+                        ->addReserve($product->getTotal());
+
+                    $this->entityManager->persist($ProductStockTotal);
+                    $this->entityManager->flush();
+
+                    $storage = 1;
+                }
+                else
+                {
+                    $this->logger->critical(
+                        sprintf('%s: Не найдено место складирования на складе для списания резерва при отмене', $ProductStockEvent->getNumber()),
+                        [
+                            self::class.':'.__LINE__,
+                            var_export($message, true),
+                        ],
+                    );
+                }
             }
 
             /**
@@ -173,7 +214,7 @@ final readonly class SubReserveProductStockTotalByCancel
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalCancelMessage,
-                    transport: 'products-stocks-low'
+                    transport: 'products-stocks-low',
                 );
 
                 continue;
@@ -195,7 +236,7 @@ final readonly class SubReserveProductStockTotalByCancel
 
                 $this->messageDispatch->dispatch(
                     $SubProductStocksTotalCancelMessage,
-                    transport: 'products-stocks-low'
+                    transport: 'products-stocks-low',
                 );
 
                 if($i === $product->getTotal())
