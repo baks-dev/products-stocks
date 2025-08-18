@@ -133,7 +133,10 @@ final class ExportExelController extends AbstractController
             $name .= $data->getProductModificationPostfix();
 
             $Money = $data->getProductPrice();
-            $total_price = $data->getProductPrice()->multiplication($data->getStockTotal());
+
+            $total_price = $data->getProductPrice()
+                ? $data->getProductPrice()->multiplication($data->getStockTotal())
+                : new Money(0);
 
             $sheet->setCellValue('A'.$key, trim($data->getProductArticle())); // Артикул
             $sheet->setCellValue('B'.$key, trim($name)); // Наименование товара
