@@ -52,7 +52,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
@@ -83,13 +83,12 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
 
 
         $dbal
-            ->addSelect('stock_event.number')
-            ->
-            join(
+            ->addSelect('product_stock_invariable.number')
+            ->join(
                 'stock',
-                ProductStockEvent::class,
-                'stock_event',
-                'stock_event.id = stock.event'
+                ProductStocksInvariable::class,
+                'product_stock_invariable',
+                'product_stock_invariable.main = stock.event',
             );
 
 
@@ -106,19 +105,19 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
         /** Информация о заказе */
 
         $dbal->leftJoin(
-            'stock_event',
+            'stock',
             ProductStockOrder::class,
             'stock_order',
-            'stock_order.event = stock_event.id'
+            'stock_order.event = stock.event',
         );
 
 
         $dbal
             ->leftJoin(
-                'stock_event',
+                'stock',
                 ProductStockMove::class,
                 'stock_move',
-                'stock_move.event = stock_event.id'
+                'stock_move.event = stock.event',
             );
 
         $dbal->join(
@@ -483,7 +482,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 ProductStockTotal::class,
                 'stock_total',
                 '
-                    stock_total.profile = stock_event.profile AND
+                    stock_total.profile = product_stock_invariable.profile AND
                     stock_total.product = product.id AND
                     stock_total.offer = product_offer.const AND
                     stock_total.variation = product_variation.const AND
