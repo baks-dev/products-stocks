@@ -95,5 +95,75 @@
         }
 
     </script>
+
+
+<script nonce="{{ csp_nonce() }}">
+
+
+/** Обработчики кнопок выбора товаров */
+var select_all_to_completed = document.querySelector("#select-all-to-completed");
+var add_all_to_completed = document.querySelector("#add-all-to-completed");
+
+/** Выбор из списка */
+select_all_to_completed?.addEventListener("click", function() {
+
+    // Выбрать все
+    select_all_to_completed.classList.toggle("selected");
+
+
+    if(select_all_to_completed.classList.contains("selected"))
+        {
+            select_all_to_completed.innerText = "Снять выбор";
+            select_all_to_completed.classList.remove("btn-outline-primary");
+            select_all_to_completed.classList.add("btn-primary");
+        }
+    else
+
+       {
+           select_all_to_completed.innerText = "Выбрать все";
+           select_all_to_completed.classList.add("btn-outline-primary");
+           select_all_to_completed.classList.remove("btn-primary");
+       }
+
+
+    const orders = document.querySelectorAll(".add-all-to-completed");
+
+    // Выбрать все НЕ disabled (т.е. те, которые не на производстве)
+    orders.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_completed.classList.contains("selected");} } );
+
+    const checkboxes = document.querySelectorAll(".add-all-to-completed");
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+    if (atLeastOneChecked) {
+        add_all_to_completed.classList.remove("d-none");
+    }
+    else {
+        add_all_to_completed.classList.add("d-none");
+    }
+
+});
+
+var checkboxs_all_to_completed = document.querySelectorAll(".add-all-to-completed");
+
+/** Скрыть или показать кнопку "Добавить выбранные" */
+for (checkbox_all_to_completed of checkboxs_all_to_completed) {
+
+    checkbox_all_to_completed?.addEventListener("click", function() {
+
+        const checkboxes = document.querySelectorAll(".add-all-to-completed");
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+        if (atLeastOneChecked) {
+           add_all_to_completed.classList.remove("d-none");
+        }
+        else {
+            add_all_to_completed.classList.add("d-none");
+        }
+
+    });
+}
+ </script>
+
+
 {% endblock %}
 
