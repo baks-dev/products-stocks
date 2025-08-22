@@ -112,7 +112,7 @@ final class IndexController extends AbstractController
                 'filter' => $filterForm->createView(),
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
-                'add_selected_order_form_name' => $this->createForm(type: SalesInvoiceForm::class)->getName(),
+                'add_selected_form_name' => $this->createForm(type: SalesInvoiceForm::class)->getName(),
             ]
         );
     }

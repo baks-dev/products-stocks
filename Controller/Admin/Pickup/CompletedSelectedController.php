@@ -70,10 +70,10 @@ final class CompletedSelectedController extends AbstractController
 
         $products = [];
 
+
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
-
             $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
 
             /** Скрываем идентификатор у остальных пользователей */
@@ -83,7 +83,7 @@ final class CompletedSelectedController extends AbstractController
                 ->send('remove');
 
             $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
-
+            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
         }
 
 
@@ -109,7 +109,7 @@ final class CompletedSelectedController extends AbstractController
                     $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
                     'products-stocks.admin',
                     $handle,
-                    $remove ? 200 : 302
+                    $remove ? 200 : 302,
                 );
 
             }
@@ -117,11 +117,25 @@ final class CompletedSelectedController extends AbstractController
 
         }
 
-        return $this->render(
-            [
+
+        /** Выводим несколько заказов */
+        if($CompletedSelectedProductStockDTO->getCollection()->count() >= 1)
+        {
+            return $this->render([
                 'form' => $form->createView(),
-                'products' => $products
-            ]
+                'products' => $products,
+            ]);
+        }
+
+        /** Выводим один заказ */
+        return $this->render(
+            parameters: [
+                'form' => $form->createView(),
+                'products' => $products,
+            ],
+            module: 'products-stocks',
+            dir: '/admin/pickup/completed',
+            file: 'content.html.twig',
         );
     }
 }

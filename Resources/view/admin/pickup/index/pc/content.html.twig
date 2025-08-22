@@ -162,14 +162,36 @@
         <div id="{{ item.stock_id }}" class="card mb-3 border-light">
             <div class="card-header bg-body border-light">
 
-                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between align-items-center text-secondary">
+                <div class="card-title w-100 d-flex gap-3 mb-0 justify-content-between align-items-center text-secondary">
 
-                    <input id="check-{{ item.stock_id }}"
-                           type="checkbox"
-                           class="form-check-input add-all-to-completed btn-outline-danger"
-                           data-formname="completed_selected_product_stock_form"
-                           data-id="{{ item.stock_event }}"
-                           title="Выбрать данный заказ">
+
+                    <div data-buttons="true">
+                        <label class="btn p-3 border-dotted rounded-3">
+                            <div class="d-flex align-items-center">
+                                        <span class="h5 m-0 lh-1">
+
+                                            <input id="check-{{ item.stock_id }}"
+                                                   type="checkbox"
+                                                   class="form-check-input add-all-to-completed btn-outline-danger"
+                                                   {# data-formname="completed_selected_product_stock_form" #}
+                                                   data-formname="{{ add_selected_form_name }}"
+                                                   data-id="{{ item.stock_event }}"
+                                                   title="Выбрать данный заказ">
+
+                                            {# <input
+                                                    id="check-{{ identifier }}"
+                                                    type="checkbox"
+                                                    class="form-check-input add-all-to-invoice m-0 btn-outline-danger"
+                                            #}{# Данные, отправляемые POST #}{#
+                                            data-formname="{{ add_selected_form_name }}"
+                                            data-order="{{ identifier }}"
+                                    > #}
+
+                                        </span>
+                            </div>
+                        </label>
+                    </div>
+
 
                     <button
                             class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0"
@@ -178,6 +200,7 @@
                             data-bs-target="#collapse{{ item.stock_id }}"
                     >
                     </button>
+
 
                     <div class="w-100">
 
@@ -222,10 +245,10 @@
                             {# СКЛАД #}
 
                             <div class="text-nowrap">
-                                <div class="text-nowrap">
+                                {# <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Склад: </span> &nbsp;
                                     <strong>{{ item.users_profile_username }}</strong>
-                                </div>
+                                </div> #}
 
                                 {% if item.delivery_name %}
                                     <div class="text-nowrap">
@@ -245,7 +268,7 @@
                             <div class="d-flex w-50 gap-3">
                                 <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Клиент: </span> &nbsp;
-                                    {{ user_profile_render(item.client_profile_event) }}
+                                    <div class="d-flex gap-3">{{ user_profile_render(item.client_profile_event) }}</div>
                                 </div>
                             </div>
 
@@ -271,7 +294,7 @@
 
                     <div class="d-flex gap-3">
 
-                        <div class="dropdown">
+                        {# <div class="dropdown">
 
                             <button class="btn btn-outline-light text-muted dropdown-toggle" type="button"
                                     data-bs-toggle="dropdown"
@@ -306,19 +329,19 @@
                                     </a>
                                 </li>
                             </ul>
-                        </div>
+                        </div> #}
 
 
                         {% if item.status == 'extradition' %}
 
-{#                            <a href="{{ path('products-stocks:admin.pickup.completed', { id : item.stock_id }) }}"#}
-{#                               class="btn btn-success modal-link disabled text-nowrap"#}
-{#                               data-bs-toggle="modal"#}
-{#                               data-bs-target="#modal"#}
-{#                               title="Выдать заказ"#}
-{#                            >#}
-{#                                Выдать заказ#}
-{#                            </a>#}
+                            {#                            <a href="{{ path('products-stocks:admin.pickup.completed', { id : item.stock_id }) }}" #}
+                            {#                               class="btn btn-success modal-link disabled text-nowrap" #}
+                            {#                               data-bs-toggle="modal" #}
+                            {#                               data-bs-target="#modal" #}
+                            {#                               title="Выдать заказ" #}
+                            {#                            > #}
+                            {#                                Выдать заказ #}
+                            {#                            </a> #}
 
                             <a href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
                                class="btn btn-success modal-link disabled text-nowrap"
@@ -326,7 +349,7 @@
                                data-bs-target="#modal"
 
                                data-method="post"
-                               data-formname="completed_selected_product_stock_form"
+                               data-formname="{{ add_selected_form_name }}"
                                data-id="{{ item.stock_event }}"
                                data-collection-form="collection"
                                data-post-class="add-one-to-collection"
@@ -368,42 +391,44 @@
             </div>
         {% endif %}
 
-        {# < Контент #}
+        <div class="position-absolute mt-2 pt-1 small">
+            <strong class="">Множественный выбор:</strong>
+        </div>
 
         {# Selection #}
-        <div class="to-complete-actions d-flex gap-2 sticky-bottom pb-3 pt-2" >
+        <div class="to-invoice-actions d-flex gap-2 sticky-bottom ps-5 pb-3 pt-2" style="margin-left: 130px;">
 
             <button
-                class="btn btn-sm btn-outline-primary text-nowrap mb-2"
-                role="tooltip"
-                data-bs-toggle="tooltip"
-                data-bs-placement="bottom"
-                data-bs-delay='{"show":600,"hide":100}'
-                title="Выбрать все"
-                id="select-all-to-completed"
+                    class="btn btn-sm btn-outline-primary text-nowrap mb-2"
+                    role="tooltip"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-delay='{"show":600,"hide":100}'
+                    title="Выбрать все"
+                    id="select-all-to-completed"
             >
                 Выбрать все
             </button>
 
             <a
-                class="btn btn-sm btn-danger opacity-75 text-nowrap mb-2 d-none"
-                role="tooltip"
-                data-bs-placement="bottom"
-                data-bs-delay='{"show":600,"hide":100}'
-                title="Добавить выбранные"
-                id="add-all-to-completed"
+                    class="btn btn-sm btn-danger opacity-75 text-nowrap mb-2 d-none"
+                    role="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-delay='{"show":600,"hide":100}'
+                    title="Выдать заказы"
+                    id="add-all-to-completed"
 
-                data-bs-toggle="modal"
-                data-bs-target="#modal"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal"
 
-                data-post-class="add-all-to-completed"
+                    data-post-class="add-all-to-completed"
 
-                data-method="post"
-                data-collection-form="collection"
+                    data-method="post"
+                    data-collection-form="collection"
 
-                href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
+                    href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
             >
-                Добавить выбранные
+                Выдать заказы
             </a>
 
         </div>

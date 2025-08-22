@@ -18,124 +18,54 @@
             </div>
         </div>
 
+        <div class="modal-body d-flex gap-5">
+            <div class="w-25 text-uppercase text-muted opacity-50">Номер заказа</div>
+            <div class="w-75 text-uppercase text-muted opacity-50">Клиент</div>
+        </div>
+
 
         {% for product_item in products %}
 
             {% set current = product_item|first %}
 
-            <div class="modal-body">
             {% if current %}
 
+                <div class="modal-body py-0">
 
-                <div>Заказ #{{ current.number }}</div>
+                    <div class="d-flex align-items-center gap-5">
+                        <div class="w-25">
+                            <div class="d-flex align-items-center gap-1 text-primary pointer copy small"
+                                 data-copy="{{ current.number }}">
 
-                <div class="w-100 text-uppercase text-muted opacity-50">Клиент</div>
-                {# Клиент #}
-                {{ user_profile(current.order_client) }}
+                                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="14"
+                                     height="14" fill="currentColor" viewBox="0 0 115.77 122.88">
+                                    <path d="M89.62,13.96v7.73h12.19h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02v0.02 v73.27v0.01h-0.02c-0.01,3.84-1.57,7.33-4.1,9.86c-2.51,2.5-5.98,4.06-9.82,4.07v0.02h-0.02h-61.7H40.1v-0.02 c-3.84-0.01-7.34-1.57-9.86-4.1c-2.5-2.51-4.06-5.98-4.07-9.82h-0.02v-0.02V92.51H13.96h-0.01v-0.02c-3.84-0.01-7.34-1.57-9.86-4.1 c-2.5-2.51-4.06-5.98-4.07-9.82H0v-0.02V13.96v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07V0h0.02h61.7 h0.01v0.02c3.85,0.01,7.34,1.57,9.86,4.1c2.5,2.51,4.06,5.98,4.07,9.82h0.02V13.96L89.62,13.96z M79.04,21.69v-7.73v-0.02h0.02 c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v64.59v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h12.19V35.65 v-0.01h0.02c0.01-3.85,1.58-7.34,4.1-9.86c2.51-2.5,5.98-4.06,9.82-4.07v-0.02h0.02H79.04L79.04,21.69z M105.18,108.92V35.65v-0.02 h0.02c0-0.91-0.39-1.75-1.01-2.37c-0.61-0.61-1.46-1-2.37-1v0.02h-0.01h-61.7h-0.02v-0.02c-0.91,0-1.75,0.39-2.37,1.01 c-0.61,0.61-1,1.46-1,2.37h0.02v0.01v73.27v0.02h-0.02c0,0.91,0.39,1.75,1.01,2.37c0.61,0.61,1.46,1,2.37,1v-0.02h0.01h61.7h0.02 v0.02c0.91,0,1.75-0.39,2.37-1.01c0.61-0.61,1-1.46,1-2.37h-0.02V108.92L105.18,108.92z"></path>
+                                </svg>
 
-                <hr>
-
-                <div class="d-flex justify-content-between align-items-center gap-3 text-uppercase text-muted opacity-50">
-                    <div class="w-100">Продукция</div>
-                    <div class="w-25 text-center">Количество</div>
-                </div>
-
-                {% for product in product_item %}
-
-                    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-
-                        <div class="w-100 d-flex align-items-center gap-3">
-
-                            {# Обложка  #}
-                            {% set image_path = '/assets/img/blank.svg' %}
-
-                            {% if product.product_image_ext is defined and product.product_image_ext is not null %}
-                                {% set img_host =  product.product_image_cdn == true  ? CDN_HOST : '' %}
-                                {% set img_dir = product.product_image %}
-                                {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ product.product_image_ext %}
-                                {% set image_path = img_host ~ img_dir ~ img_file %}
-                            {% endif %}
-
-                            {% set product_href = path('products-product:public.detail', {
-                                category: product.category_url,
-                                url: product.product_url,
-                                offer : product.product_offer_value,
-                                variation : product.product_variation_value,
-                                modification : product.product_modification_value,
-                                postfix:  (product.product_modification_postfix ?: product.product_variation_postfix ?: product.product_offer_postfix ?: null )|replace({ '/': '-' })
-                            }) %}
-
-                            <div class="icon rounded-3 bg-cover lazy p-1" style="width: 50px; height: 50px;"
-                                 data-bg="{{ image_path }}">
+                                #{{ current.number }}
                             </div>
 
-                            <div class="w-100">
-
-                                <a href="{{ product_href }}" class="fw-bold text-decoration-none" target="_detail">
-
-                                    {{ product.product_name }}
-
-                                    {# Значение множественного варианта ТП #}
-                                    {{ product.product_variation_value|call_twig_func(product.product_variation_reference~'_render')
-                                    ~ product.product_modification_value|call_twig_func(product.product_modification_reference~'_render') }}
-
-                                    {# Значение торгового предложения #}
-                                    {{ product.product_offer_value|call_twig_func(product.product_offer_reference~'_render') }}
-
-                                    {# Постфикс торгового предложения #}
-                                    {{ product.product_offer_postfix }}
-                                    {# Постфикс множественного варианта #}
-                                    {{ product.product_variation_postfix }}
-                                    {# Постфикс модификации #}
-                                    {{ product.product_modification_postfix }}
-
-                                </a>
-
-                                <div class="text-muted small">
-
-                                    {% if product.product_offer_value %}
-                                        {{ product.product_offer_name }} :
-                                        <strong>{{ product.product_offer_value|call_twig_func(product.product_offer_reference) }}</strong>
-                                    {% endif %}
-
-                                    {% if product.product_variation_value %}
-                                        , {{ product.product_variation_name }} :
-                                        <strong>{{ product.product_variation_value|call_twig_func(product.product_variation_reference) }}</strong>
-                                    {% endif %}
-
-                                    {% if product.product_modification_value %}
-                                        , {{ product.product_modification_name }}:
-                                        <strong>{{ product.product_modification_value|call_twig_func(product.product_modification_reference) }}</strong>
-                                    {% endif %}
-                                </div>
-                            </div>
                         </div>
 
-
-                        <div class="ms-3 fw-bolder w-25 text-center h5">
-                            {{ product.total }}
-                        </div>
+                        {# Клиент #}
+                        <div class="d-flex gap-2 w-75"> {{ user_profile(current.order_client) }}</div>
 
                     </div>
 
-                {% endfor %}
-
-                {# <div class="alert alert-warning" role="alert">
-                        Убедитесь, что выбран именно тот заказ, который необходимо выдать клиенту, и нажмите Заказ
-                        выдан. <br>
-                        Если Вы ошиблись в заказе, нажмите кнопку Отмена.
-                    </div> #}
-
+                    <hr>
 
                 </div>
             {% endif %}
 
 
-
-            {# вывод скрытого поля id vendor/baks-dev/delivery-transport/UseCase/Admin/Package/Completed/CompletedProductStockForm.php  #}
-            {{ form_widget(form.collection[loop.index-1].id) }}
-
         {% endfor %}
+
+        <div class="alert alert-warning" role="alert">
+            Убедитесь, что выбраны именно те заказы, которые выданы клиенту, и нажмите «Выдано клиенту».
+            Если Вы ошиблись в выборе, нажмите кнопку «Отмена».
+        </div>
+
+        {{ form_widget(form.collection) }}
 
         <div class="modal-footer">
             <div class="flex-grow-1">
@@ -162,5 +92,3 @@
     </div>
 
 </div>
-
-

@@ -30,6 +30,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
 use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterDTO;
 use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPickup\AllProductStocksPickupInterface;
@@ -103,6 +104,7 @@ final class IndexController extends AbstractController
                 'filter' => $filterForm->createView(),
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
+                'add_selected_form_name' => $this->createForm(type: CompletedSelectedProductStockForm::class)->getName(),
             ]
         );
     }

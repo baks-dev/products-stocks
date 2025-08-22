@@ -88,7 +88,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'stock',
                 ProductStocksInvariable::class,
                 'product_stock_invariable',
-                'product_stock_invariable.main = stock.event',
+                'product_stock_invariable.main = stock.id',
             );
 
 

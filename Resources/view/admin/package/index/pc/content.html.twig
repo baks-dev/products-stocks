@@ -183,13 +183,39 @@
         </div>
         {% endif %}
 
+        {% set identifier = item.orderId %}
+
         <div id="{{ item.id }}"
              class="card mb-3 p-1 {{ item.isProductsMove or item.isOrderDanger ? 'shadow border-danger' : 'border-light' }}"
              style="{{ item.isProductsMove ? '--bs-border-opacity: 0.2;' : '' }}">
 
             <div class="card-header bg-body border-0">
 
-                <div class="card-title w-100 d-flex gap-5 mb-0 justify-content-between align-items-center text-secondary">
+
+                <div class="card-title w-100 d-flex gap-4 mb-0 justify-content-between align-items-center text-secondary">
+
+
+                    {# Чекбокс добавления заказа в накладную #}
+                    {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
+
+                        <div data-buttons="true">
+                            <label class="btn p-3 border-dotted rounded-3">
+                                <div class="d-flex align-items-center">
+                                        <span class="h5 m-0 lh-1">
+                                           <input
+                                                   id="check-{{ identifier }}"
+                                                   type="checkbox"
+                                                   class="form-check-input add-all-to-invoice m-0 btn-outline-danger"
+                                               {# Данные, отправляемые POST #}
+                                               data-formname="{{ add_selected_form_name }}"
+                                                   data-order="{{ identifier }}"
+                                           >
+                                        </span>
+                                </div>
+                            </label>
+                        </div>
+
+                    {% endif %}
 
                     <button
                             class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0"
@@ -202,38 +228,16 @@
 
                     <div class="w-100">
 
+
                         <div class="w-100 d-flex gap-3 justify-content-between align-items-center">
 
-                            {% set identifier = item.orderId %}
-
                             <div class="w-100 d-flex gap-3 align-items-center">
-
-                                {# Чекбокс добавления заказа в накладную #}
-                                {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
-
-                                    {# Чекбокс для множественного добавления заказов в накладную #}
-                                    <div class="h5">
-                                        <input
-                                                id="check-{{ identifier }}"
-                                                type="checkbox"
-                                                class="form-check-input add-all-to-invoice btn-outline-danger"
-
-                                                {# Данные, отправляемые POST #}
-                                                data-formname="{{ add_selected_order_form_name }}"
-                                                data-order="{{ identifier }}"
-                                        >
-                                    </div>
-
-                                {% endif %}
-
                                 {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
                                     <div style="width: 28px;">
                                         {# Пользовательское меню #}
                                         {{ include(_self|replace({ "content.html.twig": "_usecase.html.twig" })) }}
                                     </div>
                                 {% endif %}
-
-
                             </div>
 
                             <div>
@@ -395,7 +399,7 @@
                                 <li>
 
                                     {# Данные, отправляемые POST #}
-                                    {# data-formname="{{ add_selected_order_form_name }}"
+                                    {# data-formname="{{ add_selected_form_name }}"
                                     data-order="{{ identifier }}" #}
 
 
@@ -406,7 +410,7 @@
                                        data-bs-target="#modal"
 
                                        data-method="post"
-                                       data-formname="{{ add_selected_order_form_name }}"
+                                       data-formname="{{ add_selected_form_name }}"
                                        data-order="{{ item.orderId }}"
 
 
