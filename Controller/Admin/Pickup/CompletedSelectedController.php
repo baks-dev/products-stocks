@@ -83,7 +83,6 @@ final class CompletedSelectedController extends AbstractController
                 ->send('remove');
 
             $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
         }
 
 
@@ -119,7 +118,7 @@ final class CompletedSelectedController extends AbstractController
 
 
         /** Выводим несколько заказов */
-        if($CompletedSelectedProductStockDTO->getCollection()->count() >= 1)
+        if($CompletedSelectedProductStockDTO->getCollection()->count() > 1)
         {
             return $this->render([
                 'form' => $form->createView(),
