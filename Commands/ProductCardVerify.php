@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -180,6 +180,7 @@ class ProductCardVerify extends Command
         foreach($dbal->fetchAllAssociative() as $product)
         {
             $total = $this->productStocksTotal
+                ->onlyLogisticWarehouse()
                 ->product($product['product_id'])
                 ->offer($product['product_offer_const'])
                 ->variation($product['product_variation_const'])
