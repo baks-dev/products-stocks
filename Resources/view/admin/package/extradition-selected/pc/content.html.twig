@@ -31,8 +31,9 @@
             Если Вы ошиблись в выборе, нажмите кнопку "Отмена".
         </div>
 
-
-        {{ form_widget(form.collection) }}
+        {% for collection in form.collection %}
+            {{ form_widget(collection.id) }}
+        {% endfor %}
 
         <div class="modal-footer">
             <div class="d-flex gap-3">
