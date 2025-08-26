@@ -411,7 +411,7 @@
             </button>
 
             <a
-                    class="btn btn-sm btn-danger opacity-75 text-nowrap mb-2 d-none"
+                    class="btn btn-sm btn-success opacity-75 text-nowrap mb-2 d-none"
                     role="tooltip"
                     data-bs-placement="bottom"
                     data-bs-delay='{"show":600,"hide":100}'
@@ -425,7 +425,7 @@
 
                     data-method="post"
                     data-collection-form="collection"
-
+                    data-formname="{{ add_selected_form_name }}"
                     href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
             >
                 Выдать заказы

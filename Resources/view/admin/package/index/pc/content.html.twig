@@ -571,7 +571,7 @@
                 </button>
 
                 <a
-                        class="btn btn-sm btn-primary text-nowrap mb-2 d-none"
+                        class="btn btn-sm btn-outline-primary text-nowrap mb-2 d-none"
                         role="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
@@ -585,11 +585,15 @@
 
                         data-method="post"
                         data-collection-form="order_form_data"
-
+                        data-formname="{{ add_selected_form_name }}"
                         href="{{ path('orders-order:admin.document.sales', { print: true } ) }}"
 
                 >
-                    Накладная для выбранных
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-printer-fill" viewBox="0 0 16 16">
+                        <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/>
+                        <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                    </svg> &nbsp; Накладная для выбранных
                 </a>
 
                 <a
@@ -606,8 +610,8 @@
                         data-post-class="add-all-to-package"
 
                         data-method="post"
-                        data-collection-form="collection" {# TODO #}
 
+                        data-collection-form="collection" {# TODO #}
                         data-formname="{{ add_selected_extradition_form_name }}"
 
                         href="{{ path('products-stocks:admin.package.extradition-selected') }}"
