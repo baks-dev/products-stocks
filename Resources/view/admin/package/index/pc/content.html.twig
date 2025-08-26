@@ -205,9 +205,10 @@
                                            <input
                                                    id="check-{{ identifier }}"
                                                    type="checkbox"
-                                                   class="form-check-input add-all-to-invoice m-0 btn-outline-danger"
-                                               {# Данные, отправляемые POST #}
-                                               data-formname="{{ add_selected_form_name }}"
+                                                   class="form-check-input add-all-to-invoice add-all-to-package m-0 btn-outline-danger"
+                                                   {# Данные, отправляемые POST #}
+                                                   data-formname="{{ add_selected_form_name }}"
+                                                   data-id="{{ item.event }}"
                                                    data-order="{{ identifier }}"
                                            >
                                         </span>
@@ -471,12 +472,20 @@
 
                             {% if (not item.productsMove or item.status == 'moving' ) and (is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN')) %}
 
+                                <a
+                                        href="{{ path('products-stocks:admin.package.extradition-selected') }}"
+                                        class="btn btn-warning modal-link disabled text-nowrap"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modal"
 
-                                <a href="{{ path('products-stocks:admin.package.extradition', { id : item.event }) }}"
-                                   class="btn btn-warning modal-link disabled text-nowrap"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#modal"
-                                   title="Отправить в доставку">
+                                        data-post-class="add-one-to-collection"
+                                        data-method="post"
+                                        data-collection-form="collection" {# TODO #}
+                                        data-formname="{{ add_selected_extradition_form_name }}"
+
+                                        data-id="{{ item.event }}"
+
+                                        title="Отправить в доставку">
                                     Укомплектовать
                                 </a>
 
@@ -562,7 +571,7 @@
                 </button>
 
                 <a
-                        class="btn btn-sm btn-danger opacity-75 text-nowrap mb-2 d-none"
+                        class="btn btn-sm btn-primary text-nowrap mb-2 d-none"
                         role="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
@@ -581,6 +590,30 @@
 
                 >
                     Накладная для выбранных
+                </a>
+
+                <a
+                        class="btn btn-sm btn-warning text-nowrap mb-2 d-none"
+                        role="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Укомплектовать выбранные"
+                        id="add-all-to-package"
+
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+
+                        data-post-class="add-all-to-package"
+
+                        data-method="post"
+                        data-collection-form="collection" {# TODO #}
+
+                        data-formname="{{ add_selected_extradition_form_name }}"
+
+                        href="{{ path('products-stocks:admin.package.extradition-selected') }}"
+
+                >
+                    Укомплектовать выбранные
                 </a>
 
             </div>

@@ -18,8 +18,10 @@
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
 
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -31,12 +33,19 @@ final class ExtraditionProductStockForm extends AbstractType
 
         $builder->add('comment', TextareaType::class, ['required' => false]);
 
-        // Сохранить
-        $builder->add(
-            'extradition',
-            SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
+        $builder->add('id', HiddenType::class);
+
+        $builder->get('id')->addModelTransformer(
+            new CallbackTransformer(
+                function($id) {
+                    return $id instanceof ProductStockEventUid ? $id->getValue() : $id;
+                },
+                function($id) {
+                    return $id ? new ProductStockEventUid($id) : null;
+                }
+            )
         );
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void
