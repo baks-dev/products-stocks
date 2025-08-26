@@ -96,6 +96,8 @@
         let select_all_to_invoice = document.querySelector("#select-all-to-invoice");
         let add_all_to_invoice = document.querySelector("#add-all-to-invoice");
 
+        let add_all_to_package = document.querySelector("#add-all-to-package");
+
         /** Выбор из списка ответов */
         select_all_to_invoice?.addEventListener("click", function() {
 
@@ -129,9 +131,11 @@
 
     if (atLeastOneChecked) {
         add_all_to_invoice.classList.remove("d-none");
+        add_all_to_package.classList.remove("d-none");
     }
     else {
         add_all_to_invoice.classList.add("d-none");
+        add_all_to_package.classList.add("d-none");
     }
 
 });
@@ -148,9 +152,11 @@ for (checkbox_all_to_invoice of checkboxs_all_to_invoice) {
 
         if (atLeastOneChecked) {
            add_all_to_invoice.classList.remove("d-none");
+           add_all_to_package.classList.remove("d-none");
         }
         else {
             add_all_to_invoice.classList.add("d-none");
+            add_all_to_package.classList.add("d-none");
         }
 
     });

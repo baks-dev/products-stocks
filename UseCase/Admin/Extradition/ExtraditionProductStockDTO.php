@@ -94,4 +94,9 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     {
         return $this->status;
     }
+
+    public function getId(): ProductStockEventUid
+    {
+        return ($this->id instanceof ProductStockEventUid) ? $this->id : new ProductStockEventUid($this->id);
+    }
 }

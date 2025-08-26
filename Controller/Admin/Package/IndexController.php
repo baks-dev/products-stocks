@@ -34,6 +34,7 @@ use BaksDev\Orders\Order\Forms\SalesInvoice\SalesInvoiceOrderDTO;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
 use DateInterval;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -113,6 +114,7 @@ final class IndexController extends AbstractController
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
                 'add_selected_form_name' => $this->createForm(type: SalesInvoiceForm::class)->getName(),
+                'add_selected_extradition_form_name' => $this->createForm(type: ExtraditionSelectedProductStockForm::class)->getName(),
             ]
         );
     }

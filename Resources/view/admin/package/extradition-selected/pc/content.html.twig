@@ -1,0 +1,55 @@
+{% trans_default_domain 'products-stocks.admin' %}
+
+<div class="modal-dialog modal-dialog-centered " style="max-width: 800px;">
+    {{ form_start(form) }}
+
+    <div class="modal-content p-3 border-bottom border-5 border-primary">
+
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="font-size:1.1rem;">
+                {{ 'Укомплектовать заявки:'|trans }}
+            </h5>
+        </div>
+
+        <div class="modal-body">
+        {% for stock_number in stock_numbers %}
+
+            <div class="p-2" style="font-size:1.1rem;">
+                #{{ stock_number }}
+            </div>
+
+            {# "Скрыть" поле comment #}
+            {% do form.collection[loop.index-1].comment.setRendered() %}
+
+
+        {% endfor %}
+        </div>
+
+        <div class="alert alert-warning" role="alert">
+            Убедитесь, что выбраны именно те заявки, который необходимы, и нажмите "Укомплектовать". <br>
+            Если Вы ошиблись в выборе, нажмите кнопку "Отмена".
+        </div>
+
+
+        {{ form_widget(form.collection) }}
+
+        <div class="modal-footer">
+            <div class="d-flex gap-3">
+
+                {# Отмена #}
+                <button type="button" class="btn btn-light ms-2" data-bs-dismiss="modal">
+                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                </button>
+
+                {{ form_widget(form.extradition_selected_package, { label: '
+                    <span>Укомплектовать</span>
+                    <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
+                ' } ) }}
+
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
