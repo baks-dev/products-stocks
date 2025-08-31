@@ -58,14 +58,13 @@ use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageHandler;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @group products-stocks
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class ProductStockStatusTest extends KernelTestCase
 {
     public function testUseCase(): void

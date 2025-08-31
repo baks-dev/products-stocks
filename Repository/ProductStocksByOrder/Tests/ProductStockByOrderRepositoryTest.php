@@ -19,7 +19,6 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- *
  */
 
 declare(strict_types=1);
@@ -29,13 +28,12 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksByOrder\Tests;
 use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDelivery;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 class ProductStockByOrderRepositoryTest extends KernelTestCase
 {
 

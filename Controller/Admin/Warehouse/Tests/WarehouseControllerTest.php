@@ -26,18 +26,16 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse\Tests;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests\WarehouseProductStockTest;
 use BaksDev\Users\User\Tests\TestUserAccount;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- *
- * @depends BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests\WarehouseProductStockTest::class
- * @see     WarehouseMaterialStockTest
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class WarehouseControllerTest extends WebTestCase
 {
     private const string URL = '/admin/product/stock/warehouse/%s';
@@ -58,6 +56,7 @@ final class WarehouseControllerTest extends WebTestCase
     }
 
     /** Доступ по роли */
+    #[DependsOnClass(WarehouseProductStockTest::class)]
     public function testRoleSuccessful(): void
     {
         self::ensureKernelShutdown();
@@ -73,6 +72,7 @@ final class WarehouseControllerTest extends WebTestCase
     }
 
     // доступ по роли ROLE_ADMIN
+    #[DependsOnClass(WarehouseProductStockTest::class)]
     public function testRoleAdminSuccessful(): void
     {
 
@@ -89,6 +89,7 @@ final class WarehouseControllerTest extends WebTestCase
     }
 
     // Закрытый доступ по роли ROLE_USER
+    #[DependsOnClass(WarehouseProductStockTest::class)]
     public function testRoleUserDeny(): void
     {
 
@@ -105,6 +106,7 @@ final class WarehouseControllerTest extends WebTestCase
     }
 
     /** Закрытый Доступ по без роли */
+    #[DependsOnClass(WarehouseProductStockTest::class)]
     public function testGuestFiled(): void
     {
 

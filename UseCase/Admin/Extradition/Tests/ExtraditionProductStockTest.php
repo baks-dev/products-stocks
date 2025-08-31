@@ -32,6 +32,8 @@ use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Tests\PackageProductStockTest;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -40,19 +42,14 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-/**
- * @group products-stocks
- * @group products-stocks-extradition
- *
- * @depends BaksDev\Products\Stocks\UseCase\Admin\Package\Tests\PackageProductStockTest::class
- * @see     PackageProductStockTest
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class ExtraditionProductStockTest extends KernelTestCase
 {
     /**
      * Тест упаковки заказа
      */
+    #[DependsOnClass(PackageProductStockTest::class)]
     public function testProductStockDTO(): void
     {
         // Бросаем событие консольной комманды

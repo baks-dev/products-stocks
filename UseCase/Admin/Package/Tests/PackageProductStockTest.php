@@ -44,19 +44,16 @@ use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\ProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- * @group products-stocks-package
- *
- * @depends BaksDev\Products\Stocks\UseCase\Admin\Incoming\Tests\IncomingProductStockTest::class
- * @see     IncomingProductStockTest
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class PackageProductStockTest extends KernelTestCase
 {
+    #[DependsOnClass(IncomingProductStockTest::class)]
     public static function setUpBeforeClass(): void
     {
         /** @var ProductStockStatusCollection $ProductStockStatusCollection */
@@ -89,6 +86,7 @@ final class PackageProductStockTest extends KernelTestCase
     /**
      * Тест создания заказа на упаковку
      */
+    #[DependsOnClass(IncomingProductStockTest::class)]
     public function testUseCase(): void
     {
 

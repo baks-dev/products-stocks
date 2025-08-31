@@ -39,14 +39,12 @@ use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- * @group products-stocks-purchase
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class PurchaseProductStockTest extends KernelTestCase
 {
 

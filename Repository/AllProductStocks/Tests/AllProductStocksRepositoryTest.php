@@ -37,12 +37,8 @@ use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-
-/**
- * @group products-stocks
- */
-#[Group('products-stocks')]
 #[When(env: 'test')]
+#[Group('products-stocks')]
 class AllProductStocksRepositoryTest extends KernelTestCase
 {
     public function testUseCase(): void

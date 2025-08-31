@@ -38,6 +38,8 @@ use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockHandler
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -46,14 +48,8 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-/**
- * @group products-stocks
- * @group products-stocks-warehouse
- *
- * @depends BaksDev\Products\Stocks\UseCase\Admin\Purchase\Tests\PurchaseProductStockTest::class
- * @see     PurchaseProductStockTest
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class WarehouseProductStockTest extends KernelTestCase
 {
     public static function setUpBeforeClass(): void
@@ -68,6 +64,7 @@ final class WarehouseProductStockTest extends KernelTestCase
     /**
      * Тест нового закупочного листа
      */
+    #[DependsOnClass(PurchaseProductStockTest::class)]
     public function testUseCase(): void
     {
         /* TODO: !!! */

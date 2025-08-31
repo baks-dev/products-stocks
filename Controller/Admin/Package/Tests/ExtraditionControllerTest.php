@@ -27,13 +27,12 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Users\User\Tests\TestUserAccount;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class ExtraditionControllerTest extends WebTestCase
 {
     private const string URL = '/admin/product/stock/package/extradition/%s';

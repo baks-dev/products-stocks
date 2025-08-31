@@ -36,21 +36,16 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests\WarehouseProductStockTest;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group products-stocks
- * @group products-stocks-incoming
- *
- * @depends BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests\WarehouseProductStockTest::class
- * @see     WarehouseProductStockTest
- */
 #[When(env: 'test')]
+#[Group('products-stocks')]
 final class IncomingProductStockTest extends KernelTestCase
 {
+    #[DependsOnClass(WarehouseProductStockTest::class)]
     public function testProductStockDTO(): void
     {
         /** @var ProductStockStatusCollection $ProductStockStatusCollection */
