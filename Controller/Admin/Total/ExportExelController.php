@@ -90,22 +90,25 @@ final class ExportExelController extends AbstractController
         $sheet
             ->setCellValue('A1', 'Артикул')
             ->setCellValue('B1', 'Наименование')
-            ->setCellValue('C1', 'Стоимость')
-            ->setCellValue('D1', 'Наличие')
-            ->setCellValue('E1', 'Резерв')
-            ->setCellValue('F1', 'Доступно')
-            ->setCellValue('G1', 'Сумма')
-            ->setCellValue('H1', 'Место');
+            ->setCellValue('C1', 'Торговое предложение')
+            ->setCellValue('D1', 'Стоимость')
+            ->setCellValue('E1', 'Наличие')
+            ->setCellValue('F1', 'Резерв')
+            ->setCellValue('G1', 'Доступно')
+            ->setCellValue('H1', 'Сумма')
+            ->setCellValue('I1', 'Место');
 
 
         $sheet->getColumnDimension('A')->setAutoSize(25);
-        $sheet->getColumnDimension('B')->setAutoSize(50);
-        $sheet->getColumnDimension('C')->setAutoSize(10);
+        $sheet->getColumnDimension('B')->setAutoSize(25);
+        $sheet->getColumnDimension('C')->setAutoSize(25);
+
         $sheet->getColumnDimension('D')->setAutoSize(10);
         $sheet->getColumnDimension('E')->setAutoSize(10);
         $sheet->getColumnDimension('F')->setAutoSize(10);
         $sheet->getColumnDimension('G')->setAutoSize(10);
         $sheet->getColumnDimension('H')->setAutoSize(10);
+        $sheet->getColumnDimension('I')->setAutoSize(10);
 
         $key = 2;
 
@@ -119,18 +122,52 @@ final class ExportExelController extends AbstractController
         {
             $name = $data->getProductName();
 
-            $variation = $call->call($environment, $data->getProductVariationValue(), $data->getProductVariationReference().'_render');
-            $name .= $variation ? ' '.trim($variation) : null;
+            $strOffer = '';
 
-            $modification = $call->call($environment, $data->getProductModificationValue(), $data->getProductModificationReference().'_render');
-            $name .= $modification ? trim($modification) : null;
+            /**
+             * Множественный вариант
+             */
 
-            $offer = $call->call($environment, $data->getProductOfferValue(), $data->getProductOfferReference().'_render');
-            $name .= $offer ? ' '.trim($offer) : null;
+            $variation = $call->call(
+                $environment,
+                $data->getProductVariationValue(),
+                $data->getProductVariationReference().'_render',
+            );
 
-            $name .= $data->getProductOfferPostfix();
-            $name .= $data->getProductVariationPostfix();
-            $name .= $data->getProductModificationPostfix();
+            $strOffer .= $variation ? ' '.trim($variation) : null;
+
+
+            /**
+             * Модификация множественного варианта
+             */
+
+            $modification = $call->call(
+                $environment,
+                $data->getProductModificationValue(),
+                $data->getProductModificationReference().'_render',
+            );
+
+            $strOffer .= $modification ? ' '.trim($modification) : null;
+
+            /**
+             * Торговое предложение
+             */
+
+            $offer = $call->call(
+                $environment,
+                $data->getProductOfferValue(),
+                $data->getProductOfferReference().'_render',
+            );
+
+            $strOffer .= $offer ? ' '.trim($offer) : null;
+
+            $strOffer .= $data->getProductOfferPostfix() ? ' '.$data->getProductOfferPostfix() : '';
+            $strOffer .= $data->getProductVariationPostfix() ? ' '.$data->getProductVariationPostfix() : '';
+            $strOffer .= $data->getProductModificationPostfix() ? ' '.$data->getProductModificationPostfix() : '';
+
+            /**
+             * Информация о стоимости и остатках
+             */
 
             $Money = $data->getProductPrice();
 
@@ -139,13 +176,15 @@ final class ExportExelController extends AbstractController
                 : new Money(0);
 
             $sheet->setCellValue('A'.$key, trim($data->getProductArticle())); // Артикул
-            $sheet->setCellValue('B'.$key, trim($name)); // Наименование товара
-            $sheet->setCellValue('C'.$key, $Money ? $Money->getValue() : 0); // Стоимость
-            $sheet->setCellValue('D'.$key, $data->getStockTotal()); // Наличие
-            $sheet->setCellValue('E'.$key, $data->getStockReserve()); // Резерв
-            $sheet->setCellValue('F'.$key, $data->getQuantity()); // Доступно
-            $sheet->setCellValue('G'.$key, $total_price); // Сумма
-            $sheet->setCellValue('H'.$key, $data->getStockStorage()); // Место
+            $sheet->setCellValue('B'.$key, $data->getProductName()); // Наименование товара
+            $sheet->setCellValue('С'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
+
+            $sheet->setCellValue('D'.$key, $Money ? $Money->getValue() : 0); // Стоимость
+            $sheet->setCellValue('E'.$key, $data->getStockTotal()); // Наличие
+            $sheet->setCellValue('F'.$key, $data->getStockReserve()); // Резерв
+            $sheet->setCellValue('G'.$key, $data->getQuantity()); // Доступно
+            $sheet->setCellValue('H'.$key, $total_price); // Сумма
+            $sheet->setCellValue('I'.$key, $data->getStockStorage()); // Место
 
 
             /** Подсчет ИТОГО */
