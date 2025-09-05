@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocks;
 
+use BaksDev\Products\Product\Repository\ProductPriceResultInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
@@ -34,7 +35,7 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Reference\Money\Type\Money;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class AllProductStocksResult
+final class AllProductStocksResult implements ProductPriceResultInterface
 {
     public function __construct(
         private readonly string $stock_id, //" => "01960a8a-600d-7b9c-923b-389ad9cc3e8d"
@@ -74,6 +75,9 @@ final class AllProductStocksResult
 
         private string|null $profile_discount = null,
         private string|null $project_discount = null,
+
+        private bool|null $promotion_active = null,
+        private string|int|null $promotion_price = null,
 
     ) {}
 
@@ -214,6 +218,12 @@ final class AllProductStocksResult
 
         $price = new Money($this->product_price, true);
 
+        /** Кастомная цена */
+        if(false === empty($this->promotion_price) && true === $this->promotion_active)
+        {
+            $price->applyString($this->promotion_price);
+        }
+
         /** Скидка магазина */
         if(false === empty($this->project_discount))
         {
@@ -265,5 +275,10 @@ final class AllProductStocksResult
     public function getUsersProfileLocation(): ?string
     {
         return $this->users_profile_location;
+    }
+
+    public function getProductOldPrice(): Money|false
+    {
+        return false;
     }
 }

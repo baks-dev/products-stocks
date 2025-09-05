@@ -68,7 +68,7 @@ class AllProductStocksRepositoryTest extends KernelTestCase
                 {
                     // Вызываем метод
                     $value = $method->invoke($AllProductStocksResult);
-                    //dump($value);
+                    dump($value);
                 }
             }
 

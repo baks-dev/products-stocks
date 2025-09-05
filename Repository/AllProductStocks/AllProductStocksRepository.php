@@ -49,11 +49,19 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Price\ProductVariationPrice
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Price\ProductPrice;
+use BaksDev\Products\Product\Entity\Price\ProductPriceInterface;
 use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
+use BaksDev\Products\Promotion\BaksDevProductsPromotionBundle;
+use BaksDev\Products\Promotion\Entity\Event\Invariable\ProductPromotionInvariable;
+use BaksDev\Products\Promotion\Entity\Event\Period\ProductPromotionPeriod;
+use BaksDev\Products\Promotion\Entity\Event\Price\ProductPromotionPrice;
+use BaksDev\Products\Promotion\Entity\Event\ProductPromotionEvent;
+use BaksDev\Products\Promotion\Entity\ProductPromotion;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
@@ -546,6 +554,95 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                     'project_profile_discount',
                     '
                         project_profile_discount.event = project_profile.event',
+                );
+        }
+
+
+        /** Product Invariable */
+        $dbal
+            ->leftJoin(
+                'product_modification',
+                ProductInvariable::class,
+                'product_invariable',
+                '
+                    product_invariable.product = product.id AND 
+                    (
+                        (product_offer.const IS NOT NULL AND product_invariable.offer = product_offer.const) OR 
+                        (product_offer.const IS NULL AND product_invariable.offer IS NULL)
+                    )
+                    AND
+                    (
+                        (product_variation.const IS NOT NULL AND product_invariable.variation = product_variation.const) OR 
+                        (product_variation.const IS NULL AND product_invariable.variation IS NULL)
+                    )
+                   AND
+                   (
+                        (product_modification.const IS NOT NULL AND product_invariable.modification = product_modification.const) OR 
+                        (product_modification.const IS NULL AND product_invariable.modification IS NULL)
+                   )
+            ');
+
+        /**
+         * ProductsPromotion
+         */
+        if(true === class_exists(BaksDevProductsPromotionBundle::class) && true === $dbal->isProjectProfile())
+        {
+            $dbal
+                ->leftJoin(
+                    'product_invariable',
+                    ProductPromotionInvariable::class,
+                    'product_promotion_invariable',
+                    '
+                        product_promotion_invariable.product = product_invariable.id
+                        AND
+                        product_promotion_invariable.profile = :'.$dbal::PROJECT_PROFILE_KEY,
+                );
+
+            $dbal
+                ->leftJoin(
+                    'product_promotion_invariable',
+                    ProductPromotion::class,
+                    'product_promotion',
+                    'product_promotion.id = product_promotion_invariable.main',
+                );
+
+            $dbal
+                ->leftJoin(
+                    'product_promotion',
+                    ProductPromotionEvent::class,
+                    'product_promotion_event',
+                    '
+                        product_promotion_event.main = product_promotion.id',
+                );
+
+            $dbal
+                ->addSelect('product_promotion_price.value AS promotion_price')
+                ->leftJoin(
+                    'product_promotion_event',
+                    ProductPromotionPrice::class,
+                    'product_promotion_price',
+                    'product_promotion_price.event = product_promotion.event',
+                );
+
+            $dbal
+                ->addSelect('
+                CASE
+                    WHEN 
+                        CURRENT_DATE >= product_promotion_period.date_start
+                        AND
+                         (
+                            product_promotion_period.date_end IS NULL OR CURRENT_DATE <= product_promotion_period.date_end
+                         )
+                    THEN true
+                    ELSE false
+                END AS promotion_active
+            ')
+                ->leftJoin(
+                    'product_promotion_event',
+                    ProductPromotionPeriod::class,
+                    'product_promotion_period',
+                    '
+                        product_promotion_period.event = product_promotion.event',
                 );
         }
 
