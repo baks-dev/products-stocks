@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -34,7 +35,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class AddProductStocksReserveMessage
 {
-    private readonly string $stock;
+    private readonly string $order;
     private readonly string $profile;
     private readonly string $product;
 
@@ -46,7 +47,7 @@ final class AddProductStocksReserveMessage
     private int $iterate;
 
     public function __construct(
-        ProductStockUid $stock,
+        ProductStockUid|OrderUid $order,
         UserProfileUid $profile,
         ProductUid $product,
 
@@ -57,7 +58,7 @@ final class AddProductStocksReserveMessage
     {
         $this->profile = (string) $profile;
         $this->product = (string) $product;
-        $this->stock = (string) $stock;
+        $this->order = (string) $order;
 
         $this->offer = empty($offer) ? false : (string) $offer;
         $this->variation = empty($variation) ? false : (string) $variation;
@@ -110,7 +111,7 @@ final class AddProductStocksReserveMessage
      */
     public function getIterate(): string
     {
-        return md5($this->iterate.$this->stock);
+        return md5($this->iterate.$this->order);
     }
 
     public function setIterate(int $iterate): self

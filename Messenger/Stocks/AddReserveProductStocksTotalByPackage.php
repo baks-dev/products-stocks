@@ -35,7 +35,6 @@ use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductSto
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -118,7 +117,7 @@ final readonly class AddReserveProductStocksTotalByPackage
             );
 
             $AddProductStocksReserve = new AddProductStocksReserveMessage(
-                stock: $message->getId(),
+                order: $message->getId(),
                 profile: $UserProfileUid,
                 product: $product->getProduct(),
                 offer: $product->getOffer(),
