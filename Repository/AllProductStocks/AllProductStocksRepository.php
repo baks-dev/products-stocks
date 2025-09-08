@@ -594,8 +594,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                     'product_promotion_invariable',
                     '
                         product_promotion_invariable.product = product_invariable.id
-                        AND
-                        product_promotion_invariable.profile = :'.$dbal::PROJECT_PROFILE_KEY,
+                        AND product_promotion_invariable.profile = :'.$dbal::PROJECT_PROFILE_KEY,
                 );
 
             $dbal
@@ -607,18 +606,9 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 );
 
             $dbal
-                ->leftJoin(
-                    'product_promotion',
-                    ProductPromotionEvent::class,
-                    'product_promotion_event',
-                    '
-                        product_promotion_event.main = product_promotion.id',
-                );
-
-            $dbal
                 ->addSelect('product_promotion_price.value AS promotion_price')
                 ->leftJoin(
-                    'product_promotion_event',
+                    'product_promotion',
                     ProductPromotionPrice::class,
                     'product_promotion_price',
                     'product_promotion_price.event = product_promotion.event',
@@ -638,7 +628,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 END AS promotion_active
             ')
                 ->leftJoin(
-                    'product_promotion_event',
+                    'product_promotion',
                     ProductPromotionPeriod::class,
                     'product_promotion_period',
                     '
