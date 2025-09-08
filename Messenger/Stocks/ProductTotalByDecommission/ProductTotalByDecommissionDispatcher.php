@@ -36,6 +36,7 @@ use BaksDev\Orders\Order\UseCase\Admin\Edit\EditOrderDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\Products\OrderProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -147,17 +148,20 @@ final readonly class ProductTotalByDecommissionDispatcher
             }
 
             /** Списываем складской остаток */
-            $this->messageDispatch->dispatch(
-                new ProductTotalByDecommissionMessage(
-                    $OrderEvent->getMain(),
-                    $OrderEvent->getOrderProfile(),
+            $this->messageDispatch->dispatch(new SubProductStocksTotalAndReserveMessage(
+                $OrderEvent->getMain(),
+                $OrderEvent->getOrderProfile(),
+                $CurrentProductIdentifier->getProduct(),
+                $CurrentProductIdentifier->getOfferConst(),
+                $CurrentProductIdentifier->getVariationConst(),
+                $CurrentProductIdentifier->getModificationConst(),
+            )->setTotal($product->getPrice()->getTotal()));
+
+            $this->logger->info(
+                sprintf(
+                    'Product %s: Снимаем резерв и остаток продукта на складе при списании (см. products-stock.log)',
                     $CurrentProductIdentifier->getProduct(),
-                    $CurrentProductIdentifier->getOfferConst(),
-                    $CurrentProductIdentifier->getVariationConst(),
-                    $CurrentProductIdentifier->getModificationConst(),
-                    $product->getPrice()->getTotal()
                 ),
-                transport: 'products-product'
             );
         }
 

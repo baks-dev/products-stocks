@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks\AddReserveProductStocksTotalB
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
@@ -71,6 +72,16 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
         $OrderEvent = $this->CurrentOrderEvent
             ->forOrder($message->getId())
             ->find();
+
+        if(false === ($OrderEvent instanceof OrderEvent))
+        {
+            $this->logger->critical(
+                'products-sign: Не найдено событие OrderEvent',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+
+            return;
+        }
 
         if(false === $OrderEvent->isStatusEquals(OrderStatusDecommission::STATUS))
         {
