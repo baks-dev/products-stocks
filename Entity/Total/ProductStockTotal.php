@@ -224,5 +224,23 @@ class ProductStockTotal extends EntityState
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
+    public function getProduct(): ProductUid
+    {
+        return $this->product;
+    }
 
+    public function getModification(): ?ProductModificationConst
+    {
+        return $this->modification;
+    }
+
+    public function getOffer(): ?ProductOfferConst
+    {
+        return $this->offer;
+    }
+
+    public function getVariation(): ?ProductVariationConst
+    {
+        return $this->variation;
+    }
 }

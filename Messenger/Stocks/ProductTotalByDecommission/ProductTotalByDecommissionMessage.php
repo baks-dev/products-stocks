@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ * Copyright 2025.  Baks.dev <admin@baks.dev>
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,59 +23,62 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\ProductTotalByDecommission;
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
-use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Products\Product\Type\Id\ProductUid;
 
-final class AddProductStocksReserveMessage
+final class ProductTotalByDecommissionMessage
 {
-    private readonly string $order;
-    private readonly string $profile;
-    private readonly string $product;
+    private string $order;
 
-    private readonly string|false $offer;
-    private readonly string|false $variation;
-    private readonly string|false $modification;
+    private string $profile;
 
     private int $total;
-    private int $iterate;
+
+    private string $product;
+
+    private string|false $offer;
+
+    private string|false $variation;
+
+    private string|false $modification;
+
 
     public function __construct(
-        ProductStockUid|OrderUid $order,
+        OrderUid $order,
         UserProfileUid $profile,
         ProductUid $product,
-
-        ProductOfferConst|false|null $offer,
-        ProductVariationConst|false|null $variation,
-        ProductModificationConst|false|null $modification,
+        ProductOfferConst|null|false $offer,
+        ProductVariationConst|null|false $variation,
+        ProductModificationConst|null|false $modification,
+        int $total,
     )
     {
-        $this->profile = (string) $profile;
-        $this->product = (string) $product;
         $this->order = (string) $order;
+        $this->profile = (string) $profile;
+        $this->total = $total;
+        $this->product = (string) $product;
 
         $this->offer = empty($offer) ? false : (string) $offer;
         $this->variation = empty($variation) ? false : (string) $variation;
         $this->modification = empty($modification) ? false : (string) $modification;
-
     }
 
     /**
-     * Profile
+     * Total
      */
-    public function getProfile(): UserProfileUid
+    public function getTotal(): int
     {
-        return new UserProfileUid($this->profile);
+        return $this->total;
     }
 
     /**
-     * Product
+     * Event
      */
     public function getProduct(): ProductUid
     {
@@ -106,33 +109,13 @@ final class AddProductStocksReserveMessage
         return $this->modification ? new ProductModificationConst($this->modification) : false;
     }
 
-    /**
-     * Iterator
-     */
-    public function getIterate(): string
+    public function getOrder(): OrderUid
     {
-        return md5($this->iterate.$this->order);
+        return new OrderUid($this->order);
     }
 
-    public function setIterate(int $iterate): self
+    public function getProfile(): UserProfileUid
     {
-        $this->iterate = $iterate;
-        return $this;
+        return new UserProfileUid($this->profile);
     }
-
-    /**
-     * Total
-     */
-
-    public function setTotal(int $total): self
-    {
-        $this->total = $total;
-        return $this;
-    }
-
-    public function getTotal(): int
-    {
-        return $this->total;
-    }
-
 }
