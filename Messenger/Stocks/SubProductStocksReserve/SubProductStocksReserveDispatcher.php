@@ -32,8 +32,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
+ */
 #[AsMessageHandler(priority: 1)]
-final readonly class SubProductStocksTotalReserveDispatcher
+final readonly class SubProductStocksReserveDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
@@ -45,7 +48,7 @@ final readonly class SubProductStocksTotalReserveDispatcher
     /**
      * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
      */
-    public function __invoke(SubProductStocksTotalReserveMessage $message): void
+    public function __invoke(SubProductStocksReserveMessage $message): void
     {
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
@@ -75,8 +78,8 @@ final readonly class SubProductStocksTotalReserveDispatcher
                     'product' => (string) $message->getProduct(),
                     'offer' => (string) $message->getOffer(),
                     'variation' => (string) $message->getVariation(),
-                    'modification' => (string) $message->getModification()
-                ]
+                    'modification' => (string) $message->getModification(),
+                ],
             );
 
             return;
@@ -93,8 +96,8 @@ final readonly class SubProductStocksTotalReserveDispatcher
                 'Невозможно снять резерв единицы продукции, которой заранее не зарезервирована',
                 [
                     self::class.':'.__LINE__,
-                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+                ],
             );
 
             return;
@@ -106,8 +109,8 @@ final readonly class SubProductStocksTotalReserveDispatcher
             sprintf('Место %s: Сняли резерв продукции на складе на одну единицу', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
-                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-            ]
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+            ],
         );
 
     }

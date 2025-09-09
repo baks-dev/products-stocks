@@ -33,6 +33,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия
+ */
 #[AsMessageHandler(priority: 999)]
 final readonly class AddProductStocksReserveDispatcher
 {
@@ -44,9 +47,7 @@ final readonly class AddProductStocksReserveDispatcher
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    /**
-     * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия
-     */
+
     public function __invoke(AddProductStocksReserveMessage $message): bool
     {
         $DeduplicatorExecuted = $this->deduplicator

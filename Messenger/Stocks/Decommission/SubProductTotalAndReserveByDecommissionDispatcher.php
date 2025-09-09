@@ -1,17 +1,17 @@
 <?php
 /*
- * Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\ProductTotalByDecommission;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\Decommission;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
@@ -42,10 +42,10 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- *  Списываем со склада нужное количество и резерв, если создается заказ со статусом "Списание"
+ *  Списываем со склада нужное количество и резерв, если создается заказ со статусом Decommission «Списание»
  */
 #[AsMessageHandler(priority: 900)]
-final readonly class ProductTotalByDecommissionDispatcher
+final readonly class SubProductTotalAndReserveByDecommissionDispatcher
 {
     public function __construct(
         private DeduplicatorInterface $deduplicator,
@@ -62,7 +62,7 @@ final readonly class ProductTotalByDecommissionDispatcher
             ->namespace('orders-order')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -76,7 +76,7 @@ final readonly class ProductTotalByDecommissionDispatcher
         {
             $this->logger->critical(
                 'products-sign: Не найдено событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -99,7 +99,7 @@ final readonly class ProductTotalByDecommissionDispatcher
             {
                 $this->logger->critical(
                     'orders-order: Не найдено событие OrderEvent',
-                    [self::class.':'.__LINE__, var_export($message, true)]
+                    [self::class.':'.__LINE__, var_export($message, true)],
                 );
 
                 return;
@@ -109,12 +109,12 @@ final readonly class ProductTotalByDecommissionDispatcher
         $this->logger->info(
             sprintf(
                 '%s: Снимаем резерв и остаток продукции на складе при списании (см. products-stock.log)',
-                $OrderEvent->getOrderNumber()
+                $OrderEvent->getOrderNumber(),
             ),
             [
                 'status' => OrderStatusDecommission::class,
-                'deduplicator' => $Deduplicator->getKey()
-            ]
+                'deduplicator' => $Deduplicator->getKey(),
+            ],
         );
 
         $EditOrderDTO = new EditOrderDTO();
@@ -140,8 +140,8 @@ final readonly class ProductTotalByDecommissionDispatcher
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
-                        self::class.':'.__LINE__
-                    ]
+                        self::class.':'.__LINE__,
+                    ],
                 );
 
                 continue;

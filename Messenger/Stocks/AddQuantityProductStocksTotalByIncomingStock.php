@@ -33,6 +33,8 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalStorage\ProductStocksTotalStorageInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -44,7 +46,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Пополнение складских остатков при поступлении на склад
+ * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksTotalByIncomingStock
@@ -84,12 +86,37 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         }
 
         /**
-         * Если Статус заявки не является Incoming «Приход на склад»
+         * Если статус НЕ является Incoming «Приход на склад» либо Cancel «Отменен»
          */
-        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class))
+        if(
+            false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class)
+            && false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
+        )
         {
             return;
         }
+
+        /** Получаем предыдущее событие */
+
+        $LastProductStockEvent = $this
+            ->ProductStocksEventRepository
+            ->forEvent($message->getLast())
+            ->find();
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+        /** Если статус Cancel «Отменен», и предыдущее событие НЕ является Completed «Выдан по месту назначения»  */
+        if(
+            true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
+            && false === $LastProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class)
+        )
+        {
+            return;
+        }
+
 
         // Получаем всю продукцию в ордере со статусом Incoming
         $products = $ProductStockEvent->getProduct();

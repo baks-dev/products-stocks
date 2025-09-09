@@ -74,6 +74,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             ->forOrder($message->getId())
             ->find();
 
+
         if(false === ($OrderEvent instanceof OrderEvent))
         {
             $this->logger->critical(
@@ -92,6 +93,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             return;
         }
 
+
         /** Получаем все заявки по идентификатору заказа */
         $stocks = $this->productStocksByOrder
             ->onOrder($message->getId())
@@ -101,6 +103,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         {
             return;
         }
+
 
         /** @var ProductStockEvent $ProductStockEvent */
         foreach($stocks as $ProductStockEvent)

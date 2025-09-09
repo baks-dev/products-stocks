@@ -391,47 +391,51 @@
             </div>
         {% endif %}
 
-        <div class="position-absolute mt-2 pt-1 small">
-            <strong class="">Множественный выбор:</strong>
-        </div>
+        {% if query.data %}
 
-        {# Selection #}
-        <div class="to-invoice-actions d-flex gap-2 sticky-bottom ps-5 pb-3 pt-2" style="margin-left: 130px;">
+            <div class="position-absolute mt-2 pt-1 small">
+                <strong class="">Множественный выбор:</strong>
+            </div>
 
-            <button
-                    class="btn btn-sm btn-outline-primary text-nowrap mb-2"
-                    role="tooltip"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-delay='{"show":600,"hide":100}'
-                    title="Выбрать все"
-                    id="select-all-to-completed"
-            >
-                Выбрать все
-            </button>
+            {# Selection #}
+            <div class="to-invoice-actions d-flex gap-2 sticky-bottom ps-5 pb-3 pt-2 z-1" style="margin-left: 130px;">
 
-            <a
-                    class="btn btn-sm btn-success opacity-75 text-nowrap mb-2 d-none"
-                    role="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-delay='{"show":600,"hide":100}'
-                    title="Выдать заказы"
-                    id="add-all-to-completed"
+                <button
+                        class="btn btn-sm btn-outline-primary text-nowrap mb-2"
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Выбрать все"
+                        id="select-all-to-completed"
+                >
+                    Выбрать все
+                </button>
 
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal"
+                <a
+                        class="btn btn-sm btn-success opacity-75 text-nowrap mb-2 d-none"
+                        role="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Выдать заказы"
+                        id="add-all-to-completed"
 
-                    data-post-class="add-all-to-completed"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
 
-                    data-method="post"
-                    data-collection-form="collection"
-                    data-formname="{{ add_selected_form_name }}"
-                    href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
-            >
-                Выдать заказы
-            </a>
+                        data-post-class="add-all-to-completed"
 
-        </div>
+                        data-method="post"
+                        data-collection-form="collection"
+                        data-formname="{{ add_selected_form_name }}"
+                        href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
+                >
+                    Выдать заказы
+                </a>
+
+            </div>
+
+        {% endif %}
 
 
         {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}

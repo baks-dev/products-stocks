@@ -33,7 +33,7 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /** @see SubMaterialStocksTotalReserveMessage */
-final  class SubProductStocksTotalReserveMessage
+final  class SubProductStocksReserveMessage
 {
     private readonly string $stock;
     private readonly string $profile;

@@ -33,6 +33,8 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -60,15 +62,14 @@ final readonly class AddQuantityProductByIncomingStock
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([
-                    (string) $message->getId(),
-                    self::class]
+                (string) $message->getId(),
+                self::class],
             );
 
         if($DeduplicatorExecuted->isExecuted())
         {
             return;
         }
-
 
         $ProductStockEvent = $this
             ->ProductStocksEventRepository
@@ -80,8 +81,36 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
-        // Если статус не является Incoming «Приход на склад»
-        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class))
+        /**
+         * Если статус НЕ является Incoming «Приход на склад» либо Cancel «Отменен»
+         */
+        if(
+            false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class)
+            && false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
+        )
+        {
+            return;
+        }
+
+        /** Получаем предыдущее событие */
+
+        $LastProductStockEvent = $this
+            ->ProductStocksEventRepository
+            ->forEvent($message->getLast())
+            ->find();
+
+
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+
+        /** Если статус Cancel «Отменен», и предыдущее событие НЕ является Completed «Выдан по месту назначения»  */
+        if(
+            true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
+            && false === $LastProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class)
+        )
         {
             return;
         }
@@ -101,6 +130,7 @@ final readonly class AddQuantityProductByIncomingStock
             ->forProfile($UserProfileUid)
             ->isLogisticWarehouse();
 
+        /** Не пополняем остаток в карточке, если профиль не является логистическим складом */
         if(false === $isLogisticWarehouse)
         {
             return;
@@ -113,7 +143,7 @@ final readonly class AddQuantityProductByIncomingStock
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -142,7 +172,7 @@ final readonly class AddQuantityProductByIncomingStock
         {
             $this->logger->critical(
                 'products-stocks: Невозможно пополнить общий остаток (карточка не найдена)',
-                [$product, self::class.':'.__LINE__]
+                [$product, self::class.':'.__LINE__],
             );
 
             return;
@@ -161,7 +191,7 @@ final readonly class AddQuantityProductByIncomingStock
         {
             $this->logger->info(
                 'Пополнили общий остаток в карточке при поступлении на склад',
-                [$product, self::class.':'.__LINE__]
+                [$product, self::class.':'.__LINE__],
             );
 
             return;
@@ -169,7 +199,7 @@ final readonly class AddQuantityProductByIncomingStock
 
         $this->logger->critical(
             'products-stocks: Невозможно пополнить общий остаток (карточка не найдена)',
-            [$product, self::class.':'.__LINE__]
+            [$product, self::class.':'.__LINE__],
         );
     }
 }

@@ -1,17 +1,17 @@
 <?php
 /*
- * Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\AddReserveProductStocksTotalByDecommission;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\Decommission;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
@@ -41,10 +41,10 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Резервирование на складе продукции при статусе "СПИСАНИЕ"
+ * Резервирование на складе продукции при статусе Decommission «Списание»
  */
 #[AsMessageHandler(priority: 999)]
-final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
+final readonly class AddReserveProductStocksByDecommissionDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
@@ -61,7 +61,7 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
             ->namespace('orders-order')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -77,13 +77,13 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
         {
             $this->logger->critical(
                 'products-sign: Не найдено событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
         }
 
-        if(false === $OrderEvent->isStatusEquals(OrderStatusDecommission::STATUS))
+        if(false === $OrderEvent->isStatusEquals(OrderStatusDecommission::class))
         {
             return;
         }
@@ -95,7 +95,7 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
         {
             $this->logger->warning(
                 'Заказ не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -108,7 +108,7 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
         {
             $this->logger->info(
                 'Добавляем резерв продукции на складе при списании',
-                ['total' => $product->getTotal()]
+                ['total' => $product->getTotal()],
             );
 
             /** Получаем активные идентификаторы карточки на случай, если товар обновлялся */
@@ -128,8 +128,8 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
                         'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
-                        self::class.':'.__LINE__
-                    ]
+                        self::class.':'.__LINE__,
+                    ],
                 );
 
                 continue;
@@ -163,7 +163,7 @@ final readonly class AddReserveProductStocksTotalByDecommissionDispatcher
                         'profile' => (string) $UserProfileUid,
                         var_export($AddProductStocksReserve, true),
                         self::class.':'.__LINE__,
-                    ]
+                    ],
                 );
 
                 continue;

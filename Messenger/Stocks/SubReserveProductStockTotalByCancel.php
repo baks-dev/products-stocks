@@ -31,12 +31,13 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksTotalReserveMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
@@ -97,6 +98,30 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
+        /**
+         * Получаем предыдущее событие заявки (у заявки на отмену всегда должно быть предыдущее событие)
+         */
+
+        $LastProductStockEvent = $this->ProductStocksEventRepository
+            ->forEvent($message->getLast())
+            ->find();
+
+        if(false === ($LastProductStockEvent instanceof ProductStockEvent))
+        {
+            return;
+        }
+
+        /**
+         * Не снимаем резерв на складе, если предыдущее событие заявки Completed «Выдан по месту назначения».
+         * Резерв был списан при завершении
+         */
+        if($LastProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class))
+        {
+            return;
+        }
+
+
+
         // Получаем всю продукцию в заявке
         $products = $ProductStockEvent->getProduct();
 
@@ -136,7 +161,7 @@ final readonly class SubReserveProductStockTotalByCancel
                 ],
             );
 
-            $SubProductStocksTotalCancelMessage = new SubProductStocksTotalReserveMessage(
+            $SubProductStocksTotalCancelMessage = new SubProductStocksReserveMessage(
                 stock: $message->getId(),
                 profile: $UserProfileUid,
                 product: $product->getProduct(),

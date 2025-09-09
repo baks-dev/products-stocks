@@ -33,6 +33,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Снимает наличие продукции и резерв с указанного склада с мест, начиная с минимального наличия
+ */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubProductStocksTotalAndReserveDispatcher
 {
