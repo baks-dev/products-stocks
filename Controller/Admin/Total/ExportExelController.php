@@ -177,7 +177,7 @@ final class ExportExelController extends AbstractController
 
             $sheet->setCellValue('A'.$key, trim($data->getProductArticle())); // Артикул
             $sheet->setCellValue('B'.$key, $data->getProductName()); // Наименование товара
-            $sheet->setCellValue('С'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
+            $sheet->setCellValue('C'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
 
             $sheet->setCellValue('D'.$key, $Money ? $Money->getValue() : 0); // Стоимость
             $sheet->setCellValue('E'.$key, $data->getStockTotal()); // Наличие

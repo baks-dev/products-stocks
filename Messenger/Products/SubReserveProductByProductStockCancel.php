@@ -43,7 +43,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Снимает резерв продукции при отмене заявки Cancel «Отменен»
+ * Снимает резерв в карточке продукции при отмене заявки Cancel «Отменен»
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductByProductStockCancel
@@ -68,7 +68,7 @@ final readonly class SubReserveProductByProductStockCancel
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -91,7 +91,10 @@ final readonly class SubReserveProductByProductStockCancel
             return;
         }
 
-        /** Если заявка по заказу - не снимаем резерв (будет снят при отмене заказа) */
+        /**
+         * Если заявка по заказу - не снимаем резерв в карточке (будет снят при отмене заказа)
+         *
+         */
         if($ProductStockEvent->getOrder() instanceof OrderUid)
         {
             return;
@@ -117,7 +120,6 @@ final readonly class SubReserveProductByProductStockCancel
             return;
         }
 
-
         // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
         $products = $ProductStockEvent->getProduct();
 
@@ -125,7 +127,7 @@ final readonly class SubReserveProductByProductStockCancel
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -148,12 +150,11 @@ final readonly class SubReserveProductByProductStockCancel
             ->forModificationConst($product->getModification())
             ->find();
 
-
         if(false === ($CurrentProductDTO instanceof CurrentProductIdentifierResult))
         {
             $this->logger->critical(
                 'products-stocks: Невозможно отменить общий резерв (карточка не найдена)',
-                [$product, self::class.':'.__LINE__]
+                [$product, self::class.':'.__LINE__],
             );
 
             return;
@@ -172,7 +173,7 @@ final readonly class SubReserveProductByProductStockCancel
         {
             $this->logger->info(
                 'Перемещение: Отменили общий резерв в карточке при отмене складской заявки на перемещение',
-                [$product, self::class.':'.__LINE__]
+                [$product, self::class.':'.__LINE__],
             );
 
             return;
@@ -180,7 +181,7 @@ final readonly class SubReserveProductByProductStockCancel
 
         $this->logger->critical(
             'products-stocks: Невозможно отменить общий резерв продукции (карточка не найдена либо недостаточное количество резерва)',
-            [$product, self::class.':'.__LINE__]
+            [$product, self::class.':'.__LINE__],
         );
     }
 }

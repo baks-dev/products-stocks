@@ -67,7 +67,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                md5(self::class)
+                md5(self::class),
             ]);
 
         if($Deduplicator->isExecuted())
@@ -125,7 +125,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true),]
+                [self::class.':'.__LINE__, var_export($message, true),],
             );
             return;
         }
@@ -135,7 +135,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         {
             $this->logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -172,7 +172,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                         [
                             self::class.':'.__LINE__,
                             'profile' => (string) $UserProfileUid,
-                        ]
+                        ],
                     );
 
                     throw new InvalidArgumentException('Ошибка при обновлении складских остатков.');
@@ -186,7 +186,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     $product->getOffer(),
                     $product->getVariation(),
                     $product->getModification(),
-                    $product->getStorage()
+                    $product->getStorage(),
                 );
 
                 $this->entityManager->persist($ProductStockTotal);
@@ -196,14 +196,14 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     'Место складирования не найдено! Создали новое место для указанной продукции',
                     [
                         self::class.':'.__LINE__,
-                        'profile' => (string) $UserProfileUid
-                    ]
+                        'profile' => (string) $UserProfileUid,
+                    ],
                 );
             }
 
             $this->logger->info(
                 sprintf('Добавляем приход продукции по заявке %s', $ProductStockEvent->getNumber()),
-                [self::class.':'.__LINE__]
+                [self::class.':'.__LINE__],
             );
 
             $this->handle($ProductStockTotal, $product->getTotal());
@@ -229,7 +229,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                 [
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
                     self::class.':'.__LINE__,
-                ]
+                ],
             );
 
             return;
@@ -240,7 +240,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             [
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
                 self::class.':'.__LINE__,
-            ]
+            ],
         );
     }
 }

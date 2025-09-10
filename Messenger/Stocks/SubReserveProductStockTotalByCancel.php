@@ -33,7 +33,6 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
@@ -56,7 +55,6 @@ final readonly class SubReserveProductStockTotalByCancel
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentProductStocksInterface $CurrentProductStocks,
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
@@ -64,6 +62,11 @@ final readonly class SubReserveProductStockTotalByCancel
         private EntityManagerInterface $entityManager,
     ) {}
 
+    /**
+     * Отменяет резерв на складе при отмене складской заявки
+     *
+     * @see CancelProductStocksByCancelOrderDispatcher
+     */
     public function __invoke(ProductStockMessage $message): void
     {
         if(false === ($message->getLast() instanceof ProductStockEventUid))
@@ -112,14 +115,16 @@ final readonly class SubReserveProductStockTotalByCancel
         }
 
         /**
-         * Не снимаем резерв на складе, если предыдущее событие заявки Completed «Выдан по месту назначения».
-         * Резерв был списан при завершении
+         * Не снимаем резерв на складе, если предыдущее событие заявки - Completed «Выдан по месту назначения».
+         *
+         * @note Резерв и остаток на складе был списан при завершении заказа
+         * @see SubReserveProductStocksTotalByOrderCompleteDispatcher
+         *
          */
         if($LastProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class))
         {
             return;
         }
-
 
 
         // Получаем всю продукцию в заявке

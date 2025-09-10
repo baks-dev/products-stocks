@@ -32,7 +32,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
-use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use Psr\Log\LoggerInterface;
@@ -40,7 +39,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Резервирование на складе продукции при статусе "ОТПАРВЛЕН НА СБОРКУ"
+ * Резервирование на складе продукции при статусе складской заявки Package «Упаковка»
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
@@ -48,7 +47,6 @@ final readonly class AddReserveProductStocksTotalByPackage
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentProductStocksInterface $CurrentProductStocks,
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
@@ -60,7 +58,7 @@ final readonly class AddReserveProductStocksTotalByPackage
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -90,7 +88,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -100,7 +98,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -113,7 +111,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на упаковку',
-                ['total' => $product->getTotal()]
+                ['total' => $product->getTotal()],
             );
 
             $AddProductStocksReserve = new AddProductStocksReserveMessage(
@@ -122,7 +120,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                 product: $product->getProduct(),
                 offer: $product->getOffer(),
                 variation: $product->getVariation(),
-                modification: $product->getModification()
+                modification: $product->getModification(),
             );
 
             $productTotal = $product->getTotal();
@@ -146,7 +144,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                         'profile' => (string) $UserProfileUid,
                         var_export($AddProductStocksReserve, true),
                         self::class.':'.__LINE__,
-                    ]
+                    ],
                 );
 
                 continue;
@@ -164,7 +162,7 @@ final readonly class AddReserveProductStocksTotalByPackage
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks',
                 );
 
                 continue;
@@ -184,7 +182,7 @@ final readonly class AddReserveProductStocksTotalByPackage
 
                 $this->messageDispatch->dispatch(
                     $AddProductStocksReserve,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks',
                 );
 
                 if($i >= $productTotal)

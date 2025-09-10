@@ -43,7 +43,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Пополнение наличием продукции в карточке при поступлении на склад
+ * Пополнение наличием в карточке при поступлении на склад
  */
 #[AsMessageHandler(priority: 20)]
 final readonly class AddQuantityProductByIncomingStock

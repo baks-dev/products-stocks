@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия
+ * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия высвобождая место
  */
 #[AsMessageHandler(priority: 999)]
 final readonly class AddProductStocksReserveDispatcher
@@ -58,7 +58,6 @@ final readonly class AddProductStocksReserveDispatcher
         {
             return true;
         }
-
 
         $ProductStockTotal = $this->productStockMinQuantity
             ->profile($message->getProfile())

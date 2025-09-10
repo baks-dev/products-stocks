@@ -45,9 +45,6 @@ final readonly class SubProductStocksReserveDispatcher
         private DeduplicatorInterface $deduplicator
     ) {}
 
-    /**
-     * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
-     */
     public function __invoke(SubProductStocksReserveMessage $message): void
     {
         $DeduplicatorExecuted = $this->deduplicator
