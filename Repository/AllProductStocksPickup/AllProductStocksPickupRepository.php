@@ -34,7 +34,6 @@ use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
-use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
@@ -57,6 +56,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
 
     private ?ProductStockPickupFilterInterface $filter = null;
 
+    private ?UserProfileUid $profile = null;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
@@ -75,6 +76,12 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         return $this;
     }
 
+    public function profile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
+
     private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
@@ -85,7 +92,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             ->where('invariable.profile = :profile')
             ->setParameter(
                 key: 'profile',
-                value: $this->UserProfileTokenStorage->getProfile(),
+                value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE
             );
 
@@ -131,16 +138,6 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 ProductStockProduct::class,
                 'stock_product',
                 'stock_product.event = stock.event'
-            );
-
-
-        // Product
-        $dbal
-            ->join(
-                'stock_product',
-                Product::class,
-                'product',
-                'product.id = stock_product.product'
             );
 
 
@@ -244,9 +241,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
             );
 
-
         // Поиск
-        if($this->search->getQuery())
+        if($this->search?->getQuery())
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)

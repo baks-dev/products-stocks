@@ -57,13 +57,22 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Generator;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 
-final readonly class ProductStocksPackageDetailRepository implements ProductStocksPackageDetailInterface
+final class ProductStocksPackageDetailRepository implements ProductStocksPackageDetailInterface
 {
+    private ?UserProfileUid $profile = null;
+
     public function __construct(
-        private DBALQueryBuilder $DBALQueryBuilder,
-        private UserProfileTokenStorageInterface $UserProfileTokenStorage
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
+
+    public function profile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
 
     public function find(ProductStockUid $stock): Generator
     {
@@ -89,7 +98,7 @@ final readonly class ProductStocksPackageDetailRepository implements ProductStoc
             )
             ->setParameter(
                 key: 'profile',
-                value: $this->UserProfileTokenStorage->getProfile(),
+                value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE
             );
 
@@ -105,7 +114,11 @@ final readonly class ProductStocksPackageDetailRepository implements ProductStoc
                 event.status = :package
                 ');
 
-        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
+        $dbal->setParameter(
+            'package',
+            new ProductStockStatus(new ProductStockStatusPackage()),
+            ProductStockStatus::TYPE
+        );
 
         $dbal
             ->addSelect('stock_product.total')

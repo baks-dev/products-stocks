@@ -26,10 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductStocksPickupDetail;
 
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Generator;
 
 interface ProductStocksPickupDetailInterface
 {
-    public function find(ProductStockUid $stock): Generator;
+    public function profile(UserProfileUid $profile): self;
 
+    public function find(ProductStockUid $stock): Generator;
 }

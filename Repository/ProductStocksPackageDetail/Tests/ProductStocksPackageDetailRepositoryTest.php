@@ -23,34 +23,34 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage\Tests;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\Tests;
 
-use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageInterface;
-use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageRepository;
-use BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageResult;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use PHPUnit\Framework\Attributes\Group;
+use BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\ProductStocksPackageDetailInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\ProductStocksPackageDetailRepository;
+use BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\ProductStocksPackageDetailResult;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use PHPUnit\Framework\Attributes\Group;
 
-final class AllProductStocksPackageRepositoryTest extends KernelTestCase
+final class ProductStocksPackageDetailRepositoryTest extends KernelTestCase
 {
     #[Group('products-stocks')]
     #[Group('products-stocks-repository')]
     public function testRepository(): void
     {
-        $AllProductStocksPackageRepository = self::getContainer()->get(AllProductStocksPackageInterface::class);
+        $ProductStocksPackageDetailRepository = self::getContainer()->get(ProductStocksPackageDetailInterface::class);
 
-        /** @var AllProductStocksPackageRepository $AllProductStocksPackageRepository */
-        $result = $AllProductStocksPackageRepository
+        /** @var ProductStocksPackageDetailRepository $ProductStocksPackageDetailRepository */
+        $result = $ProductStocksPackageDetailRepository
             ->profile(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
-            ->findResultPaginator()
-            ->getData();
+            ->find(new ProductStockUid('0199330e-fdf6-7289-b982-3be3bc7e4187'));
 
-        foreach($result as $productStock) {
+        foreach($result as $product) {
             // Вызываем все геттеры
-            $reflectionClass = new ReflectionClass(AllProductStocksPackageResult::class);
+            $reflectionClass = new ReflectionClass(ProductStocksPackageDetailResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
             foreach($methods as $method)
@@ -59,7 +59,7 @@ final class AllProductStocksPackageRepositoryTest extends KernelTestCase
                 if($method->getNumberOfParameters() === 0)
                 {
                     // Вызываем метод
-                    $data = $method->invoke($productStock);
+                    $data = $method->invoke($product);
                     self::assertTrue(true);
                 }
             }

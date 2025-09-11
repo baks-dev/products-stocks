@@ -55,12 +55,20 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserPro
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Generator;
 
-final readonly class ProductStocksPickupDetailRepository implements ProductStocksPickupDetailInterface
+final class ProductStocksPickupDetailRepository implements ProductStocksPickupDetailInterface
 {
+    private ?UserProfileUid $profile = null;
+
     public function __construct(
-        private DBALQueryBuilder $DBALQueryBuilder,
-        private UserProfileTokenStorageInterface $UserProfileTokenStorage
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
+
+    public function profile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
 
     public function find(ProductStockUid $stock): Generator
     {
@@ -83,7 +91,7 @@ final readonly class ProductStocksPickupDetailRepository implements ProductStock
             )
             ->setParameter(
                 key: 'profile',
-                value: $this->UserProfileTokenStorage->getProfile(),
+                value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE
             );
 

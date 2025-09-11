@@ -56,7 +56,6 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -64,12 +63,17 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserPro
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 
 final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
 {
     private ?SearchDTO $search = null;
 
     private ?ProductStockPackageFilterInterface $filter = null;
+
+    private ?UserProfileUid $profile = null;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
@@ -89,6 +93,12 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         return $this;
     }
 
+    public function profile(UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
+
     public function setLimit(int $limit): self
     {
         $this->paginator->setLimit($limit);
@@ -101,8 +111,8 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        // Stock
 
+        // Stock
         // ProductStock
         $dbal->select('stock.id');
         $dbal->addSelect('stock.event');
@@ -122,7 +132,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             )
             ->setParameter(
                 key: 'profile',
-                value: $this->UserProfileTokenStorage->getProfile(),
+                value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE
             );
 
@@ -140,11 +150,14 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 event.status = :package
                 ');
 
-        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
+        $dbal->setParameter(
+            'package',
+            new ProductStockStatus(new ProductStockStatusPackage()),
+            ProductStockStatus::TYPE
+        );
 
 
         /** Погрузка на доставку */
-
         if(class_exists(DeliveryPackage::class))
         {
             /** Подгружаем разделенные заказы */
@@ -176,9 +189,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'delivery_transport',
                 'delivery_transport.package = delivery_package.id'
             );
-
-            //$dbal->addOrderBy('delivery_transport.date_package');
-
         }
         else
         {
@@ -240,7 +250,11 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             {
                 $delivery_condition .= ' AND order_delivery.delivery_date >= :delivery_date_start AND order_delivery.delivery_date < :delivery_date_end';
                 $dbal->setParameter('delivery_date_start', $this->filter->getDate(), Types::DATE_IMMUTABLE);
-                $dbal->setParameter('delivery_date_end', $this->filter->getDate()?->modify('+1 day'), Types::DATE_IMMUTABLE);
+                $dbal->setParameter(
+                    'delivery_date_end',
+                    $this->filter->getDate()?->modify('+1 day'),
+                    Types::DATE_IMMUTABLE
+                );
             }
 
             if($this->filter->getDelivery() instanceof DeliveryUid)
@@ -283,14 +297,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             UserProfile::class,
             'users_profile',
             'users_profile.id = invariable.profile'
-        );
-
-        // Info
-        $dbal->leftJoin(
-            'event',
-            UserProfileInfo::class,
-            'users_profile_info',
-            'users_profile_info.profile = invariable.profile'
         );
 
         // Event
@@ -339,11 +345,14 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
 
         $dbal->addSelect(sprintf('EXISTS(%s) AS products_move', $dbalExist->getSQL()));
-        $dbal->setParameter('incoming', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE);
+        $dbal->setParameter(
+            'incoming',
+            new ProductStockStatus(new ProductStockStatusIncoming()),
+            ProductStockStatus::TYPE
+        );
 
 
         /** Пункт назначения при перемещении */
-
         $dbal->leftJoin(
             'event',
             ProductStockMove::class,
@@ -456,18 +465,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        // Stock
-
-        // ProductStock
-        //$dbal->select('stock.id');
-        //$dbal->addSelect('stock.event');
-
         $dbal->from(ProductStock::class, 'stock');
-
-        // ProductStockEvent
-        //$dbal->addSelect('event.number');
-        //$dbal->addSelect('event.comment');
-        //$dbal->addSelect('event.status');
 
         $dbal->join(
             'stock',
@@ -483,66 +481,17 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             )'
         );
 
-        $dbal->setParameter('package', new ProductStockStatus(new ProductStockStatus\ProductStockStatusPackage()), ProductStockStatus::TYPE);
-        $dbal->setParameter('move', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE);
+        $dbal->setParameter(
+            'package',
+            new ProductStockStatus(new ProductStockStatusPackage()),
+            ProductStockStatus::TYPE
+        );
+        $dbal->setParameter(
+            'move',
+            new ProductStockStatus(new ProductStockStatusMoving()),
+            ProductStockStatus::TYPE
+        );
         $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-
-        /** Погрузка на доставку */
-
-        //        if(defined(DeliveryPackage::class.'::class'))
-        //        {
-        //
-        //            /** Подгружаем разделенные заказы */
-        //
-        //
-        //            $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-        //            $existDeliveryPackage->select('1');
-        //            $existDeliveryPackage->from(DeliveryPackage::class, 'bGIuGLiNkf');
-        //            $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
-        //
-        //            $dbal->leftJoin(
-        //                'stock',
-        //                DeliveryPackageStocks::class,
-        //                'delivery_stocks',
-        //                'delivery_stocks.stock = stock.id AND EXISTS('.$existDeliveryPackage->getSQL().')'
-        //            );
-        //
-        //
-        //            $dbal->leftJoin(
-        //                'delivery_stocks',
-        //                DeliveryPackage::class,
-        //                'delivery_package',
-        //                'delivery_package.event = delivery_stocks.event'
-        //            );
-        //
-        //            //$dbal->addSelect('delivery_transport.date_package');
-        //
-        //            $dbal->leftJoin(
-        //                'delivery_package',
-        //                DeliveryPackageTransport::class,
-        //                'delivery_transport',
-        //                'delivery_transport.package = delivery_package.id'
-        //            );
-        //
-        //            //$dbal->addOrderBy('delivery_transport.date_package');
-        //
-        //        }
-        //        else
-        //        {
-        //            $dbal->addSelect('NULL AS date_package');
-        //            $dbal->setParameter('divide', 'ntUIGnScMq');
-        //        }
-
-        //
-        //        $dbal
-        //            ->addSelect('modify.mod_date')
-        //            ->join(
-        //                'stock',
-        //                ProductStockModify::class,
-        //                'modify',
-        //                'modify.event = stock.event'
-        //            );
 
 
         $dbal

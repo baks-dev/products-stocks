@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Products\Stocks\Forms\PickupFilter\ProductStockPickupFilterInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksPickupInterface
 {
@@ -35,6 +36,8 @@ interface AllProductStocksPickupInterface
     public function search(SearchDTO $search): self;
 
     public function filter(ProductStockPickupFilterInterface $filter): self;
+
+    public function profile(UserProfileUid $profile): self;
 
     /**
      * Метод возвращает пагинатор ProductStocks
