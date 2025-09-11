@@ -527,7 +527,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('invariable.number')
                 ->addSearchLike('product_trans.name');
         }
 

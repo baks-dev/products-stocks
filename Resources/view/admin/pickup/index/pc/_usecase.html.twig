@@ -1,7 +1,7 @@
 {# Пользовательское меню #}
 
 <button class="btn btn-link btn-sm p-0"
-        id="usecase-{{ item.stock_event }}"
+        id="usecase-{{ item.stockEvent }}"
         data-bs-container="body"
         data-bs-toggle="popover"
         data-bs-placement="right"
@@ -15,13 +15,13 @@
     </svg>
 </button>
 
-<div id="usecase-{{ item.stock_event }}-content" class="d-none">
+<div id="usecase-{{ item.stockEvent }}-content" class="d-none">
     <ul class="leader list-group list-group-flush ">
 
         {# Отмена заказа #}
-        {% if item.order_id and (is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN')) %}
+        {% if item.orderId and (is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN')) %}
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('orders-order:admin.order.canceled', { id: item.order_id }) }}"
+                <a href="{{ path('orders-order:admin.order.canceled', { id: item.orderId }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"

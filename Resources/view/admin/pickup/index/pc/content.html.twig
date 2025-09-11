@@ -150,7 +150,7 @@
 
                 {% for item in query.data %}
 
-                {% if card != item.stock_id %}
+                {% if card != item.stockId %}
 
                 {% if card is not null %}
                 </table>
@@ -159,7 +159,7 @@
         {% endif %}
 
 
-        <div id="{{ item.stock_id }}" class="card mb-3 border-light">
+        <div id="{{ item.stockId }}" class="card mb-3 border-light">
             <div class="card-header bg-body border-light">
 
                 <div class="card-title w-100 d-flex gap-3 mb-0 justify-content-between align-items-center text-secondary">
@@ -170,22 +170,12 @@
                             <div class="d-flex align-items-center">
                                         <span class="h5 m-0 lh-1">
 
-                                            <input id="check-{{ item.stock_id }}"
+                                            <input id="check-{{ item.stockId }}"
                                                    type="checkbox"
                                                    class="form-check-input add-all-to-completed btn-outline-danger"
-                                                   {# data-formname="completed_selected_product_stock_form" #}
                                                    data-formname="{{ add_selected_form_name }}"
-                                                   data-id="{{ item.stock_event }}"
+                                                   data-id="{{ item.stockEvent }}"
                                                    title="Выбрать данный заказ">
-
-                                            {# <input
-                                                    id="check-{{ identifier }}"
-                                                    type="checkbox"
-                                                    class="form-check-input add-all-to-invoice m-0 btn-outline-danger"
-                                            #}{# Данные, отправляемые POST #}{#
-                                            data-formname="{{ add_selected_form_name }}"
-                                            data-order="{{ identifier }}"
-                                    > #}
 
                                         </span>
                             </div>
@@ -194,10 +184,12 @@
 
 
                     <button
-                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0"
+                            class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0 collapse-link-content"
                             style="width: 20px;"
                             type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ item.stock_id }}"
+                            data-bs-target="#collapse{{ item.stockId }}"
+                            data-container="collapse{{ item.stockId }}"
+                            data-href="{{ path('products-stocks:admin.pickup.detail', { id: item.stockId }) }}"
                     >
                     </button>
 
@@ -216,8 +208,8 @@
 
                             <div>
 
-                                <button data-href='{{ item.order_id ? path('orders-order:admin.detail', { id: item.order_id }) : '#' }}'
-                                        data-id='{{ item.order_id }}'
+                                <button data-href='{{ item.orderId ? path('orders-order:admin.detail', { id: item.orderId }) : '#' }}'
+                                        data-id='{{ item.orderId }}'
                                         class="btn btn-sm btn-link fw-bolder text-decoration-none product-name offcanvas-link text-nowrap p-0"
                                 >
                                     <span class="badge text-bg-warning me-3">
@@ -229,13 +221,13 @@
 
                                 <div class="fw-normal text-nowrap">
 
-                                    {% if item.delivery_date|date('Ymd') == date('now')|date('Ymd') %}
+                                    {% if item.deliveryDate|date('Ymd') == date('now')|date('Ymd') %}
                                         <strong class="text-success">
                                             Сегодня
-                                            ({{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }})
+                                            ({{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }})
                                         </strong>
                                     {% else %}
-                                        <strong>{{ item.delivery_date|format_datetime(pattern="EEEE, d MMMM") }}</strong>
+                                        <strong>{{ item.deliveryDate|format_datetime(pattern="EEEE, d MMMM") }}</strong>
                                     {% endif %}
 
                                 </div>
@@ -245,21 +237,17 @@
                             {# СКЛАД #}
 
                             <div class="text-nowrap">
-                                {# <div class="text-nowrap">
-                                    <span class="text-muted opacity-50">Склад: </span> &nbsp;
-                                    <strong>{{ item.users_profile_username }}</strong>
-                                </div> #}
 
-                                {% if item.delivery_name %}
+                                {% if item.deliveryName %}
                                     <div class="text-nowrap">
                                         <span class="text-muted opacity-50">Доставка:</span> &nbsp;
-                                        <strong>{{ item.delivery_name }}</strong>
+                                        <strong>{{ item.deliveryName }}</strong>
                                     </div>
                                 {% endif %}
 
                                 <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Готовность:</span> &nbsp;
-                                    <strong>{{ item.mod_date|date('d.m.Y H:i') }}</strong>
+                                    <strong>{{ item.modDate|date('d.m.Y H:i') }}</strong>
                                 </div>
                             </div>
 
@@ -268,7 +256,7 @@
                             <div class="d-flex w-50 gap-3">
                                 <div class="text-nowrap">
                                     <span class="text-muted opacity-50">Клиент: </span> &nbsp;
-                                    <div class="d-flex gap-3">{{ user_profile_render(item.client_profile_event) }}</div>
+                                    <div class="d-flex gap-3">{{ user_profile_render(item.clientProfileEvent) }}</div>
                                 </div>
                             </div>
 
@@ -294,54 +282,7 @@
 
                     <div class="d-flex gap-3">
 
-                        {# <div class="dropdown">
-
-                            <button class="btn btn-outline-light text-muted dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                     class="bi bi-printer-fill" viewBox="0 0 16 16">
-                                    <path
-                                            d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path>
-                                    <path
-                                            d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"></path>
-                                </svg>
-                            </button>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="{{ path('orders-order:admin.document.sales', { id : item.order_id }) }}"
-                                       class="dropdown-item prnt"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal"
-                                    >
-                                        Накладная
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ path('orders-order:admin.document.receipt', { id : item.order_id }) }}"
-                                       class="dropdown-item prnt"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal"
-                                    >
-                                        Приходный ордер
-                                    </a>
-                                </li>
-                            </ul>
-                        </div> #}
-
-
                         {% if item.status == 'extradition' %}
-
-                            {#                            <a href="{{ path('products-stocks:admin.pickup.completed', { id : item.stock_id }) }}" #}
-                            {#                               class="btn btn-success modal-link disabled text-nowrap" #}
-                            {#                               data-bs-toggle="modal" #}
-                            {#                               data-bs-target="#modal" #}
-                            {#                               title="Выдать заказ" #}
-                            {#                            > #}
-                            {#                                Выдать заказ #}
-                            {#                            </a> #}
 
                             <a href="{{ path('products-stocks:admin.pickup.completed-selected') }}"
                                class="btn btn-success modal-link disabled text-nowrap"
@@ -350,7 +291,7 @@
 
                                data-method="post"
                                data-formname="{{ add_selected_form_name }}"
-                               data-id="{{ item.stock_event }}"
+                               data-id="{{ item.stockEvent }}"
                                data-collection-form="collection"
                                data-post-class="add-one-to-collection"
                                title="Выдать заказ"
@@ -365,20 +306,13 @@
 
             </div>
 
-            <div id="collapse{{ item.stock_id }}"
+            <div id="collapse{{ item.stockId }}"
                  class="card-body fw-normal mb-0 accordion-collapse collapse"
                  data-bs-parent="#accordionPackage">
 
-                <table>
-                    <tbody>
-                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
-                    </tbody>
-
-                    {% set card = item.stock_id %}
+                    {% set card = item.stockId %}
 
                     {% endif %}
-
-                    {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
 
                     {% endfor %}
                 </table>

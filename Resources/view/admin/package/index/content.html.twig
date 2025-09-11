@@ -10,23 +10,12 @@
     </div>
 </div>
 
-
-{#
-<div class="mb-3 d-flex align-items-center gap-3">
-     <span>{{ current.users_profile_username }}</span>
-</div>
-#}
-
     {% set order = null %}
 
 
 <table class="table w-100 mb-2">
     <thead>
     <tr>
-
-
-        {# <th scope="col"> Дата доставки #}
-        {# <th scope="col"> Доставка #}
 
     <tr>
 
@@ -38,39 +27,9 @@
 
     <tbody>
 
-    {# <tr>
-        <td scope="row"> {{ card.number }}
-        <td scope="row"> {{ card.delivery_name }}
-        <td scope="row"> {{ card.delivery_date|format_datetime(pattern="EEEE, d MMMM") }} #}
-
-
-
-    {# {% endif %} #}
-
-
-
-
     {% for card in query.data %}
 
-    {# {% if loop.index0 is divisible by(10) %}
-    #}{# Вставляем разрыв страницы #}{#
-    <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
-{% endif %} #}
-
     <tr>
-
-        {# {% if order != card.id %} #}
-
-        {# {% if order != null %}
-                </table>
-
-                {% if loop.index0 is divisible by(5) %}
-        #}{# Вставляем разрыв страницы #}{#
-        <div style="page-break-before:always; position: unset !important;">&nbsp;</div>
-    {% else %}
-        <hr>
-    {% endif %}
-{% endif %} #}
 
         <td>
             {% if order is null or order != card.number %}
@@ -105,9 +64,6 @@
 
         <td>
             {{ card.stock_storage }}
-
-            {# {% set order = card.id %} #}
-
 
             {% endfor %}
 

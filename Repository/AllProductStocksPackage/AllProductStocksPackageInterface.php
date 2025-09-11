@@ -47,6 +47,7 @@ interface AllProductStocksPackageInterface
 
     /**
      * Метод возвращает всю продукцию требующая сборки
+     * @see AllProductStocksPackageResult
      */
     public function findAllProducts(UserProfileUid $profile): ?array;
 }

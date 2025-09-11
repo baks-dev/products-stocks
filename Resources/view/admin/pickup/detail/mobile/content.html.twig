@@ -1,0 +1,10 @@
+<table>
+    <tbody>
+    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
+    </tbody>
+
+    {% for item in query %}
+
+        {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
+    {% endfor %}
+</table>
