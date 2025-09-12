@@ -37,6 +37,8 @@ interface AllProductStocksPackageInterface
 
     public function filter(ProductStockPackageFilterInterface $filter): self;
 
+    public function profile(UserProfileUid $profile): self;
+
     /** Метод возвращает все заявки на упаковку заказов в виде массива. */
     public function findPaginator(): PaginatorInterface;
 
@@ -47,6 +49,7 @@ interface AllProductStocksPackageInterface
 
     /**
      * Метод возвращает всю продукцию требующая сборки
+     * @see AllProductStocksPackageResult
      */
     public function findAllProducts(UserProfileUid $profile): ?array;
 }

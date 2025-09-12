@@ -1,23 +1,4 @@
-{% trans_default_domain 'products-stocks.admin' %}
-
 <tr>
-
-    {# <td>
-    #}{# Пользовательское меню #}{#
-    {{ include(_self|replace({ "_table.tbody.html.twig": "_usecase.html.twig" })) }}
-</td> #}
-
-    {# Чекбокс #}
-    {# <td>
-		<div class="form-check form-check-sm form-check-custom">
-			<input class="form-check-input checked-item" type="checkbox" onchange=checkedItem();
-				   value="{{ item.event }}"
-				   name=" #}{# {{ multi.multiple.vars.full_name }} #}{# [][event]"
-			>
-
-		</div>
-	</td> #}
-
     <td class="ps-5 align-middle">
         <div class="d-flex align-content-center">
 
@@ -72,11 +53,6 @@
                     {{ item.productVariationPostfix }}
                     {# Постфикс модификации #}
                     {{ item.productModificationPostfix }}
-
-                    {# Свойства, учавствующие в названии #}
-                    {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
-						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
-					{% endfor %} #}
 
                 </a>
 

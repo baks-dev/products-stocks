@@ -1,22 +1,6 @@
 {% trans_default_domain 'products-stocks.admin' %}
 <tr>
 
-    {# <td>
-    #}{# Пользовательское меню #}{#
-    {{ include(_self|replace({ "_table.tbody.html.twig": "_usecase.html.twig" })) }}
-</td> #}
-
-    {# Чекбокс #}
-    {# <td>
-		<div class="form-check form-check-sm form-check-custom">
-			<input class="form-check-input checked-item" type="checkbox" onchange=checkedItem();
-				   value="{{ item.event }}"
-				   name=" #}{# {{ multi.multiple.vars.full_name }} #}{# [][event]"
-			>
-
-		</div>
-	</td> #}
-
     <td class="ps-5 align-middle">
         <div class="d-flex align-content-center align-items-center">
 
@@ -71,12 +55,6 @@
                     {# Постфикс модификации #}
                     {{ item.product_modification_postfix }}
 
-                    {# Свойства, учавствующие в названии #}
-                    {# {% for name_property in arr_property | filter(props => props.field_name == true) %}
-						{{ name_property.props.field_value|call_twig_func(name_property.field_type) }}
-					{% endfor %} #}
-
-
                 </a>
 
                 {# Артикул #}
@@ -91,54 +69,16 @@
                     Артикул: {{ item.product_article }}
                 </div>
 
-
-                {# <div>
-                    {% if item.product_offer_value %}
-                        <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
-                    {% endif %}
-
-                    {% if item.product_variation_value %}
-                        , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;<strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
-                    {% endif %}
-
-                    {% if item.product_modification_value %}
-                        , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
-                    {% endif %}
-                </div>
-                #}
-                {# Описание #}
-                {# <div class="text-muted small">54654 dfgsd
-					{{ string_width(item.product_description, 150)|raw }}
-				</div> #}
-                <div>
-                    {# {% if item.product_offer_value %}
-                        <span class="text-muted">{{ item.product_offer_name }} :</span>&nbsp;<strong>{{ item.product_offer_value|call_twig_func(item.product_offer_reference) }}</strong>
-                    {% endif %} #}
-
-                    {# {% if item.product_variation_value %}
-                        , <span class="text-muted">{{ item.product_variation_name }} :</span>&nbsp;<strong>{{ item.product_variation_value|call_twig_func(item.product_variation_reference) }}</strong>
-                    {% endif %} #}
-
-                    {# {% if item.product_modification_value %}
-                        , <span class="text-muted">{{ item.product_modification_name }}:</span>&nbsp;<strong>{{ item.product_modification_value|call_twig_func(item.product_modification_reference) }}</strong>
-                    {% endif %} #}
-                </div>
             </div>
 
         </div>
     </td>
 
-    {# <td class="ps-5 text-nowrap">
-
-		{{ item.article_offer_name }}: {{ reference(item.article_reference, item.offer) }}<br>
-		{{ item.variation_offer_name }}: {{ reference(item.variation_reference, item.variation) }}
-	</td> #}
-
     <td class="ps-5">
         {{ item.category_name }}
     </td>
 
-    <td class="ps-5 text-center fw-bolder vertical-middle {# {{ item.products_move ? 'text-danger' : 'text-primary' }} #} h5">
+    <td class="ps-5 text-center fw-bolder vertical-middle h5">
         {{ item.total }}
     </td>
 </tr>

@@ -95,7 +95,7 @@ final class IndexController extends AbstractController
         $Orders = $allProductStocksPickup
             ->search($search)
             ->filter($filter)
-            ->findPaginator();
+            ->findResultPaginator();
 
         return $this->render(
             [
