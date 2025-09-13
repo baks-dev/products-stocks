@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -74,9 +74,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
-    public function setProduct(ProductUid $product): void
+    public function setProduct(ProductUid $product): self
     {
         $this->product = $product;
+        return $this;
     }
 
     /** Торговое предложение */
@@ -85,9 +86,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-    public function setOffer(ProductOfferConst $offer): void
+    public function setOffer(ProductOfferConst $offer): self
     {
         $this->offer = $offer;
+        return $this;
     }
 
     /** Множественный вариант */
@@ -96,9 +98,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    public function setVariation(?ProductVariationConst $variation): void
+    public function setVariation(?ProductVariationConst $variation): self
     {
         $this->variation = $variation;
+        return $this;
     }
 
     /** Модификация множественного варианта */
@@ -107,9 +110,10 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-    public function setModification(?ProductModificationConst $modification): void
+    public function setModification(?ProductModificationConst $modification): self
     {
         $this->modification = $modification;
+        return $this;
     }
 
     /** Количество */
@@ -118,8 +122,9 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->total;
     }
 
-    public function setTotal(int $total): void
+    public function setTotal(int $total): self
     {
         $this->total = $total;
+        return $this;
     }
 }
