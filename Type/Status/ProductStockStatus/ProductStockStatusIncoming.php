@@ -34,7 +34,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('baks.product.stock.status')]
 class ProductStockStatusIncoming implements ProductStockStatusInterface
 {
-    public const STATUS = 'incoming';
+    public const string STATUS = 'incoming';
 
     /** Возвращает значение (value) */
     public function getValue(): string

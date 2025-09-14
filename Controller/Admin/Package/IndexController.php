@@ -102,7 +102,7 @@ final class IndexController extends AbstractController
         $query = $allPackage
             ->search($search)
             ->filter($filter)
-            ->findResultPaginator();
+            ->findPaginator();
 
         return $this->render(
             [

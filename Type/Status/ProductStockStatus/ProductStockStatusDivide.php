@@ -35,7 +35,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 class ProductStockStatusDivide implements ProductStockStatusInterface
 {
 
-    public const STATUS = 'divide';
+    public const string STATUS = 'divide';
 
     /** Возвращает значение (value) */
     public function getValue(): string

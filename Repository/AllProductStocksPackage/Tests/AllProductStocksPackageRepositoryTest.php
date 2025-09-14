@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -44,11 +44,12 @@ final class AllProductStocksPackageRepositoryTest extends KernelTestCase
 
         /** @var AllProductStocksPackageRepository $AllProductStocksPackageRepository */
         $result = $AllProductStocksPackageRepository
-            ->profile(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
-            ->findResultPaginator()
+            ->profile(new UserProfileUid())
+            ->findPaginator()
             ->getData();
 
-        foreach($result as $productStock) {
+        foreach($result as $productStock)
+        {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(AllProductStocksPackageResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
