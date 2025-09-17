@@ -44,6 +44,7 @@ success:
   total: 'Skald accounting successfully updated'
   cancel: 'Request successfully cancelled'
   pickup: 'Order completed successfully'
+  storageMove: 'Product was successfully moved'
 
 danger:
   new: '%s: Error adding incoming order'
@@ -59,3 +60,4 @@ danger:
   total: '%s: Error updating inventory records'
   cancel: '%s: Error canceling order'
   pickup: '%s: Error completing order'
+  storageMove: 'Error moving the products'
