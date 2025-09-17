@@ -35,4 +35,37 @@ final class ProductStockTotalUid extends Uid
 
     public const string TYPE = 'product_stock_total';
 
+    private mixed $attr;
+
+    private mixed $option;
+
+    private mixed $property;
+
+    public function __construct(
+        AbstractUid|self|string|null $value = null,
+        mixed $option = null,
+        mixed $attr = null,
+        ?string $property = null
+    )
+    {
+        parent::__construct($value);
+        $this->option = $option;
+        $this->attr = $attr;
+        $this->property = $property;
+    }
+
+    public function getOption(): mixed
+    {
+        return $this->option;
+    }
+
+    public function getAttr(): mixed
+    {
+        return $this->attr;
+    }
+
+    public function getProperty(): mixed
+    {
+        return $this->property;
+    }
 }
