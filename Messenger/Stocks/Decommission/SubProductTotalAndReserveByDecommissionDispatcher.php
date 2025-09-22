@@ -148,16 +148,14 @@ final readonly class SubProductTotalAndReserveByDecommissionDispatcher
             }
 
             /** Списываем складской остаток */
-            $this->messageDispatch->dispatch(
-                new SubProductStocksTotalAndReserveMessage(
-                    $OrderEvent->getMain(),
-                    $OrderEvent->getOrderProfile(),
-                    $CurrentProductIdentifier->getProduct(),
-                    $CurrentProductIdentifier->getOfferConst(),
-                    $CurrentProductIdentifier->getVariationConst(),
-                    $CurrentProductIdentifier->getModificationConst(),
-                )
-                    ->setTotal($product->getPrice()->getTotal()));
+            $this->messageDispatch->dispatch(new SubProductStocksTotalAndReserveMessage(
+                $OrderEvent->getMain(),
+                $OrderEvent->getOrderProfile(),
+                $CurrentProductIdentifier->getProduct(),
+                $CurrentProductIdentifier->getOfferConst(),
+                $CurrentProductIdentifier->getVariationConst(),
+                $CurrentProductIdentifier->getModificationConst(),
+            )->setTotal($product->getPrice()->getTotal()));
 
             $this->logger->info(
                 sprintf(

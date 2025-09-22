@@ -78,8 +78,6 @@ final class MoveToStockStorageController extends AbstractController
             return $this->redirectToReferer();
         }
 
-        $max = $movingProductToStockDTO->getTotal() - $stockTotal->getReserve();
-
-        return $this->render(['form' => $form->createView(), 'max' => $max]);
+        return $this->render(['form' => $form->createView()]);
     }
 }

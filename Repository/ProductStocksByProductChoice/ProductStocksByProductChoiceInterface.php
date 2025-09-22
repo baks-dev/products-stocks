@@ -1,17 +1,17 @@
-<?php 
+<?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ * Copyright 2025.  Baks.dev <admin@baks.dev>
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,50 +23,19 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Type\Id;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksByProductChoice;
 
-use App\Kernel;
-use BaksDev\Core\Type\UidType\Uid;
-use Symfony\Component\Uid\AbstractUid;
+use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Generator;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-
-final class ProductStockUid extends Uid
+#[Autoconfigure(public: true)]
+interface ProductStocksByProductChoiceInterface
 {
-    public const string TEST = '0188a9a1-3dcd-75a3-b7a0-55845a57ccae';
+    public function profile(UserProfileUid $profile): self;
 
-    public const string TYPE = 'product_stock';
+    public function product(ProductUid $product): self;
 
-    private mixed $attr;
-
-    private mixed $option;
-
-    private mixed $property;
-
-    public function __construct(
-        AbstractUid|self|string|null $value = null,
-        mixed $option = null,
-        mixed $attr = null,
-        ?string $property = null
-    )
-    {
-        parent::__construct($value);
-        $this->option = $option;
-        $this->attr = $attr;
-        $this->property = $property;
-    }
-
-    public function getOption(): mixed
-    {
-        return $this->option;
-    }
-
-    public function getAttr(): mixed
-    {
-        return $this->attr;
-    }
-
-    public function getProperty(): mixed
-    {
-        return $this->property;
-    }
+    public function fetchStocksByProduct(): Generator;
 }

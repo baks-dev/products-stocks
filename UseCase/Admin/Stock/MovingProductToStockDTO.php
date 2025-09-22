@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final class MovingProductToStockDTO implements ProductStockTotalInterface
 {
@@ -67,7 +68,12 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
     private ?string $storage = null;
 
     /** Общее количество на данном складе */
+    #[Assert\When(expression: 'this.isValidTotal() === true', constraints: new Assert\NotBlank())]
     private int $total = 0;
+
+
+    /** Общее количество на данном складе */
+    private int $reserve = 0;
 
     /** Количество продукции для перемещения */
     private int $totalToMove = 0;
@@ -125,6 +131,11 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
     public function getTotal(): int
     {
         return $this->total;
+    }
+
+    public function getReserve(): int
+    {
+        return $this->reserve;
     }
 
     public function setFromId(ProductStockTotalUid $fromId): self
@@ -203,4 +214,14 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         $this->totalToMove = $totalToMove;
         return $this;
     }
+
+    public function isValidTotal() : bool
+    {
+        $move = ($this->total - $this->totalToMove) >= $this->reserve;
+
+        $move ?: throw new \InvalidArgumentException('Invalid Argument Total');
+
+        return $move;
+    }
+
 }

@@ -9,7 +9,7 @@
 
         <div class="modal-body d-flex justify-content-between gap-3">
             {{ form_widget(form.toId) }}
-            {{ form_widget(form.totalToMove, {attr: {min: 1, max: max }}) }}
+            {{ form_widget(form.totalToMove) }}
         </div>
 
         <div class="modal-footer">

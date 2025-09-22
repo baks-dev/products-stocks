@@ -49,6 +49,8 @@ final class MovingProductToStockForm extends AbstractType
         $builder->addEventListener(FormEvents::POST_SET_DATA, function(FormEvent $event)
         {
             $form = $event->getForm();
+
+            /** @var MovingProductToStockDTO $data */
             $data = $event->getData();
 
             /** @var MovingProductToStockDTO $data */
@@ -69,12 +71,17 @@ final class MovingProductToStockForm extends AbstractType
                 'choice_label' => function(ProductStockTotalUid $productStockTotal) {
                     return $productStockTotal->getAttr().'('.$productStockTotal->getOption().(false === empty($productStockTotal->getProperty()) ? ', '.$productStockTotal->getProperty() : '').')';
                 },
+
                 'placeholder' => 'Добавить новое место складирования',
                 'required' => false,
             ]);
+
+            $form->add('totalToMove', IntegerType::class, ['attr' => [ 'min' => 1, 'max' => $data->getReserve()]]);
+
         });
 
-        $builder->add('totalToMove', IntegerType::class);
+
+
 
         $builder->add('product_stock_storage_move', SubmitType::class, ['label_html' => true]);
     }

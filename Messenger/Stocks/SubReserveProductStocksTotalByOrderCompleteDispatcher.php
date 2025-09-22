@@ -1,4 +1,4 @@
-<?php
+<?php 
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -66,7 +66,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class,
+                self::class
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -81,7 +81,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         {
             $this->logger->critical(
                 'products-stocks: Не найдено событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)],
+                [self::class.':'.__LINE__, var_export($message, true)]
             );
 
             return;
@@ -89,30 +89,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 
         /** Если статус заказа не Completed «Выполнен» */
         if(false === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
-        {
-            return;
-        }
-
-
-        /** Получаем предыдущее событие */
-        $LastOrderEvent = $this->OrderEventRepository
-            ->find($message->getEvent());
-
-        if(false === ($LastOrderEvent instanceof OrderEvent))
-        {
-            $this->logger->critical(
-                'products-stocks: Не найдено предыдущее событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-
-            return;
-        }
-
-        /**
-         * Если статус предыдущего события заказа Completed «Выполнен» - следовательно списание уже было
-         * такая ситуация может возникнуть при автоматической отмене заказа либо обычном обновлении
-         */
-        if(true === $LastOrderEvent->isStatusEquals(OrderStatusCompleted::class))
         {
             return;
         }
@@ -128,18 +104,19 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             {
                 $this->logger->critical(
                     'products-stocks: Не найдено событие OrderEvent',
-                    [self::class.':'.__LINE__, var_export($message, true)],
+                    [self::class.':'.__LINE__, var_export($message, true)]
                 );
 
                 return;
             }
         }
 
+
         if($OrderEvent->getProduct()->isEmpty())
         {
             $this->logger->critical(
                 'products-stocks: Не найдено продукции в заказе',
-                [self::class.':'.__LINE__, var_export($message, true)],
+                [self::class.':'.__LINE__, var_export($message, true)]
             );
 
             return;
@@ -152,7 +129,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         {
             /**
              * Получаем идентификаторы карточки
-             *
              * @note: в заказе идентификаторы события, для склада необходимы константы
              */
             $CurrentProductIdentifier = $this->CurrentProductIdentifier
@@ -166,7 +142,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             {
                 $this->logger->critical(
                     'products-stocks: Невозможно снять резерв и остаток на складе (карточка не найдена)',
-                    [$product, self::class.':'.__LINE__],
+                    [$product, self::class.':'.__LINE__]
                 );
 
                 return;
@@ -202,7 +178,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
                         self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
                         var_export($SubProductStocksTotalMessage, true),
-                    ],
+                    ]
                 );
             }
 
