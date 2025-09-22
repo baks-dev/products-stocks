@@ -31,8 +31,6 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Storage\ProductStockStorageEditDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\DBAL\Types\Types;
@@ -206,7 +204,7 @@ class ProductStockTotal extends EntityState
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof ProductStockStorageEditDTO)
+        if($dto instanceof ProductStockTotalInterface)
         {
             return parent::getDto($dto);
         }
@@ -216,7 +214,7 @@ class ProductStockTotal extends EntityState
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof ProductStockTotalEditDTO || $dto instanceof ProductStockStorageEditDTO || $dto instanceof self)
+        if($dto instanceof ProductStockTotalInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
@@ -242,5 +240,11 @@ class ProductStockTotal extends EntityState
     public function getVariation(): ?ProductVariationConst
     {
         return $this->variation;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
     }
 }

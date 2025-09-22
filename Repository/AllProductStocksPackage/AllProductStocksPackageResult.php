@@ -46,9 +46,9 @@ final readonly class AllProductStocksPackageResult
         private string $delivery_date,
         private ?string $delivery_name,
         private ?string $users_profile_username,
-        //private bool $products_move,
-        //private ?string $users_profile_destination,
-        //private ?string $users_profile_move,
+        private bool $products_move,
+        private ?string $users_profile_destination,
+        private ?string $users_profile_move,
         private ?bool $printed,
     ) {}
 
@@ -114,7 +114,7 @@ final readonly class AllProductStocksPackageResult
 
     public function isProductsMove(): bool
     {
-        return $this->products_move === true;
+        return $this->products_move;
     }
 
     public function getUsersProfileDestination(): ?string

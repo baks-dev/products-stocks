@@ -30,12 +30,13 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockTotal */
-final class ProductStockTotalEditDTO
+final class ProductStockTotalEditDTO implements ProductStockTotalInterface
 {
     /** ID  */
     #[Assert\NotBlank]
