@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -46,10 +46,11 @@ final readonly class AllProductStocksPackageResult
         private string $delivery_date,
         private ?string $delivery_name,
         private ?string $users_profile_username,
-        private bool $products_move,
-        private ?string $users_profile_destination,
-        private ?string $users_profile_move,
         private ?bool $printed,
+
+        //private ?bool $products_move,
+        //private ?string $users_profile_destination,
+        //private ?string $users_profile_move,
     ) {}
 
     public function getId(): ProductStockUid
@@ -111,24 +112,23 @@ final readonly class AllProductStocksPackageResult
     {
         return $this->users_profile_username;
     }
-
-    public function isProductsMove(): bool
-    {
-        return $this->products_move;
-    }
-
-    public function getUsersProfileDestination(): ?string
-    {
-        return $this->users_profile_destination;
-    }
-
-    public function getUsersProfileMove(): ?string
-    {
-        return $this->users_profile_move;
-    }
-
     public function isPrinted(): bool
     {
         return $this->printed === true;
     }
+
+    //    public function isProductsMove(): bool
+    //    {
+    //        return $this->products_move;
+    //    }
+    //
+    //    public function getUsersProfileDestination(): ?string
+    //    {
+    //        return $this->users_profile_destination;
+    //    }
+    //
+    //    public function getUsersProfileMove(): ?string
+    //    {
+    //        return $this->users_profile_move;
+    //    }
 }
