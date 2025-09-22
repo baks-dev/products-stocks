@@ -106,6 +106,12 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             return;
         }
 
+        /** Если статус заказа не Completed «Выполнен» */
+        if(false === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
+        {
+            return;
+        }
+
 
         /** Получаем текущее состояние заказа, в случае если событие изменилось  */
         if(false === ($OrderEvent->getOrderProfile() instanceof UserProfileUid))
