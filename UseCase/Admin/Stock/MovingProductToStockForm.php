@@ -80,9 +80,6 @@ final class MovingProductToStockForm extends AbstractType
 
         });
 
-
-
-
         $builder->add('product_stock_storage_move', SubmitType::class, ['label_html' => true]);
     }
 

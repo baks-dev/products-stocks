@@ -223,5 +223,4 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
 
         return $move;
     }
-
 }
