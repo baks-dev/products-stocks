@@ -74,13 +74,18 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
         {
             /** Отправляем сообщение в шину для пересчета продукции */
-            $this->messageDispatch->dispatch(new RecalculateProductMessage(
-                $ProductStockTotal->getProfile(),
+
+            $RecalculateProductMessage = new RecalculateProductMessage(
                 $command->getProduct(),
                 $command->getOffer(),
                 $command->getVariation(),
                 $command->getModification(),
-            ), transport: 'products-stocks');
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $RecalculateProductMessage,
+                transport: 'products-stocks',
+            );
         }
 
         $this->messageDispatch->addClearCacheOther('products-stocks');

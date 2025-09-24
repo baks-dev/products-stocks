@@ -36,6 +36,7 @@ use BaksDev\Orders\Order\UseCase\Admin\Edit\EditOrderDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\Products\OrderProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
+use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -147,21 +148,45 @@ final readonly class SubProductTotalAndReserveByDecommissionDispatcher
                 continue;
             }
 
-            /** Списываем складской остаток */
-            $this->messageDispatch->dispatch(new SubProductStocksTotalAndReserveMessage(
+
+            /**
+             * Списываем складской остаток
+             */
+
+            $SubProductStocksTotalAndReserveMessage = new SubProductStocksTotalAndReserveMessage(
                 $OrderEvent->getMain(),
                 $OrderEvent->getOrderProfile(),
                 $CurrentProductIdentifier->getProduct(),
                 $CurrentProductIdentifier->getOfferConst(),
                 $CurrentProductIdentifier->getVariationConst(),
                 $CurrentProductIdentifier->getModificationConst(),
-            )->setTotal($product->getPrice()->getTotal()));
+            );
+
+            $SubProductStocksTotalAndReserveMessage->setTotal($product->getPrice()->getTotal());
+
+            $this->messageDispatch->dispatch($SubProductStocksTotalAndReserveMessage);
 
             $this->logger->info(
                 sprintf(
                     'Product %s: Снимаем резерв и остаток продукта на складе при списании (см. products-stock.log)',
                     $CurrentProductIdentifier->getProduct(),
                 ),
+            );
+
+            /**
+             * Пересчитываем остатки в карточке товара
+             */
+
+            $RecalculateProductMessage = new RecalculateProductMessage(
+                product: $CurrentProductIdentifier->getProduct(),
+                offer: $CurrentProductIdentifier->getOfferConst(),
+                variation: $CurrentProductIdentifier->getVariationConst(),
+                modification: $CurrentProductIdentifier->getModificationConst(),
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $RecalculateProductMessage,
+                transport: 'products-stocks',
             );
         }
 

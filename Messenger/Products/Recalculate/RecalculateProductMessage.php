@@ -34,33 +34,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class RecalculateProductMessage
 {
-    private string $profile;
     private string $product;
     private ?string $offer;
     private ?string $variation;
     private ?string $modification;
 
     public function __construct(
-        UserProfileUid $profile,
         ProductUid $product,
         ?ProductOfferConst $offer,
         ?ProductVariationConst $variation,
         ?ProductModificationConst $modification
     )
     {
-        $this->profile = (string) $profile;
         $this->product = (string) $product;
         $this->offer = $offer instanceof ProductOfferConst ? (string) $offer : null;
         $this->variation = $variation instanceof ProductVariationConst ? (string) $variation : null;
         $this->modification = $modification instanceof ProductModificationConst ? (string) $modification : null;
-    }
-
-    /**
-     *  Profile
-     */
-    public function getProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
     }
 
     /**
