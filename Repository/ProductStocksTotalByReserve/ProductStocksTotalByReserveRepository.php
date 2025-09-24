@@ -31,10 +31,14 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\Event\Warehouse\UserProfileWarehouse;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use InvalidArgumentException;
 
 final class ProductStocksTotalByReserveRepository implements ProductStocksTotalByReserveInterface
 {
+    private bool $isOnlyLogisticWarehouse = false;
+
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     private ProductUid $product;
@@ -109,6 +113,14 @@ final class ProductStocksTotalByReserveRepository implements ProductStocksTotalB
         return $this;
     }
 
+    /** Только на логистических складах */
+    public function onlyLogisticWarehouse(): self
+    {
+        $this->isOnlyLogisticWarehouse = true;
+        return $this;
+    }
+
+
 
     /** Метод возвращает общее количество резерва продукции на всех складах */
     public function get(): int
@@ -125,6 +137,24 @@ final class ProductStocksTotalByReserveRepository implements ProductStocksTotalB
             ->from(ProductStockTotal::class, 'stock')
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
+
+
+        if(true === $this->isOnlyLogisticWarehouse)
+        {
+            $dbal->join(
+                'stock',
+                UserProfile::class,
+                'profile',
+                'profile.id = stock.profile',
+            );
+
+            $dbal->join(
+                'profile',
+                UserProfileWarehouse::class,
+                'profile_warehouse',
+                'profile_warehouse.event = profile.event AND profile_warehouse.value IS TRUE',
+            );
+        }
 
         if($this->offer)
         {
