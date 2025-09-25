@@ -70,6 +70,8 @@ final class ProductStockStorageEditDTO implements ProductStockTotalInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    /** Место с высоким приоритетом */
+    private bool $priority = false;
 
     /**
      * Storage
@@ -164,5 +166,15 @@ final class ProductStockStorageEditDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getPriority(): bool
+    {
+        return $this->priority === true;
+    }
+
+    public function setPriority(bool $priority): self
+    {
+        $this->priority = $priority;
+        return $this;
+    }
 
 }

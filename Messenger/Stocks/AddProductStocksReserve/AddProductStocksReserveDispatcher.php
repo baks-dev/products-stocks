@@ -35,6 +35,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия высвобождая место
+ * либо если имеется приоритетное место - начнет с приоритетного
  */
 #[AsMessageHandler(priority: 999)]
 final readonly class AddProductStocksReserveDispatcher

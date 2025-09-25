@@ -31,7 +31,7 @@ value="{{ item.stock_id }}">
     <ul class="leader list-group list-group-flush ">
 
         {# Редактировать место складирвоания #}
-        {% if is_granted(ROLE~'_STORAGE') or is_granted('ROLE_ADMIN') %}
+        {% if is_granted('ROLE_PRODUCT_STOCK_STORAGE') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-stocks:admin.total.storage', {id: item.stockId }) }}"
@@ -46,7 +46,7 @@ value="{{ item.stock_id }}">
         {% endif %}
 
         {# Редактировать #}
-        {% if is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN') %}
+        {% if is_granted('ROLE_PRODUCT_STOCK_EDIT') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-stocks:admin.total.edit', {id: item.stockId }) }}"
@@ -78,15 +78,15 @@ value="{{ item.stock_id }}">
         {# Переместить в другое место складирования на складе #}
         {% if is_granted('ROLE_PRODUCT_STOCK_STORAGE_MOVE') or is_granted('ROLE_ADMIN') %}
             {% if item.stockReserve < item.stockTotal %}
-            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.move', {id: item.stockId }) }}"
-                   class="text-decoration-none text-dark w-100 modal-link disabled"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
-                   title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
-                    Переместить продукцию
-                </a>
-            </li>
+                <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
+                    <a href="{{ path('products-stocks:admin.total.move', {id: item.stockId }) }}"
+                       class="text-decoration-none text-dark w-100 modal-link disabled"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal"
+                       title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
+                        Переместить продукцию
+                    </a>
+                </li>
             {% endif %}
         {% endif %}
 

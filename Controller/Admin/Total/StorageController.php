@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Controller\Admin\Total;
 
 use BaksDev\Core\Controller\AbstractController;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\ProductStockTotalEditHandler;
@@ -40,7 +41,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-//#[RoleSecurity('ROLE_PRODUCT_STOCK_STORAGE')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_STORAGE')]
 final class StorageController extends AbstractController
 {
     #[Route('/admin/product/stocks/storage/{id}', name: 'admin.total.storage', methods: ['GET', 'POST'])]

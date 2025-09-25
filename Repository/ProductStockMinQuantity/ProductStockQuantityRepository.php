@@ -167,7 +167,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
             ->setParameter(
                 key: 'profile',
                 value: $this->profile,
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $orm
@@ -175,7 +175,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
             ->setParameter(
                 key: 'product',
                 value: $this->product,
-                type: ProductUid::TYPE
+                type: ProductUid::TYPE,
             );
 
 
@@ -186,7 +186,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
                 ->setParameter(
                     key: 'offer',
                     value: $this->offer,
-                    type: ProductOfferConst::TYPE
+                    type: ProductOfferConst::TYPE,
                 );
         }
         else
@@ -201,7 +201,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
                 ->setParameter(
                     key: 'variation',
                     value: $this->variation,
-                    type: ProductVariationConst::TYPE
+                    type: ProductVariationConst::TYPE,
                 );
         }
         else
@@ -216,7 +216,7 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
                 ->setParameter(
                     key: 'modification',
                     value: $this->modification,
-                    type: ProductModificationConst::TYPE
+                    type: ProductModificationConst::TYPE,
                 );
         }
         else
@@ -287,10 +287,10 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
      */
     public function findOneBySubReserve(): ?ProductStockTotal
     {
-
         $orm = $this->builder();
 
-        $orm->orderBy('stock.total');
+        $orm->orderBy('stock.priority', 'DESC'); // сортируем по приоритету
+        $orm->addOrderBy('stock.total'); // сортируем по количеству
 
         /* складские места только с наличием учитывая резерв */
         $orm->andWhere('(stock.total - stock.reserve) > 0');

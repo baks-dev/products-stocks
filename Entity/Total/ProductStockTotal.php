@@ -96,6 +96,9 @@ class ProductStockTotal extends EntityState
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $reserve = 0;
 
+    /** Место с высоким приоритетом */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $priority = false;
 
     public function __construct(
         UserUid $usr,

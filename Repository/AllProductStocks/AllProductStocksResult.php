@@ -43,6 +43,8 @@ final class AllProductStocksResult implements ProductPriceResultInterface
         private readonly ?string $stock_storage, //" => null
         private readonly ?int $stock_reserve, //" => 4
         private readonly ?string $stock_comment, //" => null
+        private readonly ?bool $stock_priority, //" => null
+
         private readonly string $users_profile_id, //" => "019577a9-71a3-714b-a99c-0386833d802f"
         private readonly string $product_id, //" => "01876b34-ed23-7c18-ba48-9071e8646a08"
         private readonly string $product_event, //" => "01963548-294f-71a6-b4b5-705cc4c470bd"
@@ -281,4 +283,11 @@ final class AllProductStocksResult implements ProductPriceResultInterface
     {
         return false;
     }
+
+    public function getStockPriority(): ?bool
+    {
+        return $this->stock_priority === true;
+    }
+
+
 }

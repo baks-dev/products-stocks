@@ -1,77 +1,86 @@
 # Role
-ROLE_PRODUCT_STOCK:
-  header: 'Warehouse'
-  name: 'Warehouse accounting'
-  desc: 'Warehouse accounting of goods'
+Role_product_Stock:
+  Header: 'Warehouse'
+  NAME: 'Warehouse'
+  Desc: 'Warehouse Accounting of Products'
+
 
 
 # Role
-ROLE_PRODUCT_STOCK_INDEX:
-  header: 'Orders'
-  name: 'View'
-  desc: 'Warehouse accounting of goods'
+Role_product_Stock_index:
+  Header: 'Orders'
+  NAME: 'View'
+  Desc: 'Warehouse Accounting of Products'
 
 
-ROLE_PRODUCT_STOCK_EDIT:
-  name: 'Edit balances'
-  desc: 'Edit warehouse balances and reserve'
 
-ROLE_PRODUCT_STOCK_STORAGE:
-  name: 'Edit storage location'
-  desc: 'Edit storage location'
 
-ROLE_PRODUCT_STOCK_CANCEL:
-  name: 'Cancel'
-  desc: 'Cancel request'
+Role_product_Stock_edit:
+  NAME: 'Edit the remains'
+  desc: 'edit warehouse residues and reserve'
+
+
+Role_product_Stock_Storage:
+  NAME: 'Change the warehouse' place '
+  Desc: 'Change the warehouse of products'
+
+
+Role_Product_Stock_cancel:
+  NAME: 'Cancel'
+  desc: 'cancel the application'
 
 
 # Rules
 
 
-ROLE_PRODUCT_STOCK_INCOMING:
-  name: 'Incoming orders'
-  desc: 'List of receipt orders for warehouse'
+Role_Product_Stock_INCOMING:
+  NAME: 'PROPRABLE HREATIONS'
+  Desc: 'List of receipt orders for chopping
 
-ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
-  name: 'Add arrival'
-
-
-
-ROLE_PRODUCT_STOCK_MOVING:
-  name: 'Moves'
-  desc: 'Move goods between warehouses'
-
-ROLE_PRODUCT_STOCK_MOVING_NEW:
-  name: 'Add movement'
-  desc: 'Add a request to move goods from the warehouse'
+Role_Product_Stock_COMING_ACCEPT:
+  NAME: 'Add a parish'
 
 
 
+Role_product_Stock_moving:
+  NAME: 'movements'
+  Desc: 'Moving goods between warehouses'
 
-ROLE_PRODUCT_STOCK_PURCHASE:
-  name: 'Purchases'
-  desc: 'Procurement of goods'
+Role_product_Stock_moving_new:
+  NAME: 'Add movement'
+  Desc: 'Add an application for moving goods from from warehouse'
 
-ROLE_PRODUCT_STOCK_PURCHASE_DELETE:
-  name: 'Delete purchase'
-  desc: 'Delete purchase'
+Role_product_Stock_Storage_move:
+  NAME: 'Movement of goods in places'
+  desc: 'moving goods between places'
 
 
-ROLE_PRODUCT_STOCK_PURCHASE_NEW:
-  name: 'Add purchase'
-  desc: 'Add purchase of goods to warehouse'
 
-ROLE_PRODUCT_STOCK_WAREHOUSE:
-  name: 'Receipts to warehouse'
-  desc: 'List of warehouse receipts'
+Role_product_Stock_Purchase:
+  NAME: 'Purchases'
+  Desc: 'Purchases of goods'
 
-ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
-  name: 'Send to warehouse'
+Role_product_Stock_purchase_new:
+  NAME: 'Add purchase'
+  Desc: 'Add the purchase of goods to a warehouse'
 
-ROLE_PRODUCT_STOCK_PACKAGE:
-  name: 'Packaging orders'
-  desc: 'Packaging loading orders'
+Role_product_Stock_purchase_delete:
+  NAME: 'Delete a purchase'
+  Desc: 'Delete a purchase'
 
-ROLE_PRODUCT_STOCK_PICKUP:
-  name: 'Issuing orders'
-  desc: 'Pickup of orders at the pick-up point (Pickup)'
+
+
+Role_product_Stock_Warehouse:
+  NAME: 'entering the warehouse'
+  Desc: 'List of warehouse arrivals'
+
+Role_product_Stock_warehouse_SEND:
+  name: 'Send to the warehouse'
+
+Role_product_Stock_package:
+  NAME: 'Packaging Orders'
+  desc: 'packaging orders for loading'
+
+Role_product_Stock_pickup:
+  NAME: 'Ordering'
+  desc: 'issuing orders at the issuing point (pickup)'

@@ -13,8 +13,6 @@ ROLE_PRODUCT_STOCK_INDEX:
   desc: 'Складской учет товаров'
 
 
-
-
 ROLE_PRODUCT_STOCK_EDIT:
   name: 'Редактировать остатки'
   desc: 'Редактировать складские остатки и резерв'
@@ -50,6 +48,9 @@ ROLE_PRODUCT_STOCK_MOVING_NEW:
   name: 'Добавить перемещение'
   desc: 'Добавить заявку на перемещение товаров с со склада'
 
+ROLE_PRODUCT_STOCK_STORAGE_MOVE:
+  name: 'Перемещение товара по местам'
+  desc: 'Перемещение товара между местами'
 
 
 

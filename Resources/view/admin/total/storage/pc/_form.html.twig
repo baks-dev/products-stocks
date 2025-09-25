@@ -8,10 +8,28 @@
 
     <div class="modal-content p-3 border-bottom border-5 border-primary">
 
-        <div class="modal-header">
+        <div class="modal-header justify-content-between">
             <h5 class="modal-title">
                 {{ 'page.storage'|trans }}
             </h5>
+
+
+            <div class="d-flex gap-3">
+                <div>
+                    <span class="text-muted">Наличие:</span>&nbsp;
+                    <strong>{{ form.vars.data.total }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted">Резерв:</span>&nbsp;
+                    <strong>{{ form.vars.data.reserve }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted">Доступно:</span>&nbsp;
+                    <strong>{{ (form.vars.data.total - form.vars.data.reserve) }}</strong>
+                </div>
+            </div>
+
+
         </div>
 
         <div class="modal-body">
@@ -52,7 +70,7 @@
                             <a href="{{ product_href }}"
 
                                target="_detail"
-                               class="text-decoration-none h5 mb-0 d-flex align-items-center gap-3">
+                               class="text-decoration-none h6 mb-0 d-flex align-items-center gap-3">
 
                                 {{ card.product_name }}
 
@@ -108,13 +126,20 @@
         </div>
 
 
-        <div class="modal-footer ">
+        <div class="modal-footer">
 
-            <div class="flex-grow-1 d-flex align-items-center gap-2">
-                <span class="text-muted">Наличие:</span> <strong>{{ form.vars.data.total }}</strong>
-                <span class="text-muted">Резерв:</span> <strong>{{ form.vars.data.reserve }}</strong>
-                <span class="text-muted">Доступно</span>
-                <strong>{{ (form.vars.data.total - form.vars.data.reserve) }}</strong>
+            <div class="flex-grow-1 d-flex align-items-center" data-buttons="true">
+
+                <label class="btn p-3 border-dotted rounded-3 {{ form.priority.vars.data ? 'active' }}">
+                    <div class="form-check d-flex h4 align-items-center p-0">
+                        {{ form_widget(form.priority, { label: false }) }}
+                        <div class='d-flex flex-column' style='font-size: 1.2rem;'>
+                            <div class='w-100 text-start'>
+                                Высокий приоритет списания остатка
+                            </div>
+                        </div>
+                    </div>
+                </label>
             </div>
 
 

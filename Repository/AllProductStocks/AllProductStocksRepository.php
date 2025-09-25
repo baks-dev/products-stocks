@@ -146,6 +146,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('stock_product.storage AS stock_storage')
             ->addSelect('stock_product.reserve AS stock_reserve')
             ->addSelect('stock_product.comment AS stock_comment')
+            ->addSelect('stock_product.priority AS stock_priority')
             ->addSelect('stock_product.profile AS users_profile_id')
             ->from(ProductStockTotal::class, 'stock_product')
             ->andWhere('stock_product.total != 0');
