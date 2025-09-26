@@ -54,7 +54,7 @@ final class MovingProductToStockHandler extends AbstractHandler
                 $command->getOffer(),
                 $command->getVariation(),
                 $command->getModification(),
-                'new'
+                'new',
             )
                 ->setTotal($command->getTotalToMove())
                 ->setComment('Перемещено с другого места складирования');
@@ -62,7 +62,7 @@ final class MovingProductToStockHandler extends AbstractHandler
             $this->persist($ProductStockTotal);
 
             /** Валидация всех объектов */
-            if ($this->validatorCollection->isInvalid())
+            if($this->validatorCollection->isInvalid())
             {
                 return $this->validatorCollection->getErrorUniqid();
             }
@@ -74,7 +74,7 @@ final class MovingProductToStockHandler extends AbstractHandler
             return $this->main;
         }
 
-        
+
         /** @var ProductStockTotal $storageToMove */
         $storageToMoveDTO = new MovingProductToStockDTO();
         $storageToMove = $this->getRepository(ProductStockTotal::class)->find($command->getToId());
@@ -88,7 +88,7 @@ final class MovingProductToStockHandler extends AbstractHandler
         $this->prePersistOrUpdate(ProductStockTotal::class, ['id' => $command->getToId()]);
 
         /** Валидация всех объектов */
-        if ($this->validatorCollection->isInvalid())
+        if($this->validatorCollection->isInvalid())
         {
             return $this->validatorCollection->getErrorUniqid();
         }
@@ -96,6 +96,23 @@ final class MovingProductToStockHandler extends AbstractHandler
         $this->flush();
 
         $this->messageDispatch->addClearCacheOther('products-stocks');
+
+
+        /**
+         * Удаляем место складирования, если остаток и резерв равен нулю
+         *
+         * @var ProductStockTotal $isRemoveProductStockTotal
+         */
+
+        $isRemoveProductStockTotal = $this
+            ->getRepository(ProductStockTotal::class)
+            ->find($command->getFromId());
+
+        if(empty($isRemoveProductStockTotal->getTotal()) && empty($isRemoveProductStockTotal->getReserve()))
+        {
+            $this->remove($isRemoveProductStockTotal);
+            $this->flush();
+        }
 
         return $this->main;
     }

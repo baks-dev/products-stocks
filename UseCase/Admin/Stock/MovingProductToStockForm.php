@@ -91,6 +91,12 @@ final class MovingProductToStockForm extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => MovingProductToStockDTO::class]);
+        $resolver->setDefaults(
+            [
+                'data_class' => MovingProductToStockDTO::class,
+                'method' => 'POST',
+                'attr' => ['class' => 'w-100'],
+            ],
+        );
     }
 }

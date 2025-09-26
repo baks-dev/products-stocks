@@ -1,15 +1,21 @@
 {% trans_default_domain 'products-stocks.admin' %}
 
-<div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+<div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
     {{ form_start(form) }}
+
     <div class="modal-content p-3 border-bottom border-5 border-primary">
+
         <div class="modal-header">
             {{ 'page.storageMove'|trans }}
         </div>
 
         <div class="modal-body d-flex justify-content-between gap-3">
-            {{ form_widget(form.toId) }}
-            {{ form_widget(form.totalToMove) }}
+            <div class="w-100">
+                {{ form_widget(form.toId) }}
+            </div>
+            <div class="w-25">
+                {{ form_widget(form.totalToMove) }}
+            </div>
         </div>
 
         <div class="modal-footer">
@@ -26,6 +32,8 @@
 			    '}) }}
             </div>
         </div>
+
     </div>
+
     {{ form_end(form) }}
 </div>

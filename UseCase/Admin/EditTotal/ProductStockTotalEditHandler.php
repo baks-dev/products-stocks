@@ -70,6 +70,26 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         }
 
         $this->flush();
+        $this->clear();
+
+        $this->messageDispatch->addClearCacheOther('products-stocks');
+
+
+        /**
+         * Удаляем место складирования, если остаток и резерв равен нулю
+         *
+         * @var ProductStockTotal $isRemoveProductStockTotal
+         */
+
+        $isRemoveProductStockTotal = $this
+            ->getRepository(ProductStockTotal::class)
+            ->find($command->getId());
+
+        if(empty($isRemoveProductStockTotal->getTotal()) && empty($isRemoveProductStockTotal->getReserve()))
+        {
+            $this->remove($isRemoveProductStockTotal);
+            $this->flush();
+        }
 
         if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
         {
@@ -87,8 +107,6 @@ final class ProductStockTotalEditHandler extends AbstractHandler
                 transport: 'products-stocks',
             );
         }
-
-        $this->messageDispatch->addClearCacheOther('products-stocks');
 
         return $ProductStockTotal;
     }
