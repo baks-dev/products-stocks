@@ -70,10 +70,6 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         }
 
         $this->flush();
-        $this->clear();
-
-        $this->messageDispatch->addClearCacheOther('products-stocks');
-
 
         /**
          * Удаляем место складирования, если остаток и резерв равен нулю
@@ -90,6 +86,8 @@ final class ProductStockTotalEditHandler extends AbstractHandler
             $this->remove($isRemoveProductStockTotal);
             $this->flush();
         }
+
+        $this->messageDispatch->addClearCacheOther('products-stocks');
 
         if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
         {

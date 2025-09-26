@@ -69,6 +69,9 @@ final class MovingProductToStockHandler extends AbstractHandler
 
             $this->flush();
 
+            /** Удаляем место складирования, если остаток и резерв равен нулю */
+            $this->deleteIsEmpty($command->getFromId());
+
             $this->messageDispatch->addClearCacheOther('products-stocks');
 
             return $this->main;
@@ -95,25 +98,28 @@ final class MovingProductToStockHandler extends AbstractHandler
 
         $this->flush();
 
+        /** Удаляем место складирования, если остаток и резерв равен нулю */
+        $this->deleteIsEmpty($command->getFromId());
+
         $this->messageDispatch->addClearCacheOther('products-stocks');
 
+        return $this->main;
+    }
 
+    /** Удаляем место складирования, если остаток и резерв равен нулю */
+    private function deleteIsEmpty(ProductStockTotalUid $identifier): void
+    {
         /**
-         * Удаляем место складирования, если остаток и резерв равен нулю
-         *
          * @var ProductStockTotal $isRemoveProductStockTotal
          */
-
         $isRemoveProductStockTotal = $this
             ->getRepository(ProductStockTotal::class)
-            ->find($command->getFromId());
+            ->find($identifier);
 
         if(empty($isRemoveProductStockTotal->getTotal()) && empty($isRemoveProductStockTotal->getReserve()))
         {
             $this->remove($isRemoveProductStockTotal);
             $this->flush();
         }
-
-        return $this->main;
     }
 }
