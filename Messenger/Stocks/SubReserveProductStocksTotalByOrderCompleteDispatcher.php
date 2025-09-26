@@ -92,28 +92,6 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             return;
         }
 
-        /** Получаем предыдущее событие */
-        $LastOrderEvent = $this->OrderEventRepository
-            ->find($message->getEvent());
-
-        if(false === ($LastOrderEvent instanceof OrderEvent))
-        {
-            $this->logger->critical(
-                'products-stocks: Не найдено предыдущее событие OrderEvent',
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-
-            return;
-        }
-
-        /**
-         * Если статус предыдущего события заказа Completed «Выполнен» - следовательно списание уже было
-         * такая ситуация может возникнуть при автоматической отмене заказа либо обычном обновлении
-         */
-        if(true === $LastOrderEvent->isStatusEquals(OrderStatusCompleted::class))
-        {
-            return;
-        }
 
         $OrderEvent = $this->OrderEventRepository
             ->find($message->getEvent());
@@ -130,6 +108,29 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 
         /** Если статус заказа не Completed «Выполнен» */
         if(false === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
+        {
+            return;
+        }
+
+        /** Получаем предыдущее событие */
+        $LastOrderEvent = $this->OrderEventRepository
+            ->find($message->getLast());
+
+        if(false === ($LastOrderEvent instanceof OrderEvent))
+        {
+            $this->logger->critical(
+                'products-stocks: Не найдено предыдущее событие OrderEvent',
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
+            return;
+        }
+
+        /**
+         * Если статус предыдущего события заказа Completed «Выполнен» - следовательно списание уже было
+         * такая ситуация может возникнуть при автоматической отмене заказа либо обычном обновлении
+         */
+        if(true === $LastOrderEvent->isStatusEquals(OrderStatusCompleted::class))
         {
             return;
         }
