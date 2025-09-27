@@ -159,8 +159,10 @@
         {% endif %}
 
 
-        <div id="{{ item.stockId }}" class="card mb-3 border-light">
-            <div class="card-header bg-body border-light">
+        <div id="{{ item.stockId }}"
+             class="card mb-3 p-2 {{ item.isOrderDanger ? 'shadow border-danger' : 'border-light' }}">
+
+            <div class="card-body">
 
                 <div class="card-title w-100 d-flex gap-3 mb-0 justify-content-between align-items-center text-secondary">
 
@@ -251,13 +253,17 @@
                                 </div>
                             </div>
 
-
                             {# Клиент  #}
                             <div class="d-flex w-50 gap-3">
-                                <div class="text-nowrap">
-                                    <span class="text-muted opacity-50">Клиент: </span> &nbsp;
-                                    <div class="d-flex gap-3">{{ user_profile_render(item.clientProfileEvent) }}</div>
-                                </div>
+                                {% set user_profile_render = user_profile_render(item.clientProfileEvent)|trim %}
+
+                                {% if user_profile_render is not empty %}
+
+                                    <div class="text-nowrap">
+                                        <span class="text-muted opacity-50">Клиент: </span> &nbsp;
+                                        <div class="d-flex gap-3">{{ user_profile_render|raw }}</div>
+                                    </div>
+                                {% endif %}
                             </div>
 
                         </div>
@@ -310,11 +316,11 @@
                  class="card-body fw-normal mb-0 accordion-collapse collapse"
                  data-bs-parent="#accordionPackage">
 
-                    {% set card = item.stockId %}
+                {% set card = item.stockId %}
 
-                    {% endif %}
+                {% endif %}
 
-                    {% endfor %}
+                {% endfor %}
                 </table>
             </div>
         </div>

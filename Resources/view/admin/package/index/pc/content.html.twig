@@ -180,10 +180,10 @@
         {% set identifier = item.orderId %}
 
         <div id="{{ item.id }}"
-             class="card mb-3 p-1 border-light {# {{ item.isProductsMove or item.isOrderDanger ? 'shadow border-danger' : 'border-light' }} #}"
+             class="card mb-3 p-2 {{ item.isOrderDanger ? 'shadow border-danger' : 'border-light' }}"
              style="{# {{ item.isProductsMove ? '--bs-border-opacity: 0.2;' : '' }} #}">
 
-            <div class="card-header bg-body border-0">
+            <div class="card-body">
 
 
                 <div class="card-title w-100 d-flex gap-4 mb-0 justify-content-between align-items-center text-secondary">
@@ -318,14 +318,14 @@
                                 {% endif %}
 
 
-                                {% if item.usersProfileDestination %}
+                                {# {% if item.usersProfileDestination %}
                                     <div class="text-dark text-nowrap">
                                         <span class="text-muted opacity-50">
                                             Пункт назначения: &nbsp;
                                         </span>
                                         {{ item.usersProfileDestination }}
                                     </div>
-                                {% endif %}
+                                {% endif %} #}
                             </div>
 
                             {# ОТВЕТСТВЕННЫЙ  #}

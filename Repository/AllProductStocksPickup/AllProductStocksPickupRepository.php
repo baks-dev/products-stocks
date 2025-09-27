@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -31,6 +31,7 @@ use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Delivery\Entity\Event\DeliveryEvent;
 use BaksDev\Delivery\Entity\Trans\DeliveryTrans;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
@@ -168,6 +169,16 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 Order::class,
                 'ord',
                 'ord.id = product_stock_order.ord'
+            );
+
+        $dbal
+            ->addSelect('order_event.danger AS order_danger')
+            ->addSelect('order_event.comment AS order_comment')
+            ->leftJoin(
+                'ord',
+                OrderEvent::class,
+                'order_event',
+                'order_event.id = ord.event',
             );
 
         $dbal
