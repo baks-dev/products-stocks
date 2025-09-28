@@ -55,6 +55,7 @@ use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
+use BaksDev\Products\Product\Type\SearchTags\ProductSearchTag;
 use BaksDev\Products\Promotion\BaksDevProductsPromotionBundle;
 use BaksDev\Products\Promotion\Entity\Event\Invariable\ProductPromotionInvariable;
 use BaksDev\Products\Promotion\Entity\Event\Period\ProductPromotionPeriod;
@@ -62,6 +63,7 @@ use BaksDev\Products\Promotion\Entity\Event\Price\ProductPromotionPrice;
 use BaksDev\Products\Promotion\Entity\Event\ProductPromotionEvent;
 use BaksDev\Products\Promotion\Entity\ProductPromotion;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Search\Index\SearchIndexInterface;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -69,6 +71,7 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserPro
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Doctrine\DBAL\ArrayParameterType;
 
 final class AllProductStocksRepository implements AllProductStocksInterface
 {
@@ -85,7 +88,8 @@ final class AllProductStocksRepository implements AllProductStocksInterface
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
-        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
+        private readonly ?SearchIndexInterface $SearchIndexHandler = null,
     ) {}
 
     public function search(SearchDTO $search): static
@@ -665,73 +669,71 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         // Поиск
         if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
-            //            for ($i = 0; $i <= 2; $i++) {
-            //
-            //                /** Поиск по модификации */
-            //                $result = $this->elasticGetIndex ? $this->elasticGetIndex->handle(ProductModification::class, $this->search->getQueryFilter(), $i) : false;
-            //
-            //                if($result)
-            //                {
-            //                    $counter = $result['hits']['total']['value'];
-            //
-            //                    if($counter)
-            //                    {
-            //
-            //                        /** Идентификаторы */
-            //                        $data = array_column($result['hits']['hits'], "_source");
-            //
-            //                        $dbal
-            //                            ->createSearchQueryBuilder($this->search)
-            //                            ->addSearchInArray('product_modification.id', array_column($data, "id"));
-            //
-            //                        return $this->paginator->fetchAllAssociative($dbal);
-            //                    }
-            //
-            //                    /** Поиск по продукции */
-            //                    $result = $this->elasticGetIndex->handle(Product::class, $this->search->getQueryFilter(), $i);
-            //
-            //                    $counter = $result['hits']['total']['value'];
-            //
-            //                    if($counter)
-            //                    {
-            //                        /** Идентификаторы */
-            //                        $data = array_column($result['hits']['hits'], "_source");
-            //
-            //                        $dbal
-            //                            ->createSearchQueryBuilder($this->search)
-            //                            ->addSearchInArray('product.id', array_column($data, "id"));
-            //
-            //                        return $this->paginator->fetchAllAssociative($dbal);
-            //                    }
-            //                }
-            //            }
+
+            /** Поиск */
+            $search = str_replace('-', ' ', $this->search->getQuery());
+
+            /** Очистить поисковую строку от всех НЕ буквенных/числовых символов */
+            $search = preg_replace('/[^ a-zа-яё\d]/ui', ' ', $search);
+            $search = preg_replace('/\br(\d+)\b/i', '$1', $search);  // Заменяем R или r в начале строки, за которым следует цифра
+
+            /** Задать префикс и суффикс для реализации варианта "содержит" */
+            $search = '*'.trim($search).'*';
+
+            /** Получим ids из индекса */
+            $resultProducts = $this->SearchIndexHandler instanceof SearchIndexInterface
+                ? $this->SearchIndexHandler->handleSearchQuery($search, ProductSearchTag::TAG)
+                : false;
+
+            if($this->SearchIndexHandler instanceof SearchIndexInterface && $resultProducts !== false)
+            {
+                /** Фильтруем по полученным из индекса ids: */
+
+                $ids = array_column($resultProducts, 'id');
+
+                /** Товары */
+                $dbal
+                    ->andWhere('(
+                        product.id IN (:uuids) 
+                        OR product_offer.id IN (:uuids)
+                        OR product_variation.id IN (:uuids) 
+                        OR product_modification.id IN (:uuids)
+                    )')
+                    ->setParameter(
+                        key: 'uuids',
+                        value: $ids,
+                        type: ArrayParameterType::STRING,
+                    );
+            }
 
 
-            $dbal
-                ->createSearchQueryBuilder($this->search)
-                ->addSearchEqualUid('stock_product.id')
-
-                //->addSearchEqualUid('warehouse.id')
-                //->addSearchEqualUid('warehouse.event')
-                //->addSearchLike('warehouse_trans.name')
-                ->addSearchLike('users_profile_personal.username')
-                ->addSearchLike('users_profile_personal.location')
-                ->addSearchLike('product_trans.name')
-                ->addSearchLike('category_trans.name')
-                ->addSearchLike('product_modification.article')
-                ->addSearchLike('product_variation.article')
-                ->addSearchLike('product_offer.article')
-                ->addSearchLike('product_info.article');
+            if($resultProducts === false)
+            {
+                $dbal
+                    ->createSearchQueryBuilder($this->search)
+                    ->addSearchEqualUid('stock_product.id')
+                    ->addSearchLike('users_profile_personal.username')
+                    ->addSearchLike('users_profile_personal.location')
+                    ->addSearchLike('product_trans.name')
+                    ->addSearchLike('category_trans.name')
+                    ->addSearchLike('product_modification.article')
+                    ->addSearchLike('product_variation.article')
+                    ->addSearchLike('product_offer.article')
+                    ->addSearchLike('product_info.article');
+            }
 
         }
+        else
+        {
+            $dbal->addOrderBy('product.id');
+            $dbal->addOrderBy('stock_product.profile');
 
-        $dbal->addOrderBy('product.id');
-        $dbal->addOrderBy('stock_product.profile');
+            $dbal->addOrderBy('product_offer.value');
+            $dbal->addOrderBy('product_variation.value');
+            $dbal->addOrderBy('product_modification.value');
+            $dbal->addOrderBy('stock_product.total');
+        }
 
-        $dbal->addOrderBy('product_offer.value');
-        $dbal->addOrderBy('product_variation.value');
-        $dbal->addOrderBy('product_modification.value');
-        $dbal->addOrderBy('stock_product.total');
 
         if($this->limit)
         {
