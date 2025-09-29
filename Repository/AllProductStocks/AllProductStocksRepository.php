@@ -704,6 +704,11 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                         value: $ids,
                         type: ArrayParameterType::STRING,
                     );
+
+                $dbal->addOrderBy('CASE WHEN product.id IN (:uuids) THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_offer.id IN (:uuids) THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_variation.id IN (:uuids)  THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_modification.id IN (:uuids)  THEN 0 ELSE 1 END');
             }
 
 
