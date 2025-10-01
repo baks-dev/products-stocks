@@ -3,7 +3,7 @@
         <div class="d-flex align-content-center">
 
             {# Обложка #}
-            {% set image_path = '/assets/img/blank.svg' %}
+            {% set image_path = '/assets/'~version~'/img/blank.svg' %}
 
             {% if item.productImageExt is defined and item.productImageExt is not null %}
                 {% set img_host =  item.productImageCdn == true  ? CDN_HOST : '' %}

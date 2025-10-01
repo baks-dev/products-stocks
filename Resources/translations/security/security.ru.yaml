@@ -36,7 +36,7 @@ ROLE_PRODUCT_STOCK_INCOMING:
   desc: 'Список приходных ордеров на сколад'
 
 ROLE_PRODUCT_STOCK_INCOMING_ACCEPT:
-  name: 'Добавить приход'
+  name: 'Принять на склад'
 
 
 

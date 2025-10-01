@@ -44,7 +44,7 @@
                                 Продукция
                             </p>
                             {# Обложка #}
-                            {% set image_path = '/assets/img/blank.svg' %}
+                            {% set image_path = '/assets/'~version~'/img/blank.svg' %}
 
                             {% if detail.product_image_ext is defined and detail.product_image_ext is not null %}
                                 {% set img_host = detail.product_image_cdn  == true  ? CDN_HOST : '' %}

@@ -44,7 +44,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class IncomingController extends AbstractController
 {
     /**
-     * Добавить приход на склад
+     * Принять на склад приход
      */
     #[Route('/admin/product/stock/incoming/{id}', name: 'admin.incoming.accept', methods: ['GET', 'POST'])]
     public function incoming(
