@@ -670,7 +670,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
 
-            /** Поиск */
+            /** Поиск по индексам */
             $search = str_replace('-', ' ', $this->search->getQuery());
 
             /** Очистить поисковую строку от всех НЕ буквенных/числовых символов */
