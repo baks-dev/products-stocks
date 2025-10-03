@@ -38,7 +38,6 @@ use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventBySta
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
-use BaksDev\Products\Stocks\Repository\ProductStocksTotalAccess\ProductStocksTotalAccessInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\ProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
@@ -56,7 +55,6 @@ final readonly class MultiplyProductStocksPackageDispatcher
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private DeduplicatorInterface $deduplicator,
         private CurrentProductIdentifierInterface $CurrentProductIdentifier,
-        private ProductStocksTotalAccessInterface $ProductStocksTotalAccess,
         private PackageProductStockHandler $PackageProductStockHandler,
         private CentrifugoPublishInterface $publish,
     ) {}
@@ -127,28 +125,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
                 ->setModification($currentProductIdentifierResult->getModificationConst())
                 ->setTotal($OrderProduct->getTotal());
 
-            /** Проверяем наличие продукции с учетом резерва на любом складе */
-
-            // Метод возвращает общее количество ДОСТУПНОЙ продукции на всех складах (за вычетом резерва)
-            $isAccess = $this->ProductStocksTotalAccess
-                ->forProfile($message->getUserProfile())
-                ->forProduct($currentProductIdentifierResult->getProduct())
-                ->forOfferConst($currentProductIdentifierResult->getOfferConst())
-                ->forVariationConst($currentProductIdentifierResult->getVariationConst())
-                ->forModificationConst($currentProductIdentifierResult->getModificationConst())
-                ->get();
-
-            if($isAccess <= 0)
-            {
-                $this->logger->critical(
-                    'products-stocks: Недостаточное количество продукции на складе для создания заявки',
-                );
-
-                return;
-            }
-
             $PackageProductStockDTO->addProduct($ProductStockDTO);
-
         }
 
         // Присваиваем заявке склад для сборки
