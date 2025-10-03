@@ -46,6 +46,7 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
 
     /**
      * Ответственное лицо (Профиль пользователя)
+     *
      * @deprecated Переносится в Invariable
      */
     #[Assert\Uuid]
@@ -91,25 +92,12 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     //    private readonly UserUid $usr;
 
 
-    public function __construct(/*User|UserUid $user*/)
+    public function __construct()
     {
-        //$user = $user instanceof User ? $user->getId() : $user;
-
-        //$this->usr = $user;
-
         $this->status = new ProductStockStatus(ProductStockStatusPackage::class);
         $this->product = new ArrayCollection();
-
-        //$this->number = number_format(microtime(true) * 100, 0, '.', '.');
-
         $this->ord = new Orders\ProductStockOrderDTO();
-
-
-        $PackageOrderInvariable = new Invariable\PackageOrderInvariableDTO();
-        //$PackageOrderInvariable->setUsr($user);
-
-        $this->invariable = $PackageOrderInvariable;
-
+        $this->invariable = new Invariable\PackageOrderInvariableDTO();
     }
 
 
@@ -118,12 +106,14 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return null;
     }
 
-    public function setId(ProductStockEventUid|OrderEventUid $id): void
+    public function setId(ProductStockEventUid|OrderEventUid $id): self
     {
         if($id instanceof ProductStockEventUid)
         {
             $this->id = $id;
         }
+
+        return $this;
     }
 
     public function resetId(): void
@@ -137,9 +127,10 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return $this->product;
     }
 
-    public function setProduct(ArrayCollection $product): void
+    public function setProduct(ArrayCollection $product): self
     {
         $this->product = $product;
+        return $this;
     }
 
     public function addProduct(Products\ProductStockDTO $product): void
@@ -158,9 +149,10 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         return $this->comment;
     }
 
-    public function setComment(?string $comment): void
+    public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+        return $this;
     }
 
     //    /** Ответственное лицо (Профиль пользователя) */
@@ -191,10 +183,10 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     //        return $this->number;
     //    }
 
-    public function setNumber(string $number): void
+    public function setNumber(string $number): self
     {
         $this->invariable->setNumber($number);
-        //$this->number = $number;
+        return $this;
     }
 
     //    /** Константа Целевого склада */
@@ -217,19 +209,11 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     }
 
 
-    public function setOrd(Orders\ProductStockOrderDTO $ord): void
+    public function setOrd(Orders\ProductStockOrderDTO $ord): self
     {
         $this->ord = $ord;
+        return $this;
     }
-
-
-    //    /**
-    //     * Usr
-    //     */
-    //    public function getUsr(): UserUid
-    //    {
-    //        return $this->usr;
-    //    }
 
     /**
      * Invariable
@@ -238,6 +222,4 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     {
         return $this->invariable;
     }
-
-
 }

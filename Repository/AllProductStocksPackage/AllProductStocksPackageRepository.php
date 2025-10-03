@@ -60,6 +60,7 @@ use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksPackageRepository implements AllProductStocksPackageInterface
@@ -226,6 +227,16 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_print',
                 'order_print.event = order_event.id',
             );
+
+        if($this->filter->getPrint())
+        {
+            $dbal->andWhere('order_print.printed IS TRUE');
+        }
+        else
+        {
+            $dbal->andWhere('order_print.printed IS NOT TRUE');
+        }
+
 
         $dbal->leftJoin(
             'orders',

@@ -21,59 +21,42 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Forms\PackageFilter\Admin;
+declare(strict_types=1);
 
-use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Request;
+namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
 
-final class ProductStockPackageFilterDTO implements ProductStockPackageFilterInterface
+use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+
+final class MultiplyProductStocksPackageMessage
 {
-    private ?DeliveryUid $delivery = null;
+    private string $id;
 
-    private ?DateTimeImmutable $date = null;
+    private string $profile;
 
-    private bool|null $print = null;
-
-    /**
-     * Date.
-     */
-    public function getDate(): ?DateTimeImmutable
+    public function __construct(
+        OrderUid $id,
+        UserProfileUid $profile,
+    )
     {
-        return $this->date;
-    }
-
-    public function setDate(?DateTimeImmutable $date): void
-    {
-        $this->date = $date;
+        $this->id = (string) $id;
+        $this->profile = (string) $profile;
     }
 
     /**
-     * Delivery
+     * Идентификатор заказа
      */
-    public function getDelivery(): ?DeliveryUid
+    public function getOrderId(): OrderUid
     {
-        return $this->delivery;
+        return new OrderUid($this->id);
     }
 
-    public function setDelivery(?DeliveryUid $delivery): self
+    /**
+     * Идентификатор профиля
+     */
+    public function getUserProfile(): UserProfileUid
     {
-        $this->delivery = $delivery;
-
-        return $this;
-    }
-
-    public function getPrint(): bool
-    {
-        return $this->print === true;
-    }
-
-    public function setPrint(?bool $print): self
-    {
-        $this->print = $print;
-        return $this;
+        return new UserProfileUid($this->profile);
     }
 
 }

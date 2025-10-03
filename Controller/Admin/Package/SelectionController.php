@@ -61,7 +61,7 @@ final class SelectionController extends AbstractController
 
 
         // Фильтр
-        $filter = new ProductStockPackageFilterDTO($request);
+        $filter = new ProductStockPackageFilterDTO();
         //$filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
         //$filterForm->handleRequest($request);
         //$filterForm->createView();

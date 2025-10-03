@@ -83,7 +83,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 
         $isCompleted = $this->ExistOrderEventByStatusRepository
             ->forOrder($message->getId())
-            ->forOrderEvent($message->getEvent())
+            ->excludeOrderEvent($message->getEvent())
             ->forStatus(OrderStatusCompleted::class)
             ->isOtherExists();
 

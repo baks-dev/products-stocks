@@ -133,10 +133,12 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
         return $this->total;
     }
 
-    public function setTotal(int $total): void
+    public function setTotal(int $total): self
     {
         //$this->getPrice()->setTotal($total);
         $this->total = $total;
+
+        return $this;
     }
 
 }

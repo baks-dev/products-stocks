@@ -67,7 +67,7 @@ final class IndexController extends AbstractController
             ->handleRequest($request);
 
         // Фильтр
-        $filter = new ProductStockPackageFilterDTO($request);
+        $filter = new ProductStockPackageFilterDTO();
 
         $filterForm = $this
             ->createForm(

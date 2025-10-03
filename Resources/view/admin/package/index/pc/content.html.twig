@@ -8,16 +8,13 @@
             {{ include(_self|replace({ "content.html.twig": "_breadcrumb.html.twig" })) }}
         </div>
 
-
         <div class="d-flex justify-content-between align-items-center mb-3">
-
 
             <div class="w-100">
                 <h1 class="h4 text-uppercase fw-bolder mb-0">
                     {{ 'page.package'|trans }}
                 </h1>
             </div>
-
 
             <div class="w-100 d-flex align-items-center gap-3 justify-content-end">
 
@@ -88,18 +85,21 @@
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
-                <div class="col-6">
+                <div class="col-8">
 
                     {{ form_start(filter) }}
 
-                    <div class="w-100 d-flex gap-3 justify-content-end" style="height: 55px;">
+                    <div class="w-100 d-flex gap-2 justify-content-end" style="height: 55px;">
 
-                        <div class="w-50">
+                        <div class="w-25" style="min-width: 250px;">
                             {{ form_row(filter.delivery, { placeholder : 'Любой способ доставки ...', attr : { 'data-select' : 'select2' } }) }}
                         </div>
 
-                        <div class="d-flex gap-3" style="width: 300px;">
+                        <div class="w-25">
+                            {{ form_row(filter.print, { attr : { 'data-select' : 'select2' } }) }}
+                        </div>
 
+                        <div class="d-flex gap-1" style="width: 265px;">
 
                             {# НАЗАД #}
                             {{ form_row(filter.back, { label: '

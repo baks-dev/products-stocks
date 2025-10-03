@@ -89,7 +89,7 @@ final class PackageProductStockTest extends KernelTestCase
     #[DependsOnClass(IncomingProductStockTest::class)]
     public function testUseCase(): void
     {
-        $PackageProductStockDTO = new PackageProductStockDTO(new UserUid());
+        $PackageProductStockDTO = new PackageProductStockDTO();
 
 
         $PackageOrderInvariableDTO = $PackageProductStockDTO->getInvariable();
