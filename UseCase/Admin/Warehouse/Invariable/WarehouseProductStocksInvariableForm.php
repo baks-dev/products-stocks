@@ -25,62 +25,30 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Invariable;
 
-
-use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class WarehouseProductStocksInvariableForm extends AbstractType
 {
-    public function __construct(
-        private readonly UserTokenStorageInterface $UserTokenStorage,
-        private readonly UserProfileChoiceInterface $userProfileChoice
-    ) {}
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Склад
-        $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
-            function(FormEvent $event): void {
-                /** @var WarehouseProductStocksInvariableDTO $data */
-                $data = $event->getData();
-                $form = $event->getForm();
+        $builder->add('profile', HiddenType::class);
 
-                /** Все профили пользователя */
-
-                $UserUid = $this->UserTokenStorage->getUser();
-
-                $profiles = $this->userProfileChoice->getActiveUserProfile($UserUid);
-
-                if($profiles && count($profiles) === 1)
-                {
-                    $data->setProfile(current($profiles));
+        $builder->get('profile')?->addModelTransformer(
+            new CallbackTransformer(
+                function($profile) {
+                    return $profile instanceof UserProfileUid ? $profile->getValue() : $profile;
+                },
+                function($profile) {
+                    return $profile ? new UserProfileUid($profile) : null;
                 }
-
-                // Склад
-                $form
-                    ->add('profile', ChoiceType::class, [
-                        'choices' => $profiles,
-                        'choice_value' => function(?UserProfileUid $profile) {
-                            return $profile?->getValue();
-                        },
-                        'choice_label' => function(UserProfileUid $profile) {
-                            return $profile->getAttr();
-                        },
-
-                        'label' => false,
-                        'required' => true,
-                    ]);
-            }
+            ),
         );
-
     }
 
     public function configureOptions(OptionsResolver $resolver): void

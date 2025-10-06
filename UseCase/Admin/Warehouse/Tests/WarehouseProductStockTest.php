@@ -25,9 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Tests;
 
-use BaksDev\Orders\Order\Entity\Event\OrderEvent;
-use BaksDev\Orders\Order\Entity\Order;
-use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
@@ -35,9 +32,6 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Tests\PurchaseProductStockTest;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\WarehouseProductStockHandler;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DependsOnClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -67,21 +61,13 @@ final class WarehouseProductStockTest extends KernelTestCase
     #[DependsOnClass(PurchaseProductStockTest::class)]
     public function testUseCase(): void
     {
-        /* TODO: !!! */
-        //self::assertTrue(true);
-        //return;
-
-
         /** @var CurrentProductStocksInterface $CurrentProductStocksInterface */
         $CurrentProductStocksInterface = self::getContainer()->get(CurrentProductStocksInterface::class);
         $ProductStockEvent = $CurrentProductStocksInterface->getCurrentEvent(new ProductStockUid(ProductStockUid::TEST));
 
         /** @var WarehouseProductStockDTO $WarehouseProductStockDTO */
-        $WarehouseProductStockDTO = new WarehouseProductStockDTO(new UserUid());
+        $WarehouseProductStockDTO = new WarehouseProductStockDTO();
         $ProductStockEvent->getDto($WarehouseProductStockDTO);
-
-        //self::assertNotEquals(new UserProfileUid(), $WarehouseProductStockDTO->getProfile());
-        //$WarehouseProductStockDTO->setProfile(new UserProfileUid());
 
         self::assertEquals('Comment', $WarehouseProductStockDTO->getComment());
         $WarehouseProductStockDTO->setComment('WarehouseComment');
@@ -94,6 +80,5 @@ final class WarehouseProductStockTest extends KernelTestCase
         $handle = $WarehouseProductStockHandler->handle($WarehouseProductStockDTO);
 
         self::assertTrue(($handle instanceof ProductStock), $handle.': Ошибка ProductStock');
-
     }
 }

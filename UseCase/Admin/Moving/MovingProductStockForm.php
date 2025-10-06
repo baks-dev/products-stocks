@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,10 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving;
 
-use BaksDev\Contacts\Region\Repository\WarehouseChoice\WarehouseChoiceInterface;
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -35,7 +34,6 @@ use BaksDev\Products\Stocks\Repository\ProductModificationChoice\ProductModifica
 use BaksDev\Products\Stocks\Repository\ProductOfferChoice\ProductOfferChoiceWarehouseInterface;
 use BaksDev\Products\Stocks\Repository\ProductVariationChoice\ProductVariationChoiceWarehouseInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseChoice\ProductWarehouseChoiceInterface;
-use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -55,12 +53,9 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 
 final class MovingProductStockForm extends AbstractType
 {
-    //private WarehouseChoiceInterface $warehouseChoice;
-
     private ProductChoiceWarehouseInterface $productChoiceWarehouse;
 
     private ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse;
@@ -71,15 +66,12 @@ final class MovingProductStockForm extends AbstractType
 
     private ProductWarehouseChoiceInterface $productWarehouseChoice;
 
-    private UserProfileChoiceInterface $userProfileChoice;
-
     private UserUid $user;
 
     private TokenStorageInterface $tokenStorage;
     private iterable $reference;
 
     public function __construct(
-        UserProfileChoiceInterface $userProfileChoice,
         ProductChoiceWarehouseInterface $productChoiceWarehouse,
         ProductOfferChoiceWarehouseInterface $productOfferChoiceWarehouse,
         ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse,
@@ -87,16 +79,13 @@ final class MovingProductStockForm extends AbstractType
         ProductWarehouseChoiceInterface $productWarehouseChoice,
         TokenStorageInterface $tokenStorage,
         #[AutowireIterator('baks.reference.choice')] iterable $reference,
-
     )
     {
-
         $this->productChoiceWarehouse = $productChoiceWarehouse;
         $this->productOfferChoiceWarehouse = $productOfferChoiceWarehouse;
         $this->productVariationChoiceWarehouse = $productVariationChoiceWarehouse;
         $this->productModificationChoiceWarehouse = $productModificationChoiceWarehouse;
         $this->productWarehouseChoice = $productWarehouseChoice;
-        $this->userProfileChoice = $userProfileChoice;
 
         $this->tokenStorage = $tokenStorage;
         $this->reference = $reference;
@@ -104,27 +93,11 @@ final class MovingProductStockForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-
-
         $token = $this->tokenStorage->getToken();
 
         /** @var User $usr */
         $usr = $token?->getUser();
-
-        $UserUid = $usr->getId();
-
-        if($usr && $token instanceof SwitchUserToken)
-        {
-            /** @var User $originalUser */
-            $originalUser = $token->getOriginalToken()->getUser();
-
-            if($originalUser?->getUserIdentifier() !== $usr?->getUserIdentifier())
-            {
-                $UserUid = $originalUser->getId();
-            }
-        }
-
-        $this->user = $usr->getId();  //$builder->getData()->getUsr();
+        $this->user = $usr->getId();
 
 
         /**
@@ -133,7 +106,6 @@ final class MovingProductStockForm extends AbstractType
          * @var ProductUid $product
          */
         $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
-
 
         $productChoiceWarehouse = $this->productChoiceWarehouse->getProductsExistWarehouse($this->user);
 
@@ -203,7 +175,6 @@ final class MovingProductStockForm extends AbstractType
          *
          * @var ProductVariationConst $variation
          */
-
         $builder->add(
             'preVariation',
             HiddenType::class,
@@ -225,7 +196,6 @@ final class MovingProductStockForm extends AbstractType
          *
          * @var ProductModificationConst $modification
          */
-
         $builder->add(
             'preModification',
             HiddenType::class,
@@ -241,6 +211,7 @@ final class MovingProductStockForm extends AbstractType
                 }
             ),
         );
+
 
         /* Целевой склад */
         $builder->add(
@@ -297,55 +268,20 @@ final class MovingProductStockForm extends AbstractType
         );
 
 
-        /**
-         * Если пользователь не по доверенности - получаем список собственных профилей
-         */
-        if($this->user->equals($UserUid))
-        {
-            $profiles = $this->userProfileChoice->getActiveUserProfile($this->user);
-        }
-        else
-        {
-            /** Получаем список профилей, имеющих доступ по доверенности текущего пользователя */
-            $profiles = $this->userProfileChoice->getActiveProfileAuthority($this->user, $UserUid);
-        }
-
-
-        //        /** @var ?UserProfileUid $currentWarehouse */
-        //        $currentWarehouse = (count($profiles) === 1) ? current($profiles) : null;
-        //
-        //        if($currentWarehouse)
-        //        {
-        //            $builder->addEventListener(
-        //                FormEvents::PRE_SET_DATA,
-        //                function(FormEvent $event) use ($currentWarehouse): void {
-        //                    /** @var MovingProductStockDTO $data */
-        //                    $data = $event->getData();
-        //
-        //                    $data->setTargetWarehouse($currentWarehouse);
-        //                    $data->setDestinationWarehouse($currentWarehouse);
-        //                },
-        //            );
-        //        }
-
-
         /* Склад назначения */
-        $builder->add(
-            'destinationWarehouse',
-            ChoiceType::class,
-            [
-                'choices' => $profiles,
-                'choice_value' => function(?UserProfileUid $warehouse) {
-                    return $warehouse?->getValue();
+        $builder->add('destinationWarehouse', HiddenType::class);
+        $builder->get('destinationWarehouse')->addModelTransformer(
+            new CallbackTransformer(
+                function($warehouse) {
+                    return $warehouse instanceof UserProfileUid ? $warehouse->getValue() : $warehouse;
                 },
-                'choice_label' => function(UserProfileUid $warehouse) {
-                    return $warehouse->getAttr();
-                },
+                function($warehouse) {
 
-                'label' => false,
-                'required' => false,
-            ]
+                    return new UserProfileUid($warehouse);
+                }
+            )
         );
+
 
         // Количество
         $builder->add('preTotal', IntegerType::class, ['required' => false]);
@@ -366,8 +302,8 @@ final class MovingProductStockForm extends AbstractType
             ]
         );
 
-
         $builder->add('comment', TextareaType::class, ['required' => false]);
+
 
         // Сохранить
         $builder->add(
@@ -475,7 +411,7 @@ final class MovingProductStockForm extends AbstractType
         // Если у продукта нет множественных вариантов
         if(!$variations->valid())
         {
-            $form->add('preVariation', HiddenType::class,);
+            $form->add('preVariation', HiddenType::class);
             $this->formTargetWarehouseModifier($form, $product, $offer);
 
             return;
@@ -510,7 +446,6 @@ final class MovingProductStockForm extends AbstractType
                         return $variation->getAttr();
                     },
                     'choice_attr' => function(?ProductVariationConst $variation) {
-
                         if(!$variation)
                         {
                             return [];
@@ -542,7 +477,6 @@ final class MovingProductStockForm extends AbstractType
         ProductVariationConst $variation,
     ): void
     {
-
         $modifications = $this->productModificationChoiceWarehouse
             ->user($this->user)
             ->product($product)
@@ -550,10 +484,11 @@ final class MovingProductStockForm extends AbstractType
             ->variationConst($variation)
             ->getProductsModificationExistWarehouse();
 
+
         // Если у продукта нет модификаций множественных вариантов
         if(!$modifications->valid())
         {
-            $form->add('preModification', HiddenType::class,);
+            $form->add('preModification', HiddenType::class);
             $this->formTargetWarehouseModifier($form, $product, $offer, $variation);
 
             return;

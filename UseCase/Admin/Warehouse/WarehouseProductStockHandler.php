@@ -30,7 +30,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 
-
 final class WarehouseProductStockHandler extends AbstractHandler
 {
 

@@ -21,13 +21,12 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -35,21 +34,6 @@ final class ProductStockForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        //        /* Константа Целевого склада */
-        //        $builder->add('warehouse', HiddenType::class);
-        //
-        //        $builder->get('warehouse')->addModelTransformer(
-        //            new CallbackTransformer(
-        //                function ($warehouse) {
-        //                    return $warehouse instanceof ContactsRegionCallConst ? $warehouse->getValue() : $warehouse;
-        //                },
-        //                function ($warehouse) {
-        //                    return $warehouse ? new ContactsRegionCallConst($warehouse) : null;
-        //                }
-        //            ),
-        //        );
-
-
         /** Склад назначения при перемещении */
         $builder->add('move', Move\ProductStockMoveForm::class);
 
@@ -58,7 +42,7 @@ final class ProductStockForm extends AbstractType
             'product',
             CollectionType::class,
             [
-                'entry_type' => Products\ProductStockForm::class,
+                'entry_type' => Products\ProductStockProductForm::class,
                 'entry_options' => ['label' => false],
                 'label' => false,
                 'by_reference' => false,

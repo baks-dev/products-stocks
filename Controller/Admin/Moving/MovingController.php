@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Controller\Admin\Moving;
 
 use BaksDev\Core\Controller\AbstractController;
@@ -31,7 +33,8 @@ use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTot
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockHandler;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockProductDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -50,7 +53,7 @@ final class MovingController extends AbstractController
         ProductDetailByConstInterface $productDetailByConst
     ): Response
     {
-        $movingDTO = new MovingProductStockDTO($this->getUsr());
+        $movingDTO = new MovingProductStockDTO($this->getUsr())->setDestinationWarehouse($this->getCurrentProfileUid());
 
         // Форма заявки
         $form = $this->createForm(MovingProductStockForm::class, $movingDTO, [
@@ -67,13 +70,11 @@ final class MovingController extends AbstractController
             $success = true;
 
             /** Создаем каждое отдельно перемещение */
-
-            /** @var \BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO $move */
+            /** @var ProductStockDTO $move */
             foreach($movingDTO->getMove() as $move)
             {
                 /** Проверяем, что на складе не изменилось доступное количество */
-
-                /** @var ProductStockDTO $product */
+                /** @var ProductStockProductDTO $product */
                 foreach($move->getProduct() as $product)
                 {
                     $ProductStockTotal = $productWarehouseTotal->getProductProfileTotal(
@@ -114,16 +115,18 @@ final class MovingController extends AbstractController
                             $msg .= '<b>'.$productDetail['product_modification_value'].'</b>';
                         }
 
-
                         $msg .= '<br>Доступно: <b>'.$ProductStockTotal.'</b>';
-
 
                         $this->addFlash('Недостаточное количество продукции', $msg, 'products-stocks.admin');
                         continue 2;
                     }
                 }
 
-                $move->setProfile($move->getMove()->getWarehouse());
+                $move
+                    ->getInvariable()
+                    ->setUsr($this->getUsr()->getId())
+                    ->setProfile($move->getMove()->getWarehouse());
+
                 $move->setComment($movingDTO->getComment());
 
                 $ProductStock = $handler->handle($move);

@@ -21,10 +21,12 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Invariable\WarehouseProductStocksInvariableForm;
-use BaksDev\Users\Profile\UserProfile\Repository\UserProfileChoice\UserProfileChoiceInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products\ProductStockForm;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -40,7 +42,7 @@ final class WarehouseProductStockForm extends AbstractType
 
         // Section Collection
         $builder->add('product', CollectionType::class, [
-            'entry_type' => Products\ProductStockForm::class,
+            'entry_type' => ProductStockForm::class,
             'entry_options' => ['label' => false],
             'label' => false,
             'by_reference' => false,

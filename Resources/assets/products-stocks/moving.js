@@ -23,12 +23,12 @@
 
 /** Добавить перемещение продукции со склада на склад */
 
-var limit_nWgkuzbCRs = 1000;
+let limit_nWgkuzbCRs = 1000;
 
 setTimeout(function init_YFwgubGn()
 {
 
-    var object_product = document.getElementById("moving_product_stock_form_preProduct");
+    let object_product = document.getElementById("moving_product_stock_form_preProduct");
 
     if(object_product)
     {
@@ -104,8 +104,8 @@ async function changeObjectProduct(forms)
             if(data)
             {
 
-                var parser = new DOMParser();
-                var result = parser.parseFromString(data, "text/html");
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
 
 
                 let preOffer = result.getElementById("preOffer");
@@ -170,23 +170,6 @@ async function changeObjectProduct(forms)
                         return false;
                     });
                 }
-
-
-                // return;
-                //
-                //
-                // /** Изменияем список целевых складов */
-                // let warehouse = result.getElementById('targetWarehouse');
-                //
-                //
-                // document.getElementById('targetWarehouse').replaceWith(warehouse);
-                // document.getElementById('moving_product_stock_form_targetWarehouse').addEventListener('change', changeObjectWarehause, false);
-                //
-                // new NiceSelect(document.getElementById('moving_product_stock_form_targetWarehouse'), {
-                //     searchable: true,
-                //     id: 'select2-' + replaceId
-                // });
-
             }
         });
 }
@@ -205,10 +188,6 @@ function _changeObjectProduct()
     /* Имя формы */
     let MovingForm = document.forms.moving_product_stock_form;
     let formData = new FormData();
-
-
-    // const varehouse = document.getElementById('moving_product_stock_form_targetWarehouse');
-    // formData.append(varehouse.getAttribute('name'), varehouse.value);
 
     formData.append(this.getAttribute("name"), this.value);
 
@@ -304,8 +283,8 @@ async function changeObjectOffer(forms)
             if(data)
             {
 
-                var parser = new DOMParser();
-                var result = parser.parseFromString(data, "text/html");
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
 
 
                 let preVariation = result.getElementById("preVariation");
@@ -451,7 +430,6 @@ async function changeObjectVariation(forms)
 
     await fetch(forms.action, {
         method : forms.method, // *GET, POST, PUT, DELETE, etc.
-        //mode: 'same-origin', // no-cors, *cors, same-origin
         cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         credentials : "same-origin", // include, *same-origin, omit
         headers : {
@@ -480,8 +458,8 @@ async function changeObjectVariation(forms)
             if(data)
             {
 
-                var parser = new DOMParser();
-                var result = parser.parseFromString(data, "text/html");
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
 
 
                 let preModification = result.getElementById("preModification");
@@ -539,35 +517,6 @@ async function changeObjectVariation(forms)
 
                     }
                 }
-
-
-                // /** Событие на изменение множественного варианта */
-                // let change = document.getElementById('moving_product_stock_form_preVariation');
-                //
-                // if (change) {
-                //
-                //     change.addEventListener('change', function (event) {
-                //         changeObjectVariation(forms);
-                //         return false;
-                //     });
-                // }
-
-
-                //  return;
-
-
-                // /** Изменияем список целевых складов */
-                // let warehouse = result.getElementById('targetWarehouse');
-                //
-                //
-                // document.getElementById('targetWarehouse').replaceWith(warehouse);
-                // document.getElementById('moving_product_stock_form_targetWarehouse').addEventListener('change', changeObjectWarehause, false);
-                //
-                // new NiceSelect(document.getElementById('moving_product_stock_form_targetWarehouse'), {
-                //     searchable: true,
-                //     id: 'select2-' + replaceId
-                // });
-
             }
         });
 }
@@ -658,7 +607,6 @@ async function changeObjectModification(forms)
 
     await fetch(forms.action, {
         method : forms.method, // *GET, POST, PUT, DELETE, etc.
-        //mode: 'same-origin', // no-cors, *cors, same-origin
         cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         credentials : "same-origin", // include, *same-origin, omit
         headers : {
@@ -687,8 +635,8 @@ async function changeObjectModification(forms)
             if(data)
             {
 
-                var parser = new DOMParser();
-                var result = parser.parseFromString(data, "text/html");
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
 
                 let targetWarehouse = result.getElementById("targetWarehouse");
 
@@ -790,36 +738,21 @@ function changeObjectWarehause()
     let index = this.selectedIndex;
     document.getElementById("moving_product_stock_form_preTotal").setAttribute("max", this.options[index].dataset.max);
 
-    document.getElementById("moving_product_stock_form_destinationWarehouse").addEventListener("change", () =>
-    {
-
-        setTimeout(function()
-        {
-            let focusTotal = document.getElementById("moving_product_stock_form_preTotal");
-            focusTotal ? focusTotal.focus() : null;
-        }, 100);
-
-    }, false);
-
-
     setTimeout(function()
     {
-        let focusDestination = document.getElementById("moving_product_stock_form_destinationWarehouse_select2");
-        focusDestination ? focusDestination.click() : null;
+        let focusTotal = document.getElementById("moving_product_stock_form_preTotal");
+        focusTotal ? focusTotal.focus() : null;
     }, 100);
 }
 
 
-var collectionStock = new Map();
+let collectionStock = new Map();
 
 function addProductMoving()
 {
 
     /* Блок для новой коллекции КАТЕГОРИИ */
     let $blockCollectionStock = document.getElementById("collectionStock");
-
-    /* Добавляем новую коллекцию */
-    //$addButtonStock.addEventListener('click', function () {
 
     let $errorFormHandler = null;
 
@@ -869,16 +802,6 @@ function addProductMoving()
 
     }
 
-    let $destinationWarehouse = document.getElementById("moving_product_stock_form_destinationWarehouse");
-    if($destinationWarehouse.value.length === 0)
-    {
-
-        $errorFormHandler = "{ \"type\":\"danger\" , " +
-            "\"header\":\"Добавить лист закупки продукции\"  , " +
-            "\"message\" : \"" + $destinationWarehouse.options[0].textContent + "\" }";
-
-    }
-
 
     let $preProduct = document.getElementById("moving_product_stock_form_preProduct");
     if($preProduct.value.length === 0)
@@ -890,6 +813,7 @@ function addProductMoving()
 
     }
 
+    let $destinationWarehouse = document.getElementById("moving_product_stock_form_destinationWarehouse");
 
     let $preOffer = document.getElementById("moving_product_stock_form_preOffer");
     if($preOffer)
@@ -929,14 +853,7 @@ function addProductMoving()
     }
 
 
-    if($targetWarehouse.value === $destinationWarehouse.value)
-    {
-        $errorFormHandler = "{ \"type\":\"danger\" , " +
-            "\"header\":\"" + header + "\"  , " +
-            "\"message\" : \"Внутренее перемещение! Выберите другой склад назначения либо отгрузки\" }";
-    }
-
-    if(collectionStock.has($targetWarehouse.value + $destinationWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value))
+    if(collectionStock.has($targetWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value))
     {
         $errorFormHandler = "{ \"type\":\"danger\" , " +
             "\"header\":\"" + header + "\"  , " +
@@ -987,9 +904,6 @@ function addProductMoving()
     let targetWarehouseIndex = $targetWarehouse.selectedIndex;
     let $targetWarehouseName = $targetWarehouse.options[targetWarehouseIndex].dataset.name;
 
-    let destinationWarehouseIndex = $destinationWarehouse.selectedIndex;
-    let $destinationWarehouseName = $destinationWarehouse.options[destinationWarehouseIndex].textContent;
-
     let variationIndex = $preVariation.selectedIndex;
     let $variationName = $preVariation.tagName === "SELECT" ? document.querySelector("label[for=\"" + $preVariation.id + "\"]").textContent + " " + $preVariation.options[variationIndex].dataset.name : "";
 
@@ -1001,7 +915,7 @@ function addProductMoving()
 
 
     let $productTextBlock = stockDiv.querySelector("#product-text-" + index);
-    $productTextBlock.innerHTML = $targetWarehouseName + "&nbsp; => &nbsp;" + $destinationWarehouseName + " &nbsp; : &nbsp; " + $productName + " " + $offerName + " " + $variationName + " " + $modificationName + "&nbsp; : &nbsp;" + $TOTAL + " шт.";
+    $productTextBlock.innerHTML = "Со склада " + $targetWarehouseName + " &nbsp; : &nbsp; " + $productName + " " + $offerName + " " + $variationName + " " + $modificationName + "&nbsp; : &nbsp;" + $TOTAL + " шт.";
 
 
     /** Заполняем значения скрытых элементо */
@@ -1043,7 +957,7 @@ function addProductMoving()
     /* Обнуляем количество в перформе */
     $preTotal.value = null;
 
-    collectionStock.set($targetWarehouse.value + $destinationWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value);
+    collectionStock.set($targetWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value);
 
     document.getElementById("moving_product_stock_form_preOffer_select2").remove();
     //document.getElementById('moving_product_stock_form_preOffer').remove();
@@ -1059,11 +973,6 @@ function addProductMoving()
     {
         document.getElementById("moving_product_stock_form_preProduct_select2").click();
     }, 100);
-
-
-    /* применяем select2 */
-    //new NiceSelect(div.querySelector('[data-select="select2"]'), {searchable: true});
-    //});
 }
 
 

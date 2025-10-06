@@ -26,18 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use Doctrine\ORM\EntityManagerInterface;
-use DomainException;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class MovingProductStockHandler extends AbstractHandler
 {
-
     public function handle(ProductStockDTO $command): string|ProductStock
     {
         /** Валидация DTO  */
@@ -45,17 +39,10 @@ final class MovingProductStockHandler extends AbstractHandler
 
         $this->main = new ProductStock();
         $this->event = new ProductStockEvent();
+        
+        $this->setCommand($command);
+        $this->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
-        try
-        {
-            //$command->getEvent() ? $this->preUpdate($command, true) :
-            $this->prePersist($command);
-            //$this->preUpdate($command, true);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -63,7 +50,11 @@ final class MovingProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        if(false === $this->isPersist())
+        {
+            $this->flush();
+        }
+
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

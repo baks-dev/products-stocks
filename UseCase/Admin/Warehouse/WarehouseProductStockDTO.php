@@ -21,16 +21,18 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Invariable\WarehouseProductStocksInvariableDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Move\ProductStockMoveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products\ProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -42,20 +44,6 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    //    /** Склад */
-    //    #[Assert\NotBlank]
-    //    #[Assert\Uuid]
-    //    private ?ContactsRegionCallConst $warehouse = null;
-
-    //    /** Целевой склад при перемещении */
-    //    #[Assert\Uuid]
-    //    private ?UserProfileUid $destination = null;
-
-    //    /** Ответственное лицо (Профиль пользователя) */
-    //    #[Assert\NotBlank]
-    //    #[Assert\Uuid]
-    //    private UserProfileUid $profile;
-
     /** Статус заявки - ОТПАРВЛЕН НА СКЛАД */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
@@ -63,12 +51,9 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    //    /** Вспомогательные свойства - для выбора доступных профилей */
-    //    private readonly UserUid $usr;
-
     /** Коллекция перемещения  */
     #[Assert\Valid]
-    private ?Move\ProductStockMoveDTO $move;
+    private ?ProductStockMoveDTO $move;
 
     /** Фиксация заявки пользователем  */
     #[Assert\IsNull]
@@ -78,17 +63,15 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\Valid]
     private ArrayCollection $product;
 
+    private WarehouseProductStocksInvariableDTO $invariable;
 
-    private Invariable\WarehouseProductStocksInvariableDTO $invariable;
 
-
-    public function __construct(User|UserUid $usr)
+    public function __construct()
     {
-        //$this->usr = $usr instanceof User ? $usr->getId() : $usr;
         $this->status = new ProductStockStatus(ProductStockStatusWarehouse::class);
         $this->fixed = null;
         $this->product = new ArrayCollection();
-        $this->invariable = new Invariable\WarehouseProductStocksInvariableDTO();
+        $this->invariable = new WarehouseProductStocksInvariableDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -112,19 +95,6 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    //    /** Профиль назначения */
-    //    public function getProfile(): UserProfileUid
-    //    {
-    //        return $this->profile;
-    //    }
-    //
-    //    public function setProfile(UserProfileUid $profile): self
-    //    {
-    //        $this->profile = $profile;
-    //        return $this;
-    //    }
-
-
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
     {
@@ -132,22 +102,14 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     }
 
     /**
-     * Usr
-     */
-    public function getUsr(): UserUid
-    {
-        return $this->usr;
-    }
-
-    /**
      * Move
      */
-    public function getMove(): ?Move\ProductStockMoveDTO
+    public function getMove(): ?ProductStockMoveDTO
     {
         return $this->move;
     }
 
-    public function setMove(?Move\ProductStockMoveDTO $move): self
+    public function setMove(?ProductStockMoveDTO $move): self
     {
         $this->move = $move;
         return $this;
@@ -172,7 +134,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         $this->product = $product;
     }
 
-    public function addProduct(Products\ProductStockDTO $product): void
+    public function addProduct(ProductStockDTO $product): void
     {
         $this->product->add($product);
     }
@@ -180,7 +142,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /**
      * Invariable
      */
-    public function getInvariable(): Invariable\WarehouseProductStocksInvariableDTO
+    public function getInvariable(): WarehouseProductStocksInvariableDTO
     {
         return $this->invariable;
     }
