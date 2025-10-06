@@ -33,6 +33,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
@@ -50,7 +51,10 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
 
     private ?ProductModificationConst $modification = null;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $userProfileTokenStorage
+    ) {}
 
     public function user(UserUid|string $user): self
     {
@@ -180,12 +184,18 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
             $dbal->andWhere('stock.modification IS NULL');
         }
 
-        $dbal->join(
-            'stock',
-            UserProfile::class,
-            'profile',
-            'profile.id = stock.profile',
-        );
+        $dbal
+            ->join(
+                'stock',
+                UserProfile::class,
+                'profile',
+                'profile.id = stock.profile AND profile.id != :profile',
+            )
+            ->setParameter(
+                'profile',
+                $this->userProfileTokenStorage->getProfile(),
+                UserProfileUid::TYPE
+            );
 
         $dbal->join(
             'profile',

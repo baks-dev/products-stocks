@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products;
 
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
@@ -69,8 +71,6 @@ final class ProductStockForm extends AbstractType
                 }
             }
         );
-
-
     }
 
     public function configureOptions(OptionsResolver $resolver): void

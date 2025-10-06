@@ -51,12 +51,14 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -94,21 +96,31 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-
         $dbal
             ->addSelect('event.main AS id')
             ->addSelect('event.id AS event')
-            ->addSelect('event.number')
             ->addSelect('event.comment')
             ->addSelect('event.status')
             ->addSelect('event.fixed')
-            ->addSelect('event.profile AS user_profile_id')
             ->from(ProductStockEvent::class, 'event')
             ->andWhere('event.status = :status ')
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusMoving()), ProductStockStatus::TYPE)
-            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+            ->setParameter(
+                'status',
+                new ProductStockStatus(new ProductStockStatusMoving()),
+                ProductStockStatus::TYPE
+            );
 
+        $dbal
+            ->addSelect('invariable.profile AS user_profile_id')
+            ->addSelect('invariable.number')
+            ->join(
+                'event',
+                ProductStocksInvariable::class,
+                'invariable',
+                'invariable.event = event.id'
+            )
+            ->andWhere('invariable.profile = :profile OR move.destination = :profile')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
         $dbal
             ->addSelect('stock.event AS is_warehouse')
@@ -119,8 +131,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'stock.event = event.id'
             );
 
-
-        //dd($dbal->fetchAllAssociative());
 
         // ProductStockModify
         $dbal
@@ -425,7 +435,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = event.profile'
+                'users_profile.id = invariable.profile'
             );
 
         // Info

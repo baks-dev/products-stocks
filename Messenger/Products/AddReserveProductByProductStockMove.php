@@ -33,7 +33,6 @@ use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantity
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,64 +41,70 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Снимает резерв и отнимает количество продукции при перемещении между складами
+ * Добавляет резерв продукции при перемещении
  */
 #[AsMessageHandler(priority: 1)]
-final readonly class SubQuantityReserveProductByMoveWarehouseStock
+final readonly class AddReserveProductByProductStockMove
 {
     public function __construct(
-        #[Target('productsProductLogger')] private LoggerInterface $logger,
-        private ProductModificationQuantityInterface $modificationQuantity,
-        private ProductVariationQuantityInterface $variationQuantity,
-        private ProductOfferQuantityInterface $offerQuantity,
-        private ProductQuantityInterface $productQuantity,
-        private EntityManagerInterface $entityManager,
-        private DeduplicatorInterface $deduplicator,
+        #[Target('productsProductLogger')] private LoggerInterface $Logger,
+        private ProductModificationQuantityInterface $ModificationQuantity,
+        private ProductVariationQuantityInterface $VariationQuantity,
+        private ProductOfferQuantityInterface $OfferQuantity,
+        private ProductQuantityInterface $ProductQuantity,
+        private EntityManagerInterface $EntityManager,
+        private DeduplicatorInterface $Deduplicator,
         private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
     ) {}
 
     /**
-     * Снимает резерв и отнимает количество продукции при перемещении между складами
-     * Пополнение произойдет когда на склад будет приход
+     * Добавляет резерв продукции при перемещении
      */
     public function __invoke(ProductStockMessage $message): void
     {
-        /* TODO: ОТКЛЮЧЕНО !!! */
-        return;
+        $this->EntityManager->clear();
 
-        if(false === ($message->getLast() instanceof ProductStockEventUid))
-        {
-            return;
-        }
-
-        /** Получаем предыдущий статус заявки */
-        $ProductStockEvent = $this->entityManager
+        $productStockEvent = $this->EntityManager
             ->getRepository(ProductStockEvent::class)
-            ->find($message->getLast());
+            ->find($message->getEvent());
 
-        if(false === ($ProductStockEvent instanceof ProductStockEvent))
+        if(!$productStockEvent)
         {
             return;
         }
 
-        // Если предыдущий Статус не является Moving «Перемещение»
-        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
+        /** @var ProductStockEvent $productStockEvent */
+        /** Если Статус не является Статус Moving «Перемещение» */
+        if(false === $productStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
 
-        // Получаем всю продукцию в ордере которая перемещается со склада
-        // Если поступила отмена заявки - массив продукции будет NULL
-        /** @see SubReserveMaterialStockTotalByCancel */
-        $products = $ProductStockEvent->getProduct();
 
-        if($products->isEmpty())
+        /**
+         * Проверяем, является ли данный профиль логистическим складом
+         */
+        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
+            ->forProfile($productStockEvent->getInvariable()?->getProfile())
+            ->isLogisticWarehouse()
+        ;
+
+        if(false === $isLogisticWarehouse)
         {
-            $this->logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
         }
 
-        $Deduplicator = $this->deduplicator
+
+        // Получаем всю продукцию в заявке
+        $products = $productStockEvent->getProduct();
+
+        if(empty($products))
+        {
+            $this->Logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
+            return;
+        }
+
+        $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
@@ -112,26 +117,28 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             return;
         }
 
+        $this->EntityManager->clear();
+
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
-            $this->changeProduct($product);
+            $this->changeReserve($product);
         }
 
         $Deduplicator->save();
     }
 
 
-    public function changeProduct(ProductStockProduct $product): void
+    public function changeReserve(ProductStockProduct $product): void
     {
-        $ProductUpdateQuantityReserve = null;
+        $productUpdateReserve = null;
 
         // Количественный учет модификации множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getModification())
+        if($product->getModification())
         {
-            $this->entityManager->clear();
+            $this->EntityManager->clear();
 
-            $ProductUpdateQuantityReserve = $this->modificationQuantity->getProductModificationQuantity(
+            $productUpdateReserve = $this->ModificationQuantity->getProductModificationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
@@ -140,11 +147,11 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         }
 
         // Количественный учет множественного варианта торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getVariation())
+        if(null === $productUpdateReserve && $product->getVariation())
         {
-            $this->entityManager->clear();
+            $this->EntityManager->clear();
 
-            $ProductUpdateQuantityReserve = $this->variationQuantity->getProductVariationQuantity(
+            $productUpdateReserve = $this->VariationQuantity->getProductVariationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation()
@@ -152,25 +159,26 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
         }
 
         // Количественный учет торгового предложения
-        if(null === $ProductUpdateQuantityReserve && $product->getOffer())
+        if(null === $productUpdateReserve && $product->getOffer())
         {
-            $this->entityManager->clear();
+            $this->EntityManager->clear();
 
-            $ProductUpdateQuantityReserve = $this->offerQuantity->getProductOfferQuantity(
+            $productUpdateReserve = $this->OfferQuantity->getProductOfferQuantity(
                 $product->getProduct(),
                 $product->getOffer()
             );
         }
 
         // Количественный учет продукта
-        if(null === $ProductUpdateQuantityReserve)
+        if(null === $productUpdateReserve)
         {
-            $this->entityManager->clear();
+            $this->EntityManager->clear();
 
-            $ProductUpdateQuantityReserve = $this->productQuantity->getProductQuantity(
+            $productUpdateReserve = $this->ProductQuantity->getProductQuantity(
                 $product->getProduct()
             );
         }
+
 
         $context = [
             self::class.':'.__LINE__,
@@ -182,17 +190,13 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             'ProductModificationConst' => (string) $product->getModification(),
         ];
 
-        if(
-            $ProductUpdateQuantityReserve &&
-            $ProductUpdateQuantityReserve->subQuantity($product->getTotal()) &&
-            $ProductUpdateQuantityReserve->subReserve($product->getTotal())
-        )
+        if($productUpdateReserve && $productUpdateReserve->addReserve($product->getTotal()))
         {
-            $this->entityManager->flush();
-            $this->logger->info('Перемещение: Сняли общий резерв и количество продукции в карточке при перемещении между складами', $context);
+            $this->EntityManager->flush();
+            $this->Logger->info('Перемещение: Добавили общий резерв продукции в карточке', $context);
             return;
         }
 
-        $this->logger->critical('Перемещение: Невозможно общий резерв и количество продукции: карточка не найдена либо недостаточное количество резерва или остатка)', $context);
+        $this->Logger->critical('Перемещение: Невозможно добавить общий резерв продукции (карточка не найдена)', $context);
     }
 }

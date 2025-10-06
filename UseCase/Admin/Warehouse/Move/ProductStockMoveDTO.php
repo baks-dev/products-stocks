@@ -25,8 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Move;
 
-use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
-use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMoveInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -34,7 +32,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** @see MaterialStockMove */
 final class ProductStockMoveDTO implements ProductStockMoveInterface
 {
-
     /** Константа склада назначения при перемещении */
     #[Assert\NotBlank]
     #[Assert\Uuid]

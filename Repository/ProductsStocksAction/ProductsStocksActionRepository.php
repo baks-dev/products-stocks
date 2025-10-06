@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Repository\ProductsStocksAction;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
@@ -70,12 +71,20 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
 
         $dbal
             ->addSelect('event.id AS event_id')
-            ->addSelect('event.number AS event_number')
             ->addSelect('event.status AS event_status')
             ->addSelect('event.comment AS event_comment')
             ->from(ProductStockEvent::class, 'event')
             ->where('event.main = :main')
             ->setParameter('main', $this->main, ProductStockUid::TYPE);
+
+        $dbal
+            ->addSelect('invariable.number AS event_number')
+            ->join(
+                'event',
+                ProductStocksInvariable::class,
+                'invariable',
+                'invariable.event = event.id'
+            );
 
         $dbal
             ->addSelect('modify.mod_date AS date_modify')

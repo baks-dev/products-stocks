@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Controller\Admin\Warehouse;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
@@ -53,7 +55,6 @@ final class WarehouseController extends AbstractController
         CentrifugoPublishInterface $publish,
     ): Response
     {
-
         if(!$this->getProfileUid())
         {
             throw new UserNotFoundException('User Profile not found');
@@ -65,8 +66,7 @@ final class WarehouseController extends AbstractController
             ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
             ->send('remove');
 
-        $WarehouseProductStockDTO = new WarehouseProductStockDTO($this->getUsr());
-
+        $WarehouseProductStockDTO = new WarehouseProductStockDTO();
         $ProductStockEvent->getDto($WarehouseProductStockDTO);
 
         /**
@@ -75,8 +75,14 @@ final class WarehouseController extends AbstractController
          */
         if($ProductStockEvent->getMoveDestination())
         {
-            $WarehouseProductStockDTO->setProfile($ProductStockEvent->getMoveDestination());
-            $WarehouseProductStockDTO->getMove()?->setDestination($this->getProfileUid());
+            $destination = $ProductStockEvent->getInvariable()?->getProfile();
+
+            $WarehouseProductStockDTO
+                ->getInvariable()
+                ?->setProfile($ProductStockEvent->getMove()->getDestination())
+                ->setUsr($this->getUsr()->getId());
+
+            $WarehouseProductStockDTO->getMove()?->setDestination($destination);
         }
 
         // Форма добавления
@@ -109,7 +115,6 @@ final class WarehouseController extends AbstractController
             );
 
             return $flash ?: $this->redirectToRoute('products-stocks:admin.purchase.index');
-
         }
 
         return $this->render(['form' => $form->createView()]);

@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
@@ -32,7 +34,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final class ProductStockDTO implements ProductStockProductInterface
 {
-
     /** Продукт */
     #[Assert\NotBlank]
     #[Assert\Uuid]
@@ -65,21 +66,11 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
-    //    public function setProduct(ProductUid $product): void
-    //    {
-    //        $this->product = $product;
-    //    }
-
     /** Торговое предложение */
     public function getOffer(): ?ProductOfferConst
     {
         return $this->offer;
     }
-
-    //    public function setOffer(ProductOfferConst $offer): void
-    //    {
-    //        $this->offer = $offer;
-    //    }
 
     /** Множественный вариант */
     public function getVariation(): ?ProductVariationConst
@@ -87,21 +78,11 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    //    public function setVariation(?ProductVariationConst $variation): void
-    //    {
-    //        $this->variation = $variation;
-    //    }
-
     /** Модификация множественного варианта */
     public function getModification(): ?ProductModificationConst
     {
         return $this->modification;
     }
-
-    //    public function setModification(?ProductModificationConst $modification): void
-    //    {
-    //        $this->modification = $modification;
-    //    }
 
     /** Количество */
     public function getTotal(): int
