@@ -53,14 +53,17 @@ final class MovingController extends AbstractController
         ProductDetailByConstInterface $productDetailByConst
     ): Response
     {
-        $movingDTO = new MovingProductStockDTO($this->getUsr())->setDestinationWarehouse($this->getCurrentProfileUid());
+        $movingDTO = new MovingProductStockDTO($this->getUsr())
+            ->setDestinationWarehouse($this->getProfileUid());
 
         // Форма заявки
-        $form = $this->createForm(MovingProductStockForm::class, $movingDTO, [
-            'action' => $this->generateUrl('products-stocks:admin.moving.new'),
-        ]);
-
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(
+                type: MovingProductStockForm::class,
+                data: $movingDTO,
+                options: ['action' => $this->generateUrl('products-stocks:admin.moving.new')],
+            )
+            ->handleRequest($request);
 
 
         if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
@@ -82,7 +85,7 @@ final class MovingController extends AbstractController
                         $product->getProduct(),
                         $product->getOffer(),
                         $product->getVariation(),
-                        $product->getModification()
+                        $product->getModification(),
                     );
 
                     if($product->getTotal() > $ProductStockTotal)
@@ -117,14 +120,19 @@ final class MovingController extends AbstractController
 
                         $msg .= '<br>Доступно: <b>'.$ProductStockTotal.'</b>';
 
-                        $this->addFlash('Недостаточное количество продукции', $msg, 'products-stocks.admin');
+                        $this->addFlash(
+                            type: 'Недостаточное количество продукции',
+                            message: $msg,
+                            domain: 'products-stocks.admin',
+                        );
+
                         continue 2;
                     }
                 }
 
                 $move
                     ->getInvariable()
-                    ->setUsr($this->getUsr()->getId())
+                    ->setUsr($this->getUsr())
                     ->setProfile($move->getMove()->getWarehouse());
 
                 $move->setComment($movingDTO->getComment());
@@ -134,13 +142,22 @@ final class MovingController extends AbstractController
                 if(!$ProductStock instanceof ProductStock)
                 {
                     $success = false;
-                    $this->addFlash('danger', 'danger.move', 'products-stocks.admin', $ProductStock);
+                    $this->addFlash(
+                        type: 'danger',
+                        message: 'danger.move',
+                        domain: 'products-stocks.admin',
+                        arguments: $ProductStock,
+                    );
                 }
             }
 
             if($success)
             {
-                $this->addFlash('success', 'success.move', 'products-stocks.admin');
+                $this->addFlash(
+                    type: 'success',
+                    message: 'success.move',
+                    domain: 'products-stocks.admin',
+                );
             }
 
             return $this->redirectToRoute('products-stocks:admin.moving.index');

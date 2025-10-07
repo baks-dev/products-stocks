@@ -87,35 +87,28 @@ final class ProductStockPackageFilterForm extends AbstractType
 
             $Request = $this->request->getMainRequest();
 
-            if($Request && 'POST' === $Request->getMethod())
+            if($this->session === false)
             {
-                $sessionArray = current($Request->request->all());
+                $this->session = $this->request->getSession();
             }
-            else
+
+            if($this->session && $this->session->get('statusCode') === 307)
             {
-                if($this->session === false)
-                {
-                    $this->session = $this->request->getSession();
-                }
+                $this->session->remove($this->sessionKey);
+                $this->session = false;
+            }
 
-                if($this->session && $this->session->get('statusCode') === 307)
-                {
-                    $this->session->remove($this->sessionKey);
-                    $this->session = false;
-                }
+            if($this->session && (time() - $this->session->getMetadataBag()->getLastUsed()) > 300)
+            {
+                $this->session->remove($this->sessionKey);
+                $this->session = false;
+            }
 
-                if($this->session && (time() - $this->session->getMetadataBag()->getLastUsed()) > 300)
-                {
-                    $this->session->remove($this->sessionKey);
-                    $this->session = false;
-                }
-
-                if($this->session)
-                {
-                    $sessionData = $this->request->getSession()->get($this->sessionKey);
-                    $sessionJson = $sessionData ? base64_decode($sessionData) : false;
-                    $sessionArray = $sessionJson !== false && json_validate($sessionJson) ? json_decode($sessionJson, true, 512, JSON_THROW_ON_ERROR) : false;
-                }
+            if($this->session)
+            {
+                $sessionData = $this->request->getSession()->get($this->sessionKey);
+                $sessionJson = $sessionData ? base64_decode($sessionData) : false;
+                $sessionArray = $sessionJson !== false && json_validate($sessionJson) ? json_decode($sessionJson, true, 512, JSON_THROW_ON_ERROR) : false;
             }
 
             if($sessionArray !== false)
@@ -130,7 +123,6 @@ final class ProductStockPackageFilterForm extends AbstractType
                     $sessionData = base64_encode($sessionJson);
                     $this->request->getSession()->set($this->sessionKey, $sessionData);
                 }
-
             }
 
         });

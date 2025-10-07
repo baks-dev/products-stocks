@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,8 +34,10 @@ use BaksDev\Products\Stocks\Repository\ProductModificationChoice\ProductModifica
 use BaksDev\Products\Stocks\Repository\ProductOfferChoice\ProductOfferChoiceWarehouseInterface;
 use BaksDev\Products\Stocks\Repository\ProductVariationChoice\ProductVariationChoiceWarehouseInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseChoice\ProductWarehouseChoiceInterface;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Form\AbstractType;
@@ -56,49 +58,21 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 final class MovingProductStockForm extends AbstractType
 {
-    private ProductChoiceWarehouseInterface $productChoiceWarehouse;
-
-    private ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse;
-
-    private ProductOfferChoiceWarehouseInterface $productOfferChoiceWarehouse;
-
-    private ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse;
-
-    private ProductWarehouseChoiceInterface $productWarehouseChoice;
-
     private UserUid $user;
 
-    private TokenStorageInterface $tokenStorage;
-    private iterable $reference;
-
     public function __construct(
-        ProductChoiceWarehouseInterface $productChoiceWarehouse,
-        ProductOfferChoiceWarehouseInterface $productOfferChoiceWarehouse,
-        ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse,
-        ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
-        ProductWarehouseChoiceInterface $productWarehouseChoice,
-        TokenStorageInterface $tokenStorage,
-        #[AutowireIterator('baks.reference.choice')] iterable $reference,
-    )
-    {
-        $this->productChoiceWarehouse = $productChoiceWarehouse;
-        $this->productOfferChoiceWarehouse = $productOfferChoiceWarehouse;
-        $this->productVariationChoiceWarehouse = $productVariationChoiceWarehouse;
-        $this->productModificationChoiceWarehouse = $productModificationChoiceWarehouse;
-        $this->productWarehouseChoice = $productWarehouseChoice;
-
-        $this->tokenStorage = $tokenStorage;
-        $this->reference = $reference;
-    }
+        private readonly ProductChoiceWarehouseInterface $productChoiceWarehouse,
+        private readonly ProductOfferChoiceWarehouseInterface $productOfferChoiceWarehouse,
+        private readonly ProductVariationChoiceWarehouseInterface $productVariationChoiceWarehouse,
+        private readonly ProductModificationChoiceWarehouseInterface $productModificationChoiceWarehouse,
+        private readonly ProductWarehouseChoiceInterface $productWarehouseChoice,
+        private readonly UserTokenStorageInterface $UserTokenStorage,
+        #[AutowireIterator('baks.reference.choice')] private readonly iterable $reference,
+    ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $token = $this->tokenStorage->getToken();
-
-        /** @var User $usr */
-        $usr = $token?->getUser();
-        $this->user = $usr->getId();
-
+        $this->user = $this->UserTokenStorage->getUser();
 
         /**
          * Подукция
@@ -143,7 +117,7 @@ final class MovingProductStockForm extends AbstractType
                     },
 
                     'label' => false,
-                ]
+                ],
             );
         }
 
@@ -166,7 +140,7 @@ final class MovingProductStockForm extends AbstractType
                 },
                 function($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
-                }
+                },
             ),
         );
 
@@ -187,7 +161,7 @@ final class MovingProductStockForm extends AbstractType
                 },
                 function($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
-                }
+                },
             ),
         );
 
@@ -208,7 +182,7 @@ final class MovingProductStockForm extends AbstractType
                 },
                 function($modification) {
                     return $modification ? new ProductModificationConst($modification) : null;
-                }
+                },
             ),
         );
 
@@ -221,7 +195,7 @@ final class MovingProductStockForm extends AbstractType
                 'choices' => [],
                 'label' => false,
                 'required' => false,
-            ]
+            ],
         );
 
         $builder->get('preModification')->addEventListener(
@@ -278,8 +252,8 @@ final class MovingProductStockForm extends AbstractType
                 function($warehouse) {
 
                     return new UserProfileUid($warehouse);
-                }
-            )
+                },
+            ),
         );
 
 
@@ -299,7 +273,7 @@ final class MovingProductStockForm extends AbstractType
                 'allow_delete' => true,
                 'allow_add' => true,
                 'prototype_name' => '__product__',
-            ]
+            ],
         );
 
         $builder->add('comment', TextareaType::class, ['required' => false]);
@@ -396,7 +370,7 @@ final class MovingProductStockForm extends AbstractType
                     'label' => $label,
                     'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ]
+                ],
             );
     }
 
@@ -547,7 +521,7 @@ final class MovingProductStockForm extends AbstractType
                     'label' => $label,
                     'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
-                ]
+                ],
             );
     }
 
@@ -579,7 +553,7 @@ final class MovingProductStockForm extends AbstractType
                     'choices' => [],
                     'label' => false,
                     'required' => false,
-                ]
+                ],
             );
 
             return;
@@ -618,7 +592,7 @@ final class MovingProductStockForm extends AbstractType
                 },
                 'label' => false,
                 'required' => false,
-            ]
+            ],
         );
     }
 }
