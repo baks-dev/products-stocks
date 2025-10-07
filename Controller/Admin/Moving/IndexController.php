@@ -23,6 +23,7 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Moving;
 
+use BaksDev\Centrifugo\Services\Token\TokenUserGenerator;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
@@ -45,11 +46,10 @@ final class IndexController extends AbstractController
     public function incoming(
         Request $request,
         AllProductStocksMoveInterface $allMove,
+        TokenUserGenerator $tokenUserGenerator,
         int $page = 0
     ): Response
     {
-        //$ROLE_ADMIN = $this->isGranted('ROLE_ADMIN');
-
         // Поиск
         $search = new SearchDTO();
 
@@ -57,18 +57,22 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')],
             )
             ->handleRequest($request);
 
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO($request);
-        $filterForm = $this->createForm(ProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('products-stocks:admin.moving.index'),
-        ]);
-        $filterForm->handleRequest($request);
+        $filter = new ProductFilterDTO();
+
+        $filterForm = $this
+            ->createForm(
+                type: ProductFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')],
+            )
+            ->handleRequest($request);
 
         // Получаем список закупок ответственного лица
         $query = $allMove
@@ -81,7 +85,9 @@ final class IndexController extends AbstractController
                 'query' => $query,
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
-            ]
+                'token' => $tokenUserGenerator->generate($this->getUsr()),
+                'current_profile' => $this->getCurrentProfileUid(),
+            ],
         );
     }
 }

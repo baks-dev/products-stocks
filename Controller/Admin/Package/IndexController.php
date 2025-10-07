@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -28,6 +28,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Orders\Order\Forms\Canceled\CanceledOrdersForm;
 use BaksDev\Orders\Order\Forms\SalesInvoice\SalesInvoiceForm;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
 use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterForm;
@@ -62,7 +63,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')],
             )
             ->handleRequest($request);
 
@@ -73,7 +74,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: ProductStockPackageFilterForm::class,
                 data: $filter,
-                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.package.index')],
             )
             ->handleRequest($request);
 
@@ -113,7 +114,8 @@ final class IndexController extends AbstractController
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
                 'add_selected_form_name' => $this->createForm(type: SalesInvoiceForm::class)->getName(),
                 'add_selected_extradition_form_name' => $this->createForm(type: ExtraditionSelectedProductStockForm::class)->getName(),
-            ]
+                'cancel_order_form_name' => $this->createForm(type: CanceledOrdersForm::class)->getName(),
+            ],
         );
     }
 }

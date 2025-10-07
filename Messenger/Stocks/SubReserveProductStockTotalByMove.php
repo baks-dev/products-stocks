@@ -30,6 +30,7 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
@@ -66,7 +67,7 @@ final readonly class SubReserveProductStockTotalByMove
             ->deduplication([
                 $message->getId(),
                 ProductStockStatusMoving::STATUS,
-                self::class
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -119,7 +120,7 @@ final readonly class SubReserveProductStockTotalByMove
         {
             $this->Logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -129,10 +130,33 @@ final readonly class SubReserveProductStockTotalByMove
         /** Идентификатор профиля склада отгрузки (в данном событии он стал складом назначния) */
         $userProfileUid = $ProductStockEvent->getMove()?->getDestination();
 
+        /** По умолчанию не снимаем резерв на различие остатка */
+        $SubProductStocksTotalCancelMessage = false;
+
+        $diffTotal = 0;
+
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
+            /** Снимаем разницу резерва если количество изменилось в меньшую сторону */
+
+            $lastProduct = $ProductStockEventLast->getProduct()->current();
+
+            $diffTotal = $lastProduct->getTotal() - $product->getTotal();
+
+            if($diffTotal > 0)
+            {
+                $SubProductStocksTotalCancelMessage = new SubProductStocksReserveMessage(
+                    stock: $message->getId(),
+                    profile: $userProfileUid,
+                    product: $product->getProduct(),
+                    offer: $product->getOffer(),
+                    variation: $product->getVariation(),
+                    modification: $product->getModification(),
+                );
+            }
+
             /** Снимаем резерв и остаток на складе грузоотправителя */
             $productTotal = $product->getTotal();
 
@@ -149,8 +173,8 @@ final readonly class SubReserveProductStockTotalByMove
                 sprintf('%s: Снимаем резерв и наличие на складе грузоотправителя при перемещении продукции', $ProductStockEvent->getNumber()),
                 [
                     self::class.':'.__LINE__,
-                    var_export($SubProductStocksTotalMessage, true)
-                ]
+                    var_export($SubProductStocksTotalMessage, true),
+                ],
             );
 
             /** Поверяем количество мест складирования продукции на складе */
@@ -170,7 +194,7 @@ final readonly class SubReserveProductStockTotalByMove
                         self::class.':'.__LINE__,
                         'profile' => (string) $userProfileUid,
                         var_export($SubProductStocksTotalMessage, true),
-                    ]
+                    ],
                 );
             }
 
@@ -180,6 +204,10 @@ final readonly class SubReserveProductStockTotalByMove
              */
             if($storage === 1)
             {
+
+                /**
+                 * Снимаем резерв и остаток на складе грузоотправителя
+                 */
                 $SubProductStocksTotalMessage
                     ->setIterate(1)
                     ->setTotal($product->getTotal());
@@ -188,6 +216,22 @@ final readonly class SubReserveProductStockTotalByMove
                     $SubProductStocksTotalMessage,
                     transport: 'products-stocks-low',
                 );
+
+                /**
+                 * Снимаем разницу резерва если количество изменилось в меньшую сторону
+                 */
+                if($SubProductStocksTotalCancelMessage instanceof SubProductStocksReserveMessage)
+                {
+                    $SubProductStocksTotalCancelMessage
+                        ->setIterate(1)
+                        ->setTotal($diffTotal);
+
+                    $this->MessageDispatch->dispatch(
+                        $SubProductStocksTotalCancelMessage,
+                        transport: 'products-stocks-low',
+                    );
+                }
+
 
                 continue;
             }
@@ -206,7 +250,7 @@ final readonly class SubReserveProductStockTotalByMove
 
                 $this->MessageDispatch->dispatch(
                     $SubProductStocksTotalMessage,
-                    transport: 'products-stocks-low'
+                    transport: 'products-stocks-low',
                 );
 
                 if($i === $productTotal)
@@ -214,6 +258,31 @@ final readonly class SubReserveProductStockTotalByMove
                     break;
                 }
             }
+
+
+            /**
+             * Снимаем разницу резерва если количество изменилось в меньшую сторону
+             */
+            if($SubProductStocksTotalCancelMessage instanceof SubProductStocksReserveMessage)
+            {
+                for($q = 1; $q <= $diffTotal; $q++)
+                {
+                    $SubProductStocksTotalCancelMessage
+                        ->setIterate($q)
+                        ->setTotal(1);
+
+                    $this->MessageDispatch->dispatch(
+                        $SubProductStocksTotalCancelMessage,
+                        transport: 'products-stocks-low',
+                    );
+
+                    if($q === $diffTotal)
+                    {
+                        break;
+                    }
+                }
+            }
+
         }
 
         $Deduplicator->save();

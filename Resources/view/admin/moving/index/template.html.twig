@@ -27,6 +27,57 @@
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/js/print.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/products-product/filter.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src='/assets/{{ version }}/js/radio.input.min.js?v={{ version }}' class='lazy'></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/js/copy.min.js?v={{ version }}" class="lazy"></script>
+
+ <script nonce="{{ csp_nonce() }}" class="lazy">
+ window.centrifugo_dsn = "{{ centrifugo_dsn }}";
+ window.centrifugo_token = "{{ token }}";
+ </script>
+
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/centrifugo/centrifuge.min.js?v={{ version }}" class='lazy'></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/centrifugo/socket.min.js?v={{ version }}" class='lazy'></script>
+
+
+<script nonce="{{ csp_nonce() }}">
+
+    document.addEventListener("DOMContentLoaded", (event) =>
+    {
+        let jqBrrEdfFJ = 100;
+
+        setTimeout(function xUJUEDXcx()
+        {
+            if(typeof centrifuge !== "object")
+            {
+                if(jqBrrEdfFJ > 1000) { return; }
+
+                jqBrrEdfFJ = jqBrrEdfFJ * 2;
+                return setTimeout(xUJUEDXcx, jqBrrEdfFJ);
+            }
+
+            /** Удаляем из списка элемент */
+            centrifuge.newSubscription("remove").on("publication", function(ctx)
+            {
+                if(ctx.data.profile === '{{ current_profile }}')
+                {
+                    return;
+                }
+
+                let $identifier = document.getElementById(ctx.data.identifier);
+
+                if($identifier)
+                {
+                    $identifier.remove();
+                }
+
+            }).subscribe();
+
+        }, 100);
+
+
+    });
+
+</script>
+
 {% endblock %}
 
 

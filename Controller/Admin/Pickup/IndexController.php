@@ -31,6 +31,7 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
+use BaksDev\Orders\Order\Forms\Canceled\CanceledOrdersForm;
 use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterDTO;
 use BaksDev\Products\Stocks\Forms\PickupFilter\Admin\ProductStockPickupFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPickup\AllProductStocksPickupInterface;
@@ -62,17 +63,17 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.index')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.index')],
             )
             ->handleRequest($request);
 
         // Фильтр
-        $filter = new ProductStockPickupFilterDTO($request);
+
         $filterForm = $this
             ->createForm(
                 type: ProductStockPickupFilterForm::class,
-                data: $filter,
-                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.index')]
+                data: $filter = new ProductStockPickupFilterDTO($request),
+                options: ['action' => $this->generateUrl('products-stocks:admin.pickup.index')],
             )
             ->handleRequest($request);
 
@@ -105,7 +106,8 @@ final class IndexController extends AbstractController
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
                 'add_selected_form_name' => $this->createForm(type: CompletedSelectedProductStockForm::class)->getName(),
-            ]
+                'cancel_order_form_name' => $this->createForm(type: CanceledOrdersForm::class)->getName(),
+            ],
         );
     }
 }

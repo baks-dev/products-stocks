@@ -48,7 +48,7 @@ final class MovingController extends AbstractController
     #[Route('/admin/product/stock/moving/new', name: 'admin.moving.new', methods: ['GET', 'POST'])]
     public function moving(
         Request $request,
-        MovingProductStockHandler $handler,
+        MovingProductStockHandler $MovingProductStockHandler,
         ProductWarehouseTotalInterface $productWarehouseTotal,
         ProductDetailByConstInterface $productDetailByConst
     ): Response
@@ -72,12 +72,18 @@ final class MovingController extends AbstractController
 
             $success = true;
 
-            /** Создаем каждое отдельно перемещение */
+            /**
+             * Создаем каждое отдельно перемещение
+             */
+
             /** @var ProductStockDTO $move */
             foreach($movingDTO->getMove() as $move)
             {
-                /** Проверяем, что на складе не изменилось доступное количество */
-                /** @var ProductStockProductDTO $product */
+                /**
+                 * Проверяем, что на складе не изменилось доступное количество
+                 *
+                 * @var ProductStockProductDTO $product
+                 */
                 foreach($move->getProduct() as $product)
                 {
                     $ProductStockTotal = $productWarehouseTotal->getProductProfileTotal(
@@ -137,11 +143,12 @@ final class MovingController extends AbstractController
 
                 $move->setComment($movingDTO->getComment());
 
-                $ProductStock = $handler->handle($move);
+                $ProductStock = $MovingProductStockHandler->handle($move);
 
-                if(!$ProductStock instanceof ProductStock)
+                if(false === ($ProductStock instanceof ProductStock))
                 {
                     $success = false;
+
                     $this->addFlash(
                         type: 'danger',
                         message: 'danger.move',

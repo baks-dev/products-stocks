@@ -20,15 +20,21 @@
 
         {# Отмена заказа #}
         {% if item.orderId and (is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN')) %}
-            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('orders-order:admin.order.canceled', { id: item.orderId }) }}"
-                   class="text-decoration-none text-dark w-100 modal-link disabled"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
-                   title="{{ 'btn.delete'|trans({}, 'core.btn') }}">
-                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
-                </a>
-            </li>
+            <a
+                    href="{{ path('orders-order:admin.order.canceled') }}"
+                    class="text-decoration-none text-dark w-100 modal-link disabled"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal"
+
+                    data-method="post"
+                    data-post-class="add-one-to-collection" {# признак одного элемента #}
+                    data-formname="{{ cancel_order_form_name }}" {# Название формы #}
+                    data-collection-form="orders" {# name коллекции из DTO #}
+                    data-id="{{ item.orderId }}"
+
+                    title="Отменить заказа">
+                {{ 'btn.cancel'|trans({}, 'core.btn') }}
+            </a>
         {% endif %}
 
     </ul>
