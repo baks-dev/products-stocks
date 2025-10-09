@@ -739,7 +739,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             $dbal->addOrderBy('stock_product.total');
         }
 
-
         if($this->limit)
         {
             $this->paginator->setLimit($this->limit);
