@@ -79,7 +79,7 @@ final class MovingProductStockForm extends AbstractType
          *
          * @var ProductUid $product
          */
-        $builder->add('preProduct', TextType::class, /*['attr' => ['disabled' => true]]*/);
+        $builder->add('preProduct', TextType::class, ['attr' => ['disabled' => true]]);
 
         $productChoiceWarehouse = $this->productChoiceWarehouse->getProductsExistWarehouse($this->user);
 
