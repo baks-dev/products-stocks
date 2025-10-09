@@ -116,7 +116,7 @@ final class MovingProductStockDTO
         return $this->preOffer;
     }
 
-    public function setPreOffer(ProductOfferConst $offer): self
+    public function setPreOffer(?ProductOfferConst $offer): self
     {
         $this->preOffer = $offer;
         return $this;

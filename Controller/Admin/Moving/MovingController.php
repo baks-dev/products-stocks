@@ -53,8 +53,7 @@ final class MovingController extends AbstractController
         ProductDetailByConstInterface $productDetailByConst
     ): Response
     {
-        $movingDTO = new MovingProductStockDTO($this->getUsr())
-            ->setDestinationWarehouse($this->getProfileUid());
+        $movingDTO = new MovingProductStockDTO($this->getUsr())->setDestinationWarehouse($this->getProfileUid());
 
         // Форма заявки
         $form = $this
@@ -64,7 +63,6 @@ final class MovingController extends AbstractController
                 options: ['action' => $this->generateUrl('products-stocks:admin.moving.new')],
             )
             ->handleRequest($request);
-
 
         if($form->isSubmitted() && $form->isValid() && $form->has('moving'))
         {
@@ -167,8 +165,7 @@ final class MovingController extends AbstractController
                 );
             }
 
-            return $this->redirectToRoute('products-stocks:admin.moving.index');
-
+            return $this->redirectToReferer();
         }
 
         return $this->render(['form' => $form->createView()]);
