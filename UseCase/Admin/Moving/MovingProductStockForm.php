@@ -121,7 +121,6 @@ final class MovingProductStockForm extends AbstractType
             );
         }
 
-
         /**
          * Торговые предложения
          *
@@ -198,10 +197,10 @@ final class MovingProductStockForm extends AbstractType
             ],
         );
 
+
         $builder->get('preModification')->addEventListener(
             FormEvents::POST_SUBMIT,
             function(FormEvent $event): void {
-
                 $parent = $event->getForm()->getParent();
 
                 if(!$parent)
@@ -213,6 +212,14 @@ final class MovingProductStockForm extends AbstractType
                 $offer = $parent->get('preOffer')->getData();
                 $variation = $parent->get('preVariation')->getData();
                 $modification = $parent->get('preModification')->getData();
+
+                /** Присваиваем значения для заполнения формы выбранными значениями */
+                $MovingProductStockDTO = $parent->getData();
+                $MovingProductStockDTO->setPreProduct($product);
+                $MovingProductStockDTO->setPreOffer($offer);
+                $MovingProductStockDTO->setPreVariation($variation);
+                $MovingProductStockDTO->setPreModification($modification);
+
 
                 if($product)
                 {
@@ -306,6 +313,7 @@ final class MovingProductStockForm extends AbstractType
             ->product($product)
             ->getProductsOfferExistWarehouse();
 
+
         // Если у продукта нет ТП
         if(!$offer->valid())
         {
@@ -367,6 +375,7 @@ final class MovingProductStockForm extends AbstractType
                         return $attr;
 
                     },
+                    'attr' => ['data-select' => 'select2'],
                     'label' => $label,
                     'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
@@ -437,6 +446,7 @@ final class MovingProductStockForm extends AbstractType
 
                         return $attr;
                     },
+                    'attr' => ['data-select' => 'select2'],
                     'label' => $label,
                     'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
@@ -516,8 +526,7 @@ final class MovingProductStockForm extends AbstractType
 
                         return $attr;
                     },
-
-
+                    'attr' => ['data-select' => 'select2'],
                     'label' => $label,
                     'translation_domain' => $domain,
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
