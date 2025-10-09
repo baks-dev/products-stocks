@@ -148,7 +148,7 @@ final class MovingController extends AbstractController
                     $success = false;
 
                     $this->addFlash(
-                        type: 'danger',
+                        type: 'page.moving',
                         message: 'danger.move',
                         domain: 'products-stocks.admin',
                         arguments: $ProductStock,
@@ -159,13 +159,13 @@ final class MovingController extends AbstractController
             if($success)
             {
                 $this->addFlash(
-                    type: 'success',
+                    type: 'page.moving',
                     message: 'success.move',
                     domain: 'products-stocks.admin',
                 );
             }
 
-            return $this->redirectToReferer();
+            return $this->redirectToRoute('products-stocks:admin.moving.index', status: 400);
         }
 
         return $this->render(['form' => $form->createView()]);
