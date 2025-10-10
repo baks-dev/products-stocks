@@ -55,6 +55,20 @@ executeFunc((function productMovingForm()
                 document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
             }
 
+
+            /* Имя формы */
+            let forms = document.forms.moving_product_stock_form;
+
+            /* событие отправки формы */
+            forms.addEventListener("submit", function(event)
+            {
+                event.preventDefault();
+                submitModalForm(forms);
+                return true;
+            });
+
+            return true;
+
             return;
         }
 
