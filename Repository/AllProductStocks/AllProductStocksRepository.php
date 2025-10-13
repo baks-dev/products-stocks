@@ -219,6 +219,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('product_offer.id as product_offer_uid')
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->addSelect('product_offer.const as product_offer_const')
             ->leftJoin(
                 'product_event',
                 ProductOffer::class,
@@ -249,6 +250,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('product_variation.id as product_variation_uid')
             ->addSelect('product_variation.value as product_variation_value')
             ->addSelect('product_variation.postfix as product_variation_postfix')
+            ->addSelect('product_variation.const as product_variation_const')
             ->leftJoin(
                 'product_offer',
                 ProductVariation::class,
@@ -282,6 +284,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->addSelect('product_modification.id as product_modification_uid')
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.postfix as product_modification_postfix')
+            ->addSelect('product_modification.const as product_modification_const')
             ->leftJoin(
                 'product_variation',
                 ProductModification::class,
@@ -711,7 +714,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 $dbal->addOrderBy('CASE WHEN product_modification.id IN (:uuids)  THEN 0 ELSE 1 END');
             }
 
-
             if($resultProducts === false)
             {
                 $dbal
@@ -738,7 +740,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             $dbal->addOrderBy('product_modification.value');
             $dbal->addOrderBy('stock_product.total');
         }
-
 
         if($this->limit)
         {

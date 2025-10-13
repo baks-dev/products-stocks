@@ -8,12 +8,29 @@
             {# Пользовательское меню #}
             {{ include(_self|replace({ "storage.html.twig": "_usecase.html.twig" })) }}
         {% else %}
-            &nbsp;
+            <button
+                    data-href="{{ path('products-stocks:admin.moving.new') }}"
+                    class="btn moving"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal"
+                    data-pre-product="{{ item.productId }}"
+                    data-pre-offer="{{ item.productOfferConst }}"
+                    data-pre-variation="{{ item.productVariationConst }}"
+                    data-pre-modification="{{ item.productModificationConst }}"
+                    data-target-warehouse="{{ item.usersProfileId }}"
+                    data-destination-warehouse="{{ app.user.profile }}"
+                    data-method="post"
+                    data-formname="moving_product_stock_form"
+                    data-post-class="add-one-to-collection"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                </svg>
+            </button>
         {% endif %}
     </td>
 
     <td>
-
         <div class="d-flex align-items-center gap-3">
 
             {% if item.stockPriority %}
