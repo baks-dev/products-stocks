@@ -49,10 +49,13 @@ executeFunc((function productMovingForm()
                 $addButtonStock.addEventListener("click", addProductMoving, false);
             }
 
-            /** Если есть предзаполненные данные - уснавлиаем max у поля preTotal */
+
+            /** Если есть предзаполненные данные по продукту - вешаем событие на определение max у поля preTotal */
+            let object_warehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+
             if(object_product.value)
             {
-                document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
+                object_warehouse.addEventListener("change", changeObjectWarehouse, false);
             }
 
 
@@ -67,9 +70,19 @@ executeFunc((function productMovingForm()
                 return true;
             });
 
-            return true;
+            /** Если есть предзаполненные данные по складу отгрузки - определяем max у поля preTotal */
+            if(object_warehouse.value)
+            {
+                let index = object_warehouse.selectedIndex;
+                document.getElementById("moving_product_stock_form_preTotal").setAttribute("max", object_warehouse.options[index].dataset.max);
 
-            return;
+                setTimeout(function()
+                {
+                    let focusTotal = document.getElementById("moving_product_stock_form_preTotal");
+                }, 100);
+            }
+
+            return true;
         }
 
         if(limit_nWgkuzbCRs > 1000)
@@ -147,7 +160,7 @@ executeFunc((function productMovingForm()
 
                             /** SELECT2 */
                             let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehause, false);
+                            replacer.addEventListener("change", changeObjectWarehouse, false);
 
                             if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                             {
@@ -181,75 +194,8 @@ executeFunc((function productMovingForm()
     }
 
 
-    function _changeObjectProduct()
-    {
-        let replaceId = "moving_product_stock_form_preOffer";
-
-
-        /* Создаём объект класса XMLHttpRequest */
-        const requestModalName = new XMLHttpRequest();
-        requestModalName.responseType = "document";
-
-        /* Имя формы */
-        let MovingForm = document.forms.moving_product_stock_form;
-        let formData = new FormData();
-
-        formData.append(this.getAttribute("name"), this.value);
-
-        requestModalName.open(MovingForm.getAttribute("method"), MovingForm.getAttribute("action"), true);
-
-        /* Указываем заголовки для сервера */
-        requestModalName.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-        /* Получаем ответ от сервера на запрос*/
-        requestModalName.addEventListener("readystatechange", function()
-        {
-            /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-            if(requestModalName.readyState === 4 && requestModalName.status === 200)
-            {
-                let result = requestModalName.response.getElementById("preOffer");
-
-                document.getElementById("preOffer").replaceWith(result);
-
-                let replacer = document.getElementById(replaceId);
-
-                if(replacer.tagName === "SELECT")
-                {
-                    new NiceSelect(replacer, {searchable: true, id: "select2-" + replaceId});
-
-                    /** Событие на изменение торгового предложения */
-                    let offerChange = document.getElementById("moving_product_stock_form_preOffer");
-
-                    if(offerChange)
-                    {
-                        offerChange.addEventListener("change", changeObjectOffer, false);
-                    }
-                }
-
-
-                /** Изменияем список целевых складов */
-                let warehouse = requestModalName.response.getElementById("targetWarehouse");
-                document.getElementById("targetWarehouse").replaceWith(warehouse);
-                document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
-                new NiceSelect(document.getElementById("moving_product_stock_form_targetWarehouse"), {
-                    searchable: true,
-                    id: "select2-" + replaceId,
-                });
-
-
-            }
-
-            return false;
-        });
-
-        requestModalName.send(formData);
-    }
-
-
     async function changeObjectOffer(forms)
     {
-
-
         const data = new FormData(forms);
         data.delete(forms.name + "[_token]");
 
@@ -321,7 +267,7 @@ executeFunc((function productMovingForm()
 
                             /** SELECT2 */
                             let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehause, false);
+                            replacer.addEventListener("change", changeObjectWarehouse, false);
 
                             if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                             {
@@ -334,74 +280,6 @@ executeFunc((function productMovingForm()
                     preModification ? preModification.innerHTML = "" : null;
                 }
             });
-    }
-
-
-    function _changeObjectOffer()
-    {
-        let replaceId = "moving_product_stock_form_preVariation";
-
-        /* Создаём объект класса XMLHttpRequest */
-        const requestModalName = new XMLHttpRequest();
-        requestModalName.responseType = "document";
-
-        /* Имя формы */
-        let MovingForm = document.forms.moving_product_stock_form;
-        let formData = new FormData();
-        formData.append(this.getAttribute("name"), this.value);
-
-        /** Продукт */
-        const product = document.getElementById("moving_product_stock_form_preProduct");
-        formData.append(product.getAttribute("name"), product.value);
-
-        /** Торговое предложенеи */
-        requestModalName.open(MovingForm.getAttribute("method"), MovingForm.getAttribute("action"), true);
-
-        /* Указываем заголовки для сервера */
-        requestModalName.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-        /* Получаем ответ от сервера на запрос*/
-        requestModalName.addEventListener("readystatechange", function()
-        {
-            /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-            if(requestModalName.readyState === 4 && requestModalName.status === 200)
-            {
-                let result = requestModalName.response.getElementById("preVariation");
-
-                document.getElementById("preVariation").replaceWith(result);
-
-                let replacer = document.getElementById(replaceId);
-
-                if(replacer.tagName === "SELECT")
-                {
-                    new NiceSelect(document.getElementById(replaceId), {searchable: true, id: "select2-" + replaceId});
-
-                    /** Событие на изменение множественного варианта предложения */
-                    let offerVariation = document.getElementById("moving_product_stock_form_preVariation");
-
-                    if(offerVariation)
-                    {
-                        offerVariation.addEventListener("change", changeObjectVariation, false);
-                    }
-                }
-
-
-                /** Изменияем список целевых складов */
-                let warehouse = requestModalName.response.getElementById("targetWarehouse");
-                document.getElementById("targetWarehouse").replaceWith(warehouse);
-                document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
-                new NiceSelect(document.getElementById("moving_product_stock_form_targetWarehouse"), {
-                    searchable: true,
-                    id: "select2-" + replaceId,
-                });
-
-
-            }
-
-            return false;
-        });
-
-        requestModalName.send(formData);
     }
 
 
@@ -476,7 +354,7 @@ executeFunc((function productMovingForm()
 
                             /** SELECT2 */
                             let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehause, false);
+                            replacer.addEventListener("change", changeObjectWarehouse, false);
 
                             if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                             {
@@ -488,86 +366,8 @@ executeFunc((function productMovingForm()
             });
     }
 
-
-    function _changeObjectVariation()
-    {
-
-        let replaceId = "moving_product_stock_form_preModification";
-
-        /* Создаём объект класса XMLHttpRequest */
-        const requestModalName = new XMLHttpRequest();
-        requestModalName.responseType = "document";
-
-        /* Имя формы */
-        let MovingForm = document.forms.moving_product_stock_form;
-        let formData = new FormData();
-        formData.append(this.getAttribute("name"), this.value);
-
-        /** Продукт */
-        const product = document.getElementById("moving_product_stock_form_preProduct");
-        formData.append(product.getAttribute("name"), product.value);
-
-        /** Торговое предложенеи */
-        const offer = document.getElementById("moving_product_stock_form_preOffer");
-        formData.append(offer.getAttribute("name"), offer.value);
-
-        /** Множественный вариант */
-        requestModalName.open(MovingForm.getAttribute("method"), MovingForm.getAttribute("action"), true);
-
-        /* Указываем заголовки для сервера */
-        requestModalName.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-        /* Получаем ответ от сервера на запрос*/
-        requestModalName.addEventListener("readystatechange", function()
-        {
-            /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-            if(requestModalName.readyState === 4 && requestModalName.status === 200)
-            {
-
-                let result = requestModalName.response.getElementById("preModification");
-
-                document.getElementById("preModification").replaceWith(result);
-
-                let replacer = document.getElementById(replaceId);
-
-                if(replacer.tagName === "SELECT")
-                {
-                    new NiceSelect(document.getElementById(replaceId), {searchable: true, id: "select2-" + replaceId});
-
-                    /** Событие на изменение модификации множественного варианта предложения */
-                    let offerModification = document.getElementById("moving_product_stock_form_preModification");
-
-                    if(offerModification)
-                    {
-                        offerModification.addEventListener("change", changeObjectModification, false);
-                    }
-                }
-
-
-                /** Изменияем список целевых складов */
-                let warehouse = requestModalName.response.getElementById("targetWarehouse");
-                document.getElementById("targetWarehouse").replaceWith(warehouse);
-                document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
-                new NiceSelect(document.getElementById("moving_product_stock_form_targetWarehouse"), {
-                    searchable: true,
-                    id: "select2-" + replaceId,
-                });
-
-
-            }
-
-            return false;
-        });
-
-        requestModalName.send(formData);
-
-    }
-
-
     async function changeObjectModification(forms)
     {
-
-
         const data = new FormData(forms);
         data.delete(forms.name + "[_token]");
 
@@ -617,7 +417,7 @@ executeFunc((function productMovingForm()
 
                         /** SELECT2 */
                         let replacer = document.getElementById("moving_product_stock_form_targetWarehouse");
-                        replacer.addEventListener("change", changeObjectWarehause, false);
+                        replacer.addEventListener("change", changeObjectWarehouse, false);
 
                         if(replacer && replacer.tagName === "SELECT")
                         {
@@ -635,72 +435,7 @@ executeFunc((function productMovingForm()
     }
 
 
-    function _changeObjectModification()
-    {
-
-        let replaceId = "moving_product_stock_form_targetWarehouse";
-
-        /* Создаём объект класса XMLHttpRequest */
-        const requestModalName = new XMLHttpRequest();
-        requestModalName.responseType = "document";
-
-        /* Имя формы */
-        let MovingForm = document.forms.moving_product_stock_form;
-        let formData = new FormData();
-        formData.append(this.getAttribute("name"), this.value);
-
-        /** Продукт */
-        const product = document.getElementById("moving_product_stock_form_preProduct");
-        formData.append(product.getAttribute("name"), product.value);
-
-        /** Торговое предложенеи */
-        const offer = document.getElementById("moving_product_stock_form_preOffer");
-        formData.append(offer.getAttribute("name"), offer.value);
-
-        /** Множественный вариант */
-        const variation = document.getElementById("moving_product_stock_form_preVariation");
-        formData.append(variation.getAttribute("name"), variation.value);
-
-        /** Модификация */
-        requestModalName.open(MovingForm.getAttribute("method"), MovingForm.getAttribute("action"), true);
-
-        /* Указываем заголовки для сервера */
-        requestModalName.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-        /* Получаем ответ от сервера на запрос*/
-        requestModalName.addEventListener("readystatechange", function()
-        {
-            /* request.readyState - возвращает текущее состояние объекта XHR(XMLHttpRequest) */
-            if(requestModalName.readyState === 4 && requestModalName.status === 200)
-            {
-
-                let result = requestModalName.response.getElementById("targetWarehouse");
-
-                document.getElementById("targetWarehouse").replaceWith(result);
-
-                let replacer = document.getElementById(replaceId);
-
-
-                /** Изменить максимально допустимое количество */
-
-                document.getElementById("moving_product_stock_form_targetWarehouse").addEventListener("change", changeObjectWarehause, false);
-
-                if(replacer.tagName === "SELECT")
-                {
-                    new NiceSelect(document.getElementById(replaceId), {searchable: true, id: "select2-" + replaceId});
-                }
-
-
-            }
-
-            return false;
-        });
-
-        requestModalName.send(formData);
-    }
-
-
-    function changeObjectWarehause()
+    function changeObjectWarehouse()
     {
         let index = this.selectedIndex;
         document.getElementById("moving_product_stock_form_preTotal").setAttribute("max", this.options[index].dataset.max);
@@ -717,7 +452,6 @@ executeFunc((function productMovingForm()
 
     function addProductMoving()
     {
-
         /* Блок для новой коллекции КАТЕГОРИИ */
         let $blockCollectionStock = document.getElementById("collectionStock");
 

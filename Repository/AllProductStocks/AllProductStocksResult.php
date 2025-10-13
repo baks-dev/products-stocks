@@ -35,45 +35,48 @@ use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Reference\Money\Type\Money;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-final class AllProductStocksResult implements ProductPriceResultInterface
+final readonly class AllProductStocksResult implements ProductPriceResultInterface
 {
     public function __construct(
-        private readonly string $stock_id, //" => "01960a8a-600d-7b9c-923b-389ad9cc3e8d"
-        private readonly ?int $stock_total, //" => 1100
-        private readonly ?string $stock_storage, //" => null
-        private readonly ?int $stock_reserve, //" => 4
-        private readonly ?string $stock_comment, //" => null
-        private readonly ?bool $stock_priority, //" => null
+        private string $stock_id, //" => "01960a8a-600d-7b9c-923b-389ad9cc3e8d"
+        private ?int $stock_total, //" => 1100
+        private ?string $stock_storage, //" => null
+        private ?int $stock_reserve, //" => 4
+        private ?string $stock_comment, //" => null
+        private ?bool $stock_priority, //" => null
 
-        private readonly string $users_profile_id, //" => "019577a9-71a3-714b-a99c-0386833d802f"
-        private readonly string $product_id, //" => "01876b34-ed23-7c18-ba48-9071e8646a08"
-        private readonly string $product_event, //" => "01963548-294f-71a6-b4b5-705cc4c470bd"
-        private readonly string $product_url, //" => "triangle_advantex_tc101"
-        private readonly string $product_name, //" => "Triangle AdvanteX TC101"
-        private readonly ?string $product_offer_uid, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
-        private readonly ?string $product_offer_value, //" => "15"
-        private readonly ?string $product_offer_postfix, //" => null
-        private readonly ?string $product_offer_reference, //" => "tire_radius_field"
-        private readonly ?string $product_variation_uid, //" => "01963548-2954-7b9a-a892-858b6f133327"
-        private readonly ?string $product_variation_value, //" => "185"
-        private readonly ?string $product_variation_postfix, //" => null
-        private readonly ?string $product_variation_reference, //" => "tire_width_field"
-        private readonly ?string $product_modification_uid, //" => "01963548-2954-7b9a-a892-858b6fae243f"
-        private readonly ?string $product_modification_value, //" => "55"
-        private readonly ?string $product_modification_postfix, //" => "82V"
-        private readonly ?string $product_modification_reference, //" => "tire_profile_field"
-        private readonly ?string $product_article, //" => "TC101-15-185-55-82V"
-        private readonly ?int $product_price, //" => 490000
+        private string $users_profile_id, //" => "019577a9-71a3-714b-a99c-0386833d802f"
+        private string $product_id, //" => "01876b34-ed23-7c18-ba48-9071e8646a08"
+        private string $product_event, //" => "01963548-294f-71a6-b4b5-705cc4c470bd"
+        private string $product_url, //" => "triangle_advantex_tc101"
+        private string $product_name, //" => "Triangle AdvanteX TC101"
+        private ?string $product_offer_uid, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
+        private ?string $product_offer_value, //" => "15"
+        private ?string $product_offer_postfix, //" => null
+        private ?string $product_offer_reference, //" => "tire_radius_field"
+        private ?string $product_offer_const, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
+        private ?string $product_variation_uid, //" => "01963548-2954-7b9a-a892-858b6f133327"
+        private ?string $product_variation_value, //" => "185"
+        private ?string $product_variation_postfix, //" => null
+        private ?string $product_variation_reference, //" => "tire_width_field"
+        private ?string $product_variation_const, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
+        private ?string $product_modification_uid, //" => "01963548-2954-7b9a-a892-858b6fae243f"
+        private ?string $product_modification_value, //" => "55"
+        private ?string $product_modification_postfix, //" => "82V"
+        private ?string $product_modification_reference, //" => "tire_profile_field"
+        private ?string $product_modification_const, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
+        private ?string $product_article, //" => "TC101-15-185-55-82V"
+        private ?int $product_price, //" => 490000
 
-        private readonly ?string $product_image, //" => "/upload/product_photo/6c0003c59af4454b3e3697ddec435f3f"
-        private readonly ?string $product_image_ext, //" => "webp"
-        private readonly ?bool $product_image_cdn, //" => true
+        private ?string $product_image, //" => "/upload/product_photo/6c0003c59af4454b3e3697ddec435f3f"
+        private ?string $product_image_ext, //" => "webp"
+        private ?bool $product_image_cdn, //" => true
 
-        private readonly string $category_name, //" => "Triangle"
-        private readonly string $category_url, //" => "triangle"
+        private string $category_name, //" => "Triangle"
+        private string $category_url, //" => "triangle"
 
-        private readonly string $users_profile_username, //" => "admin"
-        private readonly ?string $users_profile_location, //" => null
+        private string $users_profile_username, //" => "admin"
+        private ?string $users_profile_location, //" => null
 
         private string|null $profile_discount = null,
         private string|null $project_discount = null,
@@ -289,5 +292,18 @@ final class AllProductStocksResult implements ProductPriceResultInterface
         return $this->stock_priority === true;
     }
 
+    public function getProductOfferConst(): ?string
+    {
+        return $this->product_offer_const;
+    }
 
+    public function getProductVariationConst(): ?string
+    {
+        return $this->product_variation_const;
+    }
+
+    public function getProductModificationConst(): ?string
+    {
+        return $this->product_modification_const;
+    }
 }
