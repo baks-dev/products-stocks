@@ -31,6 +31,7 @@ use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Users\Profile\UserProfile\Repository\CurrentAllUserProfiles\CurrentAllUserProfilesByUserInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Symfony\Component\Form\AbstractType;
@@ -53,7 +54,9 @@ final class ProductStockMoveFilterForm extends AbstractType
 
     public function __construct(
         private readonly RequestStack $request,
-        private readonly CurrentAllUserProfilesByUserInterface $CurrentAllUserProfilesByUserRepository
+        private readonly CurrentAllUserProfilesByUserInterface $CurrentAllUserProfilesByUserRepository,
+        private readonly UserTokenStorageInterface $UserTokenStorageRepository,
+
     )
     {
         $this->sessionKey = md5(self::class);
@@ -61,9 +64,11 @@ final class ProductStockMoveFilterForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $UserUid = $this->UserTokenStorageRepository->getUser();
+
         /* TextType */
         $builder->add('profile', ChoiceType::class, [
-            'choices' => $this->CurrentAllUserProfilesByUserRepository->findAll(),
+            'choices' => $this->CurrentAllUserProfilesByUserRepository->forUser($UserUid)->findAll(),
             'choice_value' => function(mixed $profile) {
                 return $profile;
             },
