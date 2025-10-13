@@ -59,16 +59,16 @@ executeFunc((function productMovingForm()
             }
 
 
-            /* Имя формы */
-            let forms = document.forms.moving_product_stock_form;
-
-            /* событие отправки формы */
-            forms.addEventListener("submit", function(event)
-            {
-                event.preventDefault();
-                submitModalForm(forms);
-                return true;
-            });
+            ///* Имя формы */
+            //let forms = document.forms.moving_product_stock_form;
+            //
+            ///* событие отправки формы */
+            //forms.addEventListener("submit", function(event)
+            //{
+            //    event.preventDefault();
+            //    submitModalForm(forms);
+            //    return true;
+            //});
 
             /** Если есть предзаполненные данные по складу отгрузки - определяем max у поля preTotal */
             if(object_warehouse.value)

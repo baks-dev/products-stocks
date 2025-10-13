@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -75,7 +75,9 @@ final class ExtraditionSelectedController extends AbstractController
         foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
         {
 
-            $productStockEventEntity = $productStocksEvent->forEvent($ExtraditionProductStockDTO->getEvent())->find();
+            $productStockEventEntity = $productStocksEvent
+                ->forEvent($ExtraditionProductStockDTO->getEvent())
+                ->find();
 
             /** Скрываем идентификатор у остальных пользователей */
             $publish
@@ -94,28 +96,51 @@ final class ExtraditionSelectedController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
+            $isSuccess = true;
+
             foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
             {
-
                 $handle = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
-                /** Скрываем идентификатор у всех пользователей */
-                $remove = $publish
-                    ->addData(['profile' => false]) // Скрывает у всех
-                    ->addData(['identifier' => (string) $handle->getId()])
-                    ->send('remove');
+                if($handle instanceof ProductStock)
+                {
+                    /** Скрываем идентификатор у всех пользователей */
+                    $isPublish = $publish
+                        ->addData(['profile' => false]) // Скрывает у всех
+                        ->addData(['identifier' => (string) $handle->getId()])
+                        ->send('remove');
 
-                $flash = $this->addFlash
+                    /** Если не удалось скрыть идентификатор по сокету - редиректим на страницу */
+                    if($isPublish === false)
+                    {
+                        $isSuccess = false;
+                    }
+
+                    continue;
+                }
+
+                /** Сообщение об ошибке */
+
+                $this->addFlash
                 (
-                    'page.package',
-                    $handle instanceof ProductStock ? 'success.extradition' : 'danger.extradition',
-                    'products-stocks.admin',
-                    $handle,
-                    $remove ? 200 : 302
+                    type: 'page.package',
+                    message: 'danger.extradition',
+                    domain: 'products-stocks.admin',
+                    arguments: $handle,
                 );
+
+                $isSuccess = false;
             }
 
-            return $flash ?: $this->redirectToRoute('products-stocks:admin.package.index');
+            $flash = $this->addFlash
+            (
+                type: 'page.package',
+                message: 'success.extradition',
+                domain: 'products-stocks.admin',
+                status: $isSuccess ? 200 : 302,
+            );
+
+            return $isSuccess && $flash ? $flash : $this->redirectToRoute('products-stocks:admin.package.index');
         }
 
 

@@ -165,7 +165,7 @@ final class MovingController extends AbstractController
                 );
             }
 
-            return $this->redirectToRoute('products-stocks:admin.moving.index', status: 400);
+            return $this->redirectToRoute('products-stocks:admin.moving.index', status: 200);
         }
 
         return $this->render(['form' => $form->createView()]);

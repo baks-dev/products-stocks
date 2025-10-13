@@ -33,9 +33,9 @@ use BaksDev\Users\User\Type\Id\UserUid;
 
 interface AllProductStocksInterface
 {
-    public function search(SearchDTO $search): static;
+    public function search(SearchDTO $search): self;
 
-    public function filter(ProductFilterDTO $filter): static;
+    public function filter(ProductFilterDTO $filter): self;
 
     public function forProfile(UserProfileUid|UserProfile $profile): self;
 

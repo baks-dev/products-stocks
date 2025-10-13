@@ -712,6 +712,10 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 $dbal->addOrderBy('CASE WHEN product_offer.id IN (:uuids) THEN 0 ELSE 1 END');
                 $dbal->addOrderBy('CASE WHEN product_variation.id IN (:uuids)  THEN 0 ELSE 1 END');
                 $dbal->addOrderBy('CASE WHEN product_modification.id IN (:uuids)  THEN 0 ELSE 1 END');
+
+                $dbal->addOrderBy('product_offer.value');
+                $dbal->addOrderBy('product_variation.value');
+                $dbal->addOrderBy('product_modification.value');
             }
 
             if($resultProducts === false)
@@ -732,9 +736,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         }
         else
         {
-            $dbal->addOrderBy('product.id');
-            $dbal->addOrderBy('stock_product.profile');
-
             $dbal->addOrderBy('product_offer.value');
             $dbal->addOrderBy('product_variation.value');
             $dbal->addOrderBy('product_modification.value');

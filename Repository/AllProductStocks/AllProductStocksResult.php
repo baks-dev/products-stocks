@@ -145,66 +145,66 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
 
     public function getProductOfferUid(): ?ProductOfferUid
     {
-        return new ProductOfferUid($this->product_offer_uid);
+        return $this->product_offer_uid ? new ProductOfferUid($this->product_offer_uid) : null;
     }
 
     public function getProductOfferValue(): ?string
     {
-        return $this->product_offer_value;
+        return $this->product_offer_value ?: null;
     }
 
     public function getProductOfferPostfix(): ?string
     {
-        return $this->product_offer_postfix;
+        return $this->product_offer_postfix ?: null;
     }
 
     public function getProductOfferReference(): ?string
     {
-        return $this->product_offer_reference;
+        return $this->product_offer_reference ?: null;
     }
 
     /** Variation */
 
     public function getProductVariationUid(): ?ProductVariationUid
     {
-        return new ProductVariationUid($this->product_variation_uid);
+        return $this->product_variation_uid ? new ProductVariationUid($this->product_variation_uid) : null;
     }
 
     public function getProductVariationValue(): ?string
     {
-        return $this->product_variation_value;
+        return $this->product_variation_value ?: null;
     }
 
     public function getProductVariationPostfix(): ?string
     {
-        return $this->product_variation_postfix;
+        return $this->product_variation_postfix ?: null;
     }
 
     public function getProductVariationReference(): ?string
     {
-        return $this->product_variation_reference;
+        return $this->product_variation_reference ?: null;
     }
 
     /** Modification */
 
     public function getProductModificationUid(): ?ProductModificationUid
     {
-        return new ProductModificationUid($this->product_modification_uid);
+        return $this->product_modification_uid ? new ProductModificationUid($this->product_modification_uid) : null;
     }
 
     public function getProductModificationValue(): ?string
     {
-        return $this->product_modification_value;
+        return $this->product_modification_value ?: null;
     }
 
     public function getProductModificationPostfix(): ?string
     {
-        return $this->product_modification_postfix;
+        return $this->product_modification_postfix ?: null;
     }
 
     public function getProductModificationReference(): ?string
     {
-        return $this->product_modification_reference;
+        return $this->product_modification_reference ?: null;
     }
 
 

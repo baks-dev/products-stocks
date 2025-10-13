@@ -23,7 +23,7 @@
                 {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
                     <button
                             data-href="{{ path('products-stocks:admin.moving.new') }}"
-                            class="btn btn-danger modal-link disabled"
+                            class="btn btn-danger disabled"
                             data-bs-toggle="modal"
                             data-bs-target="#modal"
                             title="Добавить перемещение">

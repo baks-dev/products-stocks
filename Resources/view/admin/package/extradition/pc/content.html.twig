@@ -108,6 +108,10 @@
                     {{ form_widget(form.collection|first.comment, { attr: { placeholder : 'Комментарий'} }) }}
                 </div>
 
+                {% for collection in form.collection %}
+                    {{ form_widget(form.collection) }}
+                {% endfor %}
+
             </div>
 
             <div class="alert alert-warning" role="alert">
@@ -140,3 +144,4 @@
 
         {{ form_end(form) }}
     </div>
+</div>
