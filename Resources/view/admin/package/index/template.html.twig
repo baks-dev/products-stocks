@@ -53,7 +53,7 @@
 
                 setTimeout(function CMMpMfGP()
                 {
-                    if(typeof centrifuge !== 'object')
+                    if(typeof centrifuge !== "object")
                     {
                         if(pBEuFDfsW > 1000) { return; }
 
@@ -62,7 +62,7 @@
                     }
 
                     /** Удаляем из списка тикет у других */
-                    centrifuge.newSubscription('remove').on('publication', function(ctx)
+                    centrifuge.newSubscription("remove").on("publication", function(ctx)
                     {
                         if(ctx.data.profile === '{{ current_profile }}')
                         {
@@ -81,13 +81,13 @@
                 }, 100);
 
              const form = document.forms.product_stock_package_filter_form;
-            form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
+            form.addEventListener("change", () => { setTimeout(() => { form.submit(); }, 300); });
 
         });
 
         function changeDatapicker(input)
         {
-            let forms = input.closest('form');
+            let forms = input.closest("form");
             forms.submit();
         }
 

@@ -57,23 +57,28 @@ use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
 {
+    private ?ProductFilterDTO $productFilter = null;
+
+    private ?ProductStockMoveFilterDTO $filter = null;
+
+    private ?SearchDTO $search = null;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
     ) {}
-
-    private ?ProductFilterDTO $filter = null;
-
-    private ?SearchDTO $search = null;
 
     public function search(SearchDTO $search): static
     {
@@ -81,7 +86,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
-    public function filter(ProductFilterDTO $filter): static
+    public function productFilter(ProductFilterDTO $filter): static
+    {
+        $this->productFilter = $filter;
+        return $this;
+    }
+
+    public function filter(ProductStockMoveFilterDTO $filter): static
     {
         $this->filter = $filter;
         return $this;
@@ -90,7 +101,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
     /**
      * Метод возвращает все заявки, требующие перемещения между складами
      */
-    public function fetchAllProductStocksAssociative(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(UserProfileUid $profile): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -107,7 +118,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ->setParameter(
                 'status',
                 new ProductStockStatus(new ProductStockStatusMoving()),
-                ProductStockStatus::TYPE
+                ProductStockStatus::TYPE,
             );
 
         $dbal
@@ -117,10 +128,28 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 ProductStocksInvariable::class,
                 'invariable',
-                'invariable.event = event.id'
-            )
-            ->andWhere('invariable.profile = :profile OR move.destination = :profile')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+                'invariable.event = event.id',
+            );
+
+        if($this->filter->getProfile() instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('
+                    (invariable.profile = :profile AND move.destination = :filter_profile)
+                    OR (invariable.profile = :filter_profile AND move.destination = :profile)
+                ')
+                ->setParameter('filter_profile',
+                    $this->filter->getProfile(),
+                    UserProfileUid::TYPE,
+                );
+        }
+        else
+        {
+            $dbal->andWhere('invariable.profile = :profile OR move.destination = :profile');
+        }
+
+        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+
 
         $dbal
             ->addSelect('stock.event AS is_warehouse')
@@ -128,7 +157,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 ProductStock::class,
                 'stock',
-                'stock.event = event.id'
+                'stock.event = event.id',
             );
 
 
@@ -139,7 +168,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = event.id'
+                'modify.event = event.id',
             );
 
 
@@ -150,7 +179,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = event.id'
+                'stock_product.event = event.id',
             );
 
 
@@ -162,7 +191,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -170,7 +199,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
         $dbal
@@ -179,7 +208,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_event',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         // Product Trans
@@ -189,7 +218,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         // Торговое предложение
@@ -202,13 +231,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
-        if($this->filter?->getOffer())
+        if($this->productFilter?->getOffer())
         {
             $dbal->andWhere('product_offer.value = :offer');
-            $dbal->setParameter('offer', $this->filter->getOffer());
+            $dbal->setParameter('offer', $this->productFilter->getOffer());
         }
 
         // Получаем тип торгового предложения
@@ -218,7 +247,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
 
@@ -232,14 +261,14 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
 
-        if($this->filter?->getVariation())
+        if($this->productFilter?->getVariation())
         {
             $dbal->andWhere('product_variation.value = :variation');
-            $dbal->setParameter('variation', $this->filter->getVariation());
+            $dbal->setParameter('variation', $this->productFilter->getVariation());
         }
 
         // Получаем тип множественного варианта
@@ -249,7 +278,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_offer_variation',
-                'category_offer_variation.id = product_variation.category_variation'
+                'category_offer_variation.id = product_variation.category_variation',
             );
 
         // Модификация множественного варианта торгового предложения
@@ -262,13 +291,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
             );
 
-        if($this->filter?->getModification())
+        if($this->productFilter?->getModification())
         {
             $dbal->andWhere('product_modification.value = :modification');
-            $dbal->setParameter('modification', $this->filter->getModification());
+            $dbal->setParameter('modification', $this->productFilter->getModification());
         }
 
 
@@ -279,7 +308,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'product_modification',
                 CategoryProductModification::class,
                 'category_offer_modification',
-                'category_offer_modification.id = product_modification.category_modification'
+                'category_offer_modification.id = product_modification.category_modification',
             );
 
         // Артикул продукта
@@ -302,7 +331,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             '
 			product_modification_image.modification = product_modification.id AND
 			product_modification_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -312,7 +341,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             '
 			product_variation_image.variation = product_variation.id AND
 			product_variation_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -323,7 +352,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 			product_variation_image.name IS NULL AND
 			product_offer_images.offer = product_offer.id AND
 			product_offer_images.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -334,7 +363,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 			product_offer_images.name IS NULL AND
 			product_photo.event = product_event.id AND
 			product_photo.root = true
-			'
+			',
         );
 
         $dbal->addSelect(
@@ -351,7 +380,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         // Расширение файла
@@ -367,7 +396,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 			   ELSE NULL
 			   
 			END AS product_image_ext
-		"
+		",
         );
 
         // Флаг загрузки файла CDN
@@ -382,7 +411,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 					product_photo.cdn
 			   ELSE NULL
 			END AS product_image_cdn
-		'
+		',
         );
 
         // Категория
@@ -390,20 +419,20 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             'product_event',
             ProductCategoryRoot::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true'
+            'product_event_category.event = product_event.id AND product_event_category.root = true',
         );
 
-        if($this->filter?->getCategory())
+        if($this->productFilter?->getCategory())
         {
             $dbal->andWhere('product_event_category.category = :category');
-            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
+            $dbal->setParameter('category', $this->productFilter->getCategory(), CategoryProductUid::TYPE);
         }
 
         $dbal->leftJoin(
             'product_event_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_event_category.category'
+            'category.id = product_event_category.category',
         );
 
 
@@ -413,7 +442,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'category',
                 CategoryProductTrans::class,
                 'category_trans',
-                'category_trans.event = category.event AND category_trans.local = :local'
+                'category_trans.event = category.event AND category_trans.local = :local',
             );
 
 
@@ -423,7 +452,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
 
 
@@ -435,7 +464,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = invariable.profile'
+                'users_profile.id = invariable.profile',
             );
 
         // Info
@@ -443,7 +472,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             'event',
             UserProfileInfo::class,
             'users_profile_info',
-            'users_profile_info.profile = users_profile.id'
+            'users_profile_info.profile = users_profile.id',
         );
 
 
@@ -454,7 +483,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'users_profile',
                 UserProfilePersonal::class,
                 'users_profile_personal',
-                'users_profile_personal.event = users_profile.event'
+                'users_profile_personal.event = users_profile.event',
             );
 
 
@@ -464,14 +493,14 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             'event',
             ProductStockMove::class,
             'move',
-            'move.event = event.id AND move.ord IS NULL'
+            'move.event = event.id AND move.ord IS NULL',
         );
 
         $dbal->leftJoin(
             'move',
             UserProfile::class,
             'users_profile_destination',
-            'users_profile_destination.id = move.destination'
+            'users_profile_destination.id = move.destination',
         );
 
 
@@ -482,7 +511,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'users_profile_destination',
                 UserProfilePersonal::class,
                 'users_profile_personal_destination',
-                'users_profile_personal_destination.event = users_profile_destination.event'
+                'users_profile_personal_destination.event = users_profile_destination.event',
             );
 
 
@@ -503,16 +532,15 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
                 (total.modification IS NULL OR total.modification = stock_product.modification) AND
                 total.total > 0
-            '
-            );
+            ');
 
         /**
          * Фильтр по свойства продукта
          */
-        if($this->filter->getProperty())
+        if($this->productFilter->getProperty())
         {
             /** @var ProductFilterPropertyDTO $property */
-            foreach($this->filter->getProperty() as $property)
+            foreach($this->productFilter->getProperty() as $property)
             {
                 if($property->getValue())
                 {
@@ -522,7 +550,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                         'product_property_'.$property->getType(),
                         'product_property_'.$property->getType().'.event = product.event AND 
                         product_property_'.$property->getType().'.field = :'.$property->getType().'_const AND 
-                        product_property_'.$property->getType().'.value = :'.$property->getType().'_value'
+                        product_property_'.$property->getType().'.value = :'.$property->getType().'_value',
                     );
 
                     $dbal->setParameter($property->getType().'_const', $property->getConst());
@@ -530,7 +558,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 }
             }
         }
-
 
         // Поиск
         if($this->search?->getQuery())
@@ -542,6 +569,18 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         /** Сортируем по дате, в первую очередь закрываем все старые заявки */
         $dbal->orderBy('modify.mod_date');
+
+        if($this->filter?->getDate())
+        {
+            $date = $this->filter->getDate() ?: new DateTimeImmutable();
+
+            $dbal
+                ->andWhere('DATE(modify.mod_date) BETWEEN :start AND :end')
+                ->setParameter('start', $date, Types::DATE_IMMUTABLE)
+                ->setParameter('end', $date, Types::DATE_IMMUTABLE);
+
+        }
+
 
         $dbal->allGroupByExclude();
 

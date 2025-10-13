@@ -30,6 +30,8 @@ use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
+use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
+use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
 use chillerlan\QRCode\QRCode;
 use Symfony\Component\HttpFoundation\Request;
@@ -64,12 +66,25 @@ final class IndexController extends AbstractController
         /**
          * Фильтр продукции по ТП
          */
-        $filter = new ProductFilterDTO();
+        $productFilter = new ProductFilterDTO()
+            ->hiddenMaterials();
+
+        $productFilterForm = $this
+            ->createForm(
+                type: ProductFilterForm::class,
+                data: $productFilter,
+                options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')],
+            )
+            ->handleRequest($request);
+
+
+        // Фильтр
+        $moveFilter = new ProductStockMoveFilterDTO();
 
         $filterForm = $this
             ->createForm(
-                type: ProductFilterForm::class,
-                data: $filter,
+                type: ProductStockMoveFilterForm::class,
+                data: $moveFilter,
                 options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')],
             )
             ->handleRequest($request);
@@ -77,14 +92,17 @@ final class IndexController extends AbstractController
         // Получаем список закупок ответственного лица
         $query = $allMove
             ->search($search)
-            ->filter($filter)
-            ->fetchAllProductStocksAssociative($this->getProfileUid());
+            ->productFilter($productFilter)
+            ->filter($moveFilter)
+            ->findPaginator($this->getProfileUid());
+
 
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                'product_filter' => $productFilterForm->createView(),
+                'move_filter' => $filterForm->createView(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
                 'current_profile' => $this->getCurrentProfileUid(),
             ],

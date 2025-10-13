@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -21,22 +21,43 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
+namespace BaksDev\Products\Stocks\Forms\MoveFilter\Admin;
 
-use BaksDev\Core\Form\Search\SearchDTO;
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
-use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
+use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
+use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
+use Symfony\Component\HttpFoundation\Request;
 
-interface AllProductStocksMoveInterface
+final class ProductStockMoveFilterDTO implements ProductStockPackageFilterInterface
 {
-    public function search(SearchDTO $search): self;
+    private ?UserProfileUid $profile = null;
 
-    public function productFilter(ProductFilterDTO $filter): self;
+    private ?DateTimeImmutable $date = null;
 
-    public function filter(ProductStockMoveFilterDTO $filter): self;
+    /**
+     * Date.
+     */
+    public function getDate(): ?DateTimeImmutable
+    {
+        return $this->date;
+    }
 
-    /** Метод возвращает все заявки, требующие перемещения между складами */
-    public function findPaginator(UserProfileUid $profile): PaginatorInterface;
+    public function setDate(?DateTimeImmutable $date): void
+    {
+        $this->date = $date;
+    }
+
+    public function getProfile(): ?UserProfileUid
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(?UserProfileUid $profile): self
+    {
+        $this->profile = $profile;
+        return $this;
+    }
+
 }

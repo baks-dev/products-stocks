@@ -164,9 +164,52 @@
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
 
                 {# Фильтр по продукции #}
-                <div class="w-100">
+                {# <div class="w-100">
                     {% include Template('@products-product/admin/filter/'~baks_settings.device~'/filter.html.twig') %}
+                </div> #}
+
+                {{ form_start(move_filter) }}
+
+                <div class="w-100 d-flex gap-2 justify-content-end" style="height: 55px;">
+
+                    <div class="w-25" style="min-width: 220px;">
+                        {{ form_row(move_filter.profile, { placeholder : 'Выберите склад ...', attr : { 'data-select' : 'select2' } }) }}
+                    </div>
+
+                    <div class="d-flex gap-1 justify-content-end" style="width: 150px;">
+
+                        {# НАЗАД #}
+                        {# {{ form_row(move_filter.back, { label: '
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                         viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"></path>
+                                    </svg>
+                        '}) }} #}
+
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+                                    <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(move_filter.date, { attr: { placeholder : 'Дата' } }) }}
+                        </div>
+
+
+                        {# ВПЕРЕД #}
+                        {# {{ form_row(move_filter.next, { label: '
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" class="fw-bolder">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"></path></svg>
+                        '}) }} #}
+                    </div>
+
                 </div>
+
+                {{ form_end(move_filter) }}
 
             </div>
 
