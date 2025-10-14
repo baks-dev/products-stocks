@@ -104,7 +104,7 @@ final class MovingProductStockDTO
         return $this->preProduct;
     }
 
-    public function setPreProduct(ProductUid $product): self
+    public function setPreProduct(?ProductUid $product): self
     {
         $this->preProduct = $product;
         return $this;
