@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Package;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
@@ -78,6 +79,15 @@ final class ExtraditionSelectedController extends AbstractController
             $productStockEventEntity = $productStocksEvent
                 ->forEvent($ExtraditionProductStockDTO->getEvent())
                 ->find();
+
+            if(false === ($productStockEventEntity instanceof ProductStockEvent))
+            {
+                $ExtraditionSelectedProductStockDTO->removeCollection($ExtraditionProductStockDTO);
+
+                continue;
+            }
+
+            $productStockEventEntity->getDto($ExtraditionProductStockDTO);
 
             /** Скрываем идентификатор у остальных пользователей */
             $publish
@@ -152,6 +162,7 @@ final class ExtraditionSelectedController extends AbstractController
                 'stock_numbers' => $stock_numbers,
             ]);
         }
+
 
         /** Выводим одну заявку */
         return $this->render(

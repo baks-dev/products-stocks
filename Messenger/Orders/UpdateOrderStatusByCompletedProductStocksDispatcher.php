@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -63,7 +63,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -94,7 +94,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             $this->logger
                 ->warning(
                     'Не обновляем статус заказа: Заявка на перемещение по заказу между складами (ожидаем сборку на целевом складе и доставки клиенту)',
-                    [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()]
+                    [self::class.':'.__LINE__, 'number' => $ProductStockEvent->getNumber()],
                 );
 
             return;
@@ -104,7 +104,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         {
             $this->logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -125,7 +125,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 
         $this->logger->info(
             'Обновляем статус заказа при доставке заказа в пункт назначения (выдан клиенту).',
-            [self::class.':'.__LINE__]
+            [self::class.':'.__LINE__],
         );
 
         $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
@@ -133,8 +133,9 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         $OrderStatusDTO = new OrderStatusDTO(
             OrderStatusCompleted::class,
             $CurrentOrderEvent->getId(),
-        );
-        $OrderStatusDTO->setProfile($UserProfileUid);
+        )
+            ->setProfile($UserProfileUid)
+            ->addComment($CurrentOrderEvent->getComment());
 
         $ModifyDTO = $OrderStatusDTO->getModify();
         $ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
@@ -145,7 +146,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         {
             $this->logger->critical(
                 'products-stocks: Ошибка при обновлении статуса заказа на Completed «Выдан по месту назначения»',
-                [$handle, self::class.':'.__LINE__, var_export($message, true),]
+                [$handle, self::class.':'.__LINE__, var_export($message, true),],
             );
 
             return;
@@ -164,8 +165,8 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
             [
                 self::class.':'.__LINE__,
                 'OrderUid' => (string) $ProductStockEvent->getOrder(),
-                'UserProfileUid' => (string) $UserProfileUid
-            ]
+                'UserProfileUid' => (string) $UserProfileUid,
+            ],
         );
 
     }

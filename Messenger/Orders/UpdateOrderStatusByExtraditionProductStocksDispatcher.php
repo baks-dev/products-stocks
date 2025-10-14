@@ -135,7 +135,8 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             status: OrderStatusExtradition::class,
             id: $CurrentOrderEvent->getId(),
         )
-            ->setProfile($UserProfileUid);
+            ->setProfile($UserProfileUid)
+            ->addComment($CurrentOrderEvent->getComment());
 
 
         /**

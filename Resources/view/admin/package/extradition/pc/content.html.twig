@@ -105,12 +105,17 @@
                 {% endfor %}
 
                 <div class="mt-3">
-                    {{ form_widget(form.collection|first.comment, { attr: { placeholder : 'Комментарий'} }) }}
+                    {% for collection in form.collection %}
+
+                        {{ form_widget(collection.comment, {
+                            attr: { placeholder : 'Комментарий' },
+                            value: collection.vars.data.comment
+                        }) }}
+
+                        {{ form_widget(collection.id) }}
+                    {% endfor %}
                 </div>
 
-                {% for collection in form.collection %}
-                    {{ form_widget(form.collection) }}
-                {% endfor %}
 
             </div>
 

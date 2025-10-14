@@ -28,6 +28,7 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use ReflectionProperty;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see MaterialStockEvent */
@@ -61,7 +62,10 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
 
     public function setId(ProductStockEventUid $id): void
     {
-        $this->id = $id;
+        if(false === new ReflectionProperty(self::class, 'id')->isInitialized($this))
+        {
+            $this->id = $id;
+        }
     }
 
 
