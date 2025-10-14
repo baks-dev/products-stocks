@@ -32,6 +32,7 @@ use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\Compl
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
@@ -75,6 +76,15 @@ final class CompletedSelectedController extends AbstractController
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
             $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
+
+            if(false === ($productStocksEventEntity instanceof ProductStockEvent))
+            {
+                $CompletedSelectedProductStockDTO->removeCollection($productStocksEventEntity);
+
+                continue;
+            }
+
+            $productStocksEventEntity->getDto($CompletedProductStockDTO);
 
             /** Скрываем идентификатор у остальных пользователей */
             $publish
