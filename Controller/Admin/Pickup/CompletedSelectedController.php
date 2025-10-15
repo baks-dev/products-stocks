@@ -72,8 +72,6 @@ final class CompletedSelectedController extends AbstractController
 
         $products = [];
 
-        $productStockEventEntity = null;
-
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
