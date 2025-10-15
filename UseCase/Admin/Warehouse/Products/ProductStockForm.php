@@ -66,10 +66,11 @@ final class ProductStockForm extends AbstractType
                 {
                     // Количество
                     $builder->add('total',
-                        IntegerType::class, ['attr' => ['min' => 1, 'max' => $data->getTotal()]]
+                        IntegerType::class,
+                        ['attr' => ['min' => 0, 'max' => $data->getTotal()]],
                     );
                 }
-            }
+            },
         );
     }
 
