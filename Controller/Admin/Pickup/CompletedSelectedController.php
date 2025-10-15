@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,6 +72,7 @@ final class CompletedSelectedController extends AbstractController
 
         $products = [];
 
+        $productStockEventEntity = null;
 
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
@@ -84,8 +86,6 @@ final class CompletedSelectedController extends AbstractController
                 continue;
             }
 
-            $productStocksEventEntity->getDto($CompletedProductStockDTO);
-
             /** Скрываем идентификатор у остальных пользователей */
             $publish
                 ->addData(['profile' => (string) $this->getCurrentProfileUid()])
@@ -98,34 +98,60 @@ final class CompletedSelectedController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_selected_package'))
         {
-
             $this->refreshTokenForm($form);
+
+            $isSuccess = true;
 
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
 
                 $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
 
-                /** Скрываем идентификатор у всех пользователей */
-                $remove = $publish
-                    ->addData(['profile' => false]) // Скрывает у всех
-                    ->addData(['identifier' => (string) $handle->getId()])
-                    ->send('remove');
+                if($handle instanceof ProductStock)
+                {
+                    /** Скрываем идентификатор у всех пользователей */
+                    $isPublish = $publish
+                        ->addData(['profile' => false]) // Скрывает у всех
+                        ->addData(['identifier' => (string) $handle->getId()])
+                        ->send('remove');
 
-                $flash = $this->addFlash
+                    /** Если не удалось скрыть идентификатор по сокету - редиректим на страницу */
+                    if($isPublish === false)
+                    {
+                        $isSuccess = false;
+                    }
+
+                    continue;
+                }
+
+                /** Сообщение об ошибке */
+
+                $this->addFlash
                 (
-                    'page.pickup',
-                    $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
-                    'products-stocks.admin',
-                    $handle,
-                    $remove ? 200 : 302,
+                    type: 'page.pickup',
+                    message: 'danger.pickup',
+                    domain: 'products-stocks.admin',
+                    arguments: $handle,
                 );
 
+                $isSuccess = false;
             }
-            return $flash ?: $this->redirectToRoute('products-stocks:admin.pickup.index');
 
+            $flash = $this->addFlash
+            (
+                type: 'page.package',
+                message: 'success.extradition',
+                domain: 'products-stocks.admin',
+                status: $isSuccess ? 200 : 302,
+            );
+
+            return $isSuccess && $flash ? $flash : $this->redirectToRoute('products-stocks:admin.pickup.index');
         }
 
+        if(true === $CompletedSelectedProductStockDTO->getCollection()->isEmpty())
+        {
+            throw new InvalidArgumentException('Page Not Found');
+        }
 
         /** Выводим несколько заказов */
         if($CompletedSelectedProductStockDTO->getCollection()->count() > 1)
