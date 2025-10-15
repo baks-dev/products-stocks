@@ -35,7 +35,7 @@
         {% endif %} #}
 
         {# Отмена #}
-        {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
+        {# {% if is_granted(ROLE~'_CANCEL') or is_granted('ROLE_ADMIN') %}
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-stocks:admin.cancel', { id: item.event }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
@@ -45,7 +45,7 @@
                     {{ 'btn.cancel'|trans({}, 'core.btn') }}
                 </a>
             </li>
-        {% endif %}
+        {% endif %} #}
 
     </ul>
 </div>
