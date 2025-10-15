@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
+use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -87,9 +88,6 @@ final class ExtraditionSelectedController extends AbstractController
 
                 continue;
             }
-
-            $ExtraditionProductStockDTO->setId($productStockEventEntity->getId());
-
 
             /** Скрываем идентификатор у остальных пользователей */
 
@@ -157,7 +155,7 @@ final class ExtraditionSelectedController extends AbstractController
 
         if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
         {
-            throw new \InvalidArgumentException('Page Not Found');
+            throw new InvalidArgumentException('Page Not Found');
         }
 
 
