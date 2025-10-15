@@ -60,12 +60,13 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         return $this->id;
     }
 
-    public function setId(ProductStockEventUid $id): void
+    public function setId(ProductStockEventUid $id): self
     {
         if(false === new ReflectionProperty(self::class, 'id')->isInitialized($this))
         {
             $this->id = $id;
         }
+        return $this;
     }
 
 
