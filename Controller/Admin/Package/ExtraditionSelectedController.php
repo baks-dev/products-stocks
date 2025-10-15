@@ -87,9 +87,11 @@ final class ExtraditionSelectedController extends AbstractController
                 continue;
             }
 
-            $productStockEventEntity->getDto($ExtraditionProductStockDTO);
+            $ExtraditionProductStockDTO->setId($productStockEventEntity->getId());
+
 
             /** Скрываем идентификатор у остальных пользователей */
+
             $publish
                 ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->addData(['identifier' => (string) $productStockEventEntity->getMain()])
@@ -98,7 +100,6 @@ final class ExtraditionSelectedController extends AbstractController
 
             $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
             $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
-
         }
 
 
