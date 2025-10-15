@@ -71,6 +71,7 @@ final class ExtraditionSelectedController extends AbstractController
 
         $products = [];
         $stock_numbers = [];
+        $productStockEventEntity = null;
 
         /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
         foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
@@ -154,6 +155,11 @@ final class ExtraditionSelectedController extends AbstractController
             return $isSuccess && $flash ? $flash : $this->redirectToRoute('products-stocks:admin.package.index');
         }
 
+        if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
+        {
+            throw new \InvalidArgumentException('Page Not Found');
+        }
+
 
         /** Выводим несколько заявок */
         if($ExtraditionSelectedProductStockDTO->getCollection()->count() > 1)
@@ -164,6 +170,10 @@ final class ExtraditionSelectedController extends AbstractController
             ]);
         }
 
+        if(true === ($productStockEventEntity instanceof ProductStockEvent))
+        {
+            $productStockEventEntity->getDto($ExtraditionProductStockDTO);
+        }
 
         /** Выводим одну заявку */
         return $this->render(
