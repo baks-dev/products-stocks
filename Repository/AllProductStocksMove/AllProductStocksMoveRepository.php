@@ -50,6 +50,7 @@ use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\Property\ProductFilterPropertyDTO;
+use BaksDev\Products\Product\Type\SearchTags\ProductSearchTag;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
@@ -60,11 +61,14 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Search\Index\SearchIndexInterface;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
@@ -75,9 +79,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
     private ?SearchDTO $search = null;
 
+    private UserProfileUid|false $profile = false;
+
     public function __construct(
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorageInterface,
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
+        private readonly ?SearchIndexInterface $SearchIndexHandler = null
     ) {}
 
     public function search(SearchDTO $search): static
@@ -98,10 +106,29 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
+    public function forProfile(UserProfileUid|UserProfile|false|null $profile): self
+    {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+
     /**
      * Метод возвращает все заявки, требующие перемещения между складами
      */
-    public function findPaginator(UserProfileUid $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -117,9 +144,10 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ->andWhere('event.status = :status ')
             ->setParameter(
                 'status',
-                new ProductStockStatus(new ProductStockStatusMoving()),
+                ProductStockStatusMoving::class,
                 ProductStockStatus::TYPE,
             );
+
 
         $dbal
             ->addSelect('invariable.profile AS user_profile_id')
@@ -131,24 +159,29 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'invariable.event = event.id',
             );
 
-        if($this->filter->getProfile() instanceof UserProfileUid)
+        if($this->filter?->getProfile() instanceof UserProfileUid)
         {
             $dbal
                 ->andWhere('
                     (invariable.profile = :profile AND move.destination = :filter_profile)
                     OR (invariable.profile = :filter_profile AND move.destination = :profile)
                 ')
-                ->setParameter('filter_profile',
-                    $this->filter->getProfile(),
-                    UserProfileUid::TYPE,
+                ->setParameter(
+                    key: 'filter_profile',
+                    value: $this->filter->getProfile(),
+                    type: UserProfileUid::TYPE,
                 );
         }
         else
         {
-            $dbal->andWhere('invariable.profile = :profile OR move.destination = :profile');
+            $dbal->andWhere('(invariable.profile = :profile OR move.destination = :profile)');
         }
 
-        $dbal->setParameter('profile', $profile, UserProfileUid::TYPE);
+        $dbal->setParameter(
+            key: 'profile',
+            value: $this->profile instanceof UserProfileUid ? $this->profile : $this->UserProfileTokenStorageInterface->getProfile(),
+            type: UserProfileUid::TYPE,
+        );
 
 
         $dbal
@@ -236,8 +269,12 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->productFilter?->getOffer())
         {
-            $dbal->andWhere('product_offer.value = :offer');
-            $dbal->setParameter('offer', $this->productFilter->getOffer());
+            $dbal
+                ->andWhere('product_offer.value = :offer')
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->productFilter->getOffer(),
+                );
         }
 
         // Получаем тип торгового предложения
@@ -267,8 +304,12 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->productFilter?->getVariation())
         {
-            $dbal->andWhere('product_variation.value = :variation');
-            $dbal->setParameter('variation', $this->productFilter->getVariation());
+            $dbal
+                ->andWhere('product_variation.value = :variation')
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->productFilter->getVariation(),
+                );
         }
 
         // Получаем тип множественного варианта
@@ -296,8 +337,12 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->productFilter?->getModification())
         {
-            $dbal->andWhere('product_modification.value = :modification');
-            $dbal->setParameter('modification', $this->productFilter->getModification());
+            $dbal
+                ->andWhere('product_modification.value = :modification')
+                ->setParameter(
+                    key: 'modification',
+                    value: $this->productFilter->getModification(),
+                );
         }
 
 
@@ -329,42 +374,38 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             ProductModificationImage::class,
             'product_modification_image',
             '
-			product_modification_image.modification = product_modification.id AND
-			product_modification_image.root = true
-			',
-        );
+                product_modification_image.modification = product_modification.id AND
+                product_modification_image.root = true
+			');
 
         $dbal->leftJoin(
             'product_offer',
             ProductVariationImage::class,
             'product_variation_image',
             '
-			product_variation_image.variation = product_variation.id AND
-			product_variation_image.root = true
-			',
-        );
+                product_variation_image.variation = product_variation.id AND
+                product_variation_image.root = true
+			');
 
         $dbal->leftJoin(
             'product_offer',
             ProductOfferImage::class,
             'product_offer_images',
             '
-			product_variation_image.name IS NULL AND
-			product_offer_images.offer = product_offer.id AND
-			product_offer_images.root = true
-			',
-        );
+                product_variation_image.name IS NULL AND
+                product_offer_images.offer = product_offer.id AND
+                product_offer_images.root = true
+			');
 
         $dbal->leftJoin(
             'product_offer',
             ProductPhoto::class,
             'product_photo',
             '
-			product_offer_images.name IS NULL AND
-			product_photo.event = product_event.id AND
-			product_photo.root = true
-			',
-        );
+                product_offer_images.name IS NULL AND
+                product_photo.event = product_event.id AND
+                product_photo.root = true
+			');
 
         $dbal->addSelect(
             "
@@ -387,11 +428,18 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         $dbal->addSelect(
             "
 			CASE
-			
-			    WHEN product_modification_image.name IS NOT NULL THEN  product_modification_image.ext
-			   WHEN product_variation_image.name IS NOT NULL THEN product_variation_image.ext
-			   WHEN product_offer_images.name IS NOT NULL THEN product_offer_images.ext
-			   WHEN product_photo.name IS NOT NULL THEN product_photo.ext
+		
+			   WHEN product_modification_image.name IS NOT NULL 
+			   THEN  product_modification_image.ext
+			   
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.ext
+			   
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.ext
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.ext
 				
 			   ELSE NULL
 			   
@@ -403,12 +451,18 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         $dbal->addSelect(
             '
 			CASE
-			   WHEN product_variation_image.name IS NOT NULL THEN
-					product_variation_image.cdn
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					product_offer_images.cdn
-			   WHEN product_photo.name IS NOT NULL THEN
-					product_photo.cdn
+			   WHEN product_modification_image.name IS NOT NULL 
+			   THEN product_modification_image.cdn
+			   
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.cdn
+			   
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.cdn
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.cdn
+			   
 			   ELSE NULL
 			END AS product_image_cdn
 		',
@@ -424,8 +478,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->productFilter?->getCategory())
         {
-            $dbal->andWhere('product_event_category.category = :category');
-            $dbal->setParameter('category', $this->productFilter->getCategory(), CategoryProductUid::TYPE);
+            $dbal
+                ->andWhere('product_event_category.category = :category')
+                ->setParameter(
+                    key: 'category',
+                    value: $this->productFilter->getCategory(),
+                    type: CategoryProductUid::TYPE,
+                );
         }
 
         $dbal->leftJoin(
@@ -526,18 +585,18 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 ProductStockTotal::class,
                 'total',
                 '
-                total.profile = :profile AND
-                total.product = stock_product.product AND 
-                (total.offer IS NULL OR total.offer = stock_product.offer) AND 
-                (total.variation IS NULL OR total.variation = stock_product.variation) AND 
-                (total.modification IS NULL OR total.modification = stock_product.modification) AND
-                total.total > 0
+                    total.profile = :profile AND
+                    total.product = stock_product.product AND 
+                    (total.offer IS NULL OR total.offer = stock_product.offer) AND 
+                    (total.variation IS NULL OR total.variation = stock_product.variation) AND 
+                    (total.modification IS NULL OR total.modification = stock_product.modification) AND
+                    total.total > 0
             ');
 
         /**
          * Фильтр по свойства продукта
          */
-        if($this->productFilter->getProperty())
+        if($this->productFilter?->getProperty())
         {
             /** @var ProductFilterPropertyDTO $property */
             foreach($this->productFilter->getProperty() as $property)
@@ -559,13 +618,64 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
             }
         }
 
+
         // Поиск
-        if($this->search?->getQuery())
+        if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
-            $dbal
-                ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('product_trans.name');
+
+            /** Поиск по индексам */
+            $search = str_replace('-', ' ', $this->search->getQuery());
+
+            /** Очистить поисковую строку от всех НЕ буквенных/числовых символов */
+            $search = preg_replace('/[^ a-zа-яё\d]/ui', ' ', $search);
+            $search = preg_replace('/\br(\d+)\b/i', '$1', $search);  // Заменяем R или r в начале строки, за которым следует цифра
+
+            /** Задать префикс и суффикс для реализации варианта "содержит" */
+            $search = '*'.trim($search).'*';
+
+            /** Получим ids из индекса */
+            $resultProducts = $this->SearchIndexHandler instanceof SearchIndexInterface
+                ? $this->SearchIndexHandler->handleSearchQuery($search, ProductSearchTag::TAG)
+                : false;
+
+            if($this->SearchIndexHandler instanceof SearchIndexInterface && false === empty($resultProducts))
+            {
+                /** Фильтруем по полученным из индекса ids: */
+
+                $ids = array_column($resultProducts, 'id');
+
+                /** Товары */
+                $dbal
+                    ->andWhere('(
+                        product.id IN (:uuids) 
+                        OR product_offer.id IN (:uuids)
+                        OR product_variation.id IN (:uuids) 
+                        OR product_modification.id IN (:uuids)
+                    )')
+                    ->setParameter(
+                        key: 'uuids',
+                        value: $ids,
+                        type: ArrayParameterType::STRING,
+                    );
+
+                $dbal->addOrderBy('CASE WHEN product.id IN (:uuids) THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_offer.id IN (:uuids) THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_variation.id IN (:uuids)  THEN 0 ELSE 1 END');
+                $dbal->addOrderBy('CASE WHEN product_modification.id IN (:uuids)  THEN 0 ELSE 1 END');
+            }
+
+            if(empty($resultProducts))
+            {
+                $dbal
+                    ->createSearchQueryBuilder($this->search)
+                    ->addSearchLike('invariable.number')
+                    ->addSearchLike('product_modification.article')
+                    ->addSearchLike('product_variation.article')
+                    ->addSearchLike('product_offer.article')
+                    ->addSearchLike('product_info.article');
+            }
         }
+
 
         /** Сортируем по дате, в первую очередь закрываем все старые заявки */
         $dbal->orderBy('modify.mod_date');
@@ -578,13 +688,11 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 ->andWhere('DATE(modify.mod_date) BETWEEN :start AND :end')
                 ->setParameter('start', $date, Types::DATE_IMMUTABLE)
                 ->setParameter('end', $date, Types::DATE_IMMUTABLE);
-
         }
-
 
         $dbal->allGroupByExclude();
 
-        return $this->paginator->fetchAllAssociative($dbal);
+        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
 
     }
 }
