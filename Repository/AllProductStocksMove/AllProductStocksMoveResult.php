@@ -88,8 +88,8 @@ final readonly class AllProductStocksMoveResult
         private string $product_stock_id, // "0199caa9-8030-75ea-98db-6496128fbb2e" - идентификатор запаса товара
 
         private int $total, // 1 - количество в заявке
-        private int $stock_total, // 1156 - общий запас
-        private string $stock_storage // "10: [78], : [1078]" - складское хранение
+        private ?int $stock_total, // 1156 - общий запас
+        private ?string $stock_storage // "10: [78], : [1078]" - складское хранение
     ) {}
 
     public function getId(): ProductStockUid
@@ -282,11 +282,11 @@ final readonly class AllProductStocksMoveResult
     /** Доступное количество на складе */
     public function getStockTotal(): int
     {
-        return $this->stock_total;
+        return $this->stock_total ?: 0;
     }
 
     /** Место хранения */
-    public function getStockStorage(): string
+    public function getStockStorage(): ?string
     {
         return $this->stock_storage;
     }
