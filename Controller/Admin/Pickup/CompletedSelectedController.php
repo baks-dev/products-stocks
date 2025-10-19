@@ -28,12 +28,13 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Pickup;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use InvalidArgumentException;
@@ -57,6 +58,7 @@ final class CompletedSelectedController extends AbstractController
         ProductsByProductStocksInterface $productDetail,
         CentrifugoPublishInterface $publish,
         ProductStocksEventInterface $productStocksEvent,
+        MessageDispatchInterface $messageDispatch
     ): Response
     {
 
@@ -85,6 +87,7 @@ final class CompletedSelectedController extends AbstractController
             }
 
             /** Скрываем идентификатор у остальных пользователей */
+
             $publish
                 ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
@@ -98,52 +101,36 @@ final class CompletedSelectedController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $isSuccess = true;
-
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
-
-                $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
-
-                if($handle instanceof ProductStock)
-                {
-                    /** Скрываем идентификатор у всех пользователей */
-                    $isPublish = $publish
-                        ->addData(['profile' => false]) // Скрывает у всех
-                        ->addData(['identifier' => (string) $handle->getId()])
-                        ->send('remove');
-
-                    /** Если не удалось скрыть идентификатор по сокету - редиректим на страницу */
-                    if($isPublish === false)
-                    {
-                        $isSuccess = false;
-                    }
-
-                    continue;
-                }
-
-                /** Сообщение об ошибке */
-
-                $this->addFlash
-                (
-                    type: 'page.pickup',
-                    message: 'danger.pickup',
-                    domain: 'products-stocks.admin',
-                    arguments: $handle,
+                $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
+                    $CompletedProductStockDTO->getEvent(),
+                    $this->getCurrentProfileUid(),
+                    $this->getCurrentUsr(),
                 );
 
-                $isSuccess = false;
+                $messageDispatch->dispatch(
+                    message: $MultiplyProductStocksCompletedMessage,
+                    transport: 'products-stocks',
+                );
             }
 
             $flash = $this->addFlash
             (
-                type: 'page.package',
-                message: 'success.extradition',
+                type: 'page.pickup',
+                message: 'success.pickup',
                 domain: 'products-stocks.admin',
-                status: $isSuccess ? 200 : 302,
+                status: $publish->isError() ? 302 : 200,
             );
 
-            return $isSuccess && $flash ? $flash : $this->redirectToRoute('products-stocks:admin.pickup.index');
+            /** Если возникает ошибка отправки сокета */
+            if($publish->isError())
+            {
+                $this->redirectToRoute('products-stocks:admin.pickup.index');
+            }
+
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.pickup.index');
+
         }
 
         if(true === $CompletedSelectedProductStockDTO->getCollection()->isEmpty())

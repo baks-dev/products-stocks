@@ -23,53 +23,27 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 
-final readonly class MultiplyProductStocksPackageMessage
+
+final class AllProductStocksOrdersProductRepository implements AllProductStocksOrdersProductInterface
 {
-    private string $id;
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    private string $profile;
-
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
+    /** Метод возвращает продукцию без партии согласно фильтру */
+    public function findAll(): array|bool
     {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
-    }
+        return false;
 
-    /**
-     * Идентификатор заказа
-     */
-    public function getOrderId(): OrderUid
-    {
-        return new OrderUid($this->id);
-    }
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
-    }
+        //$dbal->select('id');
+        //$dbal->from(ClasssName::class, 'aliace');
 
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
+        return $dbal
+            // ->enableCache('Namespace', 3600)
+            ->fetchAllAssociative();
     }
-
 }

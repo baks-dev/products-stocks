@@ -20,56 +20,30 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Products\Category\Security\MenuGroupProducts;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-final readonly class MultiplyProductStocksPackageMessage
+#[AutoconfigureTag('baks.security.voter')]
+final class VoterPart implements VoterInterface
 {
-    private string $id;
+    public const string VOTER = 'PART';
 
-    private string $profile;
+    public const string KEY = 'XTkVTfPP';
 
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
+    public static function getVoter(): string
     {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
+        return Role::ROLE.'_'.self::VOTER;
     }
 
-    /**
-     * Идентификатор заказа
-     */
-    public function getOrderId(): OrderUid
+    public function equals(RoleInterface $role): bool
     {
-        return new OrderUid($this->id);
+        return $role->getRole() === Role::ROLE;
     }
-
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
-    }
-
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
-    }
-
 }

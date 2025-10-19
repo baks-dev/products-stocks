@@ -23,13 +23,14 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
+
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 
-final readonly class MultiplyProductStocksPackageMessage
+final class MultiplyProductStocksCompletedMessage
 {
     private string $id;
 
@@ -38,7 +39,7 @@ final readonly class MultiplyProductStocksPackageMessage
     private string $current;
 
     public function __construct(
-        OrderUid $id,
+        ProductStockEventUid $id,
         UserProfileUid $profile,
         UserUid $current,
     )
@@ -49,11 +50,11 @@ final readonly class MultiplyProductStocksPackageMessage
     }
 
     /**
-     * Идентификатор заказа
+     * Идентификатор события складской заявки
      */
-    public function getOrderId(): OrderUid
+    public function getProductStockEvent(): ProductStockEventUid
     {
-        return new OrderUid($this->id);
+        return new ProductStockEventUid($this->id);
     }
 
     /**

@@ -23,53 +23,45 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Part;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Core\Type\UidType\Uid;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPartInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
+use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class MultiplyProductStocksPackageMessage
+/** @see ProductStockPart */
+final class ProductStockPartDTO implements ProductStockPartInterface
 {
-    private string $id;
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private readonly ProductStockEventUid $id;
 
-    private string $profile;
+    /** Значение свойства */
+    #[Assert\NotBlank]
+    private ?ProductStockPartUid $value = null;
 
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
+    public function __construct(ProductStockEvent|ProductStockEventUid $id)
     {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
+
+        $this->id = $id instanceof ProductStockEvent ? $id->getId() : $id;
     }
 
-    /**
-     * Идентификатор заказа
-     */
-    public function getOrderId(): OrderUid
+    public function getProductStockEventId(): ProductStockEventUid
     {
-        return new OrderUid($this->id);
+        return $this->id;
     }
 
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
+    public function setValue(?ProductStockPartUid $value): self
     {
-        return new UserProfileUid($this->profile);
+        $this->value = $value;
+        return $this;
     }
 
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
+    public function getValue(): ?ProductStockPartUid
     {
-        return new UserUid($this->current);
+        return $this->value;
     }
-
 }

@@ -69,7 +69,7 @@ final class IncomingController extends AbstractController
             ->createForm(
                 type: IncomingProductStockForm::class,
                 data: $IncomingProductStockDTO,
-                options: ['action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),]
+                options: ['action' => $this->generateUrl('products-stocks:admin.incoming.accept', ['id' => $IncomingProductStockDTO->getEvent()]),],
             )
             ->handleRequest($request);
 
@@ -77,20 +77,24 @@ final class IncomingController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $handle = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
+            $ProductStock = $IncomingProductStockHandler->handle($IncomingProductStockDTO);
 
-            /** Скрываем идентификатор у всех пользователей */
-            $remove = $publish
-                ->addData(['profile' => false]) // Скрывает у всех
-                ->addData(['identifier' => (string) $handle->getId()])
-                ->send('remove');
+            if($ProductStock instanceof ProductStock)
+            {
+                /** Скрываем идентификатор у всех пользователей */
+
+                $remove = $publish
+                    ->addData(['profile' => false]) // Скрывает у всех
+                    ->addData(['identifier' => (string) $ProductStock->getId()])
+                    ->send('remove');
+            }
 
             $flash = $this->addFlash(
                 'page.orders',
-                $handle instanceof ProductStock ? 'success.accept' : 'danger.accept',
+                $ProductStock instanceof ProductStock ? 'success.accept' : 'danger.accept',
                 'products-stocks.admin',
-                $handle,
-                $remove ? 200 : 302
+                $ProductStock,
+                $ProductStock ? 200 : 302,
             );
 
             return $flash ?: $this->redirectToRoute('products-stocks:admin.warehouse.index');
@@ -116,7 +120,7 @@ final class IncomingController extends AbstractController
             'form' => $form->createView(),
             'name' => $ProductStockEvent->getInvariable()?->getNumber(),
             'order' => $ProductStockEvent->getOrder() !== null,
-            'recommender' => $productStorage
+            'recommender' => $productStorage,
             //'products' => $productDetail->fetchAllProductsByProductStocksAssociative($ProductStockEvent->getMain())
         ]);
     }

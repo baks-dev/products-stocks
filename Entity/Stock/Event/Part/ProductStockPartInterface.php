@@ -21,55 +21,17 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Products\Stocks\Entity\Stock\Event\Part;
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+use BaksDev\Core\Type\UidType\Uid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
-
-final readonly class MultiplyProductStocksPackageMessage
+interface ProductStockPartInterface
 {
-    private string $id;
-
-    private string $profile;
-
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
-    {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
-    }
-
     /**
-     * Идентификатор заказа
+     * Значение свойства
+     *
+     * @see ProductStockPart
      */
-    public function getOrderId(): OrderUid
-    {
-        return new OrderUid($this->id);
-    }
-
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
-    }
-
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
-    }
-
+    public function getValue(): ?ProductStockPartUid;
 }

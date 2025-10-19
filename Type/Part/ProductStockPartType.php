@@ -23,53 +23,20 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Type\Part;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
 
-final readonly class MultiplyProductStocksPackageMessage
+use BaksDev\Core\Type\UidType\UidType;
+
+final class ProductStockPartType extends UidType
 {
-    private string $id;
-
-    private string $profile;
-
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
+    public function getClassType(): string
     {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
+        return ProductStockPartUid::class;
     }
 
-    /**
-     * Идентификатор заказа
-     */
-    public function getOrderId(): OrderUid
+    public function getName(): string
     {
-        return new OrderUid($this->id);
+        return ProductStockPartUid::TYPE;
     }
-
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
-    }
-
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
-    }
-
 }

@@ -82,7 +82,7 @@ final class NewDecommissionOrderDTO implements OrderEventInterface
     /**
      * Коллекция продукции в заказе
      *
-     * @return ArrayCollection<int, NewDecommissionOrderProductDTO>
+     * @return ArrayCollection<NewDecommissionOrderProductDTO>
      */
     public function getProduct(): ArrayCollection
     {

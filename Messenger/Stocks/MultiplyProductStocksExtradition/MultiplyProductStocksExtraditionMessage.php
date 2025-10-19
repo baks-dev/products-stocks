@@ -23,14 +23,18 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition;
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class MultiplyProductStocksPackageMessage
+/** @see MultiplyProductStocksExtraditionMessage */
+final readonly class MultiplyProductStocksExtraditionMessage
 {
+
     private string $id;
 
     private string $profile;
@@ -38,9 +42,10 @@ final readonly class MultiplyProductStocksPackageMessage
     private string $current;
 
     public function __construct(
-        OrderUid $id,
+        ProductStockEventUid $id,
         UserProfileUid $profile,
         UserUid $current,
+        private ?string $comment = null,
     )
     {
         $this->id = (string) $id;
@@ -49,11 +54,11 @@ final readonly class MultiplyProductStocksPackageMessage
     }
 
     /**
-     * Идентификатор заказа
+     * Идентификатор события складской заявки
      */
-    public function getOrderId(): OrderUid
+    public function getProductStockEvent(): ProductStockEventUid
     {
-        return new OrderUid($this->id);
+        return new ProductStockEventUid($this->id);
     }
 
     /**
@@ -70,6 +75,11 @@ final readonly class MultiplyProductStocksPackageMessage
     public function getCurrentUser(): UserUid
     {
         return new UserUid($this->current);
+    }
+
+    public function getComment(): string|false
+    {
+        return empty($this->comment) ? false : $this->comment;
     }
 
 }

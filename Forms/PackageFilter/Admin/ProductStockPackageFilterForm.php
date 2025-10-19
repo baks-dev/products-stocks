@@ -32,6 +32,7 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -67,15 +68,7 @@ final class ProductStockPackageFilterForm extends AbstractType
             'input' => 'datetime_immutable',
         ]);
 
-        $builder->add('print', ChoiceType::class, [
-            'label' => false,
-            'choices' => [
-                'Без печати' => false,
-                'Печать выполнена' => true,
-            ],
-            'expanded' => false,
-            'required' => true,
-        ]);
+        $builder->add('print', CheckboxType::class, ['required' => false]);
 
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {

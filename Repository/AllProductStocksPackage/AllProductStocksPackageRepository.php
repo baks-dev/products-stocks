@@ -47,6 +47,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
@@ -192,6 +193,16 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             $dbal->setParameter('divide', 'ntUIGnScMq');
         }
 
+        $dbal
+            ->addSelect('stock_part.value AS product_stock_part')
+            ->leftJoin(
+                'stock',
+                ProductStockPart::class,
+                'stock_part',
+                'stock_part.event = stock.event',
+            );
+
+
         $dbal->join(
             'stock',
             ProductStockOrder::class,
@@ -208,6 +219,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'orders',
                 'orders.id = ord.ord',
             );
+
 
         $dbal
             ->addSelect('order_event.danger AS order_danger')

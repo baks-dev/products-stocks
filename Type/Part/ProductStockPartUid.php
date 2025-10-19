@@ -23,53 +23,14 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\MultiplyProductStocksPackage;
+namespace BaksDev\Products\Stocks\Type\Part;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Core\Type\UidType\Uid;
+use Symfony\Component\Uid\AbstractUid;
 
-final readonly class MultiplyProductStocksPackageMessage
+final class ProductStockPartUid extends Uid
 {
-    private string $id;
+    public const string TEST = '362e80dd-957f-72a2-92c7-1738ac1d0521';
 
-    private string $profile;
-
-    private string $current;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-    )
-    {
-        $this->id = (string) $id;
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
-    }
-
-    /**
-     * Идентификатор заказа
-     */
-    public function getOrderId(): OrderUid
-    {
-        return new OrderUid($this->id);
-    }
-
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
-    {
-        return new UserProfileUid($this->profile);
-    }
-
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
-    }
-
+    public const string TYPE = 'product_stock_part';
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -53,7 +53,7 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     /** Количество */
     #[Assert\NotBlank]
-    #[Assert\Range(min: 1)]
+    #[Assert\Range(min: 0)]
     private readonly int $total;
 
     /** Место складирования */

@@ -21,38 +21,9 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
-final class ExtraditionSelectedProductStockDTO
+interface AllProductStocksOrdersProductInterface
 {
-    private ArrayCollection $collection;
-
-    /** Комментарий */
-    private ?string $comment = null;
-
-    public function __construct()
-    {
-        $this->collection = new ArrayCollection();
-    }
-
-    public function getCollection(): ArrayCollection
-    {
-        return $this->collection;
-    }
-
-    public function addCollection(ExtraditionProductStockDTO $stockDTO): self
-    {
-        $this->collection->add($stockDTO);
-
-        return $this;
-    }
-
-    public function removeCollection(ExtraditionProductStockDTO $stockDTO): self
-    {
-        $this->collection->removeElement($stockDTO);
-
-        return $this;
-    }
+    public function findAll(): array|bool;
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockType;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Parameters\ProductStockParameterType;
 use BaksDev\Products\Stocks\Type\Parameters\ProductStockParameterUid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartType;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionType;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
@@ -40,12 +42,21 @@ use Symfony\Config\DoctrineConfig;
 
 return static function(ContainerConfigurator $container, DoctrineConfig $doctrine) {
 
+    $services = $container->services()
+        ->defaults()
+        ->autowire()
+        ->autoconfigure();
+
+    $services->set(ProductStockPartUid::class)->class(ProductStockPartUid::class);
+
+
     $doctrine->dbal()->type(ProductStockUid::TYPE)->class(ProductStockType::class);
     $doctrine->dbal()->type(ProductStockEventUid::TYPE)->class(ProductStockEventType::class);
     $doctrine->dbal()->type(ProductStockCollectionUid::TYPE)->class(ProductStockCollectionType::class);
     $doctrine->dbal()->type(ProductStockStatus::TYPE)->class(ProductStockStatusType::class);
     $doctrine->dbal()->type(ProductStockTotalUid::TYPE)->class(ProductStockTotalType::class);
     $doctrine->dbal()->type(ProductStockParameterUid::TYPE)->class(ProductStockParameterType::class);
+    $doctrine->dbal()->type(ProductStockPartUid::TYPE)->class(ProductStockPartType::class);
 
     $emDefault = $doctrine->orm()->entityManager('default')->autoMapping(true);
 
