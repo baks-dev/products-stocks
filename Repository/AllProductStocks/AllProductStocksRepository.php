@@ -688,7 +688,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 ? $this->SearchIndexHandler->handleSearchQuery($search, ProductSearchTag::TAG)
                 : false;
 
-            if($this->SearchIndexHandler instanceof SearchIndexInterface && $resultProducts !== false)
+            if($this->SearchIndexHandler instanceof SearchIndexInterface && false === empty($resultProducts))
             {
                 /** Фильтруем по полученным из индекса ids: */
 
@@ -712,14 +712,10 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 $dbal->addOrderBy('CASE WHEN product_offer.id IN (:uuids) THEN 0 ELSE 1 END');
                 $dbal->addOrderBy('CASE WHEN product_variation.id IN (:uuids)  THEN 0 ELSE 1 END');
                 $dbal->addOrderBy('CASE WHEN product_modification.id IN (:uuids)  THEN 0 ELSE 1 END');
-
-                $dbal->addOrderBy('product.id');
-                $dbal->addOrderBy('product_offer.value');
-                $dbal->addOrderBy('product_variation.value');
-                $dbal->addOrderBy('product_modification.value');
             }
 
-            if($resultProducts === false)
+
+            if(empty($resultProducts))
             {
                 $dbal
                     ->createSearchQueryBuilder($this->search)
@@ -733,16 +729,14 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                     ->addSearchLike('product_offer.article')
                     ->addSearchLike('product_info.article');
             }
+        }
 
-        }
-        else
-        {
-            $dbal->addOrderBy('product.id');
-            $dbal->addOrderBy('product_offer.value');
-            $dbal->addOrderBy('product_variation.value');
-            $dbal->addOrderBy('product_modification.value');
-            $dbal->addOrderBy('stock_product.total');
-        }
+        $dbal->addOrderBy('product.id');
+        $dbal->addOrderBy('product_offer.value');
+        $dbal->addOrderBy('product_variation.value');
+        $dbal->addOrderBy('product_modification.value');
+
+
 
         if($this->limit)
         {

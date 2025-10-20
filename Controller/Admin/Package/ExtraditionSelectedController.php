@@ -28,14 +28,15 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Package;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition\MultiplyProductStocksExtraditionMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
+use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,13 +53,12 @@ final class ExtraditionSelectedController extends AbstractController
     #[Route('/admin/product/stock/package/extradition-selected', name: 'admin.package.extradition-selected', methods: ['GET', 'POST'])]
     public function extradition(
         Request $request,
-        ExtraditionProductStockHandler $ExtraditionProductStockHandler,
         ProductsByProductStocksInterface $productDetail,
         CentrifugoPublishInterface $publish,
         ProductStocksEventInterface $productStocksEvent,
+        MessageDispatchInterface $messageDispatch
     ): Response
     {
-
         $ExtraditionSelectedProductStockDTO = new ExtraditionSelectedProductStockDTO();
 
         $form = $this
@@ -76,7 +76,6 @@ final class ExtraditionSelectedController extends AbstractController
         /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
         foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
         {
-
             $productStockEventEntity = $productStocksEvent
                 ->forEvent($ExtraditionProductStockDTO->getEvent())
                 ->find();
@@ -87,9 +86,6 @@ final class ExtraditionSelectedController extends AbstractController
 
                 continue;
             }
-
-            $ExtraditionProductStockDTO->setId($productStockEventEntity->getId());
-
 
             /** Скрываем идентификатор у остальных пользователей */
 
@@ -108,40 +104,20 @@ final class ExtraditionSelectedController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $isSuccess = true;
-
             foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
             {
-                $handle = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
-
-                if($handle instanceof ProductStock)
-                {
-                    /** Скрываем идентификатор у всех пользователей */
-                    $isPublish = $publish
-                        ->addData(['profile' => false]) // Скрывает у всех
-                        ->addData(['identifier' => (string) $handle->getId()])
-                        ->send('remove');
-
-                    /** Если не удалось скрыть идентификатор по сокету - редиректим на страницу */
-                    if($isPublish === false)
-                    {
-                        $isSuccess = false;
-                    }
-
-                    continue;
-                }
-
-                /** Сообщение об ошибке */
-
-                $this->addFlash
-                (
-                    type: 'page.package',
-                    message: 'danger.extradition',
-                    domain: 'products-stocks.admin',
-                    arguments: $handle,
+                $MultiplyProductStocksExtraditionMessage = new MultiplyProductStocksExtraditionMessage(
+                    $ExtraditionProductStockDTO->getEvent(),
+                    $this->getProfileUid(),
+                    $this->getCurrentUsr(),
+                    $ExtraditionProductStockDTO->getComment(),
                 );
 
-                $isSuccess = false;
+                $messageDispatch->dispatch(
+                    message: $MultiplyProductStocksExtraditionMessage,
+                    transport: 'products-stocks',
+                );
+
             }
 
             $flash = $this->addFlash
@@ -149,15 +125,21 @@ final class ExtraditionSelectedController extends AbstractController
                 type: 'page.package',
                 message: 'success.extradition',
                 domain: 'products-stocks.admin',
-                status: $isSuccess ? 200 : 302,
+                status: $publish->isError() ? 302 : 200,
             );
 
-            return $isSuccess && $flash ? $flash : $this->redirectToRoute('products-stocks:admin.package.index');
+            /** Если возникает ошибка отправки сокета */
+            if($publish->isError())
+            {
+                $this->redirectToRoute('products-stocks:admin.package.index');
+            }
+
+            return $flash ?: $this->redirectToRoute('products-stocks:admin.package.index');
         }
 
         if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
         {
-            throw new \InvalidArgumentException('Page Not Found');
+            throw new InvalidArgumentException('Page Not Found');
         }
 
 

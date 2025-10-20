@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
@@ -35,6 +36,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -85,6 +87,7 @@ class ProductStockEvent extends EntityEvent
 
     /**
      * Профиль пользователя
+     *
      * @deprecated переносится в Invariable
      */
     #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
@@ -92,6 +95,7 @@ class ProductStockEvent extends EntityEvent
 
     /**
      * Номер заявки
+     *
      * @deprecated переносится в Invariable
      */
     #[ORM\Column(type: Types::STRING, nullable: true)]
@@ -104,14 +108,17 @@ class ProductStockEvent extends EntityEvent
     #[ORM\OneToOne(targetEntity: ProductStocksInvariable::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?ProductStocksInvariable $invariable = null;
 
-
     /** Профиль назначения (при перемещении) */
     #[ORM\OneToOne(targetEntity: ProductStockMove::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?ProductStockMove $move = null;
 
-    /** ID Заказа на сборку */
+    /** Идентификатор заказа на сборку */
     #[ORM\OneToOne(targetEntity: ProductStockOrder::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?ProductStockOrder $ord = null;
+
+    /** Идентификатор группы заказов */
+    #[ORM\OneToOne(targetEntity: ProductStockPart::class, mappedBy: 'event', cascade: ['all'])]
+    private ?ProductStockPart $part = null;
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -274,4 +281,11 @@ class ProductStockEvent extends EntityEvent
     {
         return $this->comment;
     }
+
+    public function isProductStockPart(): bool
+    {
+        return $this->part?->getValue() instanceof ProductStockPartUid;
+    }
+
+
 }

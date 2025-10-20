@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -79,7 +79,7 @@ class ProductStockProduct extends EntityEvent
     private ?ProductModificationConst $modification;
 
     /** Количество */
-    #[Assert\Range(min: 1)]
+    #[Assert\Range(min: 0)]
     #[ORM\Column(type: Types::INTEGER)]
     private int $total;
 

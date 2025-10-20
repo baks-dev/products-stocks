@@ -75,12 +75,14 @@ final class WarehouseController extends AbstractController
          */
         if($ProductStockEvent->getMoveDestination())
         {
+            $UserUid = $this->getUsr()?->getId();
+            $target = $ProductStockEvent->getMove()?->getDestination();
             $destination = $ProductStockEvent->getInvariable()?->getProfile();
 
             $WarehouseProductStockDTO
                 ->getInvariable()
-                ?->setProfile($ProductStockEvent->getMove()->getDestination())
-                ->setUsr($this->getUsr()->getId());
+                ?->setProfile($target)
+                ->setUsr($UserUid);
 
             $WarehouseProductStockDTO->getMove()?->setDestination($destination);
         }
@@ -90,7 +92,7 @@ final class WarehouseController extends AbstractController
             ->createForm(
                 WarehouseProductStockForm::class,
                 $WarehouseProductStockDTO,
-                ['action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $WarehouseProductStockDTO->getEvent()])]
+                ['action' => $this->generateUrl('products-stocks:admin.warehouse.send', ['id' => $WarehouseProductStockDTO->getEvent()])],
             )
             ->handleRequest($request);
 
@@ -100,18 +102,21 @@ final class WarehouseController extends AbstractController
 
             $handle = $handler->handle($WarehouseProductStockDTO);
 
-            /** Скрываем идентификатор у всех пользователей */
-            $remove = $publish
-                ->addData(['profile' => false]) // Скрывает у всех
-                ->addData(['identifier' => (string) $handle->getId()])
-                ->send('remove');
+            if($handle instanceof ProductStock)
+            {
+                /** Скрываем идентификатор у всех пользователей */
+                $publish
+                    ->addData(['profile' => false]) // Скрывает у всех
+                    ->addData(['identifier' => (string) $handle->getId()])
+                    ->send('remove');
+            }
 
             $flash = $this->addFlash(
                 'page.warehouse',
-                $handle instanceof ProductStock ? 'success.warehouse' : 'danger.warehouse',
+                ($handle instanceof ProductStock) ? 'success.warehouse' : 'danger.warehouse',
                 'products-stocks.admin',
                 $handle,
-                $remove ? 200 : 302
+                ($handle instanceof ProductStock) ? 200 : 302,
             );
 
             return $flash ?: $this->redirectToRoute('products-stocks:admin.purchase.index');

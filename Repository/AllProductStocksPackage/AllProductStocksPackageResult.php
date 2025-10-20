@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPackage;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use DateTimeImmutable;
 
@@ -47,6 +48,7 @@ final readonly class AllProductStocksPackageResult
         private ?string $delivery_name,
         private ?string $users_profile_username,
         private ?bool $printed,
+        private ?string $product_stock_part,
 
         //private ?bool $products_move,
         //private ?string $users_profile_destination,
@@ -112,10 +114,18 @@ final readonly class AllProductStocksPackageResult
     {
         return $this->users_profile_username;
     }
+
     public function isPrinted(): bool
     {
         return $this->printed === true;
     }
+
+    public function getProductStockPart(): ProductStockPartUid|false
+    {
+        return $this->product_stock_part ? new ProductStockPartUid($this->product_stock_part) : false;
+    }
+
+
 
     //    public function isProductsMove(): bool
     //    {

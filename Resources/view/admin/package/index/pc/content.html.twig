@@ -10,10 +10,37 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
 
-            <div class="w-100">
-                <h1 class="h4 text-uppercase fw-bolder mb-0">
+            <div class="w-100 d-flex gap-3 align-items-center">
+                <h1 class="h4 text-uppercase fw-bolder m-0">
                     {{ 'page.package'|trans }}
                 </h1>
+
+                <div class="h5 m-0">
+
+                    {% if filter.print.vars.data %}
+                        <span class="badge text-bg-light text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-printer" viewBox="0 0 16 16">
+                              <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                            </svg>
+                           &nbsp; Печать выполнена
+                        </span>
+                    {% else %}
+                        <span class="badge text-bg-primary">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-printer-fill" viewBox="0 0 16 16">
+                              <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/>
+                              <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                            </svg>
+                           &nbsp; На печати
+                        </span>
+                    {% endif %}
+
+
+                </div>
+
             </div>
 
             <div class="w-100 d-flex align-items-center gap-3 justify-content-end">
@@ -35,7 +62,6 @@
                     </a>
 
                 {% endif %}
-
 
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
@@ -95,8 +121,30 @@
                             {{ form_row(filter.delivery, { placeholder : 'Любой способ доставки ...', attr : { 'data-select' : 'select2' } }) }}
                         </div>
 
-                        <div class="w-25">
-                            {{ form_row(filter.print, { attr : { 'data-select' : 'select2' } }) }}
+                        <div>
+
+                            <div class="d-flex justify-content-around radio-buttons clearfix"
+                                 data-buttons="true"
+                                 style="clear: both"
+                            >
+                                <label class="btn px-2 py-1 border-dotted rounded-3 w-100 {{ filter.print.vars.data ? 'active' }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+
+                                            <div class="d-flex align-items-center">
+                                                {{ form_widget(filter.print, { label: false }) }}
+                                                <div class="form-check ps-0 text-nowrap">
+                                                    {# Продукт активный #}
+                                                    {{ 'Печать выполнена'|trans }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+
+                            {# {{ form_row(filter.print, { attr : { 'data-select' : 'select2' } }) }} #}
                         </div>
 
                         <div class="d-flex gap-1" style="width: 265px;">
@@ -132,7 +180,37 @@
 
 
                         <div>
-                            <a href="{{ path('products-stocks:admin.package.selection') }}"
+
+
+                            <a
+                                    class="btn btn-light text-nowrap mb-2"
+                                    role="tooltip"
+                                    data-bs-placement="bottom"
+                                    data-bs-delay='{"show":600,"hide":100}'
+                                    title="Накладная для выбранных"
+                                    id="add-all-to-invoice"
+
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+
+                                    data-post-class="add-all-to-invoice"
+
+                                    data-method="post"
+                                    data-collection-form="collection"
+                                    data-formname="{{ add_selected_extradition_form_name }}"
+                                    href="{{ path('products-stocks:admin.part', { print: true }) }}"
+
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-list-ol" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5"/>
+                                    <path d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635z"/>
+                                </svg>
+                            </a>
+
+
+                            {# <a href="{{ path('products-stocks:admin.part') }}"
                                class="btn btn-light prnt disabled"
                                data-bs-toggle="modal"
                                data-bs-target="#modal"
@@ -144,7 +222,7 @@
                                           d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5"/>
                                     <path d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635z"/>
                                 </svg>
-                            </a>
+                            </a> #}
 
 
                         </div>
@@ -156,6 +234,9 @@
                 </div>
 
             </div>
+
+
+            {# @var item \BaksDev\Products\Stocks\Repository\AllProductStocksPackage\AllProductStocksPackageResult #}
 
 
             {# Контент > #}
@@ -235,6 +316,43 @@
                                     </div>
                                 {% endif %}
                             </div>
+
+
+                            {% if item.productStockPart %}
+                                <div
+
+                                        role="tooltip"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        data-bs-delay='{"show":600,"hide":100}'
+                                        title='QR сборочного листа'
+                                >
+
+                                    <a
+                                            href="{{ path('products-stocks:admin.part', { part: item.productStockPart }) }}"
+                                            class="btn-link btn p-0 icon"
+                                            target="_blank"
+                                            style="width: 45px; height: 45px;"
+                                    >
+                                        <svg
+                                                xmlns="http://www.w3.org/2000/svg" width="35" height="35"
+                                                fill="currentColor"
+                                                class="bi bi-qr-code" viewBox="0 0 16 16">
+                                            <path d="M2 2h2v2H2V2Z"></path>
+                                            <path
+                                                    d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"></path>
+                                            <path
+                                                    d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"></path>
+                                            <path
+                                                    d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1H9v1h3v-2h1Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"></path>
+                                            <path
+                                                    d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"></path>
+                                        </svg>
+                                    </a>
+
+                                </div>
+                            {% endif %}
+
 
                             <div>
 

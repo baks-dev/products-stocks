@@ -1,17 +1,29 @@
 <?php
 /*
+<<<<<<< HEAD
  * Copyright 2025.  Baks.dev <admin@baks.dev>
  *
+=======
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
+>>>>>>> refs/remotes/origin/master
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
+<<<<<<< HEAD
  *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
  *
+=======
+ *  
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *  
+>>>>>>> refs/remotes/origin/master
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,6 +37,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove\Tests;
 
+<<<<<<< HEAD
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveResult;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -40,15 +53,46 @@ use ReflectionMethod;
 final class AllProductStocksMoveRepositoryTest extends KernelTestCase
 {
     public function testFind(): void
+=======
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
+use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveResult;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
+use ReflectionClass;
+use ReflectionMethod;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\DependencyInjection\Attribute\When;
+
+
+#[Group('products-stocks')]
+#[When(env: 'test')]
+class AllProductStocksMoveRepositoryTest extends KernelTestCase
+{
+    public function testUseCase(): void
+>>>>>>> refs/remotes/origin/master
     {
         /** @var AllProductStocksMoveInterface $AllProductStocksMoveRepository */
         $AllProductStocksMoveRepository = self::getContainer()->get(AllProductStocksMoveInterface::class);
 
+<<<<<<< HEAD
         $result = $AllProductStocksMoveRepository
             ->findResult(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
             ->current();
 
         if(!empty($result))
+=======
+        $paginator = $AllProductStocksMoveRepository
+            ->forProfile(new UserProfileUid(''))
+            ->findPaginator();
+
+        $result = $paginator->getData();
+
+        foreach($result as $AllProductStocksMoveResult)
+>>>>>>> refs/remotes/origin/master
         {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(AllProductStocksMoveResult::class);
@@ -60,10 +104,19 @@ final class AllProductStocksMoveRepositoryTest extends KernelTestCase
                 if($method->getNumberOfParameters() === 0)
                 {
                     // Вызываем метод
+<<<<<<< HEAD
                     $value = $method->invoke($result);
                     dump($value);
                 }
             }
+=======
+                    $data = $method->invoke($AllProductStocksMoveResult);
+                    // dump($data);
+                }
+            }
+
+            break;
+>>>>>>> refs/remotes/origin/master
         }
 
         self::assertTrue(true);

@@ -42,6 +42,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\ProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\ProductStockDTO;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -57,6 +58,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         private CurrentProductIdentifierInterface $CurrentProductIdentifier,
         private PackageProductStockHandler $PackageProductStockHandler,
         private CentrifugoPublishInterface $publish,
+        private UserTokenStorageInterface $UserTokenStorage
     ) {}
 
     public function __invoke(MultiplyProductStocksPackageMessage $message): void
@@ -141,6 +143,11 @@ final readonly class MultiplyProductStocksPackageDispatcher
 
         $PackageProductStockDTO->setOrd($productStockOrderDTO);
 
+        /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
+        if(false === $this->UserTokenStorage->isUser())
+        {
+            $this->UserTokenStorage->authorization($message->getCurrentUser());
+        }
 
         $ProductStock = $this->PackageProductStockHandler->handle($PackageProductStockDTO);
 

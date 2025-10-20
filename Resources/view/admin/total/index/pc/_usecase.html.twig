@@ -61,10 +61,10 @@ value="{{ item.stock_id }}">
         {% endif %}
 
         {# Списать #}
-        {% if false and (is_granted('ROLE_ORDERS_STATUS_DECOMMISSION') or is_granted('ROLE_ADMIN')) %}
+        {% if is_granted('ROLE_ORDERS_STATUS_DECOMMISSION') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('orders-order:admin.decommission.new', {id: item.stockId }) }}"
+                <a href="{{ path('products-stocks:admin.total.decommission', { id: item.stockId }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"

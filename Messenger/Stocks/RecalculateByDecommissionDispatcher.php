@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Stocks\Decommission;
+namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
@@ -37,22 +37,20 @@ use BaksDev\Orders\Order\UseCase\Admin\Edit\Products\OrderProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
-use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- *  Списываем со склада нужное количество и резерв, если создается заказ со статусом Decommission «Списание»
+ *  Пересчет остатков продукции в карточке товара, если создается заказ со статусом Decommission «Списание»
  */
 #[AsMessageHandler(priority: 900)]
-final readonly class SubProductTotalAndReserveByDecommissionDispatcher
+final readonly class RecalculateByDecommissionDispatcher
 {
     public function __construct(
+        #[Target('ordersOrderLogger')] private LoggerInterface $logger,
         private DeduplicatorInterface $deduplicator,
         private OrderEventInterface $OrderEventRepository,
-        #[Target('ordersOrderLogger')] private LoggerInterface $logger,
-        private CurrentOrderEventInterface $CurrentOrderEvent,
         private CurrentProductIdentifierInterface $CurrentProductIdentifierRepository,
         private MessageDispatchInterface $messageDispatch,
     ) {}
@@ -89,42 +87,13 @@ final readonly class SubProductTotalAndReserveByDecommissionDispatcher
             return;
         }
 
-        /** Получаем активное событие заказа в случае если статус заказа изменился */
-        if(empty($OrderEvent->getOrderNumber()))
-        {
-            $OrderEvent = $this->CurrentOrderEvent
-                ->forOrder($message->getId())
-                ->find();
-
-            if(false === ($OrderEvent instanceof OrderEvent))
-            {
-                $this->logger->critical(
-                    'orders-order: Не найдено событие OrderEvent',
-                    [self::class.':'.__LINE__, var_export($message, true)],
-                );
-
-                return;
-            }
-        }
-
-        $this->logger->info(
-            sprintf(
-                '%s: Снимаем резерв и остаток продукции на складе при списании (см. products-stock.log)',
-                $OrderEvent->getOrderNumber(),
-            ),
-            [
-                'status' => OrderStatusDecommission::class,
-                'deduplicator' => $Deduplicator->getKey(),
-            ],
-        );
-
         $EditOrderDTO = new EditOrderDTO();
         $OrderEvent->getDto($EditOrderDTO);
 
         /** @var OrderProductDTO $product */
         foreach($EditOrderDTO->getProduct() as $product)
         {
-            /** Получаем активные идентификаторы карточки на случай, если товар обновлялся */
+            /** Получаем активные идентификаторы карточки для преобразования в константы */
             $CurrentProductIdentifier = $this->CurrentProductIdentifierRepository
                 ->forEvent($product->getProduct())
                 ->forOffer($product->getOffer())
@@ -135,7 +104,7 @@ final readonly class SubProductTotalAndReserveByDecommissionDispatcher
             if(false === ($CurrentProductIdentifier instanceof CurrentProductIdentifierResult))
             {
                 $this->logger->critical(
-                    'products-sign: Продукт не найден',
+                    'products-sign: Продукт для пересчета складских остатков не найден',
                     [
                         'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
@@ -147,31 +116,6 @@ final readonly class SubProductTotalAndReserveByDecommissionDispatcher
 
                 continue;
             }
-
-
-            /**
-             * Списываем складской остаток
-             */
-
-            $SubProductStocksTotalAndReserveMessage = new SubProductStocksTotalAndReserveMessage(
-                $OrderEvent->getMain(),
-                $OrderEvent->getOrderProfile(),
-                $CurrentProductIdentifier->getProduct(),
-                $CurrentProductIdentifier->getOfferConst(),
-                $CurrentProductIdentifier->getVariationConst(),
-                $CurrentProductIdentifier->getModificationConst(),
-            );
-
-            $SubProductStocksTotalAndReserveMessage->setTotal($product->getPrice()->getTotal());
-
-            $this->messageDispatch->dispatch($SubProductStocksTotalAndReserveMessage);
-
-            $this->logger->info(
-                sprintf(
-                    'Product %s: Снимаем резерв и остаток продукта на складе при списании (см. products-stock.log)',
-                    $CurrentProductIdentifier->getProduct(),
-                ),
-            );
 
             /**
              * Пересчитываем остатки в карточке товара

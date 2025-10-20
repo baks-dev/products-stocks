@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -28,14 +28,16 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Pickup;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,6 +58,7 @@ final class CompletedSelectedController extends AbstractController
         ProductsByProductStocksInterface $productDetail,
         CentrifugoPublishInterface $publish,
         ProductStocksEventInterface $productStocksEvent,
+        MessageDispatchInterface $messageDispatch
     ): Response
     {
 
@@ -71,7 +74,6 @@ final class CompletedSelectedController extends AbstractController
 
         $products = [];
 
-
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
@@ -84,9 +86,8 @@ final class CompletedSelectedController extends AbstractController
                 continue;
             }
 
-            $productStocksEventEntity->getDto($CompletedProductStockDTO);
-
             /** Скрываем идентификатор у остальных пользователей */
+
             $publish
                 ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
@@ -98,34 +99,44 @@ final class CompletedSelectedController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_selected_package'))
         {
-
             $this->refreshTokenForm($form);
 
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
-
-                $handle = $CompletedProductStockHandler->handle($CompletedProductStockDTO);
-
-                /** Скрываем идентификатор у всех пользователей */
-                $remove = $publish
-                    ->addData(['profile' => false]) // Скрывает у всех
-                    ->addData(['identifier' => (string) $handle->getId()])
-                    ->send('remove');
-
-                $flash = $this->addFlash
-                (
-                    'page.pickup',
-                    $handle instanceof ProductStock ? 'success.pickup' : 'danger.pickup',
-                    'products-stocks.admin',
-                    $handle,
-                    $remove ? 200 : 302,
+                $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
+                    $CompletedProductStockDTO->getEvent(),
+                    $this->getCurrentProfileUid(),
+                    $this->getCurrentUsr(),
                 );
 
+                $messageDispatch->dispatch(
+                    message: $MultiplyProductStocksCompletedMessage,
+                    transport: 'products-stocks',
+                );
             }
+
+            $flash = $this->addFlash
+            (
+                type: 'page.pickup',
+                message: 'success.pickup',
+                domain: 'products-stocks.admin',
+                status: $publish->isError() ? 302 : 200,
+            );
+
+            /** Если возникает ошибка отправки сокета */
+            if($publish->isError())
+            {
+                $this->redirectToRoute('products-stocks:admin.pickup.index');
+            }
+
             return $flash ?: $this->redirectToRoute('products-stocks:admin.pickup.index');
 
         }
 
+        if(true === $CompletedSelectedProductStockDTO->getCollection()->isEmpty())
+        {
+            throw new InvalidArgumentException('Page Not Found');
+        }
 
         /** Выводим несколько заказов */
         if($CompletedSelectedProductStockDTO->getCollection()->count() > 1)

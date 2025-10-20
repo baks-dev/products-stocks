@@ -29,6 +29,7 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Generator;
 
@@ -44,7 +45,7 @@ interface AllProductStocksMoveInterface
      * Метод возвращает все заявки, требующие перемещения между складами в виде пагинатора с ассоциативными массивами
      * @deprecated
      */
-    public function findPaginator(UserProfileUid $profile): PaginatorInterface;
+    public function findPaginator(UserProfileUid|UserProfile|false|null $profile): PaginatorInterface;
 
     /**
      * Метод возвращает все заявки, требующие перемещения между складами в виде резалтов

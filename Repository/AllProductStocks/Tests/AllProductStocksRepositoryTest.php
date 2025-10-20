@@ -25,12 +25,9 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocks\Tests;
 
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksResult;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\Attributes\DependsOnClass;
 use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;

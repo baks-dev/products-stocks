@@ -47,7 +47,7 @@ final class IndexController extends AbstractController
     #[Route('/admin/product/stocks/movings/{page<\d+>}', name: 'admin.moving.index', methods: ['GET', 'POST'])]
     public function incoming(
         Request $request,
-        AllProductStocksMoveInterface $allMove,
+        AllProductStocksMoveInterface $AllProductStocksMoveRepository,
         TokenUserGenerator $tokenUserGenerator,
         int $page = 0
     ): Response
@@ -90,11 +90,11 @@ final class IndexController extends AbstractController
             ->handleRequest($request);
 
         // Получаем список закупок ответственного лица
-        $query = $allMove
+        $query = $AllProductStocksMoveRepository
             ->search($search)
             ->productFilter($productFilter)
             ->filter($moveFilter)
-            ->findPaginator($this->getProfileUid());
+            ->findPaginator();
 
 
         return $this->render(

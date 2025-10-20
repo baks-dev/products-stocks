@@ -23,7 +23,9 @@
 
             <div class="w-100 text-uppercase text-muted opacity-50">Клиент</div>
             {# Клиент #}
-            {{ user_profile(current.order_client) }}
+            <div class="d-flex gap-3">
+                {{ user_profile(current.order_client) }}
+            </div>
 
             <hr>
 

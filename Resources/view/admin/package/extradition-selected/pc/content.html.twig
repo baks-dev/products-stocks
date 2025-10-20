@@ -20,7 +20,7 @@
             </div>
 
             {# "Скрыть" поле comment #}
-            {% do form.collection[loop.index-1].comment.setRendered() %}
+            {% do form.collection[loop.index0].comment.setRendered() %}
 
 
         {% endfor %}
