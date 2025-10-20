@@ -64,8 +64,8 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
+use Generator;
 
 final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
 {
@@ -98,10 +98,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
-    /**
-     * Метод возвращает все заявки, требующие перемещения между складами
-     */
-    public function findPaginator(UserProfileUid $profile): PaginatorInterface
+    private function builder(UserProfileUid $profile): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -131,7 +128,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
                 'invariable.event = event.id',
             );
 
-        if($this->filter->getProfile() instanceof UserProfileUid)
+        if($this->filter?->getProfile() instanceof UserProfileUid)
         {
             $dbal
                 ->andWhere('
@@ -537,7 +534,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         /**
          * Фильтр по свойства продукта
          */
-        if($this->productFilter->getProperty())
+        if($this->productFilter?->getProperty())
         {
             /** @var ProductFilterPropertyDTO $property */
             foreach($this->productFilter->getProperty() as $property)
@@ -572,7 +569,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->filter?->getDate())
         {
-            $date = $this->filter->getDate() ?: new DateTimeImmutable();
+            $date = $this->filter->getDate();
 
             $dbal
                 ->andWhere('DATE(modify.mod_date) BETWEEN :start AND :end')
@@ -584,7 +581,27 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         $dbal->allGroupByExclude();
 
-        return $this->paginator->fetchAllAssociative($dbal);
+        return $dbal;
+    }
 
+
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами в виде ассоциативного массива
+     */
+    public function findPaginator(UserProfileUid $profile): PaginatorInterface
+    {
+        $dbal = $this->builder($profile);
+
+        return $this->paginator->fetchAllAssociative($dbal);
+    }
+
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами в виде резалтов
+     */
+    public function findResult(UserProfileUid $profile): Generator
+    {
+        $dbal = $this->builder($profile);
+
+        return $dbal->fetchAllHydrate(AllProductStocksMoveResult::class);
     }
 }

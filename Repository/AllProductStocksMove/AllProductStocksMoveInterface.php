@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
 
 use BaksDev\Core\Form\Search\SearchDTO;
@@ -28,6 +30,7 @@ use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Generator;
 
 interface AllProductStocksMoveInterface
 {
@@ -37,6 +40,14 @@ interface AllProductStocksMoveInterface
 
     public function filter(ProductStockMoveFilterDTO $filter): self;
 
-    /** Метод возвращает все заявки, требующие перемещения между складами */
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами в виде пагинатора с ассоциативными массивами
+     * @deprecated
+     */
     public function findPaginator(UserProfileUid $profile): PaginatorInterface;
+
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами в виде резалтов
+    */
+    public function findResult(UserProfileUid $profile): Generator;
 }
