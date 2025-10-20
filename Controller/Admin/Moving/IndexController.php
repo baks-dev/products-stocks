@@ -94,6 +94,7 @@ final class IndexController extends AbstractController
             ->search($search)
             ->productFilter($productFilter)
             ->filter($moveFilter)
+            ->forProfile($this->getProfileUid())
             ->findPaginator();
 
 

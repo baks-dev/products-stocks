@@ -67,7 +67,6 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 
@@ -124,11 +123,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
+    public function setLimit(int $limit): self
+    {
+        $this->paginator->setLimit($limit);
+        return $this;
+    }
 
-    /**
-     * Метод возвращает все заявки, требующие перемещения между складами
-     */
-    public function findPaginator(): PaginatorInterface
+    private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -622,7 +623,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         // Поиск
         if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
-
             /** Поиск по индексам */
             $search = str_replace('-', ' ', $this->search->getQuery());
 
@@ -682,7 +682,7 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         if($this->filter?->getDate())
         {
-            $date = $this->filter->getDate() ?: new DateTimeImmutable();
+            $date = $this->filter->getDate();
 
             $dbal
                 ->andWhere('DATE(modify.mod_date) BETWEEN :start AND :end')
@@ -692,7 +692,17 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
         $dbal->allGroupByExclude();
 
-        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
+        return $dbal;
+    }
 
+
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами
+     */
+    public function findPaginator(): PaginatorInterface
+    {
+        $dbal = $this->builder();
+
+        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
     }
 }

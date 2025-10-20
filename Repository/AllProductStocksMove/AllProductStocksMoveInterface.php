@@ -21,6 +21,8 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksMove;
 
 use BaksDev\Core\Form\Search\SearchDTO;
@@ -40,6 +42,10 @@ interface AllProductStocksMoveInterface
 
     public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
 
-    /** Метод возвращает все заявки, требующие перемещения между складами */
+    public function setLimit(int $limit): self;
+
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами в виде пагинатора
+     */
     public function findPaginator(): PaginatorInterface;
 }
