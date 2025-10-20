@@ -69,7 +69,6 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserPro
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
-use Generator;
 
 final class AllProductStocksMoveRepository implements AllProductStocksMoveInterface
 {
@@ -124,7 +123,13 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
-    private function builder(UserProfileUid $profile): DBALQueryBuilder
+    public function setLimit(int $limit): self
+    {
+        $this->paginator->setLimit($limit);
+        return $this;
+    }
+
+    private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -618,7 +623,6 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         // Поиск
         if(($this->search instanceof SearchDTO) && $this->search->getQuery())
         {
-
             /** Поиск по индексам */
             $search = str_replace('-', ' ', $this->search->getQuery());
 
@@ -693,22 +697,12 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
 
 
     /**
-     * Метод возвращает все заявки, требующие перемещения между складами в виде ассоциативного массива
+     * Метод возвращает все заявки, требующие перемещения между складами
      */
-    public function findPaginator(UserProfileUid|UserProfile|false|null $profile): PaginatorInterface
+    public function findPaginator(): PaginatorInterface
     {
-        $dbal = $this->builder($profile);
+        $dbal = $this->builder();
 
-        return $this->paginator->fetchAllAssociative($dbal);
-    }
-
-    /**
-     * Метод возвращает все заявки, требующие перемещения между складами в виде резалтов
-     */
-    public function findResult(UserProfileUid $profile): Generator
-    {
-        $dbal = $this->builder($profile);
-
-        return $dbal->fetchAllHydrate(AllProductStocksMoveResult::class);
+        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
     }
 }

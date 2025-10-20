@@ -98,7 +98,9 @@ final class MovingReportController extends AbstractController
             ->search($search)
             ->productFilter($productFilter)
             ->filter($moveFilter)
-            ->findResult($this->getProfileUid());
+//            ->setLimit(1000)
+            ->findPaginator()
+            ->getData();
 
 
         // Создаем новый объект Spreadsheet

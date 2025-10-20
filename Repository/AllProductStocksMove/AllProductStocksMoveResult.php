@@ -36,7 +36,6 @@ use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use BaksDev\Users\Profile\UserProfile\Type\Event\UserProfileEventUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use DateTimeImmutable;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see AllProductStocksMoveResult */
 final readonly class AllProductStocksMoveResult

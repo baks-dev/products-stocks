@@ -31,7 +31,6 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Generator;
 
 interface AllProductStocksMoveInterface
 {
@@ -41,14 +40,12 @@ interface AllProductStocksMoveInterface
 
     public function filter(ProductStockMoveFilterDTO $filter): self;
 
-    /**
-     * Метод возвращает все заявки, требующие перемещения между складами в виде пагинатора с ассоциативными массивами
-     * @deprecated
-     */
-    public function findPaginator(UserProfileUid|UserProfile|false|null $profile): PaginatorInterface;
+    public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
+
+    public function setLimit(int $limit): self;
 
     /**
-     * Метод возвращает все заявки, требующие перемещения между складами в виде резалтов
-    */
-    public function findResult(UserProfileUid $profile): Generator;
+     * Метод возвращает все заявки, требующие перемещения между складами в виде пагинатора
+     */
+    public function findPaginator(): PaginatorInterface;
 }
