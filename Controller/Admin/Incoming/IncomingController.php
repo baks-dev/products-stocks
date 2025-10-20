@@ -61,8 +61,7 @@ final class IncomingController extends AbstractController
             ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
             ->send('remove');
 
-        $IncomingProductStockDTO = new IncomingProductStockDTO();
-        $ProductStockEvent->getDto($IncomingProductStockDTO);
+        $IncomingProductStockDTO = $ProductStockEvent->getDto(IncomingProductStockDTO::class);
 
         // Форма добавления
         $form = $this

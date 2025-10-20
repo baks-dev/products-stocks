@@ -19,7 +19,7 @@
 
         <div class="modal-body">
 
-            {% if recommender %}
+            {% if recommender and recommender.storage is not empty %}
                 <div class="alert alert-light mb-3" role="alert">
                     Рекомендуемое место складировния « <strong>{{ recommender.storage }}</strong> »
                 </div>

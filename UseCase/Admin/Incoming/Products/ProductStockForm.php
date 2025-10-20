@@ -24,6 +24,7 @@
 namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming\Products;
 
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -34,10 +35,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class ProductStockForm extends AbstractType
 {
-    public function __construct(private readonly ProductDetailByConstInterface $productDetailByConst) {}
+    public function __construct(
+        private readonly ProductDetailByConstInterface $productDetailByConst,
+        private readonly Security $security
+    ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // ROLE_PRODUCT_STOCK_EDIT
+
+
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
 
             /** @var ProductStockDTO $product */
@@ -57,7 +64,12 @@ final class ProductStockForm extends AbstractType
 
         // Количество
 
-        $builder->add('total', IntegerType::class, ['disabled' => true]);
+        $builder->add('total', IntegerType::class, [
+            'disabled' => false === (
+                    $this->security->isGranted('ROLE_ADMIN')
+                    || $this->security->isGranted('ROLE_PRODUCT_STOCK_EDIT')
+                ),
+        ]);
 
         $builder->add('storage', TextType::class, ['required' => false]);
     }

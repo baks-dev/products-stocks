@@ -18,18 +18,18 @@
 
 
 {# Чекбокс #}
-<label>
+{# <label>
     <input class="form-check-input ms-3 p-2" type="checkbox"
-            {# onchange=checkedItem(); #}
+#}{# onchange=checkedItem(); #}{#
            value="{{ item.event }}">
-</label>
+</label> #}
 
 
 <div id="usecase-{{ item.event }}-content" class="d-none">
     <ul class="leader list-group list-group-flush ">
 
         {# Редактировать #}
-        {% if  is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN') %}
+        {# {% if  is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-product:admin.newedit.edit', {id: item.event }) }}"
@@ -39,10 +39,10 @@
                 </a>
             </li>
 
-        {% endif %}
+        {% endif %} #}
 
         {# Удалить #}
-        {% if  is_granted(ROLE~'_DELETE') or is_granted('ROLE_ADMIN') %}
+        {# {% if  is_granted(ROLE~'_DELETE') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-product:admin.delete', { id: item.event }) }}"
@@ -54,7 +54,7 @@
                 </a>
             </li>
 
-        {% endif %}
+        {% endif %} #}
 
     </ul>
 </div>

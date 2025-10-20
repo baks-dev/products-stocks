@@ -97,7 +97,6 @@ final class IndexController extends AbstractController
             ->forProfile($this->getProfileUid())
             ->findPaginator();
 
-
         return $this->render(
             [
                 'query' => $query,

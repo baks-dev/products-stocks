@@ -119,6 +119,11 @@ final class WarehouseController extends AbstractController
                 ($handle instanceof ProductStock) ? 200 : 302,
             );
 
+            if($publish->isError())
+            {
+                return $this->redirectToReferer();
+            }
+
             return $flash ?: $this->redirectToRoute('products-stocks:admin.purchase.index');
         }
 

@@ -80,12 +80,11 @@ final class IndexController extends AbstractController
         /**
          * Фильтр статусов
          */
-        $filter_status = new ProductStockStatusFilterDTO();
 
         $filterStatusForm = $this
             ->createForm(
                 type: ProductStockStatusFilterForm::class,
-                data: $filter_status,
+                data: $filter_status = new ProductStockStatusFilterDTO(),
                 options: ['action' => $this->generateUrl('products-stocks:admin.incoming.index'),]
             )
             ->handleRequest($request);

@@ -1,5 +1,7 @@
 {% trans_default_domain('products-stocks.admin') %}
 
+{# @var item \BaksDev\Products\Stocks\Repository\AllProductStocksIncoming\ProductStocksIncomingResult #}
+
 <main class="main d-print-none">
 
     <section class="container px-4 mb-5">
@@ -174,7 +176,7 @@
                 </div>
 
                 {# Фильтр по статусам #}
-                <div class="m-1 ms-2">
+                <div class="w-25 m-1 ms-2">
                     {{ include(_self|replace({ "content.html.twig": "/filter/filter-status.html.twig" })) }}
                 </div>
 
@@ -186,7 +188,7 @@
 
             {# Контент > #}
 
-            <div class="fw-bold mt-2">
+            {# <div class="fw-bold mt-2">
                 {% set card = null %}
 
                 {% for item in query.data %}
@@ -196,137 +198,24 @@
                 {% if card is not null %}
                 </table></div>
         </div>
-        {% endif %}
+        {% endif %} #}
 
 
-        <div class="card mb-3 border-light">
-            <div class="card-header bg-body border-light">
-
-                <div class="card-title w-100 d-flex gap-5 justify-content-between text-secondary">
-                    <div>
-
-                        {% if item.status == 'incoming' %}
-
-                            <button
-                                    class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal"
-                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                    title="Приходный ордер"
-                            >
-                                <span class="badge text-bg-success me-3">Приход</span> # {{ item.number }}
-                            </button>
-
-                        {% endif %}
-
-                        {% if item.status == 'completed' %}
-
-                            <button
-                                    class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal"
-                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                    title="Расходный ордер"
-                            >
-                                <span class="badge text-bg-danger me-3">Расход</span> # {{ item.number }}
-                            </button>
-
-                        {% endif %}
-
-
-                        {# {% else %}
-
-                            <button class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal"
-                                    data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
-                                    title="Отгрузка"
-                            >
-                                <span class="badge text-bg-danger me-3">Отгрузка</span> # {{ item.number }}
-                            </button>
-
-                        {% endif %} #}
-
-                        <div class="text-nowrap fw-normal small">
-                            {{ item.mod_date|date('d.m.Y H:i') }}
+            {% for item in query.data %}
+                {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+            {% else %}
+                <div class="alert alert-warning m-0 w-100" role="alert">
+                    <div class="d-flex align-items-baseline gap-3">
+                        <div>
+                            <div class="icon rounded-circle bg-contain p-2 bg-primary text-white"
+                                 style="width: 10px; height: 10px;"><span class="small">!</span></div>
+                        </div>
+                        <div class="small lh-1">
+                            Информация по данному запросу отсутствует
                         </div>
                     </div>
-
-                    {# СКЛАД #}
-                    {# <div class="text-dark text-nowrap">
-                        <div class="text-muted opacity-50">Склад:</div>
-                        {{ item.warehouse_name }}
-                    </div> #}
-
-
-                    {# ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ #}
-                    <div class="d-flex w-75 gap-3">
-
-                        <div class="ms-0">
-
-                            {% if app.user.profile == item.user_profile_id %}
-
-                                <small>Склад: &nbsp;</small>
-                                <div
-                                        class="fw-bolder mb- text-decoration-none text-dark">
-                                    {{ item.users_profile_username }}
-                                </div>
-
-                            {% else %}
-
-                                <small>Склад назначения: &nbsp;</small>
-                                <div
-                                        class="fw-bolder mb- text-decoration-none text-dark">
-                                    {{ item.users_profile_username }}
-                                </div>
-
-                            {% endif %}
-
-                            {% if item.comment is not null %}
-
-                                <div class="text-danger fs-7 fw-bolder">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path opacity="0.3"
-                                              d="M20 3H4C2.89543 3 2 3.89543 2 5V16C2 17.1046 2.89543 18 4 18H4.5C5.05228 18 5.5 18.4477 5.5 19V21.5052C5.5 22.1441 6.21212 22.5253 6.74376 22.1708L11.4885 19.0077C12.4741 18.3506 13.6321 18 14.8167 18H20C21.1046 18 22 17.1046 22 16V5C22 3.89543 21.1046 3 20 3Z"
-                                              fill="currentColor"></path>
-                                        <rect x="6" y="12" width="7" height="2" rx="1"
-                                              fill="currentColor"></rect>
-                                        <rect x="6" y="7" width="12" height="2" rx="1"
-                                              fill="currentColor"></rect>
-                                    </svg>
-
-                                    {{ item.comment }}
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-                    </div>
-
                 </div>
-
-            </div>
-
-            <div class="card-body fw-normal">
-
-                <table class="">
-
-                    {{ include(_self|replace({ "content.html.twig": "_table.thead.html.twig" })) }}
-
-                    <tbody>
-                    {% set card = item.id %}
-                    {% endif %}
-
-                    {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
-                    {% endfor %}
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
-
-        {# < Контент #}
+            {% endfor %}
 
         {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 

@@ -27,15 +27,18 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllProductStocksIncomingInterface
 {
-    public function search(SearchDTO $search): static;
+    public function search(SearchDTO $search): self;
 
-    public function filter(ProductFilterDTO $filter): static;
+    public function filter(ProductFilterDTO $filter): self;
 
-    public function filterStatus(ProductStockStatusFilterDTO $filter_status): static;
+    public function filterStatus(ProductStockStatusFilterDTO $filter_status): self;
+
+    public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
 
     /** Возвращает список всех принятых на склад продуктов */
     public function findPaginator(): PaginatorInterface;

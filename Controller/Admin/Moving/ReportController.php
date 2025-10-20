@@ -49,13 +49,17 @@ use Twig\Environment;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_MOVING')]
-final class MovingReportController extends AbstractController
+final class ReportController extends AbstractController
 {
     /**
      * Печать информации о перемещениях
      */
     #[Route('/admin/products/stocks/report', name: 'admin.moving.report', methods: ['GET', 'POST'])]
-    public function index(Request $request, AllProductStocksMoveInterface $allMove, Environment $environment): Response
+    public function index(
+        Request $request,
+        AllProductStocksMoveInterface $allMove,
+        Environment $environment
+    ): Response
     {
         // Поиск
         $search = new SearchDTO();
@@ -84,12 +88,10 @@ final class MovingReportController extends AbstractController
 
 
         // Фильтр
-        $moveFilter = new ProductStockMoveFilterDTO();
-
         $this
             ->createForm(
                 type: ProductStockMoveFilterForm::class,
-                data: $moveFilter,
+                data: $moveFilter = new ProductStockMoveFilterDTO(),
                 options: ['action' => $this->generateUrl('products-stocks:admin.moving.index')],
             )
             ->handleRequest($request);
@@ -102,6 +104,10 @@ final class MovingReportController extends AbstractController
             ->findPaginator()
             ->getData();
 
+        if(empty($result))
+        {
+            return $this->redirectToReferer();
+        }
 
         // Создаем новый объект Spreadsheet
         $spreadsheet = new Spreadsheet();

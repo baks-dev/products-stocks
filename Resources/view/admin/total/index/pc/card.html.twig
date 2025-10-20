@@ -96,7 +96,13 @@
     </td>
 
     <td>
-        {{ money(item.productPrice) }}
+        {% if item.productPrice %}
+            {{ money(item.productPrice) }}
+        {% else %}
+            <span class="badge text-bg-danger text-nowrap">
+                Цена не указана
+            </span>
+        {% endif %}
     </td>
 
 </tr>

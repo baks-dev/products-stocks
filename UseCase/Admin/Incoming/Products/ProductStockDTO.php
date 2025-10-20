@@ -54,7 +54,7 @@ final class ProductStockDTO implements ProductStockProductInterface
     /** Количество */
     #[Assert\NotBlank]
     #[Assert\Range(min: 0)]
-    private readonly int $total;
+    private int $total;
 
     /** Место складирования */
     private ?string $storage = null;
