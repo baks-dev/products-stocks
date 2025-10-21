@@ -206,6 +206,11 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                 [self::class.':'.__LINE__],
             );
 
+            if(false === empty($ProductStockEvent->getComment()))
+            {
+                $ProductStockTotal->setComment($ProductStockEvent->getComment());
+            }
+
             $this->handle($ProductStockTotal, $product->getTotal());
 
         }
