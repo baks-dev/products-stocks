@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -39,7 +39,7 @@ final class MovingProductStockHandler extends AbstractHandler
 
         $this->main = new ProductStock();
         $this->event = new ProductStockEvent();
-        
+
         $this->setCommand($command);
         $this->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
@@ -57,7 +57,9 @@ final class MovingProductStockHandler extends AbstractHandler
 
 
         /* Отправляем сообщение в шину */
-        $this->messageDispatch->dispatch(
+        $this->messageDispatch
+            ->addClearCacheOther('avito-board')
+            ->dispatch(
             message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
             transport: 'products-stocks'
         );

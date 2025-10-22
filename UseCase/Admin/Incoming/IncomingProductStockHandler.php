@@ -52,6 +52,7 @@ final class IncomingProductStockHandler extends AbstractHandler
         /* Отправляем сообщение в шину */
         $this->messageDispatch
             ->addClearCacheOther('products-product') // для обновления остатков
+            ->addClearCacheOther('avito-board')
             ->dispatch(
                 message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
                 transport: 'products-stocks'
