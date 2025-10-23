@@ -82,7 +82,7 @@ final class IncomingController extends AbstractController
             {
                 /** Скрываем идентификатор у всех пользователей */
 
-                $remove = $publish
+                $publish
                     ->addData(['profile' => false]) // Скрывает у всех
                     ->addData(['identifier' => (string) $ProductStock->getId()])
                     ->send('remove');

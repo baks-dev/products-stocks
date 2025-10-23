@@ -515,6 +515,15 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ) AS product_price
         ');
 
+        $dbal->addSelect('
+            COALESCE(
+                product_modification_price.old,
+                product_variation_price.old,
+                product_offer_price.old,
+                product_price.old
+            ) AS old_product_price
+        ');
+
 
         /** Персональная скидка из профиля авторизованного пользователя */
         if(true === $dbal->bindCurrentProfile())

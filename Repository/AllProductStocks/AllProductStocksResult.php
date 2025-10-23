@@ -67,6 +67,7 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private ?string $product_modification_const, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
         private ?string $product_article, //" => "TC101-15-185-55-82V"
         private ?int $product_price, //" => 490000
+        private ?int $old_product_price, //" => 490000
 
         private ?string $product_image, //" => "/upload/product_photo/6c0003c59af4454b3e3697ddec435f3f"
         private ?string $product_image_ext, //" => "webp"
@@ -242,6 +243,37 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         }
 
         return $price;
+    }
+
+
+    public function getOldProductPrice(): Money|false
+    {
+        if(empty($this->old_product_price))
+        {
+            return false;
+        }
+
+        $oldPrice = new Money($this->old_product_price, true);
+
+        /** Кастомная цена */
+        if(false === empty($this->promotion_price) && true === $this->promotion_active)
+        {
+            $oldPrice->applyString($this->promotion_price);
+        }
+
+        /** Скидка магазина */
+        if(false === empty($this->project_discount))
+        {
+            $oldPrice->applyString($this->project_discount);
+        }
+
+        /** Скидка пользователя */
+        if(false === empty($this->profile_discount))
+        {
+            $oldPrice->applyString($this->profile_discount);
+        }
+
+        return $oldPrice;
     }
 
     /**

@@ -189,6 +189,13 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     $product->getStorage(),
                 );
 
+
+                if(false === empty($ProductStockEvent->getComment()))
+                {
+                    /** Сохраняем комментарий из прихода */
+                    $ProductStockTotal->setComment($ProductStockEvent->getComment());
+                }
+
                 $this->entityManager->persist($ProductStockTotal);
                 $this->entityManager->flush();
 
@@ -206,8 +213,10 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                 [self::class.':'.__LINE__],
             );
 
+
             if(false === empty($ProductStockEvent->getComment()))
             {
+                /** Сохраняем комментарий из прихода */
                 $ProductStockTotal->setComment($ProductStockEvent->getComment());
             }
 

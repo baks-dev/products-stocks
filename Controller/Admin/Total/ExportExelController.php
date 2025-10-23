@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -92,11 +92,12 @@ final class ExportExelController extends AbstractController
             ->setCellValue('B1', 'Наименование')
             ->setCellValue('C1', 'Торговое предложение')
             ->setCellValue('D1', 'Стоимость')
-            ->setCellValue('E1', 'Наличие')
-            ->setCellValue('F1', 'Резерв')
-            ->setCellValue('G1', 'Доступно')
-            ->setCellValue('H1', 'Сумма')
-            ->setCellValue('I1', 'Место');
+            ->setCellValue('E1', 'Старая цена')
+            ->setCellValue('F1', 'Наличие')
+            ->setCellValue('G1', 'Резерв')
+            ->setCellValue('H1', 'Доступно')
+            ->setCellValue('I1', 'Сумма')
+            ->setCellValue('J1', 'Место');
 
 
         $sheet->getColumnDimension('A')->setAutoSize(25);
@@ -109,6 +110,7 @@ final class ExportExelController extends AbstractController
         $sheet->getColumnDimension('G')->setAutoSize(10);
         $sheet->getColumnDimension('H')->setAutoSize(10);
         $sheet->getColumnDimension('I')->setAutoSize(10);
+        $sheet->getColumnDimension('J')->setAutoSize(10);
 
         $key = 2;
 
@@ -180,11 +182,18 @@ final class ExportExelController extends AbstractController
             $sheet->setCellValue('C'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
 
             $sheet->setCellValue('D'.$key, $Money ? $Money->getValue() : 0); // Стоимость
-            $sheet->setCellValue('E'.$key, $data->getStockTotal()); // Наличие
-            $sheet->setCellValue('F'.$key, $data->getStockReserve()); // Резерв
-            $sheet->setCellValue('G'.$key, $data->getQuantity()); // Доступно
-            $sheet->setCellValue('H'.$key, $total_price); // Сумма
-            $sheet->setCellValue('I'.$key, $data->getStockStorage()); // Место
+
+            $sheet->setCellValue('E'.$key,
+                $data->getOldProductPrice() && $data->getOldProductPrice()->getValue() !== $Money->getValue()
+                    ? $data->getOldProductPrice()->getValue()
+                    : '',
+            ); // Предыдущая стоимость
+
+            $sheet->setCellValue('F'.$key, $data->getStockTotal()); // Наличие
+            $sheet->setCellValue('G'.$key, $data->getStockReserve()); // Резерв
+            $sheet->setCellValue('H'.$key, $data->getQuantity()); // Доступно
+            $sheet->setCellValue('I'.$key, $total_price); // Сумма
+            $sheet->setCellValue('J'.$key, $data->getStockStorage()); // Место
 
 
             /** Подсчет ИТОГО */
@@ -198,8 +207,8 @@ final class ExportExelController extends AbstractController
         /** Общее количество продукции и общая стоимость */
 
         $sheet->setCellValue('A'.$key, 'Итого:');
-        $sheet->setCellValue('D'.$key, $allTotal); // Наличие
-        $sheet->setCellValue('G'.$key, $allPrice); // Сумма
+        $sheet->setCellValue('D'.$key, $allPrice); // Сумма
+        $sheet->setCellValue('F'.$key, $allTotal); // Наличие
 
 
         /**

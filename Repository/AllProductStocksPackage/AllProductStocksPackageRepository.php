@@ -129,7 +129,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ')
             ->setParameter(
                 key: 'profile',
-                value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
+                value: ($this->profile instanceof UserProfileUid) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE,
             );
 
@@ -159,9 +159,10 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         {
             /** Подгружаем разделенные заказы */
             $existDeliveryPackage = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-            $existDeliveryPackage->select('1');
-            $existDeliveryPackage->from(DeliveryPackage::class, 'bGIuGLiNkf');
-            $existDeliveryPackage->where('bGIuGLiNkf.event = delivery_stocks.event');
+            $existDeliveryPackage
+                ->select('1')
+                ->from(DeliveryPackage::class, 'bGIuGLiNkf')
+                ->where('bGIuGLiNkf.event = delivery_stocks.event');
 
             $dbal->leftJoin(
                 'stock',
@@ -240,16 +241,6 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_print.event = order_event.id',
             );
 
-        if($this->filter->getPrint())
-        {
-            $dbal->andWhere('order_print.printed IS TRUE');
-        }
-        else
-        {
-            $dbal->andWhere('order_print.printed IS NOT TRUE');
-        }
-
-
         $dbal->leftJoin(
             'orders',
             OrderUser::class,
@@ -260,7 +251,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $delivery_condition = 'order_delivery.usr = order_user.id';
 
-        if($this->filter !== null)
+        if($this->filter instanceof ProductStockPackageFilterInterface)
         {
             if($this->filter->getDate() instanceof DateTimeImmutable)
             {
@@ -278,6 +269,17 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 $delivery_condition .= ' AND order_delivery.delivery = :delivery';
                 $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
             }
+
+            if(true === $this->filter->getPrint())
+            {
+                $dbal->andWhere('order_print.printed IS TRUE');
+            }
+
+            if(false === $this->filter->getPrint())
+            {
+                $dbal->andWhere('order_print.printed IS NOT TRUE');
+            }
+
         }
 
         $dbal
