@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Print\ProductStockPrint;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
@@ -101,7 +102,6 @@ class ProductStockEvent extends EntityEvent
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private string $number;
 
-
     /**
      * Постоянная величина
      */
@@ -119,6 +119,10 @@ class ProductStockEvent extends EntityEvent
     /** Идентификатор группы заказов */
     #[ORM\OneToOne(targetEntity: ProductStockPart::class, mappedBy: 'event', cascade: ['all'])]
     private ?ProductStockPart $part = null;
+
+    /** Флаг, если накладная по заявке была отпечатана */
+    #[ORM\OneToOne(targetEntity: ProductStockPrint::class, mappedBy: 'event', cascade: ['all'])]
+    private ?ProductStockPrint $print = null;
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
