@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Print\ProductStockPrint;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
@@ -69,13 +70,13 @@ class ProductStockEvent extends EntityEvent
     /** Статус заявки */
     #[Assert\NotBlank]
     #[ORM\Column(type: ProductStockStatus::TYPE)]
-    protected ProductStockStatus $status;
+    private ProductStockStatus $status;
 
     /** Коллекция продукции в заявке */
     #[Assert\Valid]
     #[Assert\Count(min: 1)]
     #[ORM\OneToMany(targetEntity: ProductStockProduct::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
-    protected Collection $product;
+    private Collection $product;
 
     /** Модификатор */
     #[ORM\OneToOne(targetEntity: ProductStockModify::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
@@ -291,5 +292,13 @@ class ProductStockEvent extends EntityEvent
         return $this->part?->getValue() instanceof ProductStockPartUid;
     }
 
+    public function getStatus(): ProductStockStatus
+    {
+        return $this->status;
+    }
 
+    public function isStatusEquals(mixed $status): bool
+    {
+        return $this->status->equals($status);
+    }
 }

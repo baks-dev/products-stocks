@@ -59,18 +59,22 @@ final readonly class ProductStocksIncomingResult
         private string $product_event, // ID события продукта
         private string $product_url, // URL продукта
         private string $product_name, // Название продукта
-        private string $product_offer_uid, // UID предложения продукта
-        private string $product_offer_value, // Значение предложения
+
+        private ?string $product_offer_uid, // UID предложения продукта
+        private ?string $product_offer_value, // Значение предложения
         private ?string $product_offer_postfix, // Постфикс предложения
-        private string $product_offer_reference, // Ссылка на предложение
-        private string $product_variation_uid, // UID вариации продукта
-        private string $product_variation_value, // Значение вариации
+        private ?string $product_offer_reference, // Ссылка на предложение
+
+        private ?string $product_variation_uid, // UID вариации продукта
+        private ?string $product_variation_value, // Значение вариации
         private ?string $product_variation_postfix, // Постфикс вариации
-        private string $product_variation_reference, // Ссылка на вариацию
-        private string $product_modification_uid, // UID модификации продукта
-        private string $product_modification_value, // Значение модификации
-        private string $product_modification_postfix, // Постфикс модификации
-        private string $product_modification_reference, // Ссылка на модификацию
+        private ?string $product_variation_reference, // Ссылка на вариацию
+
+        private ?string $product_modification_uid, // UID модификации продукта
+        private ?string $product_modification_value, // Значение модификации
+        private ?string $product_modification_postfix, // Постфикс модификации
+        private ?string $product_modification_reference, // Ссылка на модификацию
+
         private string $product_article, // Артикул продукта
 
         private ?string $product_image, // Изображение продукта
