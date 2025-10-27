@@ -51,7 +51,7 @@ final class WarehouseController extends AbstractController
     public function incoming(
         #[MapEntity] ProductStockEvent $ProductStockEvent,
         Request $request,
-        WarehouseProductStockHandler $handler,
+        WarehouseProductStockHandler $WarehouseProductStockHandler,
         CentrifugoPublishInterface $publish,
     ): Response
     {
@@ -100,23 +100,23 @@ final class WarehouseController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $handle = $handler->handle($WarehouseProductStockDTO);
+            $ProductStock = $WarehouseProductStockHandler->handle($WarehouseProductStockDTO);
 
-            if($handle instanceof ProductStock)
+            if($ProductStock instanceof ProductStock)
             {
                 /** Скрываем идентификатор у всех пользователей */
                 $publish
                     ->addData(['profile' => false]) // Скрывает у всех
-                    ->addData(['identifier' => (string) $handle->getId()])
+                    ->addData(['identifier' => (string) $ProductStock->getId()])
                     ->send('remove');
             }
 
             $flash = $this->addFlash(
                 'page.warehouse',
-                ($handle instanceof ProductStock) ? 'success.warehouse' : 'danger.warehouse',
+                ($ProductStock instanceof ProductStock) ? 'success.warehouse' : 'danger.warehouse',
                 'products-stocks.admin',
-                $handle,
-                ($handle instanceof ProductStock) ? 200 : 302,
+                $ProductStock,
+                ($ProductStock instanceof ProductStock) ? 200 : 302,
             );
 
             if($publish->isError())

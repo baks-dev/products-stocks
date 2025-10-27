@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -76,15 +76,15 @@ final class PurchaseController extends AbstractController
             {
                 $purchaseDTO->setProduct(new ArrayCollection());
                 $purchaseDTO->addProduct($product);
-                $handle = $PurchaseProductStockHandler->handle($purchaseDTO);
+                $ProductStock = $PurchaseProductStockHandler->handle($purchaseDTO);
 
-                if(!$handle instanceof ProductStock)
+                if(false === ($ProductStock instanceof ProductStock))
                 {
                     $this->addFlash(
                         'page.purchase',
                         'danger.purchase',
                         'products-stocks.admin',
-                        $handle
+                        $ProductStock,
                     );
                 }
             }
