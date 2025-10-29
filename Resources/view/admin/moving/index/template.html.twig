@@ -15,6 +15,7 @@
     <link data-href="/assets/{{ version }}/plugins/nice-select2/nice-select2.min.css" class="lazy" rel="stylesheet"
           type="text/css">
     <link href="/assets/{{ version }}/plugins/datepicker/datepicker.min.css" rel="stylesheet">
+    <link href="/assets/{{ version }}/css/print.min.css" rel="stylesheet">
 {% endblock %}
 
 {# ---- КОНТЕНТ-БЛОК ------------------------------------------------------------ #}
@@ -88,6 +89,100 @@
         let forms = input.closest("form");
         forms.submit();
     }
+
+
+/** Обработчики кнопок выбора заявок */
+let select_all_to_invoice = document.querySelector("#select-all-to-invoice");
+let add_all_to_invoice = document.querySelector("#add-all-to-invoice");
+
+
+/** Выбор из списка  */
+select_all_to_invoice?.addEventListener("click", function() {
+
+	/* Выбрать все */
+	select_all_to_invoice.classList.toggle("selected");
+
+	if(select_all_to_invoice.classList.contains("selected"))
+	{
+		select_all_to_invoice.innerText = "Снять выбор";
+		select_all_to_invoice.classList.remove("btn-outline-primary");
+		select_all_to_invoice.classList.add("btn-primary");
+	}
+	else
+   {
+	   select_all_to_invoice.innerText = "Выбрать все";
+	   select_all_to_invoice.classList.add("btn-outline-primary");
+	   select_all_to_invoice.classList.remove("btn-primary");
+   }
+
+
+    const stocks = document.querySelectorAll(".add-all-to-invoice");
+
+    /* Выбрать все НЕ disabled (т.е. те, которые не на производстве) */
+    stocks.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_invoice.classList.contains("selected");} } );
+
+    const checkboxes = document.querySelectorAll(".add-all-to-invoice");
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+    if (atLeastOneChecked) {
+        add_all_to_invoice.classList.remove("d-none");
+    }
+    else {
+        add_all_to_invoice.classList.add("d-none");
+    }
+});
+
+var checkboxs_all_to_invoice = document.querySelectorAll(".add-all-to-invoice");
+
+/** Скрыть или показать кнопку "Добавить выбранные" */
+for (checkbox_all_to_invoice of checkboxs_all_to_invoice) {
+
+    checkbox_all_to_invoice?.addEventListener("click", function() {
+
+        const checkboxes = document.querySelectorAll(".add-all-to-invoice");
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+        if (atLeastOneChecked) {
+           add_all_to_invoice.classList.remove("d-none");
+        }
+        else {
+            add_all_to_invoice.classList.add("d-none");
+        }
+
+    });
+}
+
+</script>
+
+
+<script nonce="{{ csp_nonce() }}">
+
+    let hfSaZAPeF = 100;
+
+    setTimeout(function xA2vFjaW7B()
+    {
+        if(typeof centrifuge !== 'object')
+        {
+            if(hfSaZAPeF > 1000) { return; }
+
+            hfSaZAPeF = hfSaZAPeF * 2;
+            return setTimeout(xA2vFjaW7B, hfSaZAPeF);
+        }
+
+        const publish = centrifuge.newSubscription('products-stocks');
+
+        publish.on('publication', function(ctx)
+        {
+
+            if(ctx.data.profile !== '{{ current_profile }}')
+            {
+                /* Удаляем у остальных менеджеров заявку на перемещение при печати */
+                document.getElementById(ctx.data.stock)?.remove();
+            }
+
+        }).subscribe();
+
+    }, 100);
 
 </script>
 

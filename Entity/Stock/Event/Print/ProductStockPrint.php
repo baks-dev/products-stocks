@@ -53,7 +53,7 @@ class ProductStockPrint extends EntityReadonly
     /** Связь на событие */
     #[Assert\NotBlank]
     #[ORM\Id]
-    #[ORM\OneToOne(targetEntity: ProductStockEvent::class, inversedBy: 'print')]
+    #[ORM\OneToOne(targetEntity: ProductStockEvent::class, inversedBy: 'printed')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockEvent $event;
 

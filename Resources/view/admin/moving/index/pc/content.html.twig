@@ -176,6 +176,31 @@
                         {{ form_row(move_filter.profile, { placeholder : 'Выберите склад ...', attr : { 'data-select' : 'select2' } }) }}
                     </div>
 
+                    {# Print #}
+                    <div>
+                        <div class="d-flex justify-content-around radio-buttons clearfix"
+                             data-buttons="true"
+                             style="clear: both"
+                        >
+                            <label class="btn px-2 py-1 border-dotted rounded-3 w-100 {{ move_filter.print.vars.data ? 'active' }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+
+                                        <div class="d-flex align-items-center">
+                                            {{ form_widget(move_filter.print, { label: false }) }}
+                                            <div class="form-check ps-0 text-nowrap">
+                                                {# Продукт активный #}
+                                                {{ 'Печать выполнена'|trans }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                    </div>
+
+
                     <div class="d-flex gap-1 justify-content-end" style="width: 150px;">
 
                         {# НАЗАД #}
@@ -252,6 +277,57 @@
                     </div>
                 </div>
             {% endfor %}
+
+
+            {% if query.data %}
+
+                <div class="position-absolute mt-2 pt-1 small">
+                    <strong class="">Множественный выбор:</strong>
+                </div>
+
+                <div class="to-invoice-actions d-flex gap-2 sticky-bottom ps-5 pb-3 pt-2 z-1"
+                     style="margin-left: 130px; max-width: 100px;">
+
+                    <button
+                            class="btn btn-sm btn-outline-primary text-nowrap mb-2"
+                            role="tooltip"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-delay='{"show":600,"hide":100}'
+                            title="Выбрать все"
+                            id="select-all-to-invoice"
+                    >
+                        Выбрать все
+                    </button>
+
+                    <a
+                            class="btn btn-sm btn-outline-primary text-nowrap mb-2 d-none"
+                            role="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-delay='{"show":600,"hide":100}'
+                            title="Акт приема-передачи для выбранных"
+                            id="add-all-to-invoice"
+
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal"
+
+                            data-post-class="add-all-to-invoice"
+
+                            data-method="post"
+                            data-collection-form="collection"
+                            data-formname="{{ add_selected_form_name }}"
+                            href="{{ path('products-stocks:admin.moving.document', { print: true } ) }}"
+
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-printer-fill" viewBox="0 0 16 16">
+                            <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/>
+                            <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        </svg> &nbsp; Акт приема-передачи для выбранных
+                    </a>
+
+                </div>
+            {% endif %}
 
 
             {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
