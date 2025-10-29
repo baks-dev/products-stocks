@@ -88,7 +88,9 @@ final readonly class AllProductStocksMoveResult
 
         private int $total, // 1 - количество в заявке
         private ?int $stock_total, // 1156 - общий запас
-        private ?string $stock_storage // "10: [78], : [1078]" - складское хранение
+        private ?string $stock_storage, // "10: [78], : [1078]" - складское хранение
+
+        private ?bool $printed,
     ) {}
 
 
@@ -284,5 +286,10 @@ final readonly class AllProductStocksMoveResult
     public function getTotal(): ?int
     {
         return $this->total;
+    }
+
+    public function isPrinted(): bool
+    {
+        return $this->printed === true;
     }
 }

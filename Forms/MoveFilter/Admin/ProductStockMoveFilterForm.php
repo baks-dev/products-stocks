@@ -23,12 +23,6 @@
 
 namespace BaksDev\Products\Stocks\Forms\MoveFilter\Admin;
 
-use BaksDev\Delivery\Forms\Delivery\DeliveryForm;
-use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Manufacture\Part\Application\Forms\ManufactureApplicationFilter\Admin\ManufactureApplicationFilterDTO;
-use BaksDev\Manufacture\Part\Application\Type\Status\ManufactureApplicationStatus;
-use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
-use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Users\Profile\UserProfile\Repository\CurrentAllUserProfiles\CurrentAllUserProfilesByUserInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
@@ -36,9 +30,9 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -104,6 +98,8 @@ final class ProductStockMoveFilterForm extends AbstractType
             'input' => 'datetime_immutable',
         ]);
 
+        $builder->add('print', CheckboxType::class, ['required' => false]);
+
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
 
             $sessionArray = false;
@@ -141,6 +137,7 @@ final class ProductStockMoveFilterForm extends AbstractType
             {
                 isset($sessionArray['profile']) ? $data->setProfile(new UserProfileUid($sessionArray['profile']) ?? null) : false;
                 isset($sessionArray['date']) ? $data->setDate(new DateTimeImmutable($sessionArray['date'])) : false;
+                isset($sessionArray['print']) ? $data->setPrint($sessionArray['print']) : false;
 
                 if($Request && 'POST' === $Request->getMethod())
                 {
@@ -171,6 +168,7 @@ final class ProductStockMoveFilterForm extends AbstractType
 
                     $data->getProfile() ? $sessionArray['profile'] = (string) $data->getProfile() : false;
                     $data->getDate() ? $sessionArray['date'] = $data->getDate()->format(DateTimeInterface::W3C) : false;
+                    $sessionArray['print'] = $data->getPrint();
 
                     if($sessionArray)
                     {

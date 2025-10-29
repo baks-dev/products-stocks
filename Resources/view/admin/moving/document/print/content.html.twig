@@ -1,0 +1,121 @@
+{# ПЕЧАТЬ  #}
+
+
+{# @var profile \BaksDev\Users\Profile\UserProfile\Repository\UserProfileById\UserProfileResult #}
+{# @var productStock \BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveResult #}
+
+<div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100"
+     style="overflow-y:hidden;">
+
+    {% for productStock in productStocks %}
+
+        <div class="d-flex w-100 align-items-center gap-4 mb-2">
+
+            <div class="d-flex align-items-center" style="height: 100px;">
+
+            </div>
+
+            <img src="/logo.webp" style="max-height: 50px;" alt="{{ app.request.server.get('HOST') }}">
+
+            {% if profile.contactPhone %}
+                <h5 class="w-100 text-end">{{ profile.contactPhone.value }}</h5>
+            {% endif %}
+
+        </div>
+
+        <div class="d-flex w-100 justify-content-between gap-2 border-bottom">
+            <h5>Акт приема-передачи #{{ productStock.number }} <br> от {{ productStock.modDate|date('d.m.Y H:i') }}</h5>
+            <h6>{{ app.request.server.get('HOST') }}</h6>
+        </div>
+
+        <ul class="small p-0 m-0 mb-2">
+            <li class="list-group-item">
+                Склад отгрузки: <strong>{{ productStock.usersProfileUsername }} </strong>
+            </li>
+
+            <li class="list-group-item">
+                Грузополучатель: <strong>{{ productStock.usersProfileDestination }} </strong>
+            </li>
+        </ul>
+
+
+        <table class="table w-100 mb-3 mt-2">
+            <thead>
+
+            <tr>
+                <th scope="col"> Товар
+                <th scope="col"> Артикул
+                <th scope="col"> Кол-во
+            <tbody>
+
+            <tr>
+
+                <td>
+                    <strong class="h6">{{ productStock.productName }}
+                        {# Значение множественного варианта ТП #}
+                        {{ productStock.productVariationValue|call_twig_func(productStock.productVariationReference~'_render')
+                        ~ productStock.productModificationValue|call_twig_func(productStock.productModificationReference~'_render') }}
+
+                        {# Значение торгового предложения #}
+                        {{ productStock.productOfferValue|call_twig_func(productStock.productOfferReference~'_render') }}
+
+                        {# Постфикс торгового предложения #}
+                        {{ productStock.productOfferPostfix }}
+                        {# Постфикс множественного варианта #}
+                        {{ productStock.productVariationPostfix }}
+                        {# Постфикс модификации #}
+                        {{ productStock.productModificationPostfix }}
+
+                    </strong>
+
+
+                <td> {{ productStock.productArticle }}
+                <td><strong>{{ productStock.total }}</strong>
+
+            <tfoot>
+
+        </table>
+
+        <hr>
+        <div class="w-100 d-flex gap-3 mb-2">
+
+            <div class="fw-bolder">Отпустил</div>
+
+            <div class="w-25">
+                <div class="border-bottom">&nbsp;</div>
+                <div class="small"><small>подпись</small></div>
+            </div>
+
+            <div class="w-25">
+                <div class="border-bottom">&nbsp;</div>
+                <div class="small"><small>расшифровка подписи</small></div>
+            </div>
+        </div>
+
+
+        <div class="small w-100 border-bottom border-top border-start-0 border-end-0 pt-2 mb-2" style="border: dotted">
+            <p><strong>Комментарий:</strong></p>
+        </div>
+
+        <div class="w-100">Товар принял. К количеству, комплектации и внешнему виду претензий не имею:</div>
+
+        <div class="w-100 d-flex gap-3">
+
+            <div class="w-25">
+                <div class="border-bottom">&nbsp;</div>
+                <div class="small"><small>подпись</small></div>
+            </div>
+
+            <div class="w-25">
+                <div class="border-bottom">&nbsp;</div>
+                <div class="small"><small>расшифровка подписи</small></div>
+            </div>
+        </div>
+
+        {% if loop.last == false %}
+            <div style="page-break-before:always;">&nbsp;</div>
+        {% endif %}
+
+    {% endfor %}
+
+</div>

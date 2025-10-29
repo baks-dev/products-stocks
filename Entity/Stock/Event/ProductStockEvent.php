@@ -121,9 +121,9 @@ class ProductStockEvent extends EntityEvent
     #[ORM\OneToOne(targetEntity: ProductStockPart::class, mappedBy: 'event', cascade: ['all'])]
     private ?ProductStockPart $part = null;
 
-    /** Флаг, если накладная по заявке была отпечатана */
+    /** Флаг, если акт приема-передачи по заявке был отпечатан */
     #[ORM\OneToOne(targetEntity: ProductStockPrint::class, mappedBy: 'event', cascade: ['all'])]
-    private ?ProductStockPrint $print = null;
+    private ?ProductStockPrint $printed = null;
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -290,6 +290,11 @@ class ProductStockEvent extends EntityEvent
     public function isProductStockPart(): bool
     {
         return $this->part?->getValue() instanceof ProductStockPartUid;
+    }
+
+    public function isPrinted(): bool
+    {
+        return $this->printed?->isPrinted() === true;
     }
 
     public function getStatus(): ProductStockStatus

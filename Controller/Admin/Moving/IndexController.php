@@ -32,6 +32,7 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterDTO;
 use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterForm;
+use BaksDev\Products\Stocks\Forms\MovingsInvoice\MovingsInvoiceForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveInterface;
 use chillerlan\QRCode\QRCode;
 use Symfony\Component\HttpFoundation\Request;
@@ -105,6 +106,7 @@ final class IndexController extends AbstractController
                 'move_filter' => $filterForm->createView(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
                 'current_profile' => $this->getCurrentProfileUid(),
+                'add_selected_form_name' => $this->createForm(type: MovingsInvoiceForm::class)->getName(),
             ],
         );
     }

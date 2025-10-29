@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,56 +21,16 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Forms\MoveFilter\Admin;
+namespace BaksDev\Products\Stocks\Repository\ProductStocksMoveDetail;
 
-use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveResult;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Request;
 
-final class ProductStockMoveFilterDTO implements ProductStockPackageFilterInterface
+interface ProductStocksMoveDetailInterface
 {
-    private ?UserProfileUid $profile = null;
-
-    private ?DateTimeImmutable $date = null;
-
-    private bool|null $print = null;
-
-    /**
-     * Date.
-     */
-    public function getDate(): ?DateTimeImmutable
-    {
-        return $this->date;
-    }
-
-    public function setDate(?DateTimeImmutable $date): void
-    {
-        $this->date = $date;
-    }
-
-    public function getProfile(): ?UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(?UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
-        return $this;
-    }
-
-    public function getPrint(): bool
-    {
-        return $this->print === true;
-    }
-
-    public function setPrint(?bool $print): self
-    {
-        $this->print = $print;
-        return $this;
-    }
-
+    public function find(ProductStockUid $id): AllProductStocksMoveResult|false;
+    public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
 }

@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,56 +21,32 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Forms\MoveFilter\Admin;
+declare(strict_types=1);
 
-use BaksDev\Delivery\Type\Id\DeliveryUid;
-use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus;
-use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Request;
+namespace BaksDev\Products\Stocks\Forms\MovingsInvoice;
 
-final class ProductStockMoveFilterDTO implements ProductStockPackageFilterInterface
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use Symfony\Component\Validator\Constraints as Assert;
+
+/** @see MovingsInvoiceProductStockForm */
+
+final readonly class MovingsInvoiceProductStockDTO
 {
-    private ?UserProfileUid $profile = null;
-
-    private ?DateTimeImmutable $date = null;
-
-    private bool|null $print = null;
-
     /**
-     * Date.
+     * Идентификатор заявки
      */
-    public function getDate(): ?DateTimeImmutable
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private ProductStockUid $stock;
+
+    public function getStock(): ProductStockUid
     {
-        return $this->date;
+        return $this->stock;
     }
 
-    public function setDate(?DateTimeImmutable $date): void
+    public function setStock(ProductStockUid $stock): self
     {
-        $this->date = $date;
-    }
-
-    public function getProfile(): ?UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(?UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
+        $this->stock = $stock;
         return $this;
     }
-
-    public function getPrint(): bool
-    {
-        return $this->print === true;
-    }
-
-    public function setPrint(?bool $print): self
-    {
-        $this->print = $print;
-        return $this;
-    }
-
 }
