@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -66,10 +67,26 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
+    public function setProduct(ProductUid $product): ProductStockDTO
+    {
+        $this->product = $product;
+        return $this;
+    }
+
     /** Торговое предложение */
     public function getOffer(): ?ProductOfferConst
     {
         return $this->offer;
+    }
+
+    public function setOffer(?ProductOfferConst $offer): ProductStockDTO
+    {
+        if(false === (new \ReflectionProperty(self::class, 'offer'))->isInitialized($this))
+        {
+            $this->offer = $offer;
+        }
+
+        return $this;
     }
 
     /** Множественный вариант */
@@ -78,10 +95,30 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
+    public function setVariation(?ProductVariationConst $variation): ProductStockDTO
+    {
+        if(false === (new \ReflectionProperty(self::class, 'variation'))->isInitialized($this))
+        {
+            $this->variation = $variation;
+        }
+
+        return $this;
+    }
+
     /** Модификация множественного варианта */
     public function getModification(): ?ProductModificationConst
     {
         return $this->modification;
+    }
+
+    public function setModification(?ProductModificationConst $modification): ProductStockDTO
+    {
+        if(false === (new \ReflectionProperty(self::class, 'modification'))->isInitialized($this))
+        {
+            $this->modification = $modification;
+        }
+
+        return $this;
     }
 
     /** Количество */
@@ -90,8 +127,9 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->total;
     }
 
-    public function setTotal(int $total): void
+    public function setTotal(int $total): self
     {
         $this->total = $total;
+        return $this;
     }
 }

@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -32,6 +33,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWar
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Invariable\WarehouseProductStocksInvariableDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Move\ProductStockMoveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products\ProductStockDTO;
+use BaksDev\Products\Supply\UseCase\Admin\ProductStock\ProductStockSupplyDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -40,9 +42,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 final class WarehouseProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
-    #[Assert\NotBlank]
     #[Assert\Uuid]
-    private readonly ProductStockEventUid $id;
+    private readonly ?ProductStockEventUid $id;
 
     /** Статус заявки - ОТПАРВЛЕН НА СКЛАД */
     #[Assert\NotBlank]
@@ -65,6 +66,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
 
     private WarehouseProductStocksInvariableDTO $invariable;
 
+    private ?ProductStockSupplyDTO $supply = null;
 
     public function __construct()
     {
@@ -77,6 +79,15 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function getEvent(): ?ProductStockEventUid
     {
         return $this->id;
+    }
+
+    /** Для инстанса нового объекта */
+    public function newId(): void
+    {
+        if(false === (new \ReflectionProperty(self::class, 'id'))->isInitialized($this))
+        {
+            $this->id = null;
+        }
     }
 
     public function setId(ProductStockEventUid $id): void
@@ -145,5 +156,19 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function getInvariable(): WarehouseProductStocksInvariableDTO
     {
         return $this->invariable;
+    }
+
+    /**
+     * Supply
+     */
+    public function setSupply(?ProductStockSupplyDTO $supply): WarehouseProductStockDTO
+    {
+        $this->supply = $supply;
+        return $this;
+    }
+
+    public function getSupply(): ?ProductStockSupplyDTO
+    {
+        return $this->supply;
     }
 }
