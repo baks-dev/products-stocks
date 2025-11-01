@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -30,6 +31,7 @@ use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Print\ProductStockPrint;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Supply\ProductStockSupply;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
@@ -116,6 +118,10 @@ class ProductStockEvent extends EntityEvent
     /** Идентификатор заказа на сборку */
     #[ORM\OneToOne(targetEntity: ProductStockOrder::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?ProductStockOrder $ord = null;
+
+    /** Идентификатор поставки */
+    #[ORM\OneToOne(targetEntity: ProductStockSupply::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
+    private ?ProductStockSupply $supply = null;
 
     /** Идентификатор группы заказов */
     #[ORM\OneToOne(targetEntity: ProductStockPart::class, mappedBy: 'event', cascade: ['all'])]
@@ -305,5 +311,10 @@ class ProductStockEvent extends EntityEvent
     public function isStatusEquals(mixed $status): bool
     {
         return $this->status->equals($status);
+    }
+
+    public function getSupply(): ?ProductStockSupply
+    {
+        return $this->supply;
     }
 }
