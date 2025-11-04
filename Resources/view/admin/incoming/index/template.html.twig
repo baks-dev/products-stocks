@@ -13,6 +13,7 @@
 {# ---- CSS ------------------------------------------------------------ #}
 {% block stylesheets %}
     <link href="/assets/{{ version }}/plugins/nice-select2/nice-select2.min.css" rel="stylesheet" type="text/css">
+    <link href="/assets/{{ version }}/plugins/datepicker/datepicker.min.css" rel="stylesheet">
 {% endblock %}
 
 
@@ -30,4 +31,5 @@
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/products-product/filter.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/products-stocks/status.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src='/assets/{{ version }}/js/radio.input.min.js?v={{ version }}' class='lazy'></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/plugins/datepicker/datepicker.min.js?v={{ version }}" class="lazy"></script>
 {% endblock %}

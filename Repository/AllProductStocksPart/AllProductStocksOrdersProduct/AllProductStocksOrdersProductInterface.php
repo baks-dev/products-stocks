@@ -23,7 +23,19 @@
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct;
 
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Generator;
+
 interface AllProductStocksOrdersProductInterface
 {
-    public function findAll(): array|bool;
+
+    public function forProfile(UserProfile|UserProfileUid|null|false $profile): self;
+
+    /**
+     * Метод возвращает продукцию без партии согласно
+     *
+     * @return Generator<ProductStocksOrdersProductResult>|false
+     */
+    public function findAll(array $ids): Generator|false;
 }

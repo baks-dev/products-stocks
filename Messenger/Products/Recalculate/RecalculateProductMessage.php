@@ -35,21 +35,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class RecalculateProductMessage
 {
     private string $product;
-    private ?string $offer;
-    private ?string $variation;
-    private ?string $modification;
+    private string|false $offer;
+    private string|false $variation;
+    private string|false $modification;
 
     public function __construct(
         ProductUid $product,
-        ?ProductOfferConst $offer,
-        ?ProductVariationConst $variation,
-        ?ProductModificationConst $modification
+        ProductOfferConst|null|false $offer,
+        ProductVariationConst|null|false $variation,
+        ProductModificationConst|null|false $modification
     )
     {
         $this->product = (string) $product;
-        $this->offer = $offer instanceof ProductOfferConst ? (string) $offer : null;
-        $this->variation = $variation instanceof ProductVariationConst ? (string) $variation : null;
-        $this->modification = $modification instanceof ProductModificationConst ? (string) $modification : null;
+        $this->offer = $offer instanceof ProductOfferConst ? (string) $offer : false;
+        $this->variation = $variation instanceof ProductVariationConst ? (string) $variation : false;
+        $this->modification = $modification instanceof ProductModificationConst ? (string) $modification : false;
     }
 
     /**

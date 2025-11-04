@@ -21,40 +21,9 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart;
 
-namespace BaksDev\Products\Stocks\Forms\MovingsInvoice;
-
-use Doctrine\Common\Collections\ArrayCollection;
-
-/** @see SalesInvoiceForm */
-final readonly class MovingsInvoiceDTO
+interface AllProductStocksOrdersPartInterface
 {
-    private ArrayCollection $collection;
-
-    public function __construct()
-    {
-        $this->collection = new ArrayCollection();
-    }
-
-    /** @return ArrayCollection<MovingsInvoiceProductStockDTO> */
-
-    public function getCollection(): ArrayCollection
-    {
-        return $this->collection;
-    }
-
-    public function addCollection(MovingsInvoiceProductStockDTO $products_stock): self
-    {
-        $this->collection->add($products_stock);
-
-        return $this;
-    }
-
-    public function removeCollection(MovingsInvoiceProductStockDTO $products_stock): self
-    {
-        $this->collection->removeElement($products_stock);
-
-        return $this;
-    }
+    public function findAll(): array|bool;
 }

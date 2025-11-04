@@ -1,0 +1,127 @@
+{# ПЕЧАТЬ #}
+<div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100">
+
+    {% set break = false %}
+
+    {% for part, data in query %}
+
+        {# Название продукта data.name #}
+        {# Название продукта data.offer #}
+        {# Название продукта data.stock #}
+
+
+
+        {% for stickers in data %}
+
+
+            {# {% if break %}
+            #}{# разрыв старницы #}{#
+        <div style="page-break-after: always !important;"></div>
+    {% endif %} #}
+
+
+            {% for sticker in stickers %}
+
+                {% if sticker.part is defined %}
+
+                    {# QR партии #}
+
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
+                             style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;"
+                             fill="currentColor"
+                             viewBox="8 8 40 40">
+                            {{ sticker.part|raw }}
+                        </svg>
+                    </div>
+
+                    <div><strong>{{ data.name }}</strong></div>
+                    <div><strong>{{ data.offer }}</strong></div>
+                    <div>
+
+                        <strong>{{ data.total }} шт.</strong>
+
+                        &nbsp;<small>место:</small>
+                        <strong>
+
+                            {# Место хранения #}
+                            [{% for stock in data.stock|filter(v => v.storage is not empty) %}
+
+                            {{ stock.storage }}
+
+                            {% if loop.last != true %}, {% endif %}
+
+                            {% endfor %}]
+                        </strong>
+                    </div>
+
+                    {# разрыв старницы #}
+                    <div style="page-break-after: always !important;"></div>
+
+                {% endif %}
+
+
+                {% if sticker is iterable %}
+
+                    {% for sign in sticker %}
+
+
+                        {% if sign.code is defined %}
+
+                            <div class="w-100 text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
+                                     style="height: 140px; max-height: 140px; max-width: 200px;"
+                                     fill="currentColor"
+                                     viewBox="8 8 40 40">
+                                    {{ sign.code|raw }}
+                                </svg>
+                            </div>
+
+                            <div class="w-100 text-center">
+                                <small>{{ sign.number }}</small>
+                            </div>
+
+                            <div class="w-100 text-center">
+                                <small>{{ data.name }}</small>
+                            </div>
+                            <div class="w-100 text-center">
+                                <small>{{ data.offer }}</small>
+                            </div>
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                        {% endif %}
+
+
+                    {% endfor %}
+
+                {% endif %}
+
+
+            {% endfor %}
+
+
+
+
+            {# QRCode партии #}{#
+        {% if data.part is defined %}
+            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                {{ stickers.part|raw }}
+            </div>
+        {% endif %}
+
+        {% if data.code is defined %}
+            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                {{ stickers.code|raw }}
+            </div>
+        {% endif %} #}
+
+
+            {% set break = true %}
+
+        {% endfor %}
+
+    {% endfor %}
+
+</div>

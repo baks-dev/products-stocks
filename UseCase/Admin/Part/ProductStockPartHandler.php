@@ -28,34 +28,34 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Part;
 
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Products\Part\ProductStockProductPart;
+use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 
 final class ProductStockPartHandler extends AbstractHandler
 {
     /** @see ProductStockPart */
-    public function handle(ProductStockPartDTO $command): string|ProductStockPart
+    public function handle(ProductStockPartDTO $command): string|ProductStockProduct
     {
         $this->setCommand($command);
 
-        $ProductStockPart = $this
-            ->getRepository(ProductStockPart::class)
-            ->find($command->getProductStockEventId());
+        $ProductStockProduct = $this
+            ->getRepository(ProductStockProduct::class)
+            ->find($command->getProductStockCollectionId());
 
         /** Партию возможно применить только один раз */
-        if($ProductStockPart instanceof ProductStockPart)
+        if(false === ($ProductStockProduct instanceof ProductStockPart))
         {
-            return $ProductStockPart;
+            return $this->validatorCollection->getErrorUniqid();
         }
 
+        if(true === $ProductStockProduct->isProductStockPart())
+        {
+            return $ProductStockProduct;
+        }
 
-        $ProductStockEvent = $this
-            ->getRepository(ProductStockEvent::class)
-            ->find($command->getProductStockEventId());
-
-
-        $ProductStockPart = new ProductStockPart($ProductStockEvent);
-        $ProductStockPart->setEntity($command);
-        $this->persist($ProductStockPart);
+        $ProductStockProductPart = new ProductStockProductPart($ProductStockProduct);
+        $ProductStockProductPart->setEntity($command);
+        $this->persist($ProductStockProductPart);
 
 
         /** Валидация всех объектов */
@@ -67,8 +67,9 @@ final class ProductStockPartHandler extends AbstractHandler
         $this->flush();
 
         /* Отправляем сообщение в шину */
-        $this->messageDispatch->addClearCacheOther('products-stocks');
+        $this->messageDispatch
+            ->addClearCacheOther('products-stocks');
 
-        return $ProductStockPart;
+        return $ProductStockProduct;
     }
 }

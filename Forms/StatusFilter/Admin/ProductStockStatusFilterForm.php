@@ -26,8 +26,11 @@ namespace BaksDev\Products\Stocks\Forms\StatusFilter\Admin;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -67,6 +70,16 @@ class ProductStockStatusFilterForm extends AbstractType
             'translation_domain' => 'status.product.stock',
         ]);
 
+
+        $builder->add('date', DateType::class, [
+            'widget' => 'single_text',
+            'html5' => false,
+            'attr' => ['class' => 'js-datepicker'],
+            'required' => false,
+            'format' => 'dd.MM.yyyy',
+            'input' => 'datetime_immutable',
+        ]);
+
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
 
             /** @var ProductStockStatusFilterDTO $data */
@@ -100,6 +113,7 @@ class ProductStockStatusFilterForm extends AbstractType
                 if($sessionArray !== false)
                 {
                     !isset($sessionArray['status']) ?: $data->setStatus(new ProductStockStatus($sessionArray['status']));
+                    !isset($sessionArray['date']) ?: $data->setDate(new DateTimeImmutable($sessionArray['date']));
                 }
             }
 
@@ -122,10 +136,8 @@ class ProductStockStatusFilterForm extends AbstractType
 
                     $sessionArray = [];
 
-                    if($data->getStatus())
-                    {
-                        $sessionArray['status'] = (string) $data->getStatus();
-                    }
+                    !$data->getStatus() ?: $sessionArray['status'] = (string) $data->getStatus();
+                    !$data->getDate() ?: $sessionArray['date'] = $data->getDate()->format(DateTimeInterface::W3C);
 
                     if($sessionArray)
                     {

@@ -1,17 +1,17 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,11 +26,17 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Products\Recalculate;
 
 use BaksDev\Core\Cache\AppCacheInterface;
+use BaksDev\Products\Product\Entity\Offers\Quantity\ProductOfferQuantity;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Quantity\ProductModificationQuantity;
+use BaksDev\Products\Product\Entity\Offers\Variation\Quantity\ProductVariationQuantity;
+use BaksDev\Products\Product\Entity\Price\ProductPrice;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductModificationQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductOfferQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductQuantityInterface;
 use BaksDev\Products\Product\Repository\ProductQuantity\ProductVariationQuantityInterface;
+use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -78,7 +84,7 @@ final readonly class RecalculateProductQuantity
          * Количественный учет модификации множественного варианта торгового предложения
          */
 
-        if(null === $ProductUpdateQuantity && $product->getModification())
+        if(null === $ProductUpdateQuantity && true === ($product->getModification() instanceof ProductModificationConst))
         {
 
             $this->entityManager->clear();
@@ -93,10 +99,13 @@ final readonly class RecalculateProductQuantity
             if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
             {
                 $this->logger->critical(
-                    'products-stocks: Ошибка при перерасчете общего количества модификации множественного варианта торгового предложения в карточке',
+                    sprintf('products-stocks: Ошибка %s при перерасчете общего количества модификации множественного варианта торгового предложения в карточке', $ProductUpdateQuantity),
                     [
                         self::class.':'.__LINE__,
                         'total' => $ProductStocksTotal,
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
+                        'variation' => (string) $product->getVariation(),
                         'modification' => (string) $product->getModification(),
                     ],
                 );
@@ -113,6 +122,9 @@ final readonly class RecalculateProductQuantity
                 [
                     self::class.':'.__LINE__,
                     'total' => $ProductStocksTotal,
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
                     'modification' => (string) $product->getModification(),
                 ],
             );
@@ -130,7 +142,7 @@ final readonly class RecalculateProductQuantity
          */
 
 
-        if(null === $ProductUpdateQuantity && $product->getVariation())
+        if(null === $ProductUpdateQuantity && true === ($product->getVariation() instanceof ProductVariationConst))
         {
             $this->entityManager->clear();
 
@@ -140,14 +152,15 @@ final readonly class RecalculateProductQuantity
                 $product->getVariation(),
             );
 
-
-            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            if(false === ($ProductUpdateQuantity instanceof ProductVariationQuantity))
             {
                 $this->logger->critical(
-                    'products-stocks: Ошибка при перерасчете общего количества множественного варианта торгового предложения в карточке',
+                    sprintf('products-stocks: Ошибка %s при перерасчете общего количества множественного варианта торгового предложения в карточке', $ProductUpdateQuantity),
                     [
                         self::class.':'.__LINE__,
                         'total' => $ProductStocksTotal,
+                        'product' => (string) $product->getProduct(),
+                        'offer' => (string) $product->getOffer(),
                         'variation' => (string) $product->getVariation(),
                     ],
                 );
@@ -163,6 +176,8 @@ final readonly class RecalculateProductQuantity
                 [
                     self::class.':'.__LINE__,
                     'total' => $ProductStocksTotal,
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
                     'variation' => (string) $product->getVariation(),
                 ],
             );
@@ -175,7 +190,7 @@ final readonly class RecalculateProductQuantity
          * Количественный учет торгового предложения
          */
 
-        if(null === $ProductUpdateQuantity && $product->getOffer())
+        if(null === $ProductUpdateQuantity && true == ($product->getOffer() instanceof ProductOfferConst))
         {
             $this->entityManager->clear();
 
@@ -184,13 +199,14 @@ final readonly class RecalculateProductQuantity
                 $product->getOffer(),
             );
 
-            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            if(false === ($ProductUpdateQuantity instanceof ProductOfferQuantity))
             {
                 $this->logger->critical(
-                    'products-stocks: Ошибка при перерасчете общего количества торгового предложения в карточке',
+                    sprintf('products-stocks: Ошибка %s при перерасчете общего количества торгового предложения в карточке', $ProductUpdateQuantity),
                     [
                         self::class.':'.__LINE__,
                         'total' => $ProductStocksTotal,
+                        'product' => (string) $product->getProduct(),
                         'offer' => (string) $product->getOffer(),
 
                     ],
@@ -207,6 +223,7 @@ final readonly class RecalculateProductQuantity
                 [
                     self::class.':'.__LINE__,
                     'total' => $ProductStocksTotal,
+                    'product' => (string) $product->getProduct(),
                     'offer' => (string) $product->getOffer(),
                 ],
             );
@@ -228,10 +245,10 @@ final readonly class RecalculateProductQuantity
             );
 
 
-            if(false === ($ProductUpdateQuantity instanceof ProductModificationQuantity))
+            if(false === ($ProductUpdateQuantity instanceof ProductPrice))
             {
                 $this->logger->critical(
-                    'products-stocks: Ошибка при перерасчете общего количества продукции в карточке',
+                    sprintf('products-stocks: Ошибка %s при перерасчете общего количества продукции в карточке', $ProductUpdateQuantity),
                     [
                         self::class.':'.__LINE__,
                         'total' => $ProductStocksTotal,

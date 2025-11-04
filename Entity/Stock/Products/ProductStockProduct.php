@@ -27,10 +27,13 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Products;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Products\Part\ProductStockProductPart;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -56,6 +59,12 @@ class ProductStockProduct extends EntityEvent
     #[ORM\ManyToOne(targetEntity: ProductStockEvent::class, inversedBy: 'product')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockEvent $event;
+
+    /** Invariable продукта */
+    //#[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\Column(type: ProductInvariableUid::TYPE, nullable: true)]
+    private ProductInvariableUid $invariable;
 
     /** ID продукта */
     #[Assert\NotBlank]
@@ -86,6 +95,11 @@ class ProductStockProduct extends EntityEvent
     /** Место складирования */
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $storage = null;
+
+    /** Идентификатор партии */
+    #[ORM\OneToOne(targetEntity: ProductStockProductPart::class, mappedBy: 'product', cascade: ['all'])]
+    private ?ProductStockProductPart $part = null;
+
 
     public function __construct(ProductStockEvent $event)
     {
@@ -158,5 +172,10 @@ class ProductStockProduct extends EntityEvent
     public function getEvent(): ProductStockEvent
     {
         return $this->event;
+    }
+
+    public function isProductStockPart(): bool
+    {
+        return $this->part?->getValue() instanceof ProductStockPartUid;
     }
 }

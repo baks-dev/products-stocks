@@ -54,6 +54,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO;
@@ -66,7 +67,9 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\UserProfileEvent;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksIncomingRepository implements AllProductStocksIncomingInterface
 {
@@ -131,7 +134,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->addSelect('invariable.number')
             ->addSelect('invariable.profile AS user_profile_id')
             ->from(ProductStocksInvariable::class, 'invariable')
-            ->where('invariable.profile = :profile')
+            ->where('(invariable.profile = :profile OR move.destination = :profile)')
             ->setParameter(
                 'profile',
                 $this->profile instanceof UserProfileUid ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
@@ -166,6 +169,15 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             );
 
 
+        $dbal
+            ->addSelect('product_stock_order.ord AS order')
+            ->leftJoin(
+                'invariable',
+                ProductStockOrder::class,
+                'product_stock_order',
+                'product_stock_order.event = stock.event',
+            );
+
         //        $dbal
         //            //->addSelect('move.destination AS move_destination')
         //            ->leftJoin(
@@ -182,8 +194,19 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = stock.event',
+                'modify.event = stock.event'
+                .(false === ($this->filter_status?->getDate() instanceof DateTimeImmutable) ? '' : ' AND DATE(modify.mod_date) >= :date_from '),
             );
+
+
+        if($this->filter_status?->getDate() instanceof DateTimeImmutable)
+        {
+            $dbal->setParameter(
+                key: 'date_from',
+                value: $this->filter_status?->getDate(),
+                type: Types::DATE_IMMUTABLE,
+            );
+        }
 
 
         $dbal
@@ -498,7 +521,6 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 'users_profile_personal_destination',
                 'users_profile_personal_destination.event = users_profile_destination.event',
             );
-
 
 
         // ОТВЕТСТВЕННЫЙ

@@ -26,30 +26,28 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Part;
 
 use BaksDev\Core\Type\UidType\Uid;
-use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPartInterface;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Entity\Stock\Products\Part\ProductStockProductPartInterface;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
+use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockPart */
-final class ProductStockPartDTO implements ProductStockPartInterface
+final class ProductStockPartDTO implements ProductStockProductPartInterface
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    private readonly ProductStockEventUid $id;
+    private readonly ProductStockCollectionUid $id;
 
     /** Значение свойства */
     #[Assert\NotBlank]
     private ?ProductStockPartUid $value = null;
 
-    public function __construct(ProductStockEvent|ProductStockEventUid $id)
+    public function __construct(ProductStockCollectionUid $id)
     {
-
-        $this->id = $id instanceof ProductStockEvent ? $id->getId() : $id;
+        $this->id = $id;
     }
 
-    public function getProductStockEventId(): ProductStockEventUid
+    public function getProductStockCollectionId(): ProductStockCollectionUid
     {
         return $this->id;
     }

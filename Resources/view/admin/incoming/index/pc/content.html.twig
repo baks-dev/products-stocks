@@ -165,7 +165,7 @@
 
         <div class="border border-light rounded-4 p-3">
 
-            <div class="d-flex justify-content-between mb-3">
+            <div class="d-flex justify-content-between">
 
                 {# Форма поиска по разделу #}
                 {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
@@ -175,10 +175,46 @@
                     {% include Template('@products-product/admin/filter/'~baks_settings.device~'/filter.html.twig') %}
                 </div>
 
-                {# Фильтр по статусам #}
-                <div class="w-25 m-1 ms-2">
-                    {{ include(_self|replace({ "content.html.twig": "/filter/filter-status.html.twig" })) }}
+                <div class="w-75 m-1 ms-2">
+                    {{ form_start(filter_status, ) }}
+
+                    <div class="d-flex justify-content-between gap-1">
+
+                        <div class="w-50">
+                            {{ form_widget(filter_status.status, {  placeholder : 'Все статусы ...', attr : { 'data-select' : 'select2' }  }) }}
+                        </div>
+
+                        {# <div class="w-25 m-1 ms-2"> #}
+                        <div class="w-50">
+                            <div class="input-group"
+
+                                 role="tooltip"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-placement="bottom"
+                                 data-bs-delay='{"show":300,"hide":100}'
+                                 title="Дата, с которой отобразить список и расчет"
+
+                            >
+                                <span class="input-group-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                         class="bi bi-calendar2-week" viewBox="0 0 16 16">
+                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+                                        <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                    </svg>
+                                </span>
+                                {{ form_widget(filter_status.date, { attr: { placeholder : 'от даты' } }) }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {{ form_end(filter_status) }}
                 </div>
+
+                {# Фильтр по статусам #}
+                {# <div class="w-25 m-1 ms-2">
+                    {{ include(_self|replace({ "content.html.twig": "/filter/filter-status.html.twig" })) }}
+                </div> #}
 
             </div>
 
@@ -201,26 +237,93 @@
         {% endif %} #}
 
 
-            {% for item in query.data %}
-                {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
-            {% else %}
-                <div class="alert alert-warning m-0 w-100" role="alert">
-                    <div class="d-flex align-items-baseline gap-3">
-                        <div>
-                            <div class="icon rounded-circle bg-contain p-2 bg-primary text-white"
-                                 style="width: 10px; height: 10px;"><span class="small">!</span></div>
-                        </div>
-                        <div class="small lh-1">
-                            Информация по данному запросу отсутствует
+            <table class="table table-borderless"
+                   style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
+
+                <tbody>
+
+                {% set incoming = 0 %}
+                {% set completed = 0 %}
+
+                {% for item in query.data %}
+
+                    {% if item.status == 'incoming' %}
+                        {% if app.user.profile == item.userProfileId and item.usersProfileDestination is not empty %}
+                            {% set incoming = incoming + item.total %}
+                        {% elseif item.usersProfileDestination is not empty %}
+                            {% set completed = completed + item.total %}
+                        {% else %}
+                            {% set incoming = incoming + item.total %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if item.status == 'completed' %}
+                        {% set completed = completed + item.total %}
+                    {% endif %}
+
+                    <tr>
+                        <td colspan='5' class='p-1'>
+                            {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <div class="alert alert-warning m-0 w-100" role="alert">
+                        <div class="d-flex align-items-baseline gap-3">
+                            <div>
+                                <div class="icon rounded-circle bg-contain p-2 bg-primary text-white"
+                                     style="width: 10px; height: 10px;"><span class="small">!</span></div>
+                            </div>
+                            <div class="small lh-1">
+                                Информация по данному запросу отсутствует
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
 
-        {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
+                </tbody>
+
+
+                <thead>
+
+                <tr class="">
+                    <th class="small py-0 w-100">&nbsp;</th>
+                    <th class="text-center text-muted small w-25 py-0">Приход</th>
+                    <th class="text-center text-muted small w-25 py-0">Расход</th>
+                    <th class="text-center text-muted small w-25 py-0">Итого</th>
+                </tr>
+                <tr class="">
+                    <th>&nbsp;</th>
+                    <th class="text-center text-muted small py-0">
+                        <h6>
+                            <span class="badge text-bg-success">
+                                {{ incoming }}
+                            </span>
+                        </h6>
+                    </th>
+                    <th class="text-center text-muted small py-0">
+                        <h6>
+                            <span class="badge text-bg-danger">
+                                {{ completed }}
+                            </span>
+                        </h6>
+                    </th>
+                    <th class="text-center text-muted small py-0">
+                        <h6>
+                            <span class="badge text-bg-primary">
+                                {{ incoming - completed }}
+                            </span>
+                        </h6>
+                    </th>
+                </tr>
+                </thead>
+
+            </table>
+            {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
 
         </div>
 
     </section>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvas" style="--bs-offcanvas-width: 850px;"></div>
 
 </main>

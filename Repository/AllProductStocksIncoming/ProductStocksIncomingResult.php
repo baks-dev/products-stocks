@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksIncoming;
 
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
@@ -54,6 +55,8 @@ final readonly class ProductStocksIncomingResult
         private int $total, // Общее количество
         private ?string $storage, // Склад
         private ?string $users_profile_destination,
+
+        private ?string $order,
 
         private string $product_id, // ID продукта
         private string $product_event, // ID события продукта
@@ -296,4 +299,10 @@ final readonly class ProductStocksIncomingResult
     {
         return $this->users_profile_destination;
     }
+
+    public function getOrder(): OrderUid|false
+    {
+        return $this->order ? new OrderUid($this->order) : false;
+    }
+
 }

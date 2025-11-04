@@ -23,15 +23,20 @@
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Package;
 
+use BaksDev\Barcode\Writer\BarcodeFormat;
+use BaksDev\Barcode\Writer\BarcodeType;
+use BaksDev\Barcode\Writer\BarcodeWrite;
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Core\Twig\CallTwigFuncExtension;
 use BaksDev\Core\Type\UidType\ParamConverter;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Forms\PackageFilter\Admin\ProductStockPackageFilterDTO;
-use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersPart\AllProductStocksOrdersPartInterface;
+use BaksDev\Products\Stocks\Messenger\Part\ProductStockPartMessage;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct\AllProductStocksOrdersProductInterface;
+use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart\AllProductStocksOrdersPartInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
@@ -43,6 +48,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
+use Twig\Environment;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_PART')]
@@ -51,14 +57,19 @@ final class PartController extends AbstractController
     /**
      * Сборочный лист по заказам
      */
-    #[Route('/admin/product/stocks/part/{part}', name: 'admin.part', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stocks/part/{part}', name: 'admin.package.part', methods: ['GET', 'POST'])]
     public function part(
         Request $request,
+        Environment $environment,
         AllProductStocksOrdersPartInterface $AllProductStocksOrdersPartRepository,
         AllProductStocksOrdersProductInterface $AllProductStocksOrdersProductRepository,
         ProductStocksEventInterface $ProductStocksEventRepository,
         ProductStockPartHandler $ProductStockPartHandler,
+        BarcodeWrite $BarcodeWrite,
+        MessageDispatchInterface $MessageDispatch,
+        ?CentrifugoPublishInterface $publish = null,
         #[ParamConverter(ProductStockPartUid::class)] ?ProductStockPartUid $part = null,
+
     ): Response
     {
 
@@ -96,90 +107,133 @@ final class PartController extends AbstractController
             )
             ->handleRequest($request);
 
+        /** Если НЕ указан список идентификаторов складской заявки */
         if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
         {
             throw new InvalidArgumentException('Page Not Found');
         }
 
 
-        /** Генерируем идентификатор партии заказов */
+        /**
+         * Получаем список продукции в складской заявке
+         * + честные знаки
+         * + место складирования продукции
+         */
 
-        $ProductStockPartUid = new ProductStockPartUid();
+        $ids = $ExtraditionSelectedProductStockDTO
+            ->getCollection()
+            ->map(fn($element) => (string) $element->getId())->getValues();
 
-        foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
+        $products = $AllProductStocksOrdersProductRepository
+            ->findAll($ids);
+
+        $parts = null;
+
+        if(false !== $products && false !== $products->valid())
         {
+            $call = $environment->getExtension(CallTwigFuncExtension::class);
 
-            $ProductStockEvent = $ProductStocksEventRepository
-                ->forEvent($ExtraditionProductStockDTO->getEvent())
-                ->find();
 
-            if(false === ($ProductStockEvent instanceof ProductStockEvent))
+            foreach($products as $ProductStocksOrdersProductResult)
             {
-                $ExtraditionSelectedProductStockDTO->removeCollection($ExtraditionProductStockDTO);
 
-                continue;
+                $strOffer = '';
+
+                /**
+                 * Множественный вариант
+                 */
+
+                $variation = $call->call(
+                    $environment,
+                    $ProductStocksOrdersProductResult->getProductVariationValue(),
+                    $ProductStocksOrdersProductResult->getProductVariationReference().'_render',
+                );
+
+                $strOffer .= $variation ? ' '.trim($variation) : '';
+
+                /**
+                 * Модификация множественного варианта
+                 */
+
+                $modification = $call->call(
+                    $environment,
+                    $ProductStocksOrdersProductResult->getProductModificationValue(),
+                    $ProductStocksOrdersProductResult->getProductModificationReference().'_render',
+                );
+
+                $strOffer .= $modification ? ' '.trim($modification) : '';
+
+                /**
+                 * Торговое предложение
+                 */
+
+                $offer = $call->call(
+                    $environment,
+                    $ProductStocksOrdersProductResult->getProductOfferValue(),
+                    $ProductStocksOrdersProductResult->getProductOfferReference().'_render',
+                );
+
+                $strOffer .= $modification ? ' '.trim($offer) : '';
+                $strOffer .= $ProductStocksOrdersProductResult->getProductOfferPostfix() ? ' '.$ProductStocksOrdersProductResult->getProductOfferPostfix() : '';
+                $strOffer .= $ProductStocksOrdersProductResult->getProductVariationPostfix() ? ' '.$ProductStocksOrdersProductResult->getProductVariationPostfix() : '';
+                $strOffer .= $ProductStocksOrdersProductResult->getProductModificationPostfix() ? ' '.$ProductStocksOrdersProductResult->getProductModificationPostfix() : '';
+
+
+                $ProductStockPartUid = $ProductStocksOrdersProductResult->getIdentifierPart();
+
+                /**
+                 * Обновляем продукция в заявке применяя партию
+                 */
+
+                foreach($ProductStocksOrdersProductResult->getProductsCollection() as $ProductStockCollectionUid)
+                {
+                    $ProductStockPartDTO = new ProductStockPartDTO($ProductStockCollectionUid)
+                        ->setValue($ProductStockPartUid);
+
+                    /* TODO: удалить комментарий !!! */
+                    //$ProductStockPartHandler->handle($ProductStockPartDTO);
+
+                    /** Бросаем событие для получения стикеров маркировки и честных знаков */
+
+                    $ProductStockPartMessage = new ProductStockPartMessage(
+                        $ProductStockPartUid,
+                        $ProductStocksOrdersProductResult->getProduct(),
+                        $ProductStocksOrdersProductResult->getOfferConst(),
+                        $ProductStocksOrdersProductResult->getVariationConst(),
+                        $ProductStocksOrdersProductResult->getModificationConst(),
+                    );
+
+                    $ProductStockPartMessage->setOrders($ProductStocksOrdersProductResult->getOrdersCollection());
+                    $MessageDispatch->dispatch(message: $ProductStockPartMessage);
+
+                    $parts[(string) $ProductStockPartUid] = $ProductStockPartMessage->getStickers();
+                    $parts[(string) $ProductStockPartUid]['name'] = $ProductStocksOrdersProductResult->getProductName();
+                    $parts[(string) $ProductStockPartUid]['offer'] = $strOffer;
+                    $parts[(string) $ProductStockPartUid]['total'] = $ProductStocksOrdersProductResult->getTotal();
+                    $parts[(string) $ProductStockPartUid]['stock'] = $ProductStocksOrdersProductResult->getStocksQuantity();
+
+                }
+
+
+                /** Скрываем идентификатор у всех пользователей */
+                if($publish instanceof CentrifugoPublishInterface)
+                {
+                    foreach($ProductStocksOrdersProductResult->getMains() as $main)
+                    {
+                        $publish
+                            ->addData(['identifier' => $main])
+                            ->send('remove');
+                    }
+                }
             }
-
-            if($ProductStockEvent->isProductStockPart())
-            {
-                /* TODO: комментарий !!! */
-                //$ExtraditionSelectedProductStockDTO->removeCollection($ExtraditionProductStockDTO);
-
-                continue;
-            }
-
-
-            $ProductStockPartDTO = new ProductStockPartDTO($ProductStockEvent)
-                ->setValue($ProductStockPartUid);
-
-            $ProductStockPartHandler->handle($ProductStockPartDTO);
-
-
-            //dump($ExtraditionProductStockDTO);  /* TODO: удалить !!! */
         }
 
-        if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
-        {
-            throw new InvalidArgumentException('Page Not Found');
-        }
 
-        //return $this->redirectToReferer();
-
-        dd($ExtraditionSelectedProductStockDTO->getCollection()); /* TODO: удалить !!! */
-
-        /** Получаем список всех заказов на упаковке согласно фильтру */
-
-        dd($ExtraditionSelectedProductStockDTO); /* TODO: удалить !!! */
-
-        return new Response('Page Not Found');
-
-        // Поиск
-        $search = new SearchDTO();
-        //        $searchForm = $this->createForm(SearchForm::class, $search,
-        //            ['action' => $this->generateUrl('products-stocks:admin.package.index')]
-        //        );
-        //$searchForm->handleRequest($request);
-        //$searchForm->createView();
-
-
-        // Фильтр
-        $filter = new ProductStockPackageFilterDTO();
-        //$filterForm = $this->createForm(ProductStockPackageFilterForm::class, $filter);
-        //$filterForm->handleRequest($request);
-        //$filterForm->createView();
-
-
-        // Получаем список заявок на упаковку
-        $query = $allPackage
-            ->setLimit(1000)
-            ->search($search)
-            ->filter($filter)
-            ->findAllProducts($this->getProfileUid());
-
+        /** Бросаем сообщение для получения кизов по заказам */
 
         return $this->render(
             [
-                'query' => $query,
+                'query' => $parts,
                 //'search' => $searchForm->createView(),
                 //'filter' => $filterForm->createView(),
             ], file: 'content.html.twig',

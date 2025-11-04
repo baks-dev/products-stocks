@@ -61,7 +61,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         return $this;
     }
 
-    public function offer(ProductOfferConst|string|null $offer): self
+    public function offer(ProductOfferConst|string|null|false $offer): self
     {
         if(empty($offer))
         {
@@ -78,7 +78,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         return $this;
     }
 
-    public function variation(ProductVariationConst|string|null $variation): self
+    public function variation(ProductVariationConst|string|null|false $variation): self
     {
         if(empty($variation))
         {
@@ -95,7 +95,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
         return $this;
     }
 
-    public function modification(ProductModificationConst|string|null $modification): self
+    public function modification(ProductModificationConst|string|null|false $modification): self
     {
         if(empty($modification))
         {

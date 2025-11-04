@@ -25,6 +25,7 @@ namespace BaksDev\Products\Stocks\Forms\StatusFilter\Admin;
 
 use BaksDev\Products\Stocks\Forms\StatusFilter\ProductStockStatusFilterInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use DateTimeImmutable;
 
 class ProductStockStatusFilterDTO implements ProductStockStatusFilterInterface
 {
@@ -33,6 +34,22 @@ class ProductStockStatusFilterDTO implements ProductStockStatusFilterInterface
      * Статус
      */
     private ProductStockStatus|null $status = null;
+
+    private ?DateTimeImmutable $date = null;
+
+    /**
+     * Date.
+     */
+    public function getDate(): ?DateTimeImmutable
+    {
+        return $this->date;
+    }
+
+    public function setDate(?DateTimeImmutable $date): void
+    {
+        $this->date = $date;
+    }
+
 
     public function getStatus(): ?ProductStockStatus
     {

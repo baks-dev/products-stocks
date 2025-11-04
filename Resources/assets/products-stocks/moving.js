@@ -562,12 +562,12 @@ executeFunc((function productMovingForm()
         }
 
 
-        if(collectionStock.size >= 5)
-        {
-            $errorFormHandler = "{ \"type\":\"danger\" , " +
-                "\"header\":\"" + header + "\"  , " +
-                "\"message\" : \"Количество в заявке временно ограничено до 5 позиций! Сохраните активную и добавьте новую.\" }";
-        }
+        //if(collectionStock.size >= 5)
+        //{
+        //    $errorFormHandler = "{ \"type\":\"danger\" , " +
+        //        "\"header\":\"" + header + "\"  , " +
+        //        "\"message\" : \"Количество в заявке временно ограничено до 5 позиций! Сохраните активную и добавьте новую.\" }";
+        //}
 
         /* Выводим сообщение об ошибке заполнения */
 

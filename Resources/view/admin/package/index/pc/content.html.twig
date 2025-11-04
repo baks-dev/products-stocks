@@ -198,7 +198,7 @@
                                     data-method="post"
                                     data-collection-form="collection"
                                     data-formname="{{ add_selected_extradition_form_name }}"
-                                    href="{{ path('products-stocks:admin.part', { print: true }) }}"
+                                    href="{{ path('products-stocks:admin.package.part', { print: true }) }}"
 
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -271,7 +271,7 @@
 
 
                     {# Чекбокс добавления заказа в накладную #}
-                    {% if (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
+                    {% if item.isOrderDanger is not true and (is_granted('ROLE_ORDERS') or  is_granted('ROLE_ADMIN')) %}
 
                         <div data-buttons="true">
                             <label class="btn p-3 border-dotted rounded-3">
@@ -329,7 +329,7 @@
                                 >
 
                                     <a
-                                            href="{{ path('products-stocks:admin.part', { part: item.productStockPart }) }}"
+                                            href="{{ path('products-stocks:admin.package.part', { part: item.productStockPart }) }}"
                                             class="btn-link btn p-0 icon"
                                             target="_blank"
                                             style="width: 45px; height: 45px;"

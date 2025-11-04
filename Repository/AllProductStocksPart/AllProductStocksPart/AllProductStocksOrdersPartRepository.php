@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersPart;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 
