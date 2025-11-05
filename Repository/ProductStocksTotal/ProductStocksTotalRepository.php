@@ -41,11 +41,11 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
 
     private ProductUid $product;
 
-    private ?ProductOfferConst $offer = null;
+    private ProductOfferConst|false $offer = false;
 
-    private ?ProductVariationConst $variation = null;
+    private ProductVariationConst|false $variation = false;
 
-    private ?ProductModificationConst $modification = null;
+    private ProductModificationConst|false $modification = false;
 
     private bool $isOnlyLogisticWarehouse = false;
 
@@ -65,6 +65,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
     {
         if(empty($offer))
         {
+            $this->offer = false;
             return $this;
         }
 
@@ -82,6 +83,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
     {
         if(empty($variation))
         {
+            $this->variation = false;
             return $this;
         }
 
@@ -99,6 +101,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
     {
         if(empty($modification))
         {
+            $this->modification = false;
             return $this;
         }
 
@@ -154,7 +157,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
             );
         }
 
-        if($this->offer)
+        if($this->offer instanceof ProductOfferConst)
         {
             $dbal
                 ->andWhere('stock.offer = :offer')
@@ -165,7 +168,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
             $dbal->andWhere('stock.offer IS NULL');
         }
 
-        if($this->variation)
+        if($this->variation instanceof ProductVariationConst)
         {
             $dbal
                 ->andWhere('stock.variation = :variation')
@@ -176,7 +179,7 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
             $dbal->andWhere('stock.variation IS NULL');
         }
 
-        if($this->modification)
+        if($this->modification instanceof ProductModificationConst)
         {
             $dbal
                 ->andWhere('stock.modification = :modification')

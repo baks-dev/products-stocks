@@ -30,6 +30,7 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Users\Profile\UserProfile\Type\Event\UserProfileEventUid;
 use DateTimeImmutable;
 
 final readonly class AllProductStocksPackageResult
@@ -49,6 +50,7 @@ final readonly class AllProductStocksPackageResult
         private ?string $users_profile_username,
         private ?bool $printed,
         private ?string $product_stock_part,
+        private ?string $client_profile_event,
 
         //private ?bool $products_move,
         //private ?string $users_profile_destination,
@@ -125,7 +127,10 @@ final readonly class AllProductStocksPackageResult
         return $this->product_stock_part ? new ProductStockPartUid($this->product_stock_part) : false;
     }
 
-
+    public function getClientProfileEvent(): ?UserProfileEventUid
+    {
+        return false === empty($this->client_profile_event) ? new UserProfileEventUid($this->client_profile_event) : null;
+    }
 
     //    public function isProductsMove(): bool
     //    {

@@ -446,10 +446,18 @@
                                 {% endif %} #}
                             </div>
 
-                            {# ОТВЕТСТВЕННЫЙ  #}
+
+                            {# Клиент  #}
                             <div class="d-flex w-50 gap-3">
-                                <div class="ms-0">
-                                </div>
+                                {% set user_profile_render = user_profile_render(item.clientProfileEvent)|trim %}
+
+                                {% if user_profile_render is not empty %}
+
+                                    <div class="text-nowrap">
+                                        <span class="text-muted opacity-50">Клиент: </span> &nbsp;
+                                        <div class="d-flex gap-3">{{ user_profile_render|raw }}</div>
+                                    </div>
+                                {% endif %}
                             </div>
 
                         </div>

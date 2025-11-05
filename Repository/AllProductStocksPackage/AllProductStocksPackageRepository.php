@@ -241,12 +241,14 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 'order_print.event = order_event.id',
             );
 
-        $dbal->leftJoin(
-            'orders',
-            OrderUser::class,
-            'order_user',
-            'order_user.event = orders.event',
-        );
+        $dbal
+            ->addSelect('order_user.profile AS client_profile_event')
+            ->leftJoin(
+                'orders',
+                OrderUser::class,
+                'order_user',
+                'order_user.event = orders.event',
+            );
 
 
         $delivery_condition = 'order_delivery.usr = order_user.id';

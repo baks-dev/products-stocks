@@ -48,7 +48,7 @@ final class IndexController extends AbstractController
     /**
      * Список всех заказов, готовых к выдаче
      */
-    #[Route('/admin/product/stocks/pickup{page<\d+>}', name: 'admin.pickup.index', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stocks/pickup/{page<\d+>}', name: 'admin.pickup.index', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         AllProductStocksPickupInterface $allProductStocksPickup,
