@@ -469,7 +469,11 @@ final class AllProductStocksPurchaseRepository implements AllProductStocksPurcha
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('invariable.number');
+                ->addSearchLike('invariable.number')
+                ->addSearchLike('product_offer_modification.article')
+                ->addSearchLike('product_offer_variation.article')
+                ->addSearchLike('product_offer.article')
+                ->addSearchLike('product_info.article');
         }
 
         $dbal->orderBy('modify.mod_date');
