@@ -82,3 +82,7 @@ ROLE_PRODUCT_STOCK_PACKAGE:
 ROLE_PRODUCT_STOCK_PICKUP:
   name: 'Выдача заказов'
   desc: 'Выдача заказов в пункте выдачи (Самовывоз)'
+
+ROLE_PRODUCT_STOCK_PART:
+  name: 'Сборочные листы'
+  desc: 'Печать сборочных листов'

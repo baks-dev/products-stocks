@@ -75,3 +75,7 @@ ROLE_PRODUCT_STOCK_PACKAGE:
 ROLE_PRODUCT_STOCK_PICKUP:
   name: 'Issuing orders'
   desc: 'Pickup of orders at the pick-up point (Pickup)'
+
+ROLE_PRODUCT_STOCK_PART:
+  name: 'Assembly Lists'
+  desc: 'Printing Assembly Lists'

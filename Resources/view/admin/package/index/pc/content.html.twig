@@ -64,7 +64,7 @@
                 {% endif %}
 
 
-                {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
+                {% if is_granted('ROLE_PRODUCT_STOCK_PART') or is_granted('ROLE_ADMIN') %}
                     <button {# href="{{ path('products-stocks:admin.package.index') }}" #}
                             class="btn btn-light bold opacity-25"
                             role="tooltip"
@@ -79,6 +79,7 @@
                         </svg>
                     </button>
                 {% endif %}
+
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PICKUP') or is_granted('ROLE_ADMIN') %}
 
