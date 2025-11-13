@@ -36,7 +36,7 @@ use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventBySta
 use BaksDev\Orders\Order\Repository\OrderEvent\OrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
@@ -57,7 +57,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
         private CurrentOrderEventInterface $CurrentOrderEvent,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
-        private CurrentProductIdentifierInterface $CurrentProductIdentifier,
+        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifier,
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private ExistOrderEventByStatusInterface $ExistOrderEventByStatusRepository
     ) {}

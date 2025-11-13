@@ -34,7 +34,7 @@ use BaksDev\Orders\Order\Repository\OrderEvent\OrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusDecommission;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\EditOrderDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\Products\OrderProductDTO;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
 use Psr\Log\LoggerInterface;
@@ -51,7 +51,7 @@ final readonly class RecalculateByDecommissionDispatcher
         #[Target('ordersOrderLogger')] private LoggerInterface $logger,
         private DeduplicatorInterface $deduplicator,
         private OrderEventInterface $OrderEventRepository,
-        private CurrentProductIdentifierInterface $CurrentProductIdentifierRepository,
+        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
         private MessageDispatchInterface $messageDispatch,
     ) {}
 

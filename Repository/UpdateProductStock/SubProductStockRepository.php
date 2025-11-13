@@ -42,7 +42,7 @@ final class SubProductStockRepository implements SubProductStockInterface
     /** Указываем количество снятия резерва */
     public function reserve(int|false $reserve): self
     {
-        $this->reserve = $reserve ?: null;
+        $this->reserve = $reserve ?: false;
         return $this;
     }
 

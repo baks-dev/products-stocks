@@ -36,7 +36,7 @@ use BaksDev\Orders\Order\Messenger\MultiplyOrdersPackage\MultiplyOrdersPackageMe
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventByStatusInterface;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
-use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\ProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
@@ -55,7 +55,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private DeduplicatorInterface $deduplicator,
-        private CurrentProductIdentifierInterface $CurrentProductIdentifier,
+        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifier,
         private PackageProductStockHandler $PackageProductStockHandler,
         private CentrifugoPublishInterface $publish,
         private UserTokenStorageInterface $UserTokenStorage
