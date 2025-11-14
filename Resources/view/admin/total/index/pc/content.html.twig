@@ -194,6 +194,11 @@
             {# Текстовый результат фильтра #}
             {% include Template('@products-product/filter/'~baks_settings.device~'/filter_text.html.twig') %}
 
+            {# Инфо-блок с предложением переместить остатки по товару #}
+            {% if (info) %}
+                {{ include(_self|replace({ "content.html.twig": "info.html.twig" })) }}
+            {% endif %}
+
             {# @var item \BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksResult #}
             {% if query.data %}
 
