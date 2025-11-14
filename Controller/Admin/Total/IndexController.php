@@ -30,7 +30,7 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
-use BaksDev\Search\Type\SearchTags\Collection\SearchIndexTagCollection;
+use BaksDev\Products\Stocks\Repository\ProductStockInfo\ProductStockInfoInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -47,6 +47,7 @@ final class IndexController extends AbstractController
     public function index(
         Request $request,
         AllProductStocksInterface $allProductStocks,
+        ProductStockInfoInterface $productStockInfo,
         int $page = 0,
     ): Response
     {
@@ -91,11 +92,15 @@ final class IndexController extends AbstractController
             ->filter($filter)
             ->findPaginator();
 
+        /* Инфо-блок с предложением переместить остатки по товару */
+        $info = $productStockInfo->find();
+
         return $this->render(
             [
                 'query' => $query,
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
+                'info' => $info,
             ],
         );
     }
