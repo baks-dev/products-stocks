@@ -21,8 +21,16 @@
             {{ info.productModificationPostfix }}
 
         </strong>
+
         в количестве <strong>{{ info.maxStockTotal }}</strong>.<br>
-        На <strong>{{ baks_profile.user_profile_username }}</strong> осталось <strong>{{ info.minStockTotal }}</strong>.<br>
+        На <strong>{{ baks_profile.user_profile_username }}</strong>
+
+        {% if info.minStockTotal %}
+            осталось <strong>{{ info.minStockTotal }}.</strong>
+        {% else %}
+            <strong class="text-danger"> нет в наличии.</strong>
+        {% endif %}
+
         Предлагается сделать перемещение.
     </div>
 

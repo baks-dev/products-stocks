@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -84,7 +84,9 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
             ->addSelect('(stock_total.total - stock_total.reserve) AS max_stock_total')
             ->addSelect('stock_total.profile AS max_stock_profile')
             ->from(ProductStockTotal::class, 'stock_total')
-            ->where('stock_total.profile != :profile');
+            ->where('stock_total.profile != :profile')
+            ->having('(stock_total.total - stock_total.reserve) > 100 ')
+            ->orderBy('stock_total.total', 'DESC');
 
 
         /* Получить минимальное кол-во */
@@ -105,10 +107,9 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
                 AND current_stock_total.offer = stock_total.offer
                 AND current_stock_total.variation = stock_total.variation
                 AND current_stock_total.modification = stock_total.modification
-            ',
-            )
-            ->orderBy('stock_total.total', 'DESC')
-            ->having('(SUM(stock_total.total) - SUM(stock_total.reserve)) > 100 ');
+            ');
+
+        $dbal->andWhere('COALESCE(NULLIF(current_stock_total.total, 0), 0) < 5');
 
 
         /* Товар не находится в перемещениях */
