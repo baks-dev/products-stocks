@@ -37,19 +37,38 @@ use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final class ProductStockInfoRepository implements ProductStockInfoInterface
 {
 
+    private UserProfileUid|false $profile = false;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
     ) {}
+
+
+    public function forProfile(UserProfileUid|UserProfile $profile): self
+    {
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
 
 
     public function find(): ProductStockInfoResult|false
@@ -58,16 +77,42 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
+
+        /* Получить максимальное кол-во */
         $dbal
             ->select('stock_total.id AS stock_id')
-            ->addSelect('MAX(stock_total.total) AS max_stock_total')
-            ->addSelect('MIN(stock_total.total) AS min_stock_total')
-            ->addSelect('stock_total.profile AS users_profile_id')
+            ->addSelect('(stock_total.total - stock_total.reserve) AS max_stock_total')
+            ->addSelect('stock_total.profile AS max_stock_profile')
             ->from(ProductStockTotal::class, 'stock_total')
-            ->andWhere('stock_total.total != 0');
+            ->where('stock_total.profile != :profile');
+
+
+        /* Получить минимальное кол-во */
+        $dbal
+            ->addSelect("
+                COALESCE(
+                    NULLIF(current_stock_total.total, 0),
+                    0
+                ) AS min_stock_total
+            ")
+            ->leftJoin(
+                'stock_total',
+                ProductStockTotal::class,
+                'current_stock_total',
+                '
+                current_stock_total.profile = :profile
+                AND current_stock_total.product = stock_total.product
+                AND current_stock_total.offer = stock_total.offer
+                AND current_stock_total.variation = stock_total.variation
+                AND current_stock_total.modification = stock_total.modification
+            ',
+            )
+            ->orderBy('stock_total.total', 'DESC')
+            ->having('(SUM(stock_total.total) - SUM(stock_total.reserve)) > 100 ');
 
 
         /* Товар не находится в перемещениях */
+
         $dbal->leftJoin(
             'stock_total',
             ProductStockProduct::class,
@@ -87,6 +132,28 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
                 ProductStockStatusMoving::class,
                 ProductStockStatus::TYPE,
             );
+
+        /* Destination */
+        $dbal->leftJoin(
+            'stock_event',
+            ProductStockMove::class,
+            'move',
+            'move.event = stock_event.id AND move.ord IS NULL',
+        );
+
+        $dbal
+            ->leftJoin(
+                'move',
+                UserProfile::class,
+                'users_profile_destination',
+                'users_profile_destination.id = move.destination AND move.destination = :profile',
+            );
+
+        $dbal->setParameter(
+            key: 'profile',
+            value: $this->profile instanceof UserProfileUid ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
+            type: UserProfileUid::TYPE,
+        );
 
 
         /* Product */
@@ -224,7 +291,7 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
             );
 
         $dbal
-            ->addSelect('users_profile_personal.username AS users_profile_username')
+            ->addSelect('users_profile_personal.username AS max_stock_username')
             ->join(
                 'users_profile',
                 UserProfilePersonal::class,
@@ -232,90 +299,12 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
                 'users_profile_personal.event = users_profile.event',
             );
 
-
+        $dbal->setMaxResults(1);
         $dbal->allGroupByExclude();
 
-        $results = $dbal->fetchAllAssociative();
 
-        if(true === empty($results))
-        {
-            return false;
-        }
+        return $dbal->fetchHydrate(ProductStockInfoResult::class);
 
-        $result = $this->preparedStocks($results);
-
-        return $result !== false ? new ProductStockInfoResult(...$result) : false;
-
-    }
-
-
-    /**
-     * Подготовить данные по максимальному и минимальному значениям с учетом разных профилей
-     */
-    private function preparedStocks(array $results): array|false
-    {
-
-        $stocksByArticle = [];
-
-        /* Получить по артикулу остатки товара */
-        foreach($results as $result)
-        {
-            $stocksByArticle[$result['product_article']][] = $result;
-        }
-
-
-        $stocksByArticleFiltered = [];
-
-        /* Пройти по данным для получения данных по максимальным и минимальным значениям */
-        foreach($stocksByArticle as $key => $stocksByArticleItem)
-        {
-
-            /* Найти минимальные и максимальные в наличии */
-            $max_total = max(array_column($stocksByArticleItem, 'max_stock_total'));
-            $min_total = min(array_column($stocksByArticleItem, 'min_stock_total'));
-
-
-            $result = [];
-
-            /* Найти значения с максимальным и минимальным наличием */
-            foreach($stocksByArticleItem as $items)
-            {
-
-                /* Сформировать данные по маскимальному значению */
-                if($items['max_stock_total'] == $max_total)
-                {
-                    $result['max_stock_profile'] = $items['users_profile_id'];
-                    $result['max_stock_total'] = $max_total;
-                    $result['max_stock_username'] = $items['users_profile_username'];
-                }
-
-                /* Сформировать данные по минимальному значению */
-                if($items['min_stock_total'] == $min_total)
-                {
-                    $result['min_stock_profile'] = $items['users_profile_id'];
-                    $result['min_stock_total'] = $min_total;
-                }
-
-            }
-
-            /* Проверить чтобы профили магазинов отличались а также максимальное кол-во должно быть больше 100 */
-            if($result['min_stock_profile'] !== $result['max_stock_profile'] && $max_total > 100)
-            {
-                $result = $result + $items;
-                $stocksByArticleFiltered[$key] = $result;
-            }
-
-        }
-
-
-
-        /* Сортировать по наименьшему остатку */
-        usort($stocksByArticleFiltered, function($stock1, $stock2) {
-            return $stock1['min_stock_total'] > $stock2['min_stock_total'];
-        });
-
-        /* Возвратить первый элемент с наименьшим остатком */
-        return empty($stocksByArticleFiltered) === false ? reset($stocksByArticleFiltered) : false;
     }
 
 }
