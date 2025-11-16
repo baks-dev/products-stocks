@@ -23,7 +23,7 @@
         </strong>
 
         в количестве <strong>{{ info.maxStockTotal }}</strong>.<br>
-        На <strong>{{ baks_profile.user_profile_username }}</strong>
+        На складе <strong>{{ baks_profile.user_profile_username }}</strong>
 
         {% if info.minStockTotal %}
             осталось <strong>{{ info.minStockTotal }}.</strong>
@@ -31,7 +31,7 @@
             <strong class="text-danger"> нет в наличии.</strong>
         {% endif %}
 
-        Предлагается сделать перемещение.
+        Рекомендуется сделать перемещение.
     </div>
 
     <button data-href="{{ path('products-stocks:admin.moving.new') }}" class="btn btn-sm moving btn-danger"

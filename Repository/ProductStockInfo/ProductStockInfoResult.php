@@ -34,7 +34,8 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 final readonly class ProductStockInfoResult
 {
     public function __construct(
-        private string $stock_id,
+        //private string $stock_id,
+        //private ?int $total,
 
         //private string $users_profile_id,
 
