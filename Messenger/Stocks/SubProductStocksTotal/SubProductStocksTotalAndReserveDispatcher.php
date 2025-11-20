@@ -51,6 +51,24 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
      */
     public function __invoke(SubProductStocksTotalAndReserveMessage $message): void
     {
+        if(empty($message->getTotal()))
+        {
+            $this->logger->critical(
+                'Не передано количество продукции для снятия наличие и резерва со склада',
+                [
+                    self::class.':'.__LINE__,
+                    'profile' => (string) $message->getProfile(),
+                    'product' => (string) $message->getProduct(),
+                    'offer' => (string) $message->getOffer(),
+                    'variation' => (string) $message->getVariation(),
+                    'modification' => (string) $message->getModification(),
+                ],
+            );
+
+            return;
+        }
+
+
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([$message, self::class]);
