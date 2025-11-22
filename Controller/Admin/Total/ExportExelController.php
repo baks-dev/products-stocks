@@ -97,7 +97,8 @@ final class ExportExelController extends AbstractController
             ->setCellValue('G1', 'Резерв')
             ->setCellValue('H1', 'Доступно')
             ->setCellValue('I1', 'Сумма')
-            ->setCellValue('J1', 'Место');
+            ->setCellValue('J1', 'Место')
+            ->setCellValue('K1', 'Комментарий');
 
 
         $sheet->getColumnDimension('A')->setAutoSize(25);
@@ -111,6 +112,7 @@ final class ExportExelController extends AbstractController
         $sheet->getColumnDimension('H')->setAutoSize(10);
         $sheet->getColumnDimension('I')->setAutoSize(10);
         $sheet->getColumnDimension('J')->setAutoSize(10);
+        $sheet->getColumnDimension('K')->setAutoSize(10);
 
         $key = 2;
 
@@ -194,6 +196,7 @@ final class ExportExelController extends AbstractController
             $sheet->setCellValue('H'.$key, $data->getQuantity()); // Доступно
             $sheet->setCellValue('I'.$key, $total_price); // Сумма
             $sheet->setCellValue('J'.$key, $data->getStockStorage()); // Место
+            $sheet->setCellValue('K'.$key, $data->getStockComment()); // Комментарий
 
 
             /** Подсчет ИТОГО */
