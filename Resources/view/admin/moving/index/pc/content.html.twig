@@ -29,7 +29,18 @@
                             title="Добавить перемещение">
                         {{ 'Добавить перемещение'|trans({}, 'messages') }}
                     </button>
+
+
+
+
                 {% endif %}
+
+
+
+
+
+
+
 
                 {# Складской учет #}
 
@@ -265,7 +276,7 @@
             {% for item in query.data %}
                 {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
             {% else %}
-                <div class="alert alert-warning m-0 w-100" role="alert">
+                <div class="alert alert-warning m-0 w-100 mb-3" role="alert">
                     <div class="d-flex align-items-baseline gap-3">
                         <div>
                             <div class="icon rounded-circle bg-contain p-2 bg-primary text-white"
