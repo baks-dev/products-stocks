@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -37,6 +37,10 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 use InvalidArgumentException;
@@ -44,19 +48,34 @@ use InvalidArgumentException;
 final class ProductModificationChoiceWarehouseRepository implements ProductModificationChoiceWarehouseInterface
 {
 
-    private ?UserUid $user = null;
-    private ?ProductUid $product = null;
-    private ?ProductOfferConst $offer = null;
-    private ?ProductVariationConst $variation = null;
+    private UserUid|false $user = false;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    private UserProfileUid|false $profile = false;
+
+    private ProductUid|false $product = false;
+
+    private ProductOfferConst|false $offer = false;
+
+    private ProductVariationConst|false $variation = false;
 
 
-    public function user(UserUid|string $user): self
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserTokenStorageInterface $UserTokenStorage
+    ) {}
+
+
+    public function forUser(User|UserUid|null|false $user): self
     {
-        if(is_string($user))
+        if(empty($user))
         {
-            $user = new UserUid($user);
+            $this->user = false;
+            return $this;
+        }
+
+        if($user instanceof User)
+        {
+            $user = $user->getId();
         }
 
         $this->user = $user;
@@ -64,12 +83,36 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
         return $this;
     }
 
-
-    public function product(ProductUid|string $product): self
+    public function forProfile(UserProfile|UserProfileUid|null|false $profile): self
     {
-        if(is_string($product))
+        if(empty($profile))
         {
-            $product = new ProductUid($product);
+            $this->profile = false;
+            return $this;
+        }
+
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+
+    public function product(Product|ProductUid|null|false $product): self
+    {
+        if(empty($product))
+        {
+            $this->product = false;
+            return $this;
+        }
+
+        if($product instanceof Product)
+        {
+            $product = $product->getId();
         }
 
         $this->product = $product;
@@ -78,11 +121,12 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
     }
 
 
-    public function offerConst(ProductOfferConst|string $offer): self
+    public function offerConst(ProductOfferConst|null|false $offer): self
     {
-        if(is_string($offer))
+        if(empty($offer))
         {
-            $offer = new ProductOfferConst($offer);
+            $this->offer = false;
+            return $this;
         }
 
         $this->offer = $offer;
@@ -90,11 +134,12 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
         return $this;
     }
 
-    public function variationConst(ProductVariationConst|string $variation): self
+    public function variationConst(ProductVariationConst|null|false $variation): self
     {
-        if(is_string($variation))
+        if(empty($variation))
         {
-            $variation = new ProductVariationConst($variation);
+            $this->variation = false;
+            return $this;
         }
 
         $this->variation = $variation;
@@ -108,9 +153,9 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
      */
     public function getProductsModificationExistWarehouse(): Generator
     {
-        if(!$this->user || !$this->product || !$this->offer || !$this->variation)
+        if(false === ($this->product instanceof ProductUid))
         {
-            throw new InvalidArgumentException('Необходимо передать все параметры');
+            throw new InvalidArgumentException('Invalid Argument ProductUid');
         }
 
         $dbal = $this->DBALQueryBuilder
@@ -122,18 +167,62 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
 
         $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $this->user, UserUid::TYPE);
+            ->setParameter(
+                key: 'usr',
+                value: $this->user instanceof UserUid ? $this->user : $this->UserTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
 
-        $dbal->andWhere('stock.product = :product')
-            ->setParameter('product', $this->product, ProductUid::TYPE);
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->profile,
+                    type: UserProfileUid::TYPE,
+                );
+        }
+
+        $dbal
+            ->andWhere('stock.product = :product')
+            ->setParameter(
+                key: 'product',
+                value: $this->product,
+                type: ProductUid::TYPE);
 
 
-        $dbal->andWhere('stock.offer = :offer')
-            ->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
+        if($this->offer instanceof ProductOfferConst)
+        {
+            $dbal
+                ->andWhere('stock.offer = :offer')
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->offer,
+                    type: ProductOfferConst::TYPE,
+                );
+        }
+        else
+        {
+            $dbal->andWhere('stock.offer IS NULL');
+        }
 
 
-        $dbal->andWhere('stock.variation = :variation')
-            ->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
+        if($this->variation instanceof ProductVariationConst)
+        {
+            $dbal
+                ->andWhere('stock.variation = :variation')
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->variation,
+                    type: ProductVariationConst::TYPE,
+                );
+        }
+        else
+        {
+            $dbal->andWhere('stock.variation IS NULL');
+        }
+
 
         $dbal->andWhere('(stock.total - stock.reserve) > 0');
 
@@ -166,7 +255,7 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
             'stock',
             ProductModification::class,
             'modification',
-            'modification.const = stock.modification AND modification.variation = variation.id'
+            'modification.const = stock.modification AND modification.variation = variation.id',
         );
 
 
@@ -176,14 +265,14 @@ final class ProductModificationChoiceWarehouseRepository implements ProductModif
             'modification',
             CategoryProductModification::class,
             'category_modification',
-            'category_modification.id = modification.category_modification'
+            'category_modification.id = modification.category_modification',
         );
 
         $dbal->leftJoin(
             'category_modification',
             CategoryProductModificationTrans::class,
             'category_modification_trans',
-            'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+            'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local',
         );
 
 

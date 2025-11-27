@@ -1,14 +1,13 @@
 {% trans_default_domain 'products-stocks.admin' %}
 
-<div class="modal-dialog modal-dialog-centered " style="max-width: 700px;">
+<div class="modal-dialog modal-dialog-centered " style="max-width: 900px;">
     {{ form_start(form) }}
-
 
     <div class="modal-content p-3 border-bottom border-5 border-primary">
 
         <div class="modal-header">
             <h5 class="modal-title">
-                {{ 'Добавить заявку на перемещение продукции'|trans }}
+                {{ 'Добавить отпавление продукции на другой склад'|trans }}
             </h5>
         </div>
 
@@ -22,22 +21,23 @@
                         placeholder: 'Выберите продукцию из списка...',
                         attr: { 'data-select' : 'select2', placeholder: form.preProduct.vars.data ?: 'Продукция на складе отстутсвует', } }) }}
                 </div>
-            </div>
 
-            <div id="preOffer" class="d-flex w-100 gap-3">
 
-                <div>{{ form_row(form.preOffer) }}</div>
+                <div id="preOffer" class="d-flex w-100 gap-3">
 
-                <div id="preVariation" class="d-flex w-100 gap-3">
-                    <div>{{ form_row(form.preVariation) }}</div>
+                    <div>{{ form_row(form.preOffer) }}</div>
 
-                    <div id="preModification">
-                        <div>{{ form_row(form.preModification) }}</div>
+                    <div id="preVariation" class="d-flex w-100 gap-3">
+                        <div>{{ form_row(form.preVariation) }}</div>
+
+                        <div id="preModification">
+                            <div>{{ form_row(form.preModification) }}</div>
+                        </div>
                     </div>
+
                 </div>
 
             </div>
-
 
             {# <div class="d-flex justify-content-evenly gap-1 align-items-end">
                 <div class="p-1">
@@ -58,17 +58,12 @@
             <div class="w-100 d-flex justify-content-between align-items-end gap-2">
 
                 <div class="w-100" id="targetWarehouse">
-                    {{ form_row(form.targetWarehouse, { label: 'Склад отгрузки', placeholder: 'Выберите целевой склад...', attr: { 'data-select' : 'select2' } }) }}
-                </div>
-
-                <div class="w-100">
-                    {{ form_row(form.destinationWarehouse, { label: 'Склад назначения', placeholder: 'Выберите Cклад назначения...', attr: { 'data-select' : 'select2' } }) }}
+                    {{ form_row(form.destinationWarehouse, { label: 'Целевой склад (грузоволучатель)', placeholder: 'Выберите целевой склад ...', attr: { 'data-select' : 'select2' } }) }}
                 </div>
 
                 <div class="w-25">
                     {{ form_row(form.preTotal, { label: 'Количество', attr: { min : 1 } }) }}
                 </div>
-
 
                 <div class="mb-3 w-25">
 
@@ -92,7 +87,7 @@
                                   fill="currentColor"></rect>
                         </svg>
                     </span>
-                        Переместить
+                        Отпарвить на склад
                     </button>
                 </div>
 
@@ -114,7 +109,7 @@
                 </button>
 
                 {# Сохранить #}
-                {{ form_widget(form.moving, { label: '
+                {{ form_widget(form.send, { label: '
                     <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
                     <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
 			    '}) }}

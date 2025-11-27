@@ -31,7 +31,7 @@ use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-final class VoterMovingNew implements VoterInterface, MenuAdminInterface
+final class VoterMovingNew implements VoterInterface
 {
     /** Добавить заявку на перемещение */
     public const string VOTER = 'MOVING_NEW';
@@ -52,48 +52,5 @@ final class VoterMovingNew implements VoterInterface, MenuAdminInterface
     public function getRole(): string
     {
         return self::getVoter();
-    }
-
-    /** Метод возвращает PATH раздела
-     * @see MovingController
-     */
-    public function getPath(): string
-    {
-        return 'products-stocks:admin.moving.new';
-    }
-
-    /**
-     * Метод возвращает ключ раздела (для меню телеграм)
-     */
-    public function getPathKey(): string
-    {
-        return self::KEY;
-    }
-
-    /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
-    {
-        return new MenuGroupStocks();
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public static function getSortMenu(): int
-    {
-        return 1;
-    }
-
-    /** Метод возвращает флаг "Показать в выпадающем меню"  */
-    public function getDropdownMenu(): bool
-    {
-        return false;
-    }
-
-
-    /**
-     * Метод возвращает флаг "Модальное окно".
-     */
-    public function getModal(): bool
-    {
-        return true;
     }
 }

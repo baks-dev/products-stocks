@@ -20,7 +20,6 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-
 declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Security;
@@ -32,12 +31,12 @@ use BaksDev\Users\Profile\Group\Security\VoterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('baks.security.voter')]
-final class VoterIncoming implements VoterInterface, MenuAdminInterface
+final class VoterMovingSend implements VoterInterface
 {
-    /** Список приходных ордеров */
-    public const string VOTER = 'INCOMING';
+    /** Добавить заявку на перемещение */
+    public const string VOTER = 'MOVING_SEND';
 
-    public const string KEY = 'eYtTqYzv';
+    public const string KEY = 'QbMSsQAb';
 
     public static function getVoter(): string
     {
@@ -49,55 +48,9 @@ final class VoterIncoming implements VoterInterface, MenuAdminInterface
         return $role->getRole() === Role::ROLE;
     }
 
-    /**
-     * Добавляем раздел в меню администрирования.
-     */
-
-    /**
-     * Метод возвращает префикс роли доступа.
-     */
+    /** Метод возвращает префикс роли доступа */
     public function getRole(): string
     {
         return self::getVoter();
-    }
-
-    /** Метод возвращает PATH раздела */
-    public function getPath(): string
-    {
-        return 'products-stocks:admin.incoming.index';
-    }
-
-    /**
-     * Метод возвращает ключ раздела (для меню телеграм)
-     */
-    public function getPathKey(): string
-    {
-        return self::KEY;
-    }
-
-    /** Метод возвращает секцию, в которую помещается ссылка на раздел */
-    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
-    {
-        return new MenuGroupStocks();
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public static function getSortMenu(): int
-    {
-        return 131;
-    }
-
-    /** Метод возвращает флаг "Показать в выпадающем меню"  */
-    public function getDropdownMenu(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Метод возвращает флаг "Модальное окно".
-     */
-    public function getModal(): bool
-    {
-        return false;
     }
 }

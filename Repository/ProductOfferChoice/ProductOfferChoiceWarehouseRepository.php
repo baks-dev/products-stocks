@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,23 +33,38 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 use InvalidArgumentException;
 
 final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceWarehouseInterface
 {
-    private ?UserUid $user = null;
+    private UserUid|false $user = false;
 
-    private ?ProductUid $product = null;
+    private ProductUid|false $product = false;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    private UserProfileUid|false $profile = false;
 
-    public function user(UserUid|string $user): self
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserTokenStorageInterface $UserTokenStorage
+    ) {}
+
+    public function forUser(User|UserUid|null|false $user): self
     {
-        if(is_string($user))
+        if(empty($user))
         {
-            $user = new UserUid($user);
+            $this->user = false;
+            return $this;
+        }
+
+        if($user instanceof User)
+        {
+            $user = $user->getId();
         }
 
         $this->user = $user;
@@ -58,11 +73,35 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
     }
 
 
-    public function product(ProductUid|string $product): self
+    public function forProfile(UserProfile|UserProfileUid|null|false $profile): self
+    {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+
+    public function forProduct(Product|ProductUid|string $product): self
     {
         if(is_string($product))
         {
             $product = new ProductUid($product);
+        }
+
+        if($product instanceof Product)
+        {
+            $product = $product->getId();
         }
 
         $this->product = $product;
@@ -76,7 +115,7 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
      */
     public function getProductsOfferExistWarehouse(): Generator
     {
-        if(!$this->user || !$this->product)
+        if(false === ($this->product instanceof ProductUid))
         {
             throw new InvalidArgumentException('Необходимо передать все параметры');
         }
@@ -89,11 +128,31 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
 
         $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $this->user, UserUid::TYPE);
+            ->setParameter(
+                key: 'usr',
+                value: $this->user instanceof UserUid ? $this->user : $this->UserTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
+
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->profile,
+                    type: UserProfileUid::TYPE,
+                );
+        }
+
 
         $dbal
             ->andWhere('stock.product = :product')
-            ->setParameter('product', $this->product, ProductUid::TYPE);
+            ->setParameter(
+                key: 'product',
+                value: $this->product,
+                type: ProductUid::TYPE,
+            );
 
         $dbal->andWhere('(stock.total - stock.reserve) > 0');
 
@@ -102,7 +161,7 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
             'stock',
             Product::class,
             'product',
-            'product.id = stock.product'
+            'product.id = stock.product',
         );
 
 
@@ -110,7 +169,7 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
             'product',
             ProductOffer::class,
             'offer',
-            'offer.const = stock.offer AND offer.event = product.event'
+            'offer.const = stock.offer AND offer.event = product.event',
         );
 
         // Тип торгового предложения
@@ -119,14 +178,14 @@ final class ProductOfferChoiceWarehouseRepository implements ProductOfferChoiceW
             'offer',
             CategoryProductOffers::class,
             'category_offer',
-            'category_offer.id = offer.category_offer'
+            'category_offer.id = offer.category_offer',
         );
 
         $dbal->leftJoin(
             'category_offer',
             CategoryProductOffersTrans::class,
             'category_offer_trans',
-            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local',
         );
 
 

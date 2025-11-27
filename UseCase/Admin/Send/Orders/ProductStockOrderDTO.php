@@ -21,24 +21,27 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductOfferChoice;
+declare(strict_types=1);
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
-use Generator;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Send\Orders;
 
-interface ProductOfferChoiceWarehouseInterface
+use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
+
+/** @see MaterialStockOrder */
+final class ProductStockOrderDTO implements ProductStockOrderInterface
 {
-    public function forProfile(UserProfile|UserProfileUid|null|false $profile): self;
+    /** Идентификатор заказа для сборки */
+    private ?OrderUid $ord = null;
 
-    public function forUser(User|UserUid|null|false $user): self;
+    /** Идентификатор заказа для сборки */
+    public function getOrd(): ?OrderUid
+    {
+        return $this->ord;
+    }
 
-    public function forProduct(ProductUid|string $product): self;
-
-    /** Метод возвращает все идентификаторы торговых предложений, имеющиеся в наличии на данном складе */
-    public function getProductsOfferExistWarehouse(): Generator;
+    public function setOrd(?OrderUid $ord): void
+    {
+        $this->ord = $ord;
+    }
 }

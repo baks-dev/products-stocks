@@ -19,27 +19,58 @@
 
             <div class="w-100 d-flex align-items-center gap-3 justify-content-end">
 
-                {# Добавить перемещение #}
-                {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
-                    <button
-                            data-href="{{ path('products-stocks:admin.moving.new') }}"
-                            class="btn btn-danger disabled"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            title="Добавить перемещение">
-                        {{ 'Добавить перемещение'|trans({}, 'messages') }}
-                    </button>
 
+                <button
+                        class="btn btn-outline-primary d-flex gap-2 align-items-center dropdown-toggle "
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
 
+                >
+                    <div class="d-flex gap-1 align-items-center">
+                        {{ 'Перемещение'|trans({}, 'core.btn') }} &nbsp;
 
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                        </svg>
+                    </div>
+
+                </button>
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_PRODUCT_STOCK_MOVING_SEND') or is_granted('ROLE_ADMIN') %}
 
                 {% endif %}
 
+                <ul class="dropdown-menu">
+
+                    {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('products-stocks:admin.moving.new') }}"
+                               class="dropdown-item"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal"
+                            >
+                                Запрос на перемещение со склада
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_SEND') or is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('products-stocks:admin.moving.send') }}"
+                               class="dropdown-item"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal"
+                            >
+                                Отправить продукцию другой склад
+                            </a>
+                        </li>
+                    {% endif %}
 
 
-
-
-
+                </ul>
 
 
                 {# Складской учет #}

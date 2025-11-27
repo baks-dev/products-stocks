@@ -104,93 +104,92 @@ executeFunc((function productMovingForm()
         data.delete(forms.name + "[_token]");
 
         await fetch(forms.action, {
-            method: forms.method, // *GET, POST, PUT, DELETE, etc.
+            method : forms.method, // *GET, POST, PUT, DELETE, etc.
             //mode: 'same-origin', // no-cors, *cors, same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
+            cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials : "same-origin", // include, *same-origin, omit
+            headers : {
+                "X-Requested-With" : "XMLHttpRequest",
             },
 
-            redirect: "follow", // manual, *follow, error
-            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: data, // body data type must match "Content-Type" header
-        })
-            .then((response) =>
+            redirect : "follow", // manual, *follow, error
+            referrerPolicy : "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body : data, // body data type must match "Content-Type" header
+        }).then((response) =>
+        {
+            if(response.status !== 200)
             {
-                if(response.status !== 200)
-                {
-                    return false;
-                }
+                return false;
+            }
 
-                return response.text();
-            }).then((data) =>
+            return response.text();
+        }).then((data) =>
+        {
+            if(data)
             {
-                if(data)
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
+
+                let preOffer = result.getElementById("preOffer");
+                preOffer ? document.getElementById("preOffer").replaceWith(preOffer) : preOffer.innerHTML = "";
+
+                if(preOffer)
                 {
-                    let parser = new DOMParser();
-                    let result = parser.parseFromString(data, "text/html");
+                    /** SELECT2 */
 
-                    let preOffer = result.getElementById("preOffer");
-                    preOffer ? document.getElementById("preOffer").replaceWith(preOffer) : preOffer.innerHTML = "";
+                    let replaceOfferId = "moving_product_stock_form_preOffer";
 
-                    if(preOffer)
+                    let replacer = document.getElementById(replaceOfferId);
+
+                    if(replacer.tagName === "SELECT")
                     {
+                        new NiceSelect(replacer, {searchable : true});
+                    }
+
+                    let focus = document.getElementById("moving_product_stock_form_preOffer_select2");
+                    focus ? focus.click() : null;
+                }
+                else
+                {
+                    let targetWarehouse = result.getElementById("targetWarehouse");
+
+                    if(targetWarehouse)
+                    {
+                        document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
+
                         /** SELECT2 */
+                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        replacer.addEventListener("change", changeObjectWarehouse, false);
 
-                        let replaceOfferId = "moving_product_stock_form_preOffer";
-
-                        let replacer = document.getElementById(replaceOfferId);
-
-                        if(replacer.tagName === "SELECT")
+                        if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                         {
-                            new NiceSelect(replacer, {searchable: true});
+                            new NiceSelect(replacerWarehouse, {searchable : true});
                         }
-
-                        let focus = document.getElementById("moving_product_stock_form_preOffer_select2");
-                        focus ? focus.click() : null;
-                    }
-                    else
-                    {
-                        let targetWarehouse = result.getElementById("targetWarehouse");
-
-                        if(targetWarehouse)
-                        {
-                            document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
-
-                            /** SELECT2 */
-                            let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehouse, false);
-
-                            if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
-                            {
-                                new NiceSelect(replacerWarehouse, {searchable: true});
-                            }
-                        }
-                    }
-
-
-                    /** сбрасываем зависимые поля */
-                    let preVariation = document.getElementById("preVariation");
-                    preVariation ? preVariation.innerHTML = "" : null;
-
-                    let preModification = document.getElementById("preModification");
-                    preModification ? preModification.innerHTML = "" : null;
-
-
-                    /** Событие на изменение торгового предложения */
-                    let offerChange = document.getElementById("moving_product_stock_form_preOffer");
-
-                    if(offerChange)
-                    {
-                        offerChange.addEventListener("change", function(event)
-                        {
-                            changeObjectOffer(forms);
-                            return false;
-                        });
                     }
                 }
-            });
+
+
+                /** сбрасываем зависимые поля */
+                let preVariation = document.getElementById("preVariation");
+                preVariation ? preVariation.innerHTML = "" : null;
+
+                let preModification = document.getElementById("preModification");
+                preModification ? preModification.innerHTML = "" : null;
+
+
+                /** Событие на изменение торгового предложения */
+                let offerChange = document.getElementById("moving_product_stock_form_preOffer");
+
+                if(offerChange)
+                {
+                    offerChange.addEventListener("change", function(event)
+                    {
+                        changeObjectOffer(forms);
+                        return false;
+                    });
+                }
+            }
+        });
     }
 
 
@@ -201,85 +200,84 @@ executeFunc((function productMovingForm()
 
 
         await fetch(forms.action, {
-            method: forms.method, // *GET, POST, PUT, DELETE, etc.
+            method : forms.method, // *GET, POST, PUT, DELETE, etc.
             //mode: 'same-origin', // no-cors, *cors, same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
+            cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials : "same-origin", // include, *same-origin, omit
+            headers : {
+                "X-Requested-With" : "XMLHttpRequest",
             },
 
-            redirect: "follow", // manual, *follow, error
-            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: data, // body data type must match "Content-Type" header
-        })
-            .then((response) =>
+            redirect : "follow", // manual, *follow, error
+            referrerPolicy : "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body : data, // body data type must match "Content-Type" header
+        }).then((response) =>
+        {
+
+            if(response.status !== 200)
             {
+                return false;
+            }
 
-                if(response.status !== 200)
-                {
-                    return false;
-                }
+            return response.text();
 
-                return response.text();
-
-            }).then((data) =>
+        }).then((data) =>
+        {
+            if(data)
             {
-                if(data)
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
+
+                let preVariation = result.getElementById("preVariation");
+
+                if(preVariation)
                 {
-                    let parser = new DOMParser();
-                    let result = parser.parseFromString(data, "text/html");
+                    document.getElementById("preVariation").replaceWith(preVariation);
 
-                    let preVariation = result.getElementById("preVariation");
+                    /** SELECT2 */
+                    let replacer = document.getElementById("moving_product_stock_form_preVariation");
 
-                    if(preVariation)
+                    if(replacer)
                     {
-                        document.getElementById("preVariation").replaceWith(preVariation);
+                        if(replacer.tagName === "SELECT")
+                        {
+                            new NiceSelect(replacer, {searchable : true});
+                        }
+
+                        replacer.addEventListener("change", function(event)
+                        {
+                            changeObjectVariation(forms);
+                            return false;
+                        });
+
+                        let focus = document.getElementById("moving_product_stock_form_preVariation_select2");
+                        focus ? focus.click() : null;
+                    }
+                }
+                else
+                {
+                    let targetWarehouse = result.getElementById("targetWarehouse");
+
+                    if(targetWarehouse)
+                    {
+
+                        document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacer = document.getElementById("moving_product_stock_form_preVariation");
+                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        replacer.addEventListener("change", changeObjectWarehouse, false);
 
-                        if(replacer)
+                        if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                         {
-                            if(replacer.tagName === "SELECT")
-                            {
-                                new NiceSelect(replacer, {searchable: true});
-                            }
-
-                            replacer.addEventListener("change", function(event)
-                            {
-                                changeObjectVariation(forms);
-                                return false;
-                            });
-
-                            let focus = document.getElementById("moving_product_stock_form_preVariation_select2");
-                            focus ? focus.click() : null;
+                            new NiceSelect(replacerWarehouse, {searchable : true});
                         }
                     }
-                    else
-                    {
-                        let targetWarehouse = result.getElementById("targetWarehouse");
-
-                        if(targetWarehouse)
-                        {
-
-                            document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
-
-                            /** SELECT2 */
-                            let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehouse, false);
-
-                            if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
-                            {
-                                new NiceSelect(replacerWarehouse, {searchable: true});
-                            }
-                        }
-                    }
-
-                    let preModification = document.getElementById("preModification");
-                    preModification ? preModification.innerHTML = "" : null;
                 }
-            });
+
+                let preModification = document.getElementById("preModification");
+                preModification ? preModification.innerHTML = "" : null;
+            }
+        });
     }
 
 
@@ -289,81 +287,80 @@ executeFunc((function productMovingForm()
         data.delete(forms.name + "[_token]");
 
         await fetch(forms.action, {
-            method: forms.method, // *GET, POST, PUT, DELETE, etc.
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
+            method : forms.method, // *GET, POST, PUT, DELETE, etc.
+            cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials : "same-origin", // include, *same-origin, omit
+            headers : {
+                "X-Requested-With" : "XMLHttpRequest",
             },
 
-            redirect: "follow", // manual, *follow, error
-            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: data, // body data type must match "Content-Type" header
-        })
-            .then((response) =>
+            redirect : "follow", // manual, *follow, error
+            referrerPolicy : "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body : data, // body data type must match "Content-Type" header
+        }).then((response) =>
+        {
+            if(response.status !== 200)
             {
-                if(response.status !== 200)
-                {
-                    return false;
-                }
+                return false;
+            }
 
-                return response.text();
-            }).then((data) =>
+            return response.text();
+        }).then((data) =>
+        {
+            if(data)
             {
-                if(data)
+                let parser = new DOMParser();
+                let result = parser.parseFromString(data, "text/html");
+
+
+                let preModification = result.getElementById("preModification");
+
+                if(preModification)
                 {
-                    let parser = new DOMParser();
-                    let result = parser.parseFromString(data, "text/html");
+                    document.getElementById("preModification").replaceWith(preModification);
 
+                    /** SELECT2 */
+                    let replacer = document.getElementById("moving_product_stock_form_preModification");
 
-                    let preModification = result.getElementById("preModification");
-
-                    if(preModification)
+                    /** Событие на изменение модификации */
+                    if(replacer)
                     {
-                        document.getElementById("preModification").replaceWith(preModification);
+                        if(replacer.tagName === "SELECT")
+                        {
+                            new NiceSelect(replacer, {searchable : true});
+                        }
+
+                        replacer.addEventListener("change", function(event)
+                        {
+                            changeObjectModification(forms);
+                            return false;
+                        });
+
+                        let focus = document.getElementById("moving_product_stock_form_preModification_select2");
+                        focus ? focus.click() : null;
+                    }
+                }
+                else
+                {
+                    let targetWarehouse = result.getElementById("targetWarehouse");
+
+                    if(targetWarehouse)
+                    {
+
+                        document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacer = document.getElementById("moving_product_stock_form_preModification");
+                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        replacer.addEventListener("change", changeObjectWarehouse, false);
 
-                        /** Событие на изменение модификации */
-                        if(replacer)
+                        if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
                         {
-                            if(replacer.tagName === "SELECT")
-                            {
-                                new NiceSelect(replacer, {searchable: true});
-                            }
-
-                            replacer.addEventListener("change", function(event)
-                            {
-                                changeObjectModification(forms);
-                                return false;
-                            });
-
-                            let focus = document.getElementById("moving_product_stock_form_preModification_select2");
-                            focus ? focus.click() : null;
-                        }
-                    }
-                    else
-                    {
-                        let targetWarehouse = result.getElementById("targetWarehouse");
-
-                        if(targetWarehouse)
-                        {
-
-                            document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
-
-                            /** SELECT2 */
-                            let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
-                            replacer.addEventListener("change", changeObjectWarehouse, false);
-
-                            if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
-                            {
-                                new NiceSelect(replacerWarehouse, {searchable: true});
-                            }
+                            new NiceSelect(replacerWarehouse, {searchable : true});
                         }
                     }
                 }
-            });
+            }
+        });
     }
 
     async function changeObjectModification(forms)
@@ -373,16 +370,16 @@ executeFunc((function productMovingForm()
 
 
         await fetch(forms.action, {
-            method: forms.method, // *GET, POST, PUT, DELETE, etc.
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
+            method : forms.method, // *GET, POST, PUT, DELETE, etc.
+            cache : "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials : "same-origin", // include, *same-origin, omit
+            headers : {
+                "X-Requested-With" : "XMLHttpRequest",
             },
 
-            redirect: "follow", // manual, *follow, error
-            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: data, // body data type must match "Content-Type" header
+            redirect : "follow", // manual, *follow, error
+            referrerPolicy : "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body : data, // body data type must match "Content-Type" header
         })
 
             //.then((response) => response)
@@ -421,7 +418,7 @@ executeFunc((function productMovingForm()
 
                         if(replacer && replacer.tagName === "SELECT")
                         {
-                            new NiceSelect(replacer, {searchable: true});
+                            new NiceSelect(replacer, {searchable : true});
                         }
 
                         let focus = document.getElementById("moving_product_stock_form_targetWarehouse_select2");
@@ -606,18 +603,17 @@ executeFunc((function productMovingForm()
         let $targetWarehouseName = $targetWarehouse.options[targetWarehouseIndex].dataset.name;
 
         let variationIndex = $preVariation.selectedIndex;
-        let $variationName = $preVariation.tagName === "SELECT" ? document.querySelector("label[for=\"" + $preVariation.id + "\"]").textContent + " " + $preVariation.options[variationIndex].dataset.name : "";
+        let $variationName = $preVariation.tagName === "SELECT" ? "<small class='opacity-50'>" + document.querySelector("label[for=\"" + $preVariation.id + "\"]").textContent + "</small>  " + $preVariation.options[variationIndex].dataset.name : "";
 
         let modificationIndex = $preModification.selectedIndex;
-        let $modificationName = $preModification.tagName === "SELECT" ? document.querySelector("label[for=\"" + $preModification.id + "\"]").textContent + " " + $preModification.options[modificationIndex].dataset.name : "";
+        let $modificationName = $preModification.tagName === "SELECT" ? "<small class='opacity-50'>" + document.querySelector("label[for=\"" + $preModification.id + "\"]").textContent + "</small>  " + $preModification.options[modificationIndex].dataset.name : "";
 
         let offerIndex = $preOffer.selectedIndex;
-        let $offerName = $preOffer.tagName === "SELECT" ? document.querySelector("label[for=\"" + $preOffer.id + "\"]").textContent + " " + $preOffer.options[offerIndex].dataset.name : "";
+        let $offerName = $preOffer.tagName === "SELECT" ? "<small class='opacity-50'>" + document.querySelector("label[for=\"" + $preOffer.id + "\"]").textContent + "</small>  " + $preOffer.options[offerIndex].dataset.name : "";
 
 
         let $productTextBlock = stockDiv.querySelector("#product-text-" + index);
-        $productTextBlock.innerHTML = "Со склада " + $targetWarehouseName + " &nbsp; : &nbsp; " + $productName + " " + $offerName + " " + $variationName + " " + $modificationName + "&nbsp; : &nbsp;" + $TOTAL + " шт.";
-
+        $productTextBlock.innerHTML = " &nbsp; <small class='opacity-50'>Со склада</small> &nbsp; " + $targetWarehouseName + " &nbsp; : &nbsp; " + $productName + " &nbsp; " + $variationName + " &nbsp; " + $modificationName + " &nbsp; " + $offerName + "&nbsp; : &nbsp;" + $TOTAL + " шт.";
 
         /** Заполняем значения скрытых элементо */
 

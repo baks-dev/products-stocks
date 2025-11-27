@@ -1,0 +1,9 @@
+{# TODO: добавить MIN !!! #}
+
+{{ include(_self|replace({ "content.html.twig": baks_settings.device~"/content.html.twig" })) }}
+
+<script async nonce='{{ csp_nonce() }}' class="lazy"
+        data-src="/assets/{{ version }}/plugins/nice-select2/nice-select2.min.js?v={{ version }}"></script>
+
+<script async nonce="{{ csp_nonce() }}" class="lazy"
+        data-src="/assets/{{ version }}/products-stocks/send.min.js?v={{ version }}"></script>

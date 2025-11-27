@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -33,34 +33,40 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 use InvalidArgumentException;
 
 final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceInterface
 {
-    private ?UserUid $user = null;
+    private UserUid|false $user = false;
 
-    private ?ProductUid $product = null;
+    private ProductUid|false $product = false;
 
-    private ?ProductOfferConst $offer = null;
+    private ProductOfferConst|false $offer = false;
 
-    private ?ProductVariationConst $variation = null;
+    private ProductVariationConst|false $variation = false;
 
-    private ?ProductModificationConst $modification = null;
+    private ProductModificationConst|false $modification = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
-        private readonly UserProfileTokenStorageInterface $userProfileTokenStorage
+        private readonly UserTokenStorageInterface $UserTokenStorage
     ) {}
 
-    public function user(UserUid|string $user): self
+    public function forUser(User|UserUid|null|false $user): self
     {
-        if(is_string($user))
+        if(empty($user))
         {
-            $user = new UserUid($user);
+            $this->user = false;
+        }
+
+        if($user instanceof User)
+        {
+            $user = $user->getId();
         }
 
         $this->user = $user;
@@ -68,12 +74,12 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
         return $this;
     }
 
-
-    public function product(ProductUid|string $product): self
+    public function product(ProductUid|null|false $product): self
     {
-        if(is_string($product))
+        if(empty($product))
         {
-            $product = new ProductUid($product);
+            $this->product = false;
+            return $this;
         }
 
         $this->product = $product;
@@ -82,11 +88,12 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
     }
 
 
-    public function offerConst(ProductOfferConst|string $offer): self
+    public function offerConst(ProductOfferConst|null|false $offer): self
     {
-        if(is_string($offer))
+        if(empty($offer))
         {
-            $offer = new ProductOfferConst($offer);
+            $this->offer = false;
+            return $this;
         }
 
         $this->offer = $offer;
@@ -94,11 +101,13 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
         return $this;
     }
 
-    public function variationConst(ProductVariationConst|string $variation): self
+    public function variationConst(ProductVariationConst|null|false $variation): self
     {
-        if(is_string($variation))
+        if(empty($variation))
         {
-            $variation = new ProductVariationConst($variation);
+            $this->variation = false;
+            return $this;
+
         }
 
         $this->variation = $variation;
@@ -106,11 +115,12 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
         return $this;
     }
 
-    public function modificationConst(ProductModificationConst|string $modification): self
+    public function modificationConst(ProductModificationConst|null|false $modification): self
     {
-        if(is_string($modification))
+        if(empty($modification))
         {
-            $modification = new ProductModificationConst($modification);
+            $this->modification = false;
+            return $this;
         }
 
         $this->modification = $modification;
@@ -121,10 +131,12 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
 
     /**
      * Возвращает список складов (профилей пользователя) на которых имеется данный вид продукта
+     *
+     * @return Generator<UserProfileUid>
      */
     public function fetchWarehouseByProduct(): Generator
     {
-        if(!$this->user || !$this->product)
+        if(false === ($this->product instanceof ProductUid))
         {
             throw new InvalidArgumentException('Необходимо передать все параметры');
         }
@@ -138,64 +150,78 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
 
         $dbal
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $this->user, UserUid::TYPE);
+            ->setParameter(
+                key: 'usr',
+                value: $this->user instanceof UserUid ? $this->user : $this->UserTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
+
 
         $dbal
             ->andWhere('stock.product = :product')
-            ->setParameter('product', $this->product, ProductUid::TYPE);
+            ->setParameter(
+                key: 'product',
+                value: $this->product,
+                type: ProductUid::TYPE);
 
 
         $dbal->andWhere('(stock.total - stock.reserve) > 0');
 
 
-        if($this->offer)
+        if($this->offer instanceof ProductOfferConst)
         {
-            $dbal->andWhere('stock.offer = :offer');
-            $dbal->setParameter('offer', $this->offer, ProductOfferConst::TYPE);
-            $dbal->addGroupBy('stock.offer');
+            $dbal
+                ->andWhere('stock.offer = :offer')
+                ->setParameter(
+                    key: 'offer',
+                    value: $this->offer,
+                    type: ProductOfferConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.offer IS NULL');
         }
 
-        if($this->variation)
+        if($this->variation instanceof ProductVariationConst)
         {
-            $dbal->andWhere('stock.variation = :variation');
-            $dbal->setParameter('variation', $this->variation, ProductVariationConst::TYPE);
-
-            $dbal->addGroupBy('stock.variation');
+            $dbal
+                ->andWhere('stock.variation = :variation')
+                ->setParameter(
+                    key: 'variation',
+                    value: $this->variation,
+                    type: ProductVariationConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.variation IS NULL');
         }
 
-        if($this->modification)
+        if($this->modification instanceof ProductModificationConst)
         {
-            $dbal->andWhere('stock.modification = :modification');
-            $dbal->setParameter('modification', $this->modification, ProductModificationConst::TYPE);
-
-            $dbal->addGroupBy('stock.modification');
-
+            $dbal
+                ->andWhere('stock.modification = :modification')
+                ->setParameter(
+                    'modification',
+                    $this->modification,
+                    ProductModificationConst::TYPE,
+                );
         }
         else
         {
             $dbal->andWhere('stock.modification IS NULL');
         }
 
+
         $dbal
             ->join(
                 'stock',
                 UserProfile::class,
                 'profile',
-                'profile.id = stock.profile AND profile.id != :profile',
-            )
-            ->setParameter(
-                'profile',
-                $this->userProfileTokenStorage->getProfile(),
-                UserProfileUid::TYPE
+                'profile.id = stock.profile',
             );
+
 
         $dbal->join(
             'profile',
@@ -204,13 +230,15 @@ final class ProductWarehouseChoiceRepository implements ProductWarehouseChoiceIn
             'profile_personal.event = profile.event',
         );
 
-        $dbal->addSelect('stock.profile AS value')->groupBy('stock.profile');
-        $dbal->addSelect('profile_personal.username AS attr')->addGroupBy('profile_personal.username');
+        $dbal->addGroupBy('stock.modification');
+
+        $dbal->addSelect('stock.profile AS value');//->groupBy('stock.profile');
+        $dbal->addSelect('profile_personal.username AS attr'); //->addGroupBy('profile_personal.username');
         $dbal->addSelect('(SUM(stock.total) - SUM(stock.reserve)) AS property');
 
-        return $dbal
-            ->fetchAllHydrate(UserProfileUid::class);
+        $dbal->allGroupByExclude();
 
+        return $dbal->fetchAllHydrate(UserProfileUid::class);
 
     }
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -32,20 +32,64 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Generator;
 
-final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseInterface
+final  class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseInterface
 {
+    private UserUid|false $user = false;
+
+    private UserProfileUid|false $profile = false;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
-        private readonly ORMQueryBuilder $ORMQueryBuilder
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
     ) {}
+
+    public function forUser(User|UserUid|null|false $user): self
+    {
+        if(empty($user))
+        {
+            $this->user = false;
+            return $this;
+        }
+
+        if($user instanceof User)
+        {
+            $user = $user->getId();
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function forProfile(UserProfile|UserProfileUid|null|false $profile): self
+    {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
 
     /**
      * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
      */
-    public function getProductsExistWarehouse(UserUid $usr): Generator
+    public function getProductsExistWarehouse(): Generator
     {
         $dbal = $this
             ->DBALQueryBuilder
@@ -56,11 +100,25 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
         $dbal
             ->from(ProductStockTotal::class, 'stock')
             ->andWhere('stock.usr = :usr')
-            ->setParameter('usr', $usr, UserUid::TYPE);
+            ->setParameter(
+                key: 'usr',
+                value: $this->user instanceof UserUid ? $this->user : $this->UserProfileTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
 
+        /** Фильтр только по определенному профилю */
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->profile,
+                    type: UserProfileUid::TYPE,
+                );
+        }
 
         $dbal->andWhere('(stock.total - stock.reserve)  > 0');
-
 
         $dbal->groupBy('stock.product');
         $dbal->addGroupBy('trans.name');
@@ -69,14 +127,14 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
             'stock',
             Product::class,
             'product',
-            'product.id = stock.product'
+            'product.id = stock.product',
         );
 
         $dbal->leftJoin(
             'product',
             ProductTrans::class,
             'trans',
-            'trans.event = product.event AND trans.local = :local'
+            'trans.event = product.event AND trans.local = :local',
         );
 
 
@@ -99,6 +157,8 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
 
     /**
      * Метод возвращает все идентификаторы продуктов с названием, имеющиеся в наличии на данном складе
+     *
+     * @depricate
      */
     public function getProductsByWarehouse(ContactsRegionCallUid $warehouse): ?array
     {
@@ -118,7 +178,7 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
         $qb->setParameter(
             key: 'warehouse',
             value: $warehouse,
-            type: ContactsRegionCallUid::TYPE
+            type: ContactsRegionCallUid::TYPE,
         );
 
         $qb->groupBy('stock.product');
@@ -128,7 +188,7 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
             Product::class,
             'product',
             'WITH',
-            'product.id = stock.product'
+            'product.id = stock.product',
         );
 
 
@@ -136,7 +196,7 @@ final class ProductChoiceWarehouseRepository implements ProductChoiceWarehouseIn
             ProductTrans::class,
             'trans',
             'WITH',
-            'trans.event = product.event AND trans.local = :local'
+            'trans.event = product.event AND trans.local = :local',
         );
 
         return $qb->getResult();
