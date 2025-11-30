@@ -299,7 +299,9 @@ final class SendProductStockForm extends AbstractType
 
         /** Целевой склад (грузополучатель) */
 
-        $result = $this->CurrentAllUserProfilesByUserRepository->findAll();
+        $result = $this->CurrentAllUserProfilesByUserRepository
+            ->forUser($this->UserProfileTokenStorage->getUser())
+            ->findAll();
 
         if(false === $result || false === $result->valid())
         {
