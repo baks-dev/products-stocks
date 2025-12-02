@@ -66,5 +66,7 @@ final class ProductStocksPickupDetailRepositoryTest extends KernelTestCase
 
             return;
         }
+
+        self::assertTrue(true);
     }
 }

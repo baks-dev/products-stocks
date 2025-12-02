@@ -79,3 +79,7 @@ ROLE_PRODUCT_STOCK_PICKUP:
 ROLE_PRODUCT_STOCK_PART:
   name: 'Assembly Lists'
   desc: 'Printing Assembly Lists'
+
+ROLE_PRODUCT_STOCK_REPORT:
+  name: 'Products stocks report'
+  desc: 'Download products stocks report'

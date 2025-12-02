@@ -1,0 +1,366 @@
+<?php
+/*
+ * Copyright 2025.  Baks.dev <admin@baks.dev>
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+declare(strict_types=1);
+
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksReport;
+
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Product\Entity\Event\ProductEvent;
+use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Price\ProductOfferPrice;
+use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Price\ProductModificationPrice;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\Price\ProductVariationPrice;
+use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Price\ProductPrice;
+use BaksDev\Products\Product\Entity\Product;
+use BaksDev\Products\Product\Entity\ProductInvariable;
+use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
+
+final class AllProductStocksReportRepository implements AllProductStocksReportInterface
+{
+    private ?ProductFilterDTO $filter = null;
+
+    private UserUid|false $user = false;
+
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
+    ) {}
+
+    public function forUser(User|UserUid $user): self
+    {
+        if($user instanceof User)
+        {
+            $user = $user->getId();
+        }
+
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function filter(ProductFilterDTO $filter): self
+    {
+        $this->filter = $filter;
+        return $this;
+    }
+
+
+    /**
+     * Получаем данные для отчета об остатках на всех складах
+     * @return Generator<AllProductStocksReportResult>
+     */
+    public function findAll(): Generator
+    {
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
+
+        $dbal
+            ->select('stock_product.storage AS stock_storage')
+            ->addSelect('stock_product.comment AS stock_comment')
+            ->from(ProductStockTotal::class, 'stock_product')
+            ->where('stock_product.usr = :usr')
+            ->setParameter(
+                key: 'usr',
+                value: $this->user instanceof UserUid ? $this->user : $this->UserProfileTokenStorage->getUser(),
+                type: UserUid::TYPE,
+            );
+
+        // Product
+        $dbal
+            ->addSelect('product.id AS product_id')
+            ->join(
+                'stock_product',
+                Product::class,
+                'product',
+                'product.id = stock_product.product',
+            );
+
+
+        // Product Event
+        $dbal->join(
+            'product',
+            ProductEvent::class,
+            'product_event',
+            'product_event.id = product.event',
+        );
+
+        $dbal
+            ->leftJoin(
+                'product_event',
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product.id',
+            );
+
+        if($this->filter?->getOffer())
+        {
+            $dbal->andWhere('product_offer.value = :offer');
+            $dbal->setParameter('offer', $this->filter->getOffer());
+        }
+
+
+        // Product Trans
+        $dbal
+            ->addSelect('product_trans.name as product_name')
+            ->join(
+                'product_event',
+                ProductTrans::class,
+                'product_trans',
+                'product_trans.event = product_event.id AND product_trans.local = :local',
+            );
+
+
+        // Торговое предложение
+        $dbal
+            ->addSelect('product_offer.value as product_offer_value')
+            ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->leftJoin(
+                'product_event',
+                ProductOffer::class,
+                'product_offer',
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
+            );
+
+
+        // Получаем тип торгового предложения
+        $dbal
+            ->addSelect('category_offer.reference as product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                CategoryProductOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer',
+            );
+
+
+        // Множественные варианты торгового предложения
+        $dbal
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
+            ->leftJoin(
+                'product_offer',
+                ProductVariation::class,
+                'product_variation',
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
+            );
+
+        if($this->filter?->getVariation())
+        {
+            $dbal
+                ->andWhere('product_variation.value = :variation')
+                ->setParameter(
+                    'variation',
+                    $this->filter->getVariation(),
+                );
+        }
+
+
+        // Получаем тип множественного варианта
+        $dbal
+            ->addSelect('category_variation.reference as product_variation_reference')
+            ->leftJoin(
+                'product_variation',
+                CategoryProductVariation::class,
+                'category_variation',
+                'category_variation.id = product_variation.category_variation',
+            );
+
+
+        // Модификация множественного варианта торгового предложения
+        $dbal
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
+            ->leftJoin(
+                'product_variation',
+                ProductModification::class,
+                'product_modification',
+                'product_modification.variation = product_variation.id  AND product_modification.const = stock_product.modification',
+            );
+
+        if($this->filter?->getModification())
+        {
+            $dbal->andWhere('product_modification.value = :modification');
+            $dbal->setParameter('modification', $this->filter->getModification());
+        }
+
+
+        // Получаем тип модификации множественного варианта
+        $dbal
+            ->addSelect('category_offer_modification.reference as product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                CategoryProductModification::class,
+                'category_offer_modification',
+                'category_offer_modification.id = product_modification.category_modification',
+            );
+
+
+        // Артикул продукта
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.article, 
+                product_variation.article, 
+                product_offer.article, 
+                product_info.article
+            ) AS product_article
+		');
+
+
+        /** Ответственное лицо (Склад) */
+        $dbal
+            ->join(
+                'stock_product',
+                UserProfile::class,
+                'users_profile',
+                'users_profile.id = stock_product.profile',
+            );
+
+        $dbal
+            ->join(
+                'users_profile',
+                UserProfilePersonal::class,
+                'users_profile_personal',
+                'users_profile_personal.event = users_profile.event',
+            );
+
+        $dbal->addSelect(
+            "JSON_AGG
+            ( DISTINCT
+
+                JSONB_BUILD_OBJECT
+                (
+                    'users_profile_username', users_profile_personal.username,
+                    'stock_total', stock_product.total,
+                    'stock_reserve', stock_product.reserve
+                )
+                
+            ) AS profiles_totals
+        ");
+
+
+        /** Стоимость продукции */
+
+        /* Базовая Цена товара */
+        $dbal->leftJoin(
+            'product',
+            ProductPrice::class,
+            'product_price',
+            'product_price.event = product.event',
+        );
+
+        /* Цена торгового предположения */
+        $dbal
+            ->leftJoin(
+                'product_offer',
+                ProductOfferPrice::class,
+                'product_offer_price',
+                'product_offer_price.offer = product_offer.id',
+            );
+
+        /* Цена множественного варианта */
+        $dbal
+            ->leftJoin(
+                'product_variation',
+                ProductVariationPrice::class,
+                'product_variation_price',
+                'product_variation_price.variation = product_variation.id',
+            );
+
+        /* Цена модификации множественного варианта */
+        $dbal->leftJoin(
+            'product_modification',
+            ProductModificationPrice::class,
+            'product_modification_price',
+            'product_modification_price.modification = product_modification.id',
+        );
+
+        $dbal->addSelect('
+            COALESCE(
+                product_modification_price.price,
+                product_variation_price.price,
+                product_offer_price.price,
+                product_price.price
+            ) AS product_price
+        ');
+
+        $dbal->addSelect('
+            COALESCE(
+                product_modification_price.old,
+                product_variation_price.old,
+                product_offer_price.old,
+                product_price.old
+            ) AS old_product_price
+        ');
+
+        /** Product Invariable */
+        $dbal
+            ->leftJoin(
+                'product_modification',
+                ProductInvariable::class,
+                'product_invariable',
+                '
+                    product_invariable.product = product.id AND 
+                    (
+                        (product_offer.const IS NOT NULL AND product_invariable.offer = product_offer.const) OR 
+                        (product_offer.const IS NULL AND product_invariable.offer IS NULL)
+                    )
+                    AND
+                    (
+                        (product_variation.const IS NOT NULL AND product_invariable.variation = product_variation.const) OR 
+                        (product_variation.const IS NULL AND product_invariable.variation IS NULL)
+                    )
+                   AND
+                   (
+                        (product_modification.const IS NOT NULL AND product_invariable.modification = product_modification.const) OR 
+                        (product_modification.const IS NULL AND product_invariable.modification IS NULL)
+                   )
+            ');
+
+        $dbal->allGroupByExclude();
+
+        $dbal->addOrderBy('product.id');
+        $dbal->addOrderBy('product_offer.value');
+        $dbal->addOrderBy('product_variation.value');
+        $dbal->addOrderBy('product_modification.value');
+
+        return $dbal
+             ->enableCache('products-stocks', 3600)
+            ->fetchAllHydrate(AllProductStocksReportResult::class);
+    }
+}
