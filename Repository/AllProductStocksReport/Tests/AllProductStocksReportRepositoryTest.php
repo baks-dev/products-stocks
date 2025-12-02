@@ -23,42 +23,39 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\Tests;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksReport\Tests;
 
-use BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\ProductStocksTotalByProductChoiceInterface;
-use BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\ProductStocksTotalByProductChoiceRepository;
-use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
-use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Products\Stocks\Repository\AllProductStocksReport\AllProductStocksReportInterface;
+use BaksDev\Products\Stocks\Repository\AllProductStocksReport\AllProductStocksReportRepository;
+use BaksDev\Products\Stocks\Repository\AllProductStocksReport\AllProductStocksReportResult;
+use BaksDev\Users\User\Type\Id\UserUid;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;
-use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-#[When(env: 'test')]
 #[Group('products-stocks')]
 #[Group('products-stocks-repository')]
-final class ProductStocksTotalByProductChoiceRepositoryTest extends KernelTestCase
+#[When(env: 'test')]
+final class AllProductStocksReportRepositoryTest extends KernelTestCase
 {
-    public function testRepository(): void
+    public function testFindAll(): void
     {
-        $ProductStocksByProductChoiceRepository = self::getContainer()
-            ->get(ProductStocksTotalByProductChoiceInterface::class);
+        $AllProductStocksReportRepository = self::getContainer()
+            ->get(AllProductStocksReportInterface::class);
 
-        /** @var ProductStocksTotalByProductChoiceRepository $ProductStocksByProductChoiceRepository */
-        $result = $ProductStocksByProductChoiceRepository
-            ->product(new ProductUid('01876b34-ed23-7c18-ba48-9071e8646a08'))
-            ->profile(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
-            ->fetchStocksByProduct();
+        /** @var AllProductStocksReportRepository $AllProductStocksReportRepository */
+        $result = $AllProductStocksReportRepository
+            ->forUser(new UserUid(UserUid::TEST))
+            ->findAll();
 
-        foreach($result as $stock)
+        foreach($result as $AllProductStocksReportResult)
         {
-            self::assertInstanceOf(ProductStockTotalUid::class, $stock);
-            
+            self::assertInstanceOf(AllProductStocksReportResult::class, $AllProductStocksReportResult);
+
             // Вызываем все геттеры
-            $reflectionClass = new ReflectionClass(ProductStockUid::class);
+            $reflectionClass = new ReflectionClass(AllProductStocksReportResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
             foreach($methods as $method)
@@ -67,12 +64,12 @@ final class ProductStocksTotalByProductChoiceRepositoryTest extends KernelTestCa
                 if($method->getNumberOfParameters() === 0)
                 {
                     // Вызываем метод
-                    $data = $method->invoke($stock);
-                    self::assertTrue(true);
+                    $data = $method->invoke($AllProductStocksReportResult);
+//                    dump($data);
                 }
             }
 
-            return;
+            break;
         }
 
         self::assertTrue(true);
