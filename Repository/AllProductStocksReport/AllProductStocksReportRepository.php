@@ -43,7 +43,6 @@ use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
-use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\User\Entity\User;
@@ -91,8 +90,6 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
             ->bindLocal();
 
         $dbal
-            ->select('stock_product.storage AS stock_storage')
-            ->addSelect('stock_product.comment AS stock_comment')
             ->from(ProductStockTotal::class, 'stock_product')
             ->where('stock_product.usr = :usr')
             ->setParameter(
@@ -103,7 +100,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
 
         // Product
         $dbal
-            ->addSelect('product.id AS product_id')
+            ->select('product.id AS product_id')
             ->join(
                 'stock_product',
                 Product::class,
@@ -251,21 +248,13 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                 'users_profile.id = stock_product.profile',
             );
 
-        $dbal
-            ->join(
-                'users_profile',
-                UserProfilePersonal::class,
-                'users_profile_personal',
-                'users_profile_personal.event = users_profile.event',
-            );
-
         $dbal->addSelect(
             "JSON_AGG
             ( DISTINCT
 
                 JSONB_BUILD_OBJECT
                 (
-                    'users_profile_username', users_profile_personal.username,
+                    'users_profile_uid', users_profile.id,
                     'stock_total', stock_product.total,
                     'stock_reserve', stock_product.reserve
                 )

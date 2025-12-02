@@ -26,14 +26,13 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksReport;
 
 use BaksDev\Reference\Money\Type\Money;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 final readonly class AllProductStocksReportResult
 {
     public function __construct(
         private string $product_id,
         private string $product_name,
-        private ?string $stock_comment,
-        private ?string $stock_storage,
         private ?string $product_offer_value,
         private ?string $product_offer_postfix,
         private ?string $product_offer_reference,
@@ -52,16 +51,6 @@ final readonly class AllProductStocksReportResult
     public function getProductId(): string
     {
         return $this->product_id;
-    }
-
-    public function getStockComment(): ?string
-    {
-        return $this->stock_comment;
-    }
-
-    public function getStockStorage(): ?string
-    {
-        return $this->stock_storage;
     }
 
     public function getProductName(): string
@@ -119,26 +108,34 @@ final readonly class AllProductStocksReportResult
         return $this->product_article;
     }
 
-    public function getProfilesTotals(): ?array
+    public function getProfileTotal(UserProfileUid $profileUid): Object|false
     {
         if(is_null($this->profiles_totals))
         {
-            return null;
+            return false;
         }
 
         if(false === json_validate($this->profiles_totals))
         {
-            return null;
+            return false;
         }
 
         $profilesTotals = json_decode($this->profiles_totals, false, 512, JSON_THROW_ON_ERROR);
 
         if(null === current($profilesTotals))
         {
-            return null;
+            return false;
         }
 
-        return $profilesTotals;
+        foreach($profilesTotals as $profileTotal)
+        {
+            if($profileUid->equals($profileTotal->users_profile_uid))
+            {
+                return $profileTotal;
+            }
+        }
+
+        return false;
     }
 
     public function getProductPrice(): ?Money

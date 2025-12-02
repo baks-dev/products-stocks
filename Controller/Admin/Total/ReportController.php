@@ -43,6 +43,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use BaksDev\Products\Stocks\Repository\AllProductStocksReport\AllProductStocksReportInterface;
 use Twig\Environment;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Generator;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_REPORT')]
@@ -66,17 +67,11 @@ final class ReportController extends AbstractController
         $filter->setAll(false);
 
 
-        /** @var array<AllProductStocksReportResult> $query */
-        $query = iterator_to_array($allProductStocksReportRepository
+        /** @var Generator<AllProductStocksReportResult> $query */
+        $query = $allProductStocksReportRepository
             ->forUser($this->getUsr())
             ->filter($filter)
-            ->findAll()
-        );
-
-        if(empty($query))
-        {
-            return $this->redirectToReferer();
-        }
+            ->findAll();
 
 
         // Создаем новый объект Spreadsheet
@@ -90,7 +85,14 @@ final class ReportController extends AbstractController
         $call = $environment->getExtension(CallTwigFuncExtension::class);
 
 
-        // Запись заголовков
+        /**
+         * Задаем список колонок, которые будут отображаться перед колонками с количеством продукции на разных складах
+         */
+        $columns = ['Артикул', 'Наименование', 'Торговое предложение', 'Стоимость', 'Старая цена'];
+
+
+        /** Количество колонок */
+        $columnsCount = count($columns);
 
         /**
          * Получаем список профилей
@@ -99,119 +101,60 @@ final class ReportController extends AbstractController
         $profiles = iterator_to_array($UserProfileChoiceRepository->getActiveUserProfile($this->getUsr()->getId()));
 
 
-        /** Если по какой0-то причине ни один профиль не был найден - не выводим отчётйокак */
+        /** Количество профилей */
+        $profilesCount = count($profiles);
+
+        /** Если по какой-то причине ни один профиль не был найден - не выводим отчёт */
         if(empty($profiles))
         {
             return $this->redirectToReferer();
         }
 
 
-        /**
-         * $i - индекс для итерации по колонкам (начиная с 6-ой колонки F)
-         * $j - индекс для итерации по профилям
-         */
-        $i = 6;
-        $j = 0;
-        while(true)
+        /** Шапка состоит из двух рядов, в первом - только названия профилей */
+        foreach($profiles as $profileKey => $profile)
         {
-            if($i % 2 === 0)
-            {
-                /**  Если закончились профили - завершаем цикл */
-                if(empty($profiles[$j]))
-                {
-                    break;
-                }
+            /**
+             * Мы заполняем одним значением две колонки, объединяя их. Для этого получаем буквенные индексы, в
+             * пределах которых должна длиться объединенная колонка (включительно)
+             */
+            $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
+            $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
 
+            $sheet->setCellValue($firstColumnLetter.'1', $profile->getAttr());
 
-                /**
-                 * Мы заполняем одним значением две колонки, объединяя их. Для этого получаем буквенные индексы, в
-                 * пределах которых должна длиться объединенная колонка (включительно)
-                 */
-                $firstColumnLetter = Coordinate::stringFromColumnIndex($i);
-                $lastColumnLetter = Coordinate::stringFromColumnIndex($i + 1);
-
-                $sheet->setCellValue($firstColumnLetter.'1', $profiles[$j]->getAttr());
-
-                $sheet->mergeCells($firstColumnLetter.'1:'.$lastColumnLetter.'1');
-
-                $j++;
-            }
-
-            $i++;
+            $sheet->mergeCells($firstColumnLetter.'1:'.$lastColumnLetter.'1');
         }
 
 
         /** Во втором ряду шапки заполняем все остальные колонки */
-        $sheet
-            ->setCellValue('A2', 'Артикул')
-            ->setCellValue('B2', 'Наименование')
-            ->setCellValue('C2', 'Торговое предложение')
-            ->setCellValue('D2', 'Стоимость')
-            ->setCellValue('E2', 'Старая цена');
-
-        $sheet
-            ->getColumnDimension('A')
-            ->setAutoSize(true);
-
-        $sheet
-            ->getColumnDimension('B')
-            ->setAutoSize(true);
-
-        $sheet
-            ->getColumnDimension('C')
-            ->setAutoSize(true);
-
-        $sheet
-            ->getColumnDimension('D')
-            ->setAutoSize(true);
-
-        $sheet
-            ->getColumnDimension('E')
-            ->setAutoSize(true);
-
-
-        /** $i - индекс для итерации по колонкам (начиная с 6-ой колонки F) */
-        $i = 6;
-        $j = 0;
-        while(true)
+        foreach($columns as $columnKey => $column)
         {
-            if($i % 2 === 0)
-            {
-                /**  Если закончились профили - завершаем цикл */
-                if(empty($profiles[$j]))
-                {
-                    break;
-                }
-
-                /** Для каждого профиля добавляем две колонки - наличие и резерв */
-                $firstColumnLetter = Coordinate::stringFromColumnIndex($i);
-                $lastColumnLetter = Coordinate::stringFromColumnIndex($i + 1);
-
-                $sheet->setCellValue($firstColumnLetter.'2', 'Наличие');
-                $sheet->setCellValue($lastColumnLetter.'2', 'Резерв');
-
-                $sheet
-                    ->getColumnDimension(Coordinate::stringFromColumnIndex($i))
-                    ->setAutoSize(true);
-
-                $j++;
-            }
-
-            $i++;
+            $sheet
+                ->setCellValue(Coordinate::stringFromColumnIndex($columnKey + 1).'2', $column)
+                ->getColumnDimension(Coordinate::stringFromColumnIndex($columnKey + 1))
+                ->setAutoSize(true);
         }
 
-        $sheet->setCellValue(Coordinate::stringFromColumnIndex($i).'2', 'Место');
-        $sheet
-            ->getColumnDimension(Coordinate::stringFromColumnIndex($i))
-            ->setAutoSize(true);
+        foreach($profiles as $profileKey => $profile)
+        {
+            /** Для каждого профиля добавляем две колонки - наличие и резерв */
+            $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
+            $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
 
-        $sheet->setCellValue(Coordinate::stringFromColumnIndex($i + 1).'2', 'Комментарий');
-        $sheet
-            ->getColumnDimension(Coordinate::stringFromColumnIndex($i + 1))
-            ->setAutoSize(true);
+            $sheet->setCellValue($firstColumnLetter.'2', 'Наличие');
+            $sheet->setCellValue($lastColumnLetter.'2', 'Резерв');
+
+            $sheet
+                ->getColumnDimension(Coordinate::stringFromColumnIndex($profilesCount + $profileKey * 2))
+                ->setAutoSize(true);
+            $sheet
+                ->getColumnDimension(Coordinate::stringFromColumnIndex($profilesCount + $profileKey * 2 + 2))
+                ->setAutoSize(true);
+        }
 
 
-        /** Заполнение данных */
+        /** Заполнение данных начиная с ряда $key */
         $key = 3;
 
         foreach($query as $data)
@@ -286,62 +229,28 @@ final class ReportController extends AbstractController
             );
 
 
-            /** $i - индекс для итерации по колонкам (начиная с 6-ой колонки F) */
-            $i = 6;
-            $j = 0;
-
-            $profilesTotal = $data->getProfilesTotals();
-
-            while(true)
+            foreach($profiles as $profileKey => $profile)
             {
-                if($i % 2 === 0)
+                /** Для каждого профиля добавляем две колонки - наличие и резерв */
+                $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
+                $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
+
+                $total = $data->getProfileTotal($profile);
+
+                if(false === empty($total))
                 {
-                    /**  Если закончились профили - завершаем цикл */
-                    if(empty($profiles[$j]))
-                    {
-                        break;
-                    }
-
-                    
-                    /**
-                     * Для каждого профиля добавляем две колонки - наличие и резерв. Если данного продукта нет в профиле -
-                     * пропускаем ячейки
-                     */
-                    $firstColumnLetter = Coordinate::stringFromColumnIndex($i);
-                    $lastColumnLetter = Coordinate::stringFromColumnIndex($i + 1);
-
-                    foreach($profilesTotal as $profileTotal)
-                    {
-                        if($profileTotal->users_profile_username === $profiles[$j]->getAttr())
-                        {
-                            $sheet->setCellValue($firstColumnLetter.$key, $profileTotal->stock_total);
-                            $sheet->setCellValue($lastColumnLetter.$key, $profileTotal->stock_reserve);
-
-                            break;
-                        }
-                    }
-
-                    $j++;
+                    $sheet->setCellValue($firstColumnLetter.$key, $total->stock_total);
+                    $sheet->setCellValue($lastColumnLetter.$key, $total->stock_reserve);
+                    continue;
                 }
 
-                $i++;
+                $sheet->setCellValue($firstColumnLetter.$key, 0);
+                $sheet->setCellValue($lastColumnLetter.$key, 0);
             }
-
-
-            // Место
-            $sheet->setCellValue(
-                Coordinate::stringFromColumnIndex($i).$key,
-                $data->getStockStorage()
-            );
-
-            // Комментарий
-            $sheet->setCellValue(
-                Coordinate::stringFromColumnIndex($i + 1).$key,
-                $data->getStockComment()
-            );
 
             $key++;
         }
+
 
         /* Отдаем результат для скачивания */
         $filename = 'Отчёт_по_складским_остаткам.xlsx';
