@@ -196,15 +196,18 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a href="{{ path('products-stocks:admin.total.export') }}" class="dropdown-item">
-                                Для данного профиля
+                                Отчет об остатках на складе
                             </a>
                         </li>
 
-                        <li>
-                            <a href="{{ path('products-stocks:admin.total.all.export') }}" class="dropdown-item">
-                                Для всех профилей
-                            </a>
-                        </li>
+                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_REPORT') %}
+                            <li>
+                                <a href="{{ path('products-stocks:admin.total.all.export') }}" class="dropdown-item">
+                                    Отчет по всем регионам
+                                </a>
+                            </li>
+                        {% endif %}
+
                     </ul>
                 </div>
 
