@@ -37,7 +37,7 @@ final class ProductStockTotalEditHandler extends AbstractHandler
     public function handle(ProductStockTotalEditDTO|ProductStockStorageEditDTO $command): string|ProductStockTotal
     {
         /** Валидация DTO  */
-        $this->validatorCollection->add($command);
+        $this->setCommand($command);
 
         /** @var ProductStockTotal $ProductStockTotal */
         $ProductStockTotal = $this
@@ -48,7 +48,6 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         {
             return $this->validatorCollection->getErrorUniqid();
         }
-
 
         if(
             false === $this->validatorCollection->add($ProductStockTotal, context: [

@@ -34,15 +34,9 @@ final class MovingProductStockHandler extends AbstractHandler
 {
     public function handle(ProductStockDTO $command): string|ProductStock
     {
-        /** Валидация DTO  */
-        $this->validatorCollection->add($command);
-
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        $this->setCommand($command);
-        $this->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
-
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -60,9 +54,9 @@ final class MovingProductStockHandler extends AbstractHandler
         $this->messageDispatch
             ->addClearCacheOther('avito-board')
             ->dispatch(
-            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'products-stocks'
-        );
+                message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+                transport: 'products-stocks',
+            );
 
         return $this->main;
     }

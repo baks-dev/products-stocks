@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -29,29 +29,16 @@ use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
-use DomainException;
 
 final class CancelProductStockHandler extends AbstractHandler
 {
     /** @see ProductStock */
-    public function handle(
-        CancelProductStockDTO $command
-    ): string|ProductStock
+    public function handle(CancelProductStockDTO $command): string|ProductStock
     {
         /** Валидация DTO  */
-        $this->validatorCollection->add($command);
-
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        try
-        {
-            $this->preUpdate($command, true);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -59,14 +46,14 @@ final class CancelProductStockHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        $this->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch
             ->addClearCacheOther('products-product')
             ->dispatch(
                 message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-                transport: 'product-stock'
+                transport: 'product-stock',
             );
 
         return $this->main;

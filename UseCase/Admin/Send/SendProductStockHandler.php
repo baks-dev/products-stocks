@@ -34,14 +34,9 @@ final class SendProductStockHandler extends AbstractHandler
 {
     public function handle(ProductStockDTO $command): string|ProductStock
     {
-        /** Валидация DTO  */
-        $this->validatorCollection->add($command);
-
-        $this->main = new ProductStock();
-        $this->event = new ProductStockEvent();
-
-        $this->setCommand($command);
-        $this->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
 
         /** Валидация всех объектов */
