@@ -446,6 +446,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         //$dbal->addOrderBy('products_move', 'ASC');
         $dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
+        $dbal->addOrderBy('invariable.number', 'ASC');
         //$dbal->addOrderBy('stock.id', 'ASC');
 
         //$dbal->addGroupBy('ord.ord');
