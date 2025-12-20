@@ -96,7 +96,11 @@ class ProductStockProduct extends EntityEvent
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $storage = null;
 
-    /** Идентификатор партии */
+    /**
+     * Идентификатор партии
+     *
+     * @depricate
+     */
     #[ORM\OneToOne(targetEntity: ProductStockProductPart::class, mappedBy: 'product', cascade: ['all'])]
     private ?ProductStockProductPart $part = null;
 

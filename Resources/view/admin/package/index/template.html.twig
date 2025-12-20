@@ -83,6 +83,11 @@
              const form = document.forms.product_stock_package_filter_form;
             form.addEventListener("change", () => { setTimeout(() => { form.submit(); }, 300); });
 
+
+            /** При обновлении страницы снимаем все выделенные элементы */
+            document.querySelectorAll(".add-all-to-invoice")
+            .forEach(element => { if (element.checked === true) { element.checked = false; } });
+
         });
 
         function changeDatapicker(input)
@@ -119,12 +124,10 @@
 
 
 
-
-
     const orders = document.querySelectorAll(".add-all-to-invoice");
 
     // Выбрать все НЕ disabled (т.е. те, которые не на производстве)
-    orders.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_invoice.classList.contains("selected");} } );
+    orders.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_invoice.classList.contains("selected"); } } );
 
     const checkboxes = document.querySelectorAll(".add-all-to-invoice");
     const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);

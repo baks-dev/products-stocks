@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct;
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart;
 
 use BaksDev\Core\Type\UidType\UidType;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
@@ -36,8 +36,8 @@ use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
 use JsonException;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStocksOrdersProductResult */
-final class ProductStocksOrdersProductResult
+/** @see ProductStocksOrdersPartResult */
+final class ProductStocksOrdersPartResult
 {
     private array|null|false $stocks_decode = null;
 
@@ -48,7 +48,6 @@ final class ProductStocksOrdersProductResult
     public function __construct(
 
         private readonly string $mains,
-        private readonly string $events, //
         private readonly string $total, // 3
         private readonly string $product_name, // "Triangle AdvanteX TC101"
 
@@ -111,24 +110,6 @@ final class ProductStocksOrdersProductResult
 
         return array_sum(array_column($totals, 'total')) ?: 0;
     }
-
-    /** Идентификаторы событий складской заявки */
-    public function getProductStocksEvents(): array|false
-    {
-        if(is_null($this->events))
-        {
-            return false;
-        }
-
-        if(false === json_validate($this->events))
-        {
-            return false;
-        }
-
-
-        return json_decode($this->events, false, 512, JSON_THROW_ON_ERROR);
-    }
-
 
     public function getProductName(): string
     {

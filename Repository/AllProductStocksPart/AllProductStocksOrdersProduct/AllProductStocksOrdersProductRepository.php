@@ -36,10 +36,10 @@ use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
-use BaksDev\Products\Stocks\Entity\Stock\Products\Part\ProductStockProductPart;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
@@ -88,39 +88,73 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
             ->bindLocal();
 
         $dbal
-            ->select('SUM(product_stock_product.total) AS total')
-            ->addSelect('product_stock_product.product')
-            ->addSelect('product_stock_product.offer')
-            ->addSelect('product_stock_product.variation')
-            ->addSelect('product_stock_product.modification')
-            ->from(ProductStockProduct::class, 'product_stock_product')
-            ->where('product_stock_product.event IN (:uuids)')
+            ->addSelect("JSON_AGG (DISTINCT product_stock.event) AS events")
+            ->from(ProductStock::class, 'product_stock')
+            ->where('product_stock.event IN (:uuids)')
             ->setParameter(
                 key: 'uuids',
                 value: $ids,
                 type: ArrayParameterType::STRING,
             );
 
+        $dbal
+            ->addSelect("JSON_AGG ( 
+                DISTINCT JSONB_BUILD_OBJECT (
+                    'id', product_stock_product.id,
+                    'total', product_stock_product.total
+                )) AS total",
+            )
+            ->addSelect('product_stock_product.product')
+            ->addSelect('product_stock_product.offer')
+            ->addSelect('product_stock_product.variation')
+            ->addSelect('product_stock_product.modification')
+            ->leftJoin(
+                'product_stock',
+                ProductStockProduct::class,
+                'product_stock_product',
+                'product_stock_product.event = product_stock.event',
+            )
+
+            //            ->from(ProductStockProduct::class, 'product_stock_product')
+            //            ->where('product_stock_product.event IN (:uuids)')
+            //            ->setParameter(
+            //                key: 'uuids',
+            //                value: $ids,
+            //                type: ArrayParameterType::STRING,
+            //            )
+        ;
+
+
+        //        $dbal
+        //            ->leftJoin(
+        //                'product_stock_product',
+        //                ProductStockEvent::class,
+        //                'product_stock_event',
+        //                'product_stock_event.id = product_stock_product.event',
+        //            );
+
+        //        $dbal
+        //            ->leftJoin(
+        //                'product_stock_product',
+        //                ProductStockProductPart::class,
+        //                'product_stock_product_part',
+        //                'product_stock_product_part.product = product_stock_product.id',
+        //            );
+        //
+        //
+        //        $dbal->andWhere('product_stock_product_part.value IS NULL');
+
 
         $dbal
-            ->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
             ->leftJoin(
                 'product_stock_product',
-                ProductStockEvent::class,
-                'product_stock_event',
-                'product_stock_event.id = product_stock_product.event',
+                ProductStockPart::class,
+                'product_stock_part',
+                'product_stock_part.event = product_stock.event',
             );
 
-        $dbal
-            ->leftJoin(
-                'product_stock_product',
-                ProductStockProductPart::class,
-                'product_stock_product_part',
-                'product_stock_product_part.product = product_stock_product.id',
-            );
+        $dbal->andWhere('product_stock_part.value IS NULL');
 
-
-        $dbal->andWhere('product_stock_product_part.value IS NULL');
 
         /** Продукт */
         $dbal
@@ -130,7 +164,6 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product',
                 'product.id = product_stock_product.product',
             );
-
 
         /** Название продукта */
         $dbal
@@ -287,12 +320,14 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product_stock_order.event = product_stock_product.event',
             );
 
-        $dbal->leftJoin(
-            'product_stock_order',
-            OrderInvariable::class,
-            'orders_invariable',
-            'orders_invariable.main = product_stock_order.ord',
-        );
+        $dbal
+            ->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
+            ->leftJoin(
+                'product_stock_order',
+                OrderInvariable::class,
+                'orders_invariable',
+                'orders_invariable.main = product_stock_order.ord',
+            );
 
         $dbal
             ->addSelect("JSON_AGG ( 

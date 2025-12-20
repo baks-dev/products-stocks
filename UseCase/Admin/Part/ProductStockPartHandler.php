@@ -28,32 +28,32 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Part;
 
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
-use BaksDev\Products\Stocks\Entity\Stock\Products\Part\ProductStockProductPart;
-use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 
 final class ProductStockPartHandler extends AbstractHandler
 {
     /** @see ProductStockPart */
-    public function handle(ProductStockPartDTO $command): string|ProductStockProduct
+    public function handle(ProductStockPartDTO $command): string|ProductStockPart
     {
         $this->setCommand($command);
 
-        $ProductStockProduct = $this
-            ->getRepository(ProductStockProduct::class)
-            ->find($command->getProductStockCollectionId());
+        $ProductStockEvent = $this
+            ->getRepository(ProductStockEvent::class)
+            ->find($command->getProductStockEventUid());
+
 
         /** Партию возможно применить только один раз */
-        if(false === ($ProductStockProduct instanceof ProductStockPart))
+        if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        if(true === $ProductStockProduct->isProductStockPart())
+        if(true === $ProductStockEvent->isProductStockPart())
         {
-            return $ProductStockProduct;
+            return $this->validatorCollection->getErrorUniqid();
         }
 
-        $ProductStockProductPart = new ProductStockProductPart($ProductStockProduct);
+        $ProductStockProductPart = new ProductStockPart($ProductStockEvent);
         $ProductStockProductPart->setEntity($command);
         $this->persist($ProductStockProductPart);
 
@@ -70,6 +70,6 @@ final class ProductStockPartHandler extends AbstractHandler
         $this->messageDispatch
             ->addClearCacheOther('products-stocks');
 
-        return $ProductStockProduct;
+        return $ProductStockProductPart;
     }
 }

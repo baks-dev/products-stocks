@@ -22,15 +22,20 @@
 
             {% for sticker in stickers %}
 
+
+                {#
+                # Информация о продукте в упаковке
+                #}
+
                 {% if sticker.part is defined %}
 
                     {# QR партии #}
 
                     <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
-                             style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"
+                             style="height: 150px; max-height: 150px; max-width: 150px;"
                              fill="currentColor"
-                             viewBox="8 8 40 40">
+                             viewBox="8 8 35 35">
                             {{ sticker.part|raw }}
                         </svg>
                     </div>
@@ -39,7 +44,7 @@
                     <div><strong>{{ data.offer }}</strong></div>
                     <div>
 
-                        <strong>{{ data.total }} шт.</strong>
+                        <strong class="h5">{{ data.total }} шт.</strong>
 
                         &nbsp;<small>место:</small>
                         <strong>
@@ -61,31 +66,37 @@
                 {% endif %}
 
 
+                {#
+                # Перечисляем все стикеры маркировки продукта в упаковке
+                #}
+
                 {% if sticker is iterable %}
 
                     {% for sign in sticker %}
 
-
                         {% if sign.code is defined %}
 
-                            <div class="w-100 text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
-                                     style="height: 140px; max-height: 140px; max-width: 200px;"
-                                     fill="currentColor"
-                                     viewBox="8 8 40 40">
-                                    {{ sign.code|raw }}
-                                </svg>
-                            </div>
+                            <div class="text-center" style="max-width: 140px; max-height: 140px;">
 
-                            <div class="w-100 text-center">
-                                <small>{{ sign.number }}</small>
-                            </div>
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
+                                         style="height: 140px; max-height: 140px; max-width: 200px;"
+                                         fill="currentColor"
+                                         viewBox="8 8 40 40">
+                                        {{ sign.code|raw }}
+                                    </svg>
+                                </div>
 
-                            <div class="w-100 text-center">
-                                <small>{{ data.name }}</small>
-                            </div>
-                            <div class="w-100 text-center">
-                                <small>{{ data.offer }}</small>
+                                <div>
+                                    <small>{{ sign.number }}</small>
+                                </div>
+
+                                <div>
+                                    <small>{{ data.name }}</small>
+                                </div>
+                                <div>
+                                    <small>{{ data.offer }}</small>
+                                </div>
                             </div>
 
                             {# разрыв старницы #}
@@ -93,11 +104,9 @@
 
                         {% endif %}
 
-
                     {% endfor %}
 
                 {% endif %}
-
 
             {% endfor %}
 

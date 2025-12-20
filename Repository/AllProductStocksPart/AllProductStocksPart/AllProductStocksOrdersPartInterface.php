@@ -23,7 +23,12 @@
 
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart;
 
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
+use Generator;
+
 interface AllProductStocksOrdersPartInterface
 {
-    public function findAll(): array|bool;
+    public function forProductStockPart(ProductStockPartUid $part): self;
+
+    public function findAll(): Generator|bool;
 }
