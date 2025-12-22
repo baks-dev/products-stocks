@@ -26,7 +26,11 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Delivery\Entity\Delivery;
+use BaksDev\Delivery\Entity\Event\DeliveryEvent;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
+use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
+use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
@@ -322,12 +326,48 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
         );
 
         $dbal
+            ->leftJoin(
+                'orders_invariable',
+                OrderUser::class,
+                'orders_user',
+                'orders_user.event = orders_invariable.event',
+            );
+
+        $dbal
+            ->leftJoin(
+                'orders_user',
+                OrderDelivery::class,
+                'orders_delivery',
+                'orders_delivery.usr = orders_user.id',
+            );
+
+        $dbal
+            ->leftJoin(
+                'orders_delivery',
+                Delivery::class,
+                'delivery',
+                'delivery.id = orders_delivery.delivery',
+            );
+
+        $dbal
+            ->leftJoin(
+                'delivery',
+                DeliveryEvent::class,
+                'delivery_event',
+                'delivery_event.id = delivery.event',
+            );
+
+        $dbal
             ->addSelect("JSON_AGG ( 
                 DISTINCT JSONB_BUILD_OBJECT (
                     'id', orders_invariable.main,
-                    'number', orders_invariable.number
+                    'event', orders_invariable.event,
+                    'number', orders_invariable.number,
+                    'delivery', delivery_event.type,
+                    'hide', product_stock.id
                 )) AS orders",
             );
+
 
         $dbal->allGroupByExclude();
 

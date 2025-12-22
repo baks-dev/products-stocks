@@ -34,18 +34,26 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Twig\CallTwigFuncExtension;
 use BaksDev\Core\Type\UidType\ParamConverter;
+use BaksDev\Orders\Order\Type\Event\OrderEventUid;
+use BaksDev\Orders\Order\UseCase\Admin\Print\OrderEventPrintDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Print\OrderEventPrintHandler;
+use BaksDev\Ozon\Orders\Type\DeliveryType\TypeDeliveryFbsOzon;
+use BaksDev\Ozon\Orders\Type\ProfileType\TypeProfileFbsOzon;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Messenger\Part\ProductStockPartMessage;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct\AllProductStocksOrdersProductInterface;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct\ProductStocksOrdersProductResult;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart\AllProductStocksOrdersPartInterface;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart\ProductStocksOrdersPartResult;
-use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Part\ProductStockPartDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Part\ProductStockPartHandler;
+use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
+use BaksDev\Wildberries\Orders\Type\ProfileType\TypeProfileFbsWildberries;
+use BaksDev\Yandex\Market\Orders\Type\DeliveryType\TypeDeliveryFbsYaMarket;
+use BaksDev\Yandex\Market\Orders\Type\ProfileType\TypeProfileFbsYaMarket;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -66,9 +74,8 @@ final class PartController extends AbstractController
         Environment $environment,
         AllProductStocksOrdersPartInterface $AllProductStocksOrdersPartRepository,
         AllProductStocksOrdersProductInterface $AllProductStocksOrdersProductRepository,
-        ProductStocksEventInterface $ProductStocksEventRepository,
         ProductStockPartHandler $ProductStockPartHandler,
-        BarcodeWrite $BarcodeWrite,
+        OrderEventPrintHandler $OrderEventPrintHandler,
         MessageDispatchInterface $MessageDispatch,
         ?CentrifugoPublishInterface $publish = null,
         #[ParamConverter(ProductStockPartUid::class)] ?ProductStockPartUid $part = null,
@@ -277,17 +284,33 @@ final class PartController extends AbstractController
             $parts[(string) $ProductStockPartUid]['stock'] = $result->getStocksQuantity();
 
 
-            /** Скрываем идентификатор у всех пользователей */
-            if($publish instanceof CentrifugoPublishInterface)
+            foreach($result->getOrdersCollection() as $order)
             {
-                foreach($result->getMains() as $main)
+                /** TODO: временно отключаем скрытие и печать */
+                break;
+
+                /** Если доставка в сортировочный центр маркетплейса */
+                if(
+                    true === TypeProfileFbsOzon::equals($order->delivery)
+                    || true === TypeProfileFbsYaMarket::equals($order->delivery)
+                    || true === TypeProfileFbsWildberries::equals($order->delivery)
+                )
                 {
-                    $publish
-                        ->addData(['identifier' => $main])
-                        ->send('remove');
+                    /** Скрываем идентификатор у всех пользователей */
+                    if($publish instanceof CentrifugoPublishInterface)
+                    {
+                        $publish
+                            ->addData(['identifier' => $order->hide])
+                            ->send('remove');
+                    }
+
+                    /**  Делаем отметку о печати */
+                    $orderEventPrintDTO = new OrderEventPrintDTO(new OrderEventUid($order->event));
+                    $OrderEventPrintHandler->handle($orderEventPrintDTO);
                 }
             }
         }
+
 
         return $this->render(
             [

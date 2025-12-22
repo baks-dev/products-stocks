@@ -9,28 +9,30 @@
         {# Название продукта data.offer #}
         {# Название продукта data.stock #}
 
-
+        {% if loop.first == false %}
+            <div style="page-break-after: always !important;"></div>
+        {% endif %}
 
         {% for stickers in data %}
 
             {% if stickers.part is defined %}
 
-                {# QR партии #}
+                {# СТИКЕР МАРКИРОВКИ УПАКОВКИ #}
 
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"
-                         style="height: 150px; max-height: 150px; max-width: 150px;"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"
+                         style="width: 300px; max-width: 300px; min-height: 300px;"
                          fill="currentColor"
                          viewBox="8 8 35 35">
                         {{ stickers.part|raw }}
                     </svg>
                 </div>
 
-                <div><strong>{{ data.name }}</strong></div>
-                <div><strong>{{ data.offer }}</strong></div>
+                <div class="h5"><strong>{{ data.name }}</strong></div>
+                <div class="h5"><strong>{{ data.offer }}</strong></div>
                 <div>
 
-                    <strong class="h5">{{ data.total }} шт.</strong>
+                    <strong class="h3">{{ data.total }} шт.</strong>
 
                     &nbsp;<small>место:</small>
                     <strong>
@@ -47,31 +49,37 @@
                 </div>
 
                 {# разрыв старницы #}
-                <div style="page-break-after: always !important;"></div>
+                {# <div style="page-break-after: always !important;"></div> #}
 
             {% else %}
 
                 {% for number, sticker in stickers %}
 
-                    {# Стикеры маркировки Честный знак #}
+                    {# СТИКЕР МАРКИРОВКИ ЧЕСТНЫЙ ЗНАК #}
 
                     {% if sticker.sign is defined %}
 
                         {% for  sign in sticker.sign %}
 
-                            <div class="text-center" style="max-width: 140px; max-height: 140px;">
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
 
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
-                                         style="height: 140px; max-height: 140px; max-width: 200px;"
-                                         fill="currentColor"
-                                         viewBox="8 8 40 40">
-                                        {{ sign|raw }}
-                                    </svg>
-                                </div>
+
+
+                            <div class="text-center" style="max-width: 300px;">
 
                                 <div>
                                     <small>{{ number }}</small>
+                                </div>
+
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
+                                         style="width: 280px; max-width: 280px;"
+                                         fill="currentColor"
+                                         viewBox="8 8 40 40">
+                                        {{ sign.image|raw }}
+                                    </svg>
+                                    {{ sign.code|raw }}
                                 </div>
 
                                 <div>
@@ -82,27 +90,27 @@
                                 </div>
                             </div>
 
-                            {# разрыв старницы #}
-                            <div style="page-break-after: always !important;"></div>
-
                         {% endfor %}
 
 
                     {% endif %}
 
+
+                    {# СТИКЕР МАРКИРОВКИ OZON #}
 
                     {% if sticker.ozon is defined %}
 
                         {% for ozon in sticker.ozon %}
-                            <img src="data:image/png;base64, {{ ozon }}" alt="sticker"
-                                 style="max-width:300px; min-width: 300px;"/>
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                            {# <img nonce="{{ csp_nonce() }}" src="data:image/jpg;base64,{{ ozon }}" alt="sticker" #}
+                            <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon }}" alt="sticker"
+                                 style="width: 300px; max-width: 300px; min-height: 300px;"/>
                         {% endfor %}
 
-                        {# разрыв старницы #}
-                        <div style="page-break-after: always !important;"></div>
-
                     {% endif %}
-
 
                 {% endfor %}
 

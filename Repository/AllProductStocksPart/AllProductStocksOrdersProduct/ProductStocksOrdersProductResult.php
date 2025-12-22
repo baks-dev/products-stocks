@@ -47,7 +47,7 @@ final class ProductStocksOrdersProductResult
 
     public function __construct(
 
-        private readonly string $mains,
+        //private readonly string $mains,
         private readonly string $events, //
         private readonly string $total, // 3
         private readonly string $product_name, // "Triangle AdvanteX TC101"
@@ -79,20 +79,20 @@ final class ProductStocksOrdersProductResult
         private readonly ?string $stocks_quantity, // "[{"total": 10, "reserve": 3, "storage": "new"}]"
     ) {}
 
-    public function getMains(): ?array
-    {
-        if(is_null($this->mains))
-        {
-            return null;
-        }
-
-        if(false === json_validate($this->mains))
-        {
-            return null;
-        }
-
-        return json_decode($this->mains, false, 512, JSON_THROW_ON_ERROR);
-    }
+    //    public function getMains(): ?array
+    //    {
+    //        if(is_null($this->mains))
+    //        {
+    //            return null;
+    //        }
+    //
+    //        if(false === json_validate($this->mains))
+    //        {
+    //            return null;
+    //        }
+    //
+    //        return json_decode($this->mains, false, 512, JSON_THROW_ON_ERROR);
+    //    }
 
     public function getTotal(): int
     {
