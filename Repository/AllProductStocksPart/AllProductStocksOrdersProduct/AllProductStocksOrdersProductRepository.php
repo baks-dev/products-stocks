@@ -325,7 +325,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
             );
 
         $dbal
-            ->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
+            //->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
             ->leftJoin(
                 'product_stock_order',
                 OrderInvariable::class,

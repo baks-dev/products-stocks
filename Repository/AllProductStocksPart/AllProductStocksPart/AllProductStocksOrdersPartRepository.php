@@ -116,7 +116,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
 
 
         $dbal
-            ->addSelect("JSON_AGG (DISTINCT product_stock.id) AS mains")
+            //->addSelect("JSON_AGG (DISTINCT product_stock.id) AS mains")
             ->join(
                 'product_stock_part',
                 ProductStock::class,
