@@ -13,68 +13,51 @@
 
         {% for stickers in data %}
 
+            {% if stickers.part is defined %}
 
-            {# {% if break %}
-            #}{# разрыв старницы #}{#
-        <div style="page-break-after: always !important;"></div>
-    {% endif %} #}
+                {# QR партии #}
 
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"
+                         style="height: 150px; max-height: 150px; max-width: 150px;"
+                         fill="currentColor"
+                         viewBox="8 8 35 35">
+                        {{ stickers.part|raw }}
+                    </svg>
+                </div>
 
-            {% for sticker in stickers %}
+                <div><strong>{{ data.name }}</strong></div>
+                <div><strong>{{ data.offer }}</strong></div>
+                <div>
 
+                    <strong class="h5">{{ data.total }} шт.</strong>
 
-                {#
-                # Информация о продукте в упаковке
-                #}
+                    &nbsp;<small>место:</small>
+                    <strong>
 
-                {% if sticker.part is defined %}
+                        {# Место хранения #}
+                        [{% for stock in data.stock|filter(v => v.storage is not empty) %}
 
-                    {# QR партии #}
+                        {{ stock.storage }}
 
-                    <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"
-                             style="height: 150px; max-height: 150px; max-width: 150px;"
-                             fill="currentColor"
-                             viewBox="8 8 35 35">
-                            {{ sticker.part|raw }}
-                        </svg>
-                    </div>
+                        {% if loop.last != true %}, {% endif %}
 
-                    <div><strong>{{ data.name }}</strong></div>
-                    <div><strong>{{ data.offer }}</strong></div>
-                    <div>
+                        {% endfor %}]
+                    </strong>
+                </div>
 
-                        <strong class="h5">{{ data.total }} шт.</strong>
+                {# разрыв старницы #}
+                <div style="page-break-after: always !important;"></div>
 
-                        &nbsp;<small>место:</small>
-                        <strong>
+            {% else %}
 
-                            {# Место хранения #}
-                            [{% for stock in data.stock|filter(v => v.storage is not empty) %}
+                {% for number, sticker in stickers %}
 
-                            {{ stock.storage }}
+                    {# Стикеры маркировки Честный знак #}
 
-                            {% if loop.last != true %}, {% endif %}
+                    {% if sticker.sign is defined %}
 
-                            {% endfor %}]
-                        </strong>
-                    </div>
-
-                    {# разрыв старницы #}
-                    <div style="page-break-after: always !important;"></div>
-
-                {% endif %}
-
-
-                {#
-                # Перечисляем все стикеры маркировки продукта в упаковке
-                #}
-
-                {% if sticker is iterable %}
-
-                    {% for sign in sticker %}
-
-                        {% if sign.code is defined %}
+                        {% for  sign in sticker.sign %}
 
                             <div class="text-center" style="max-width: 140px; max-height: 140px;">
 
@@ -83,12 +66,12 @@
                                          style="height: 140px; max-height: 140px; max-width: 200px;"
                                          fill="currentColor"
                                          viewBox="8 8 40 40">
-                                        {{ sign.code|raw }}
+                                        {{ sign|raw }}
                                     </svg>
                                 </div>
 
                                 <div>
-                                    <small>{{ sign.number }}</small>
+                                    <small>{{ number }}</small>
                                 </div>
 
                                 <div>
@@ -102,29 +85,29 @@
                             {# разрыв старницы #}
                             <div style="page-break-after: always !important;"></div>
 
-                        {% endif %}
-
-                    {% endfor %}
-
-                {% endif %}
-
-            {% endfor %}
+                        {% endfor %}
 
 
+                    {% endif %}
 
 
-            {# QRCode партии #}{#
-        {% if data.part is defined %}
-            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
-                {{ stickers.part|raw }}
-            </div>
-        {% endif %}
+                    {% if sticker.ozon is defined %}
 
-        {% if data.code is defined %}
-            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
-                {{ stickers.code|raw }}
-            </div>
-        {% endif %} #}
+                        {% for ozon in sticker.ozon %}
+                            <img src="data:image/png;base64, {{ ozon }}" alt="sticker"
+                                 style="max-width:300px; min-width: 300px;"/>
+                        {% endfor %}
+
+                        {# разрыв старницы #}
+                        <div style="page-break-after: always !important;"></div>
+
+                    {% endif %}
+
+
+                {% endfor %}
+
+
+            {% endif %}
 
 
             {% set break = true %}

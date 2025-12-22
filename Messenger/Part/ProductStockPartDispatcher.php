@@ -33,7 +33,7 @@ use RuntimeException;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 
-/** Получаем штрихкод на продукцию */
+/** Генерируем QR-код партии */
 #[AsMessageHandler(priority: 100)]
 final class ProductStockPartDispatcher
 {
@@ -41,10 +41,6 @@ final class ProductStockPartDispatcher
 
     public function __invoke(ProductStockPartMessage $message): void
     {
-        /**
-         * Генерируем QR-код партии
-         */
-
         $isBarcode = $this->BarcodeWrite
             ->text($message->getPart())
             ->type(BarcodeType::QRCode)

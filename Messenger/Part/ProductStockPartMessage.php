@@ -79,7 +79,7 @@ final class ProductStockPartMessage
     {
         if(false === empty($stickers))
         {
-            $this->stickers[] = $stickers;
+            $this->stickers = array_merge_recursive($this->stickers, $stickers);
         }
 
         return $this;
