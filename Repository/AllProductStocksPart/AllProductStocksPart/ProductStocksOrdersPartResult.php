@@ -48,6 +48,7 @@ final class ProductStocksOrdersPartResult
     public function __construct(
 
         //private readonly string $mains,
+        private readonly string $events, //
         private readonly string $total, // 3
         private readonly string $product_name, // "Triangle AdvanteX TC101"
 
@@ -294,6 +295,23 @@ final class ProductStocksOrdersPartResult
     {
         return new ProductStockPartUid()
             ->stringToUuid($this->orders.$this->stocks_quantity);
+    }
+
+    /** Идентификаторы событий складской заявки */
+    public function getProductStocksEvents(): array|false
+    {
+        if(is_null($this->events))
+        {
+            return false;
+        }
+
+        if(false === json_validate($this->events))
+        {
+            return false;
+        }
+
+
+        return json_decode($this->events, false, 512, JSON_THROW_ON_ERROR);
     }
 
 }

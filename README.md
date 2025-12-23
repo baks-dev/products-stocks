@@ -1,6 +1,6 @@
 # BaksDev Product Stocks
 
-[![Version](https://img.shields.io/badge/version-7.3.81-blue)](https://github.com/baks-dev/products-stocks/releases)
+[![Version](https://img.shields.io/badge/version-7.3.82-blue)](https://github.com/baks-dev/products-stocks/releases)
 ![php 8.4+](https://img.shields.io/badge/php-min%208.4-red.svg)
 [![packagist](https://img.shields.io/badge/packagist-green)](https://packagist.org/packages/baks-dev/products-stocks)
 

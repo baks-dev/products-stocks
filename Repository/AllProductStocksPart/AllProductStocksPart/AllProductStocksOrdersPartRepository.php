@@ -41,11 +41,14 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -58,14 +61,18 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
 
     private UserProfileUid|false $profile = false;
 
+    private ProductStockStatus|false $status;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
-    ) {}
+    )
+    {
+        $this->status = false;
+    }
 
     public function forProductStockPart(ProductStockPartUid $part): self
     {
-
         $this->part = $part;
 
         return $this;
@@ -89,7 +96,18 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
         return $this;
     }
 
+    /** Возвращает упаковку только при статусе Package «Упаковка» */
+    public function onlyPackageStatus(): self
+    {
+        $this->status = new ProductStockStatus(ProductStockStatusPackage::class);
+
+        return $this;
+    }
+
+
     /**
+     * Метод возвращает продукцию в упаковке
+     *
      * @return  Generator<ProductStocksOrdersPartResult>|bool
      */
     public function findAll(): Generator|bool
@@ -103,9 +121,8 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        //$dbal->select('*');
-
         $dbal
+
             ->from(ProductStockPart::class, 'product_stock_part')
             ->where('product_stock_part.value = :part')
             ->setParameter(
@@ -114,9 +131,8 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                 type: ProductStockPartUid::TYPE,
             );
 
-
         $dbal
-            //->addSelect("JSON_AGG (DISTINCT product_stock.id) AS mains")
+            ->addSelect("JSON_AGG (DISTINCT product_stock.event) AS events")
             ->join(
                 'product_stock_part',
                 ProductStock::class,
@@ -125,14 +141,22 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
             );
 
 
-        //        $dbal
-        //            ->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
-        //            ->leftJoin(
-        //                'product_stock',
-        //                ProductStockEvent::class,
-        //                'product_stock_event',
-        //                'product_stock_event.id = product_stock.event',
-        //            );
+        if($this->status instanceof ProductStockStatus)
+        {
+            $dbal
+                ->join(
+                    'product_stock',
+                    ProductStockEvent::class,
+                    'product_stock_event',
+                    'product_stock_event.id = product_stock.event AND product_stock_event.status = :status',
+                )
+                ->setParameter(
+                    key: 'status',
+                    value: $this->status,
+                    type: ProductStockStatus::TYPE,
+                );
+        }
+
 
         $dbal
             ->addSelect("JSON_AGG ( 

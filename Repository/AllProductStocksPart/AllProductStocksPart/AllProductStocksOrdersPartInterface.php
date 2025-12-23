@@ -30,5 +30,13 @@ interface AllProductStocksOrdersPartInterface
 {
     public function forProductStockPart(ProductStockPartUid $part): self;
 
+    /** Возвращает упаковку только при статусе Package «Упаковка» */
+    public function onlyPackageStatus(): self;
+
+    /**
+     * Метод возвращает продукцию в упаковке по идентификатору упаковки
+     *
+     * @return  Generator<ProductStocksOrdersPartResult>|bool
+     */
     public function findAll(): Generator|bool;
 }
