@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -85,7 +86,7 @@ final readonly class SubReserveProductByProductStockCancel
             return;
         }
 
-        // Если Статус не является Cancel «Отменен».
+        /** Если Статус НЕ является Cancel «Отменен» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
         {
             return;

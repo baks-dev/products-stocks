@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -26,6 +27,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
@@ -46,6 +48,7 @@ final readonly class AddProductStocksReserveDispatcher
         private ProductStockQuantityInterface $productStockMinQuantity,
         private AddProductStockInterface $addProductStock,
         private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $messageDispatch,
     ) {}
 
 
@@ -106,8 +109,10 @@ final readonly class AddProductStocksReserveDispatcher
 
         $DeduplicatorExecuted->save();
 
+        $this->messageDispatch->addClearCacheOther('products-stocks');
+
         $this->logger->info(
-            sprintf('%s : Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
+            sprintf('Место %s: Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId()

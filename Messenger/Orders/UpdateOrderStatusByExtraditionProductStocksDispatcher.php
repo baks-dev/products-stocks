@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -45,7 +46,8 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Обновляет статус заказа при сборке на складе
+ * Обновляет статус заказа при сборке на складе на Extradition «Готов к выдаче»
+ * @see OrderStatusExtradition
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher

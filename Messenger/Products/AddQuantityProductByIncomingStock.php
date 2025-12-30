@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -49,7 +50,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class AddQuantityProductByIncomingStock
 {
     public function __construct(
-        #[Target('productsProductLogger')] private LoggerInterface $logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
         private AddProductQuantityInterface $addProductQuantity,
         private ProductStocksEventInterface $ProductStocksEventRepository,
@@ -82,7 +83,7 @@ final readonly class AddQuantityProductByIncomingStock
         }
 
         /**
-         * Если статус НЕ является Incoming «Приход на склад» либо Cancel «Отменен»
+         * Если статус НЕ Incoming «Приход на склад» либо НЕ Cancel «Отменен» - завершаем работу
          */
         if(
             false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class)
@@ -148,6 +149,11 @@ final readonly class AddQuantityProductByIncomingStock
 
             return;
         }
+
+        $this->logger->info(
+            'Пополнение наличием в карточке при поступлении на склад',
+            [self::class.':'.__LINE__, var_export($message, true)],
+        );
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)

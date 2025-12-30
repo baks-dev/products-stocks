@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -36,6 +37,7 @@ use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventBySta
 use BaksDev\Orders\Order\Repository\OrderEvent\OrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusNew;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductStocksTotalAndReserveMessage;
@@ -106,7 +108,7 @@ final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
             return;
         }
 
-        /** Если статус заказа не Completed «Выполнен» */
+        /** Если статус заказа НЕ Completed «Выполнен» - завершаем работу */
         if(false === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
         {
             return;

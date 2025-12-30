@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -40,6 +41,8 @@ final class AllProductStocksPickupRepositoryTest extends KernelTestCase
     #[Group('products-stocks-repository')]
     public function testRepository(): void
     {
+        self::assertTrue(true);
+
         $AllProductStocksPickupRepository = self::getContainer()->get(AllProductStocksPickupInterface::class);
 
         /** @var AllProductStocksPickupRepository $AllProductStocksPickupRepository */

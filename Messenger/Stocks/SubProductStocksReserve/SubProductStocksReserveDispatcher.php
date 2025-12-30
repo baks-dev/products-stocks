@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -26,6 +27,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
 use Psr\Log\LoggerInterface;
@@ -42,7 +44,8 @@ final readonly class SubProductStocksReserveDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStockQuantityInterface $productStockMinQuantity,
         private SubProductStockInterface $updateProductStock,
-        private DeduplicatorInterface $deduplicator
+        private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $messageDispatch,
     ) {}
 
     public function __invoke(SubProductStocksReserveMessage $message): void
@@ -119,6 +122,8 @@ final readonly class SubProductStocksReserveDispatcher
 
         $DeduplicatorExecuted->save();
 
+        $this->messageDispatch->addClearCacheOther('products-stocks');
+        
         $this->logger->info(
             sprintf('Место %s: Сняли резерв продукции на складе на одну единицу', $ProductStockTotal->getStorage()),
             [

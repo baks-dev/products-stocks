@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -47,7 +48,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class AddReserveProductByProductStockMove
 {
     public function __construct(
-        #[Target('productsProductLogger')] private LoggerInterface $Logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $Logger,
         private ProductModificationQuantityInterface $ModificationQuantity,
         private ProductVariationQuantityInterface $VariationQuantity,
         private ProductOfferQuantityInterface $OfferQuantity,

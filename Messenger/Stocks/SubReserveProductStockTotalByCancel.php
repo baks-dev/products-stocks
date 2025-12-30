@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -47,7 +48,9 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Создаем события на снятие резерва при отмене складской заявки
+ * Отменяет резерв на складе при отмене складской заявки
+ *
+ * @see CancelProductStocksByCancelOrderDispatcher
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByCancel
@@ -62,11 +65,7 @@ final readonly class SubReserveProductStockTotalByCancel
         private EntityManagerInterface $entityManager,
     ) {}
 
-    /**
-     * Отменяет резерв на складе при отмене складской заявки
-     *
-     * @see CancelProductStocksByCancelOrderDispatcher
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
         if(false === ($message->getLast() instanceof ProductStockEventUid))
@@ -95,7 +94,7 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        // Если статус события заявки не является Cancel «Отменен».
+        /** Если статус события заявки НЕ является Cancel «Отменен» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
         {
             return;
