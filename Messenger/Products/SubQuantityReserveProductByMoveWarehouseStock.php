@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -48,7 +49,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class SubQuantityReserveProductByMoveWarehouseStock
 {
     public function __construct(
-        #[Target('productsProductLogger')] private LoggerInterface $Logger,
+        #[Target('productsStocksLogger')] private LoggerInterface $Logger,
         private ProductModificationQuantityInterface $ModificationQuantity,
         private ProductVariationQuantityInterface $VariationQuantity,
         private ProductOfferQuantityInterface $OfferQuantity,
@@ -98,8 +99,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
          */
         $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
             ->forProfile($productStockEvent->getMove()?->getDestination())
-            ->isLogisticWarehouse()
-        ;
+            ->isLogisticWarehouse();
 
         if(false === $isLogisticWarehouse)
         {

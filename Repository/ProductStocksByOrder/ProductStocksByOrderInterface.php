@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\Repository\ProductStocksByOrder;
@@ -51,8 +52,8 @@ interface ProductStocksByOrderInterface
 
     /**
      * @return array<int, ProductStockEvent>|null
-     *@deprecated
      * Метод получает все заявки (может быть упаковка либо перемещение) по идентификатору заказа
+     *@deprecated
      *
      */
     public function findByOrder(Order|OrderUid|string $order): array|null;

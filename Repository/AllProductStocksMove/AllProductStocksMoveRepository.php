@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -701,12 +702,12 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         }
 
         /* Фильтр по флагу Printed */
-        if(true === $this->filter->getPrint())
+        if(true === $this->filter?->getPrint())
         {
             $dbal->andWhere('product_stock_print.value IS TRUE');
         }
 
-        if(false === $this->filter->getPrint())
+        if(false === $this->filter?->getPrint())
         {
             $dbal->andWhere('product_stock_print.value IS NOT TRUE');
         }

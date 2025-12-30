@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -129,7 +130,10 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 
             if($ProductStock instanceof ProductStock)
             {
-                $this->logger->info(sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()));
+                $this->logger->info(
+                    sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()),
+                    [self::class.':'.__LINE__]
+                );
                 continue;
             }
 
