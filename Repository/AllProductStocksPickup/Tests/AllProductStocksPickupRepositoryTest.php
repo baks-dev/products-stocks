@@ -1,6 +1,6 @@
-<?php 
+<?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@ final class AllProductStocksPickupRepositoryTest extends KernelTestCase
     #[Group('products-stocks-repository')]
     public function testRepository(): void
     {
+        self::assertTrue(true);
+
         $AllProductStocksPickupRepository = self::getContainer()->get(AllProductStocksPickupInterface::class);
 
         /** @var AllProductStocksPickupRepository $AllProductStocksPickupRepository */
@@ -48,7 +50,8 @@ final class AllProductStocksPickupRepositoryTest extends KernelTestCase
             ->findResultPaginator()
             ->getData();
 
-        foreach($result as $productStock) {
+        foreach($result as $productStock)
+        {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(AllProductStocksPickupResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** @see ProductStockPart */
 final class ProductStockPartDTO implements ProductStockPartInterface
 {
+    /** Идентификатор события для присваивания партии */
     #[Assert\NotBlank]
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
@@ -41,6 +42,11 @@ final class ProductStockPartDTO implements ProductStockPartInterface
     /** Значение свойства */
     #[Assert\NotBlank]
     private ?ProductStockPartUid $value = null;
+
+    /** Номер партии */
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 36)]
+    private ?string $number = null;
 
     public function __construct(ProductStockEventUid|string $id)
     {
@@ -61,5 +67,16 @@ final class ProductStockPartDTO implements ProductStockPartInterface
     public function getValue(): ?ProductStockPartUid
     {
         return $this->value;
+    }
+
+    public function getNumber(): ?string
+    {
+        return $this->number;
+    }
+
+    public function setNumber(string $number): self
+    {
+        $this->number = $number;
+        return $this;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -165,6 +165,7 @@ final class PartController extends AbstractController
         foreach($products as $result)
         {
             $ProductStockPartUid = $result->getIdentifierPart();
+            $partNumber = $result->getPartNumber();
 
             /** Если продукция из заказов выбирается в первый раз - сохраняем сборочный лист */
             if(true === ($result instanceof ProductStocksOrdersProductResult) && $result->getProductStocksEvents())
@@ -173,7 +174,8 @@ final class PartController extends AbstractController
                 {
                     /** Обновляем заявку на упаковку партией  */
                     $ProductStockPartDTO = new ProductStockPartDTO($event)
-                        ->setValue($ProductStockPartUid);
+                        ->setValue($ProductStockPartUid)
+                        ->setNumber($partNumber);
 
                     $ProductStockPart = $ProductStockPartHandler->handle($ProductStockPartDTO);
 
@@ -268,6 +270,7 @@ final class PartController extends AbstractController
 
             $ProductStockPartMessage = new ProductStockPartMessage(
                 $ProductStockPartUid,
+                $partNumber,
                 $result->getProduct(),
                 $result->getOfferConst(),
                 $result->getVariationConst(),
@@ -275,7 +278,10 @@ final class PartController extends AbstractController
             );
 
             $ProductStockPartMessage->setOrders($result->getOrdersCollection());
+
             $MessageDispatch->dispatch(message: $ProductStockPartMessage);
+
+            // usleep(100000);
 
             $parts[(string) $ProductStockPartUid] = $ProductStockPartMessage->getStickers();
             $parts[(string) $ProductStockPartUid]['name'] = $result->getProductName();
@@ -286,9 +292,6 @@ final class PartController extends AbstractController
 
             foreach($result->getOrdersCollection() as $order)
             {
-                /** TODO: временно отключаем скрытие и печать */
-                break;
-
                 /** Если доставка в сортировочный центр маркетплейса */
                 if(
                     true === TypeProfileFbsOzon::equals($order->delivery)

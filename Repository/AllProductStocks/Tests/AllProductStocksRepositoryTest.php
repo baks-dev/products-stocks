@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@ class AllProductStocksRepositoryTest extends KernelTestCase
 {
     public function testUseCase(): void
     {
+        self::assertTrue(true);
+
         /** @var AllProductStocksInterface $AllProductStocksRepository */
         $AllProductStocksRepository = self::getContainer()->get(AllProductStocksInterface::class);
 
@@ -47,13 +49,15 @@ class AllProductStocksRepositoryTest extends KernelTestCase
             ->forProfile(new UserProfileUid('019577a9-71a3-714b-a99c-0386833d802f'))
             ->findPaginator();
 
-        $result = $Paginator->getData();
+        $results = $Paginator->getData();
 
-        if(!empty($result))
+        if(empty($results))
         {
-            $AllProductStocksResult = current($result);
+            return;
+        }
 
-
+        foreach($results as $AllProductStocksResult)
+        {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(AllProductStocksResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
@@ -65,13 +69,9 @@ class AllProductStocksRepositoryTest extends KernelTestCase
                 {
                     // Вызываем метод
                     $value = $method->invoke($AllProductStocksResult);
-                    dump($value);
+                    //dump($value);
                 }
             }
-
-            // dd($AllProductStocksResult);
         }
-
-        self::assertTrue(true);
     }
 }

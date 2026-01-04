@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Commands;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Elastic\BaksDevElasticBundle;
+use BaksDev\Orders\Order\Repository\ProductTotalInOrders\ProductTotalInOrdersInterface;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Quantity\ProductOfferQuantity;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
@@ -40,9 +41,13 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve\ProductStocksTotalByReserveInterface;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
+use BaksDev\Users\Profile\UserProfile\Entity\Event\Warehouse\UserProfileWarehouse;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -55,21 +60,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class ProductCardVerify extends Command
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-    private ProductStocksTotalInterface $productStocksTotal;
-    private ProductStocksTotalByReserveInterface $productStocksTotalByReserve;
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        ProductWarehouseTotalInterface $productWarehouseTotal,
-        ProductStocksTotalInterface $productStocksTotal,
-        ProductStocksTotalByReserveInterface $productStocksTotalByReserve,
+        private DBALQueryBuilder $DBALQueryBuilder,
+        private ProductWarehouseTotalInterface $productWarehouseTotal,
+        private ProductStocksTotalInterface $productStocksTotal,
+        private ProductStocksTotalByReserveInterface $productStocksTotalByReserve,
+        private ProductTotalInOrdersInterface $ProductTotalInOrders,
     )
     {
         parent::__construct();
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-        $this->productStocksTotal = $productStocksTotal;
-        $this->productStocksTotalByReserve = $productStocksTotalByReserve;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -92,7 +91,7 @@ class ProductCardVerify extends Command
                 'product',
                 ProductPrice::class,
                 'product_quantity',
-                'product_quantity.event = product.event'
+                'product_quantity.event = product.event',
             );
 
 
@@ -102,7 +101,7 @@ class ProductCardVerify extends Command
                 'product',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product.event AND product_trans.local = :local'
+                'product_trans.event = product.event AND product_trans.local = :local',
             );
 
         $dbal
@@ -113,9 +112,11 @@ class ProductCardVerify extends Command
                 'product',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product.event'
+                'product_offer.event = product.event',
             );
 
+
+        /** Получаем OFFER остатки */
 
         $dbal
             ->addSelect('product_offer_quantity.quantity as product_offer_quantity')
@@ -124,8 +125,9 @@ class ProductCardVerify extends Command
                 'product_offer',
                 ProductOfferQuantity::class,
                 'product_offer_quantity',
-                'product_offer_quantity.offer = product_offer.id'
+                'product_offer_quantity.offer = product_offer.id',
             );
+
 
         $dbal
             ->addSelect('product_variation.value as product_variation_value')
@@ -135,7 +137,7 @@ class ProductCardVerify extends Command
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id'
+                'product_variation.offer = product_offer.id',
             );
 
         $dbal
@@ -145,7 +147,7 @@ class ProductCardVerify extends Command
                 'product_variation',
                 ProductVariationQuantity::class,
                 'product_variation_quantity',
-                'product_variation_quantity.variation = product_variation.id'
+                'product_variation_quantity.variation = product_variation.id',
             );
 
 
@@ -158,7 +160,7 @@ class ProductCardVerify extends Command
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id '
+                'product_modification.variation = product_variation.id ',
             );
 
         $dbal
@@ -168,8 +170,49 @@ class ProductCardVerify extends Command
                 'product_modification',
                 ProductModificationQuantity::class,
                 'product_modification_quantity',
-                'product_modification_quantity.modification = product_modification.id'
+                'product_modification_quantity.modification = product_modification.id',
             );
+
+        /** Получаем остатки на складе в логистических центрах */
+
+        $dbal
+            ->addSelect('SUM(product_stock_total.total) AS stock_total')
+            //            ->addSelect("JSON_AGG( DISTINCT JSONB_BUILD_OBJECT (
+            //            'profile', product_stock_total.profile,
+            //            'logistic', profile_warehouse.value,
+            //            'total', product_stock_total.total,
+            //            'reserve', product_stock_total.reserve
+            //            ) ) AS stock_total")
+            ->addSelect('SUM(product_stock_total.reserve) AS stock_reserve')
+            ->addSelect("JSON_AGG(DISTINCT product_stock_total.profile) AS profiles")
+            ->leftJoin(
+                'product_modification',
+                ProductStockTotal::class,
+                'product_stock_total',
+                'product_stock_total.product = product.id
+                        AND product_stock_total.offer = product_offer.const
+                        AND product_stock_total.variation = product_variation.const
+                        AND product_stock_total.modification = product_modification.const
+                        ',
+            );
+
+        $dbal
+            ->join(
+                'product_stock_total',
+                UserProfile::class,
+                'profile',
+                'profile.id = product_stock_total.profile',
+            );
+
+        $dbal->join(
+            'profile',
+            UserProfileWarehouse::class,
+            'profile_warehouse',
+            'profile_warehouse.event = profile.event AND profile_warehouse.value IS TRUE',
+        );
+
+
+        $dbal->allGroupByExclude();
 
         //dd($dbal->fetchAllAssociative()[0]);
 
@@ -177,153 +220,351 @@ class ProductCardVerify extends Command
         $errorReserve = '';
 
 
+        /** Определяем расхождение остатков */
+
+        $isTotal = false;
+
         foreach($dbal->fetchAllAssociative() as $product)
         {
-            $total = $this->productStocksTotal
-                ->product($product['product_id'])
-                ->offer($product['product_offer_const'])
-                ->variation($product['product_variation_const'])
-                ->modification($product['product_modification_const'])
-                ->onlyLogisticWarehouse()
-                ->get();
-
-            $reserve = $this->productStocksTotalByReserve
-                ->product($product['product_id'])
-                ->offer($product['product_offer_const'])
-                ->variation($product['product_variation_const'])
-                ->modification($product['product_modification_const'])
-                ->onlyLogisticWarehouse()
-                ->get();
-
+            /**
+             * Различие остатков в множественном варианте
+             */
             if($product['product_modification_const'])
             {
-                if($product['product_modification_quantity'] !== $total)
+                /** Проверяем нет ли ложных срабатываний  */
+                if(false === empty($product['product_variation_quantity']) || false === empty($product['product_offer_quantity']))
                 {
-                    $errorTotal .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_variation_value'].' '.
-                        $product['product_modification_value'].': '.
-                        'card '.$product['product_modification_quantity'].' != склад '.$total.' '.$product['product_modification_article'];
-
-                    $errorTotal .= PHP_EOL;
+                    $io->error(
+                        sprintf(
+                            '%s: ложное срабатывание variation => %s, offer => %s',
+                            $product['product_modification_article'],
+                            $product['product_variation_quantity'],
+                            $product['product_offer_quantity'],
+                        ),
+                    );
                 }
 
-
-                if($product['product_modification_reserve'] !== $reserve)
+                if($product['product_modification_quantity'] !== $product['stock_total'])
                 {
-
-                    $errorReserve .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_variation_value'].' '.
-                        $product['product_modification_value'].': ';
-
-                    if($product['product_modification_reserve'] > $reserve)
+                    if($isTotal === false)
                     {
-                        $errorReserve .=
-                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (ожидается резерв на склад '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
-                    }
-                    else
-                    {
-                        $errorReserve .=
-                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (в карточке не снят резерв '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
+                        $io->error('Различие остатков:');
+                        $isTotal = true;
                     }
 
-
-                    $errorReserve .= PHP_EOL;
+                    $io->note(sprintf('%s: остаток в карточке = %s, остаток на логистических складах = %s',
+                        $product['product_modification_article'],
+                        $product['product_modification_quantity'],
+                        $product['stock_total'],
+                    ));
                 }
+
+                continue;
             }
-            elseif($product['product_variation_const'])
+
+            /**
+             * Различие остатков в множественном варианте
+             */
+            if($product['product_variation_const'])
             {
-
-                if($product['product_variation_quantity'] !== $total)
+                /** Проверяем нет ли ложных срабатываний  */
+                if(false === empty($product['product_offer_quantity']))
                 {
-                    $errorTotal .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_variation_value'].': '.
-                        $product['product_variation_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_modification_article'];
-
-                    $errorTotal .= PHP_EOL;
+                    $io->error(
+                        sprintf(
+                            '%s: ложное срабатывание offer => %s',
+                            $product['product_variation_article'],
+                            $product['product_offer_quantity'],
+                        ),
+                    );
                 }
 
-                if($product['product_variation_reserve'] !== $reserve)
+                if($product['product_variation_quantity'] !== $product['stock_total'])
                 {
-                    $errorReserve .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].' '.
-                        $product['product_variation_value'].': '.
-                        $product['product_variation_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_modification_article'];
+                    if($isTotal === false)
+                    {
+                        $io->error('Различие остатков:');
+                        $isTotal = true;
+                    }
 
-                    $errorReserve .= PHP_EOL;
+                    $io->note(sprintf('%s: остаток в карточке = %s, остаток на логистических складах = %s',
+                        $product['product_variation_article'],
+                        $product['product_variation_quantity'],
+                        $product['stock_total'],
+                    ));
                 }
 
+                continue;
             }
-            elseif($product['product_offer_const'])
+
+            /**
+             * Различие остатков в множественном варианте
+             */
+            if($product['product_offer_const'])
             {
-
-                if($product['product_offer_quantity'] !== $total)
+                if($product['product_offer_quantity'] !== $product['stock_total'])
                 {
-                    $errorTotal .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].': '.
-                        $product['product_offer_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_offer_article'];
+                    if($isTotal === false)
+                    {
+                        $io->error('Различие остатков:');
+                        $isTotal = true;
+                    }
 
-
-                    $errorTotal .= PHP_EOL;
-                }
-
-                if($product['product_offer_reserve'] !== $reserve)
-                {
-                    $errorReserve .=
-                        $product['product_name'].' '.
-                        $product['product_offer_value'].': '.
-                        $product['product_offer_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_offer_article'];
-
-                    $errorReserve .= PHP_EOL;
+                    $io->note(sprintf('%s: остаток в карточке = %s, остаток на логистических складах = %s',
+                        $product['product_offer_article'],
+                        $product['product_offer_quantity'],
+                        $product['stock_total'],
+                    ));
                 }
             }
-            else
+        }
+
+
+        /**
+         * Определяем расхождение резервов
+         */
+
+        $isReserve = false;
+
+        foreach($dbal->fetchAllAssociative() as $product)
+        {
+            /**
+             * Различие остатков в множественном варианте
+             */
+            if($product['product_modification_const'])
             {
-                if($product['product_quantity'] !== $total)
+                /** Проверяем нет ли ложных срабатываний  */
+                if(false === empty($product['product_variation_reserve']) || false === empty($product['product_offer_reserve']))
                 {
-                    $errorTotal .=
-                        $product['product_name'].': '.
-                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
-
-                    $errorTotal .= PHP_EOL;
+                    $io->error(
+                        sprintf(
+                            '%s : ложное срабатывание variation => %s, offer => %s',
+                            $product['product_modification_article'],
+                            $product['product_variation_reserve'],
+                            $product['product_offer_reserve'],
+                        ),
+                    );
                 }
 
-                if($product['product_reserve'] !== $reserve)
+                if($product['product_modification_reserve'] !== $product['stock_reserve'])
                 {
-                    $errorReserve .=
-                        $product['product_name'].': '.
-                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
 
-                    $errorReserve .= PHP_EOL;
+                    /** Проверяем, нет ли заказов, которые не обработаны */
+
+                    $profiles = json_decode($product['profiles']);
+
+
+                    $reserveOrders = 0;
+
+                    foreach($profiles as $profile)
+                    {
+                        /** Получаем количество необработанных заказов */
+                        $unprocessed = $this->ProductTotalInOrders
+                            ->onProfile(new UserProfileUid($profile))
+                            ->onProduct(new ProductUid($product['product_id']))
+                            ->onOfferConst(new ProductOfferConst($product['product_offer_const']))
+                            ->onVariationConst(new ProductVariationConst($product['product_variation_const']))
+                            ->onModificationConst(new ProductModificationConst($product['product_modification_const']))
+                            ->notPackage()
+                            ->notUnpaid()
+                            ->findTotal();
+
+                        //$product['product_modification_reserve'] -= $unprocessed;
+                        $reserveOrders += $unprocessed;
+                    }
+
+                    if(($product['stock_reserve'] + $reserveOrders) === $product['product_modification_reserve'])
+                    {
+                        continue;
+                    }
+
+                    if($isReserve === false)
+                    {
+                        $io->error('Различие резервов:');
+                        $isReserve = true;
+                    }
+
+                    $io->note(sprintf('%s : в карточке = %s, на складах = %s, в необработанных заказах %s, итого необходим %s',
+                        $product['product_modification_article'],
+                        $product['product_modification_reserve'],
+                        $product['stock_reserve'],
+                        $reserveOrders,
+                        $product['stock_reserve'] + $reserveOrders,
+                    ));
+
+                    //dd('$product');
                 }
 
+
+                continue;
             }
         }
 
-        if($errorTotal)
-        {
-            $io->note('Различие наличие');
-            $io->error($errorTotal);
-        }
-
-        if($errorReserve)
-        {
-            $io->note('Различие резервов');
-            $io->error($errorReserve);
-        }
-
-        if(class_exists(BaksDevElasticBundle::class))
-        {
-            $io->warning('После изменений переиндексируйте ELASTIC SEARCH : sudo php bin/console baks:elastic:index');
-        }
 
         return Command::SUCCESS;
+
+
+        //        foreach($dbal->fetchAllAssociative() as $product)
+        //        {
+        //
+        //
+        //
+        //            dump($product['product_modification_article']);
+        //            if($product['product_modification_quantity'] !== $product['stock_total'])
+        //            {
+        //
+        //
+        //                dump($product);
+        //            }
+        //
+        //            continue;
+        //
+        //
+        //            $total = $this->productStocksTotal
+        //                ->product($product['product_id'])
+        //                ->offer($product['product_offer_const'])
+        //                ->variation($product['product_variation_const'])
+        //                ->modification($product['product_modification_const'])
+        //                ->onlyLogisticWarehouse()
+        //                ->get();
+        //
+        //            $reserve = $this->productStocksTotalByReserve
+        //                ->product($product['product_id'])
+        //                ->offer($product['product_offer_const'])
+        //                ->variation($product['product_variation_const'])
+        //                ->modification($product['product_modification_const'])
+        //                ->onlyLogisticWarehouse()
+        //                ->get();
+        //
+        //            if($product['product_modification_const'])
+        //            {
+        //                if($product['product_modification_quantity'] !== $total)
+        //                {
+        //                    $errorTotal .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].' '.
+        //                        $product['product_variation_value'].' '.
+        //                        $product['product_modification_value'].': '.
+        //                        'card '.$product['product_modification_quantity'].' != склад '.$total.' '.$product['product_modification_article'];
+        //
+        //                    $errorTotal .= PHP_EOL;
+        //                }
+        //
+        //
+        //                if($product['product_modification_reserve'] !== $reserve)
+        //                {
+        //
+        //                    $errorReserve .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].' '.
+        //                        $product['product_variation_value'].' '.
+        //                        $product['product_modification_value'].': ';
+        //
+        //                    if($product['product_modification_reserve'] > $reserve)
+        //                    {
+        //                        $errorReserve .=
+        //                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (ожидается резерв на склад '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
+        //                    }
+        //                    else
+        //                    {
+        //                        $errorReserve .=
+        //                            'card '.$product['product_modification_reserve'].' != склад '.$reserve.' (в карточке не снят резерв '.$product['product_modification_reserve'] - $reserve.') '.$product['product_modification_article'];
+        //                    }
+        //
+        //
+        //                    $errorReserve .= PHP_EOL;
+        //                }
+        //            }
+        //            elseif($product['product_variation_const'])
+        //            {
+        //
+        //                if($product['product_variation_quantity'] !== $total)
+        //                {
+        //                    $errorTotal .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].' '.
+        //                        $product['product_variation_value'].': '.
+        //                        $product['product_variation_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_modification_article'];
+        //
+        //                    $errorTotal .= PHP_EOL;
+        //                }
+        //
+        //                if($product['product_variation_reserve'] !== $reserve)
+        //                {
+        //                    $errorReserve .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].' '.
+        //                        $product['product_variation_value'].': '.
+        //                        $product['product_variation_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_modification_article'];
+        //
+        //                    $errorReserve .= PHP_EOL;
+        //                }
+        //
+        //            }
+        //            elseif($product['product_offer_const'])
+        //            {
+        //
+        //                if($product['product_offer_quantity'] !== $total)
+        //                {
+        //                    $errorTotal .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].': '.
+        //                        $product['product_offer_quantity'].' != '.$total.' (ожидается '.$total.') '.$product['product_offer_article'];
+        //
+        //
+        //                    $errorTotal .= PHP_EOL;
+        //                }
+        //
+        //                if($product['product_offer_reserve'] !== $reserve)
+        //                {
+        //                    $errorReserve .=
+        //                        $product['product_name'].' '.
+        //                        $product['product_offer_value'].': '.
+        //                        $product['product_offer_reserve'].' != '.$reserve.' (ожидается '.$reserve.') '.$product['product_offer_article'];
+        //
+        //                    $errorReserve .= PHP_EOL;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                if($product['product_quantity'] !== $total)
+        //                {
+        //                    $errorTotal .=
+        //                        $product['product_name'].': '.
+        //                        $product['product_modification_quantity'].' != '.$total.' (ожидается '.$total.') ';
+        //
+        //                    $errorTotal .= PHP_EOL;
+        //                }
+        //
+        //                if($product['product_reserve'] !== $reserve)
+        //                {
+        //                    $errorReserve .=
+        //                        $product['product_name'].': '.
+        //                        $product['product_modification_reserve'].' != '.$reserve.' (ожидается '.$reserve.') ';
+        //
+        //                    $errorReserve .= PHP_EOL;
+        //                }
+        //
+        //            }
+        //        }
+        //
+        //        if($errorTotal)
+        //        {
+        //            $io->note('Различие наличие');
+        //            $io->error($errorTotal);
+        //        }
+        //
+        //        if($errorReserve)
+        //        {
+        //            $io->note('Различие резервов');
+        //            $io->error($errorReserve);
+        //        }
+        //
+        //        if(class_exists(BaksDevElasticBundle::class))
+        //        {
+        //            $io->warning('После изменений переиндексируйте ELASTIC SEARCH : sudo php bin/console baks:elastic:index');
+        //        }
+        //
+        //        return Command::SUCCESS;
     }
 }

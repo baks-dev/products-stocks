@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 
 #[When(env: 'test')]
 #[Group('products-stocks')]
-final class ExtraditionControllerTest extends WebTestCase
+final class ExtraditionSelectedControllerTest extends WebTestCase
 {
-    private const string URL = '/admin/product/stock/package/extradition/%s';
+    private const string URL = '/admin/product/stock/package/extradition-selected';
 
     private const string ROLE = 'ROLE_PRODUCT_STOCK_PACKAGE';
 
@@ -68,7 +68,18 @@ final class ExtraditionControllerTest extends WebTestCase
                 $usr = TestUserAccount::getModer(self::ROLE);
 
                 $client->loginUser($usr, 'user');
-                $client->request('GET', sprintf(self::URL, $Event->getValue()));
+
+                $client->request(
+                    'POST',
+                    self::URL,
+                    [
+                        'extradition_selected_product_stock_form' => [
+                            'collection' => [
+                                ['id' => self::$identifier],
+                            ],
+                        ],
+                    ],
+                );
 
                 self::assertResponseIsSuccessful();
             }
@@ -93,7 +104,18 @@ final class ExtraditionControllerTest extends WebTestCase
                 $usr = TestUserAccount::getAdmin();
 
                 $client->loginUser($usr, 'user');
-                $client->request('GET', sprintf(self::URL, $Event->getValue()));
+
+                $client->request(
+                    'POST',
+                    self::URL,
+                    [
+                        'extradition_selected_product_stock_form' => [
+                            'collection' => [
+                                ['id' => self::$identifier],
+                            ],
+                        ],
+                    ],
+                );
 
                 self::assertResponseIsSuccessful();
             }
@@ -118,7 +140,18 @@ final class ExtraditionControllerTest extends WebTestCase
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
                 $usr = TestUserAccount::getUsr();
                 $client->loginUser($usr, 'user');
-                $client->request('GET', sprintf(self::URL, $Event->getValue()));
+
+                $client->request(
+                    'POST',
+                    self::URL,
+                    [
+                        'extradition_selected_product_stock_form' => [
+                            'collection' => [
+                                ['id' => self::$identifier],
+                            ],
+                        ],
+                    ],
+                );
 
                 self::assertResponseStatusCodeSame(403);
             }
@@ -141,7 +174,18 @@ final class ExtraditionControllerTest extends WebTestCase
             foreach(TestUserAccount::getDevice() as $device)
             {
                 $client->setServerParameter('HTTP_USER_AGENT', $device);
-                $client->request('GET', sprintf(self::URL, $Event->getValue()));
+
+                $client->request(
+                    'POST',
+                    self::URL,
+                    [
+                        'extradition_selected_product_stock_form' => [
+                            'collection' => [
+                                ['id' => self::$identifier],
+                            ],
+                        ],
+                    ],
+                );
 
                 // Full authentication is required to access this resource
                 self::assertResponseStatusCodeSame(401);

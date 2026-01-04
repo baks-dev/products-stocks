@@ -23,7 +23,9 @@
         </strong>
 
         в количестве <strong>{{ info.maxStockTotal }}</strong>.<br>
-        На складе <strong>{{ baks_profile.user_profile_username }}</strong>
+        На складе
+        <strong>{{ baks_profile.user_profile_username is defined ? baks_profile.user_profile_username }}</strong>
+
 
         {% if info.minStockTotal %}
             осталось <strong>{{ info.minStockTotal }}.</strong>

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\ProductStockInfo;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Category\Entity\CategoryProduct;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
+use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
@@ -36,12 +39,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
-use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Warehouse\UserProfileWarehouse;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -52,6 +50,8 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
 {
 
     private UserProfileUid|false $profile = false;
+
+    private CategoryProductUid|false $category = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
@@ -71,6 +71,19 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
         return $this;
     }
 
+    public function forCategory(CategoryProductUid|null|false $category): self
+    {
+        if(empty($category))
+        {
+            $this->category = false;
+            return $this;
+        }
+
+        $this->category = $category;
+
+        return $this;
+    }
+
 
     public function find(): ProductStockInfoResult|false
     {
@@ -84,12 +97,12 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
 
             //->select('stock_total.id AS stock_id')
             //->addSelect('(stock_total.total - stock_total.reserve) AS max_stock_total')
-            ->addSelect('(stock_total.total - stock_total.reserve) AS max_stock_total')
+            //->addSelect('(stock_total.total - stock_total.reserve) AS max_stock_total')
+            ->addSelect('SUM(stock_total.total - stock_total.reserve) AS max_stock_total')
             ->from(ProductStockTotal::class, 'stock_total')
             ->where('stock_total.profile != :profile')
-            ->andWhere('(stock_total.total - stock_total.reserve) > 100 ')
-            ->orderBy('stock_total.total', 'DESC');
-
+            ->andHaving('SUM(stock_total.total) - SUM(stock_total.reserve) > 100 ')
+            ->orderBy('SUM(stock_total.total)', 'DESC');
 
 
         $dbal->setParameter(
@@ -120,7 +133,6 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
             );
 
 
-
         /* Product */
         $dbal
             ->addSelect('product.id as product_id')
@@ -130,6 +142,23 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
                 'product',
                 'product.id = stock_total.product',
             );
+
+        if($this->category instanceof CategoryProductUid)
+        {
+            $dbal
+                ->join(
+                    'product',
+                    ProductCategory::class,
+                    'product_categories_product',
+                    'product_categories_product.event = product.event AND product_categories_product.category = :category',
+                )
+                ->setParameter(
+                    key: 'category',
+                    value: $this->category,
+                    type: CategoryProductUid::TYPE,
+                );
+        }
+
 
         /* Product Event */
         //        $dbal->join(
@@ -249,12 +278,15 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
 
         /* Получить минимальное кол-во */
         $dbal
-            ->addSelect("
-                COALESCE(
-                    NULLIF(current_stock_total.total, 0),
-                    0
-                ) AS min_stock_total
-            ")
+            //            ->addSelect("
+            //                COALESCE(
+            //                    NULLIF(current_stock_total.total, 0),
+            //                    0
+            //                ) AS min_stock_total
+            //            ")
+
+            ->addSelect("SUM(current_stock_total.total - current_stock_total.reserve) AS min_stock_total")
+
             ->leftJoin(
                 'stock_total',
                 ProductStockTotal::class,
@@ -268,69 +300,72 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
                 AND current_stock_total.total > current_stock_total.reserve
             ');
 
-        $dbal->andWhere('COALESCE(NULLIF(current_stock_total.total, 0), 0) < 5');
+        $dbal->andHaving('SUM(current_stock_total.total - current_stock_total.reserve) < 5');
+
+
+        //$dbal->andWhere('COALESCE(NULLIF(current_stock_total.total, 0), 0) < 5');
+
+        //$dbal->andWhere('current_stock_total.total < 5');
+        //$dbal->andHaving('SUM(current_stock_total.total - current_stock_total.reserve) < 5');
 
 
         /* Товар не находится в перемещениях */
 
+        //                $dbal->leftJoin(
+        //                    'stock_total',
+        //                    ProductStockProduct::class,
+        //                    'stock_product',
+        //                    'stock_product.product = stock_total.product'
+        //                );
+
+
+        //        /* Destination */
         //        $dbal->leftJoin(
         //            'stock_total',
-        //            ProductStockProduct::class,
-        //            'stock_product',
-        //            'stock_total.product = stock_product.product'
+        //            ProductStockMove::class,
+        //            'move',
+        //            'move.destination = :profile',
         //        );
+        //
+        //        $dbal->leftJoin(
+        //            'stock_total',
+        //            ProductStock::class,
+        //            'product_stock',
+        //            'product_stock.event = move.event',
+        //        );
+        //
+        //
+        //        $dbal
+        //            ->leftJoin(
+        //                'product_stock',
+        //                ProductStockEvent::class,
+        //                'stock_event',
+        //                '
+        //                        stock_event.id = product_stock.event
+        //                        AND stock_event.status <> :status
+        //                        ',
+        //            )
+        //            ->setParameter(
+        //                'status',
+        //                ProductStockStatusMoving::class,
+        //                ProductStockStatus::TYPE,
+        //            );
+        //
+        //
+        //        $dbal->andWhere('stock_event.main IS NULL');
 
 
-        /* Destination */
-        $dbal->leftJoin(
-            'stock_total',
-            ProductStockMove::class,
-            'move',
-            'move.destination = :profile',
-        );
-
-        $dbal->leftJoin(
-            'stock_total',
-            ProductStock::class,
-            'product_stock',
-            'product_stock.event = move.event',
-        );
-
-
-        $dbal
-            ->leftJoin(
-                'product_stock',
-                ProductStockEvent::class,
-                'stock_event',
-                '
-                        stock_event.id = product_stock.event
-                        AND stock_event.status <> :status
-                        ',
-            )
-            ->setParameter(
-                'status',
-                ProductStockStatusMoving::class,
-                ProductStockStatus::TYPE,
-            );
-
-
-        $dbal->andWhere('stock_event.main IS NULL');
-
-
-        $dbal
-            ->leftJoin(
-                'move',
-                UserProfile::class,
-                'users_profile_destination',
-                'users_profile_destination.id = move.destination',
-            );
-
-
+        //        $dbal
+        //            ->leftJoin(
+        //                'move',
+        //                UserProfile::class,
+        //                'users_profile_destination',
+        //                'users_profile_destination.id = move.destination',
+        //            );
 
 
         $dbal->setMaxResults(1);
         $dbal->allGroupByExclude();
-
 
         return $dbal
             ->enableCache('products-stocks-recommented', '1 day')

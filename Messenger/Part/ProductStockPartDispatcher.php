@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /** Генерируем QR-код партии */
 #[AsMessageHandler(priority: 100)]
-final class ProductStockPartDispatcher
+final readonly class ProductStockPartDispatcher
 {
-    public function __construct(private readonly BarcodeWrite $BarcodeWrite) {}
+    public function __construct(private BarcodeWrite $BarcodeWrite) {}
 
     public function __invoke(ProductStockPartMessage $message): void
     {

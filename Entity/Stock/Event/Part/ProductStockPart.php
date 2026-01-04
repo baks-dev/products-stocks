@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Core\Type\UidType\Uid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,6 +42,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_part')]
+#[ORM\Index(columns: ['value'])]
+#[ORM\Index(columns: ['number'])]
 class ProductStockPart extends EntityEvent
 {
     /** Связь на событие */
@@ -55,6 +58,12 @@ class ProductStockPart extends EntityEvent
     #[ORM\Column(type: ProductStockPartUid::TYPE)]
     private ProductStockPartUid $value;
 
+    /** Номер партии */
+    #[Assert\Length(max: 36)]
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $number = null;
+
+
     public function __construct(ProductStockEvent $event)
     {
         $this->event = $event;
@@ -68,6 +77,11 @@ class ProductStockPart extends EntityEvent
     public function getValue(): ProductStockPartUid
     {
         return $this->value;
+    }
+
+    public function getNumber(): string
+    {
+        return $this->number;
     }
 
     /** @return ProductStockPartInterface */
@@ -94,6 +108,13 @@ class ProductStockPart extends EntityEvent
             if(false === ($dto->getValue() instanceof ProductStockPartUid))
             {
                 return false;
+            }
+
+            /** Если номер не передан - присваиваем из UID */
+            if(empty($dto->getNumber()))
+            {
+                $this->number = number_format(microtime(true) * 100, 0, '.', '.');
+                usleep(12000); //  Добавляем задержка выполнения
             }
 
             return parent::setEntity($dto);

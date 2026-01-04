@@ -20,8 +20,8 @@
                 {# СТИКЕР МАРКИРОВКИ УПАКОВКИ #}
 
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"
-                         style="width: 300px; max-width: 300px; min-height: 300px;"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
+                         style="width: 280px; max-width: 280px; min-height: 280px;"
                          fill="currentColor"
                          viewBox="8 8 35 35">
                         {{ stickers.part|raw }}
@@ -66,7 +66,7 @@
 
 
 
-                            <div class="text-center" style="max-width: 300px;">
+                            <div class="text-center" style="max-width: 280px;">
 
                                 <div>
                                     <small>{{ number }}</small>
@@ -106,8 +106,13 @@
                             <div style="page-break-after: always !important;"></div>
 
                             {# <img nonce="{{ csp_nonce() }}" src="data:image/jpg;base64,{{ ozon }}" alt="sticker" #}
-                            <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon }}" alt="sticker"
-                                 style="width: 300px; max-width: 300px; min-height: 300px;"/>
+                            <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon|raw }}" alt="sticker"
+                                 style="width: 280px; max-width: 280px; min-height: 280px;"/>
+
+                            {#
+                            <img src="data:<?php echo htmlspecialchars($mime_type); ?>;base64,<?php echo base64_encode($image_data); ?>" alt="Изображение из BLOB">
+                            #}
+
                         {% endfor %}
 
                     {% endif %}

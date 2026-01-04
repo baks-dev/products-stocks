@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStoc
 
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct\AllProductStocksOrdersProductInterface;
 use BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksOrdersProduct\ProductStocksOrdersProductResult;
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
@@ -58,7 +57,7 @@ class AllProductStocksOrdersProductRepositoryTest extends KernelTestCase
 
         $result = $AllProductStocksOrdersProductRepository
             ->forProfile(new UserProfileUid('019577a9-71a3-714b-a99c-0386833d802f'))
-            ->findAll($ids)//->find()
+            ->findAll($ids)
         ;
 
         if(false === $result || false === $result->valid())
