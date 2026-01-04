@@ -5,9 +5,9 @@
 
     {% for part, data in query %}
 
-        {# Название продукта data.name #}
-        {# Название продукта data.offer #}
-        {# Название продукта data.stock #}
+        {% set part_number = null %}
+
+
 
         {% if loop.first == false %}
             <div style="page-break-after: always !important;"></div>
@@ -16,16 +16,25 @@
         {% for stickers in data %}
 
             {% if stickers.part is defined %}
+                {% set part_number = stickers.number %}
 
                 {# СТИКЕР МАРКИРОВКИ УПАКОВКИ #}
 
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
-                         style="width: 280px; max-width: 280px; min-height: 280px;"
-                         fill="currentColor"
-                         viewBox="8 8 35 35">
-                        {{ stickers.part|raw }}
-                    </svg>
+                <div class="text-center" style="max-width: 280px;">
+
+                    <div>
+                        <small>{{ stickers.number }} / {{ stickers.number }}</small>
+                    </div>
+
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
+                             style="width: 280px; max-width: 280px; min-height: 280px;"
+                             fill="currentColor"
+                             viewBox="8 8 35 35">
+                            {{ stickers.part|raw }}
+                        </svg>
+                    </div>
+
                 </div>
 
                 <div class="h5"><strong>{{ data.name }}</strong></div>
@@ -48,6 +57,7 @@
                     </strong>
                 </div>
 
+
                 {# разрыв старницы #}
                 {# <div style="page-break-after: always !important;"></div> #}
 
@@ -69,7 +79,7 @@
                             <div class="text-center" style="max-width: 280px;">
 
                                 <div>
-                                    <small>{{ number }}</small>
+                                    <small>{{ part_number }} / {{ number }}</small>
                                 </div>
 
                                 <div>

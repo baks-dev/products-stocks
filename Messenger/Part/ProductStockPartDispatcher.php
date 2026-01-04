@@ -65,6 +65,7 @@ final readonly class ProductStockPartDispatcher
         /** Создаем стикер партии */
 
         $sticker[$message->getPart()]['part'] = $render;
+        $sticker[$message->getPart()]['number'] = $message->getPartNumber();
 
         $this->BarcodeWrite->remove();
 
