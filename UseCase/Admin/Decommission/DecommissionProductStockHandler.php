@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -21,12 +21,37 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Entity\Stock\Event;
+declare(strict_types=1);
 
-use BaksDev\Core\Type\UidType\Uid;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission;
 
-interface ProductStockEventInterface
+use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+
+final class DecommissionProductStockHandler extends AbstractHandler
 {
-    /** @see ProductStockEvent */
-    public function getEvent(): ?Uid;
+    public function handle(DecommissionProductStockDTO $command): string|ProductStock
+    {
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
+
+        /** Валидация всех объектов */
+        if($this->validatorCollection->isInvalid())
+        {
+            return $this->validatorCollection->getErrorUniqid();
+        }
+
+        $this->flush();
+
+        /* Отправляем сообщение в шину */
+        $this->messageDispatch->dispatch(
+            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+            transport: 'products-stocks',
+        );
+
+        return $this->main;
+    }
 }

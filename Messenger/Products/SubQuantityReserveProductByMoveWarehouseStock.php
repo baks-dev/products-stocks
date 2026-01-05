@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
 
         // Получаем всю продукцию в ордере которая перемещается со склада
         // Если поступила отмена заявки - массив продукции будет NULL
-        /** @see SubReserveMaterialStockTotalByCancel */
+        /** @see SubReserveProductStockTotalByCancel */
         $products = $lastProductStockEvent->getProduct();
 
         if($products->isEmpty())

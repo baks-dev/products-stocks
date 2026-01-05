@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,70 +26,65 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Invariable;
 
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariableInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariableInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
-use DateTimeImmutable;
+use ReflectionProperty;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see OrderInvariableDTO */
-final class NewDecommissionOrderInvariableDTO implements OrderInvariableInterface
+final class DecommissionProductStockInvariableDTO implements ProductStocksInvariableInterface
 {
     /**
-     * Дата заказа
-     */
-    #[Assert\NotBlank]
-    private readonly DateTimeImmutable $created;
-
-    /**
-     * Идентификатор заказа
-     */
-    #[Assert\NotBlank]
-    private string $number;
-
-
-    /**
-     * ID пользователя заказа
+     * ID пользователя ответственного
      */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    private ?UserUid $usr = null;
+    private readonly UserUid $usr;
 
     /**
-     * ID профиля заказа
+     * ID профиля ответственного
      */
     #[Assert\NotBlank]
     #[Assert\Uuid]
     private ?UserProfileUid $profile = null;
 
-    public function __construct()
-    {
-        $this->created = new DateTimeImmutable();
-        $this->number = number_format((microtime(true) * 100), 0, '.', '.');
-    }
 
-    /**
-     * Created
-     */
-    public function getCreated(): DateTimeImmutable
-    {
-        return $this->created;
-    }
-
+    /** Номер заявки */
+    #[Assert\NotBlank]
+    #[Assert\Type('string')]
+    #[Assert\Length(max: 36)]
+    private string $number;
 
     /**
      * Usr
      */
     public function getUsr(): ?UserUid
     {
+        if(false === (new ReflectionProperty(self::class, 'usr')->isInitialized($this)))
+        {
+            return null;
+        }
+
         return $this->usr;
     }
 
     public function setUsr(?UserUid $usr): self
     {
+        if(true === (new ReflectionProperty(self::class, 'usr')->isInitialized($this)))
+        {
+            return $this;
+        }
+
+        if(is_null($usr))
+        {
+            return $this;
+        }
+
         $this->usr = $usr;
+
         return $this;
     }
-
 
     /**
      * Profile
@@ -108,20 +103,15 @@ final class NewDecommissionOrderInvariableDTO implements OrderInvariableInterfac
     /**
      * Number
      */
-    public function getNumber(): ?string
+    public function getNumber(): string
     {
         return $this->number;
     }
 
-    public function setNumber(?string $number): self
+    public function setNumber(string $number): self
     {
-        if(empty($number))
-        {
-            return $this;
-        }
-
         $this->number = $number;
-
         return $this;
     }
+
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,23 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Invariable;
+namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-
-final class NewDecommissionOrderInvariableForm extends AbstractType
+/**
+ * Статус Decommission «Списание»
+ */
+#[AutoconfigureTag('baks.product.stock.status')]
+final class ProductStockStatusDecommission implements ProductStockStatusInterface
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
+    public const string STATUS = 'decommission';
+
+    /** Возвращает значение (value) */
+    public function getValue(): string
     {
-        $builder->add('number', TextType::class);
+        return self::STATUS;
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => NewDecommissionOrderInvariableDTO::class,
-            'method' => 'POST',
-            'attr' => ['class' => 'w-100'],
-        ]);
-    }
 }

@@ -180,6 +180,20 @@
 
                     {% endif %}
 
+                    {% if item.status == 'decommission' %}
+
+                        <button
+                                class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modal"
+                                data-href="{{ path('products-stocks:admin.action', { id: item.id }) }}"
+                                title="Расходный ордер"
+                        >
+                            <span class="badge text-bg-danger me-3">Списание</span>
+                        </button>
+
+                    {% endif %}
+
                     {# Название #}
                     <a href="{{ product_href }}"
                        class="text-decoration-none mb-1 fw-bolder text-muted"

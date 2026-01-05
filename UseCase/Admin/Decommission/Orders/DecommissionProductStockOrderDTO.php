@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,33 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products\Price;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Orders;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
-final class NewDecommissionOrderPriceForm extends AbstractType
+/** @see ProductStockOrder */
+final class DecommissionProductStockOrderDTO implements ProductStockOrderInterface
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
+    /**
+     * Идентификатор заказа для сборки
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private ?OrderUid $ord = null;
+
+    /**
+     * Идентификатор заказа для сборки
+     */
+    public function getOrd(): ?OrderUid
     {
-        $builder->add('total', IntegerType::class, ['attr' => ['min' => 1]]);
+        return $this->ord;
     }
 
-
-    public function configureOptions(OptionsResolver $resolver): void
+    public function setOrd(?OrderUid $ord): self
     {
-        $resolver->setDefaults([
-            'data_class' => NewDecommissionOrderPriceDTO::class,
-        ]);
+        $this->ord = $ord;
+        return $this;
     }
-
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,10 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Total;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\UseCase\Admin\Decommission\NewDecommissionOrderDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Decommission\NewDecommissionOrderForm;
+use BaksDev\Orders\Order\UseCase\Admin\Decommission\NewDecommissionOrderHandler;
+use BaksDev\Orders\Order\UseCase\Admin\Decommission\Products\NewDecommissionOrderProductDTO;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Repository\CurrentProductEvent\CurrentProductEventInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
@@ -35,10 +39,6 @@ use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstResult
 use BaksDev\Products\Sign\UseCase\Admin\Decommission\DecommissionProductSignDTO;
 use BaksDev\Products\Sign\UseCase\Admin\Decommission\DecommissionProductSignHandler;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
-use BaksDev\Products\Stocks\UseCase\Admin\Decommission\NewDecommissionOrderDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Decommission\NewDecommissionOrderForm;
-use BaksDev\Products\Stocks\UseCase\Admin\Decommission\NewDecommissionOrderHandler;
-use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products\NewDecommissionOrderProductDTO;
 use BaksDev\Users\User\Type\Id\UserUid;
 use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;

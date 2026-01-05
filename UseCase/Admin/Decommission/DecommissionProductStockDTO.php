@@ -21,39 +21,41 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission;
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Send;
-
+use BaksDev\Contacts\Region\Type\Call\Const\ContactsRegionCallConst;
+use BaksDev\Core\Type\UidType\Uid;
+use BaksDev\Orders\Order\Entity\Event\OrderEventInterface;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariableInterface;
+use BaksDev\Orders\Order\Type\Event\OrderEventUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\Invariable\ProductStockInvariableDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\Move\ProductStockMoveDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\Orders\ProductStockOrderDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\Products\ProductStockProductDTO;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDecommission;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Invariable\DecommissionProductStockInvariableDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Orders\DecommissionProductStockOrderDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see ProductStockEvent */
-final class ProductStockDTO implements ProductStockEventInterface
+final class DecommissionProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
     private ?ProductStockEventUid $id = null;
 
-    /** Ответственное лицо (Профиль пользователя) */
-    #[Assert\Uuid]
-    private ?UserProfileUid $profile = null;
-
-    /** Статус заявки - ПЕРЕМЕЩЕНИЕ */
+    /** Статус заявки - УПАКОВКА */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
-    /** Склад назначения при перемещении */
+    /** Постоянная величина */
     #[Assert\Valid]
-    private Move\ProductStockMoveDTO $move;
+    private DecommissionProductStockInvariableDTO $invariable;
+
+    /** Идентификатор заказа на сборку */
+    private DecommissionProductStockOrderDTO $ord;
 
     /** Коллекция продукции  */
     #[Assert\Valid]
@@ -62,63 +64,48 @@ final class ProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
-    /** Идентификатор заказа на сборку */
-    private ProductStockOrderDTO $ord;
-
-    private ProductStockInvariableDTO $invariable;
-
     public function __construct()
     {
-        $this->status = new ProductStockStatus(new ProductStockStatusMoving());
+        $this->status = new ProductStockStatus(ProductStockStatusDecommission::class);
         $this->product = new ArrayCollection();
-
-        $this->move = new ProductStockMoveDTO();
-        $this->ord = new ProductStockOrderDTO();
-
-        $this->invariable = new ProductStockInvariableDTO();
+        $this->ord = new DecommissionProductStockOrderDTO();
+        $this->invariable = new DecommissionProductStockInvariableDTO();
     }
 
-    public function getEvent(): ?ProductStockEventUid
+    public function getEvent(): ?Uid
     {
-        return $this->id;
+        return null;
     }
 
-    public function setId(ProductStockEventUid $id): void
+    public function setId(ProductStockEventUid|OrderEventUid $id): self
     {
-        $this->id = $id;
+        if($id instanceof ProductStockEventUid)
+        {
+            $this->id = $id;
+        }
+
+        return $this;
     }
+
 
     /** Коллекция продукции  */
     public function getProduct(): ArrayCollection
     {
-        /** Сбрасываем идентификатор заявки */
         return $this->product;
     }
 
-    public function setProduct(ArrayCollection $product): void
+    public function setProduct(ArrayCollection $product): self
     {
         $this->product = $product;
+        return $this;
     }
 
-    public function addProduct(ProductStockProductDTO $product): void
+    public function addProduct(Products\DecommissionProductStockProductDTO $product): void
     {
-        $containsProducts = $this->product->filter(function(ProductStockProductDTO $element) use ($product) {
-
-            return
-                $element->getProduct()->equals($product->getProduct()) &&
-                $element->getOffer()?->equals($product->getOffer()) &&
-                $element->getVariation()?->equals($product->getVariation()) &&
-                $element->getModification()?->equals($product->getModification());
-        });
-
-
-        if($containsProducts->isEmpty())
-        {
-            $this->product->add($product);
-        }
+        $this->product->add($product);
     }
 
-    public function removeProduct(ProductStockProductDTO $product): void
+    public function removeProduct(Products\DecommissionProductStockProductDTO $product): void
     {
         $this->product->removeElement($product);
     }
@@ -129,9 +116,10 @@ final class ProductStockDTO implements ProductStockEventInterface
         return $this->comment;
     }
 
-    public function setComment(?string $comment): void
+    public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+        return $this;
     }
 
     /** Статус заявки - ПРИХОД */
@@ -140,33 +128,36 @@ final class ProductStockDTO implements ProductStockEventInterface
         return $this->status;
     }
 
-
-    /** Склад назначения при перемещении */
-    public function getMove(): ProductStockMoveDTO
+    public function setNumber(string $number): self
     {
-        return $this->move;
-    }
-
-    public function setMove(ProductStockMoveDTO $move): void
-    {
-        $this->move = $move;
+        $this->invariable->setNumber($number);
+        return $this;
     }
 
     /** Идентификатор заказа на сборку */
 
-    public function getOrd(): ProductStockOrderDTO
+    public function getOrd(): DecommissionProductStockOrderDTO
     {
         return $this->ord;
     }
 
-
-    public function setOrd(ProductStockOrderDTO $ord): void
+    public function setOrd(DecommissionProductStockOrderDTO $ord): self
     {
         $this->ord = $ord;
+        return $this;
     }
 
-    public function getInvariable(): ProductStockInvariableDTO
+    /**
+     * Invariable
+     */
+    public function getInvariable(): DecommissionProductStockInvariableDTO
     {
         return $this->invariable;
+    }
+
+    public function setInvariable(DecommissionProductStockInvariableDTO $invariable): self
+    {
+        $this->invariable = $invariable;
+        return $this;
     }
 }

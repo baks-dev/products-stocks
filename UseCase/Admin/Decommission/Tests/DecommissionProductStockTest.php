@@ -1,0 +1,152 @@
+<?php
+/*
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
+ *  
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ *  
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *  
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+declare(strict_types=1);
+
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Tests;
+
+use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusCollection;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\DecommissionProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\DecommissionProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products\DecommissionProductStockProductDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Incoming\Tests\IncomingProductStockTest;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
+use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\DependencyInjection\Attribute\When;
+
+#[When(env: 'test')]
+#[Group('products-stocks')]
+final class DecommissionProductStockTest extends KernelTestCase
+{
+    #[DependsOnClass(IncomingProductStockTest::class)]
+    public static function setUpBeforeClass(): void
+    {
+        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
+
+        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
+        $ProductStockStatusCollection->cases();
+
+        /** @var EntityManagerInterface $em */
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $main = $em->getRepository(ProductStock::class)
+            ->findBy(['id' => ProductStockUid::TEST]);
+
+        foreach($main as $remove)
+        {
+            $em->remove($remove);
+        }
+
+        $event = $em->getRepository(ProductStockEvent::class)
+            ->findBy(['main' => ProductStockUid::TEST]);
+
+        foreach($event as $remove)
+        {
+            $em->remove($remove);
+        }
+
+        $em->flush();
+    }
+
+    /**
+     * Тест создания заказа на упаковку
+     */
+    #[DependsOnClass(IncomingProductStockTest::class)]
+    public function testUseCase(): void
+    {
+        $PackageProductStockDTO = new DecommissionProductStockDTO();
+
+
+        $PackageOrderInvariableDTO = $PackageProductStockDTO->getInvariable();
+
+        $PackageOrderInvariableDTO->setProfile($UserProfileUid = new UserProfileUid(UserProfileUid::TEST));
+        self::assertSame($UserProfileUid, $PackageOrderInvariableDTO->getProfile());
+
+        $PackageOrderInvariableDTO->setNumber('DecommissionNumber');
+        self::assertEquals('DecommissionNumber', $PackageOrderInvariableDTO->getNumber());
+
+        $PackageOrderInvariableDTO->setUsr($UserUid = new UserUid(UserUid::TEST));
+        self::assertSame($UserUid, $PackageOrderInvariableDTO->getUsr());
+
+
+        $ProductStockOrderDTO = $PackageProductStockDTO->getOrd();
+
+        $OrderUid = new OrderUid(OrderUid::TEST);
+        $ProductStockOrderDTO->setOrd($OrderUid);
+        self::assertSame($OrderUid, $ProductStockOrderDTO->getOrd());
+
+
+        $PackageProductStockDTO->setComment('DecommissionProductStockComment');
+        self::assertEquals('DecommissionProductStockComment', $PackageProductStockDTO->getComment());
+
+
+        $ProductStockDTO = new DecommissionProductStockProductDTO();
+
+        $ProductUid = new ProductUid(ProductUid::TEST);
+        $ProductStockDTO->setProduct($ProductUid);
+        self::assertSame($ProductUid, $ProductStockDTO->getProduct());
+
+        $ProductOfferConst = new ProductOfferConst(ProductOfferConst::TEST);
+        $ProductStockDTO->setOffer($ProductOfferConst);
+        self::assertSame($ProductOfferConst, $ProductStockDTO->getOffer());
+
+        $ProductVariationConst = new ProductVariationConst(ProductVariationConst::TEST);
+        $ProductStockDTO->setVariation($ProductVariationConst);
+        self::assertSame($ProductVariationConst, $ProductStockDTO->getVariation());
+
+        $ProductModificationConst = new ProductModificationConst(ProductModificationConst::TEST);
+        $ProductStockDTO->setModification($ProductModificationConst);
+        self::assertSame($ProductModificationConst, $ProductStockDTO->getModification());
+
+
+        $ProductStockDTO->setTotal(15);
+        self::assertEquals(15, $ProductStockDTO->getTotal());
+
+        $PackageProductStockDTO->addProduct($ProductStockDTO);
+        self::assertCount(1, $PackageProductStockDTO->getProduct());
+
+
+        /** @var DecommissionProductStockHandler $DecommissionProductStockHandler */
+        $DecommissionProductStockHandler = self::getContainer()->get(DecommissionProductStockHandler::class);
+        $handle = $DecommissionProductStockHandler->handle($PackageProductStockDTO);
+
+        self::assertTrue(($handle instanceof ProductStock), $handle.': Ошибка ProductStock');
+
+
+        /** Очистка тестовых данных  */
+        self::setUpBeforeClass();
+
+    }
+}

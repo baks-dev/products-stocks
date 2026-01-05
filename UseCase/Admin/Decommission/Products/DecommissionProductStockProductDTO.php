@@ -21,7 +21,7 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Divide\Products;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products;
 
 use BaksDev\Orders\Order\Entity\Products\OrderProductInterface;
 use BaksDev\Products\Product\Type\Id\ProductUid;
@@ -31,11 +31,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @see ProductStockMaterial
- * @see OrderProduct
- */
-final class DivideProductStockProductDTO implements ProductStockProductInterface, OrderProductInterface
+final class DecommissionProductStockProductDTO implements ProductStockProductInterface
 {
     /** Продукт */
     #[Assert\NotBlank]
@@ -57,16 +53,17 @@ final class DivideProductStockProductDTO implements ProductStockProductInterface
     /** Количество в заявке */
     private int $total = 0;
 
-
     /** Продукт */
     public function getProduct(): ProductUid
     {
         return $this->product;
     }
 
-    public function setProduct(ProductUid $product): void
+    public function setProduct(ProductUid $product): self
     {
         $this->product = $product;
+
+        return $this;
     }
 
     /** Торговое предложение */
@@ -75,9 +72,11 @@ final class DivideProductStockProductDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-    public function setOffer(ProductOfferConst $offer): void
+    public function setOffer(ProductOfferConst|null|false $offer): self
     {
-        $this->offer = $offer;
+        $this->offer = empty($offer) ? null : $offer;
+
+        return $this;
     }
 
     /** Множественный вариант */
@@ -86,9 +85,11 @@ final class DivideProductStockProductDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    public function setVariation(?ProductVariationConst $variation): void
+    public function setVariation(ProductVariationConst|null|false $variation): self
     {
-        $this->variation = $variation;
+        $this->variation = empty($variation) ? null : $variation;
+
+        return $this;
     }
 
     /** Модификация множественного варианта */
@@ -97,31 +98,25 @@ final class DivideProductStockProductDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-    public function setModification(?ProductModificationConst $modification): void
+    public function setModification(ProductModificationConst|null|false $modification): self
     {
-        $this->modification = $modification;
-    }
+        $this->modification = empty($modification) ? null : $modification;
 
+        return $this;
+    }
 
     /** Количество в заявке */
     public function getTotal(): int
     {
+        /* Присваиваем значение из заказа */
         return $this->total;
     }
 
-    public function setTotal(int $total): void
+    public function setTotal(int $total): self
     {
         $this->total = $total;
+
+        return $this;
     }
 
-
-    public function subTotal(int $total): void
-    {
-        $this->total -= $total;
-    }
-
-    public function addTotal(int $total): void
-    {
-        $this->total += $total;
-    }
 }
