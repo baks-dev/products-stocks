@@ -23,7 +23,7 @@
                 <div class="text-center" style="max-width: 280px;">
 
                     <div>
-                        <small>{{ stickers.number }} / {{ stickers.number }}</small>
+                        <small>{{ stickers.number }} &nbsp; #{{ stickers.number }}</small>
                     </div>
 
                     <div>
@@ -69,17 +69,15 @@
 
                     {% if sticker.sign is defined %}
 
-                        {% for  sign in sticker.sign %}
+                        {% for sign in sticker.sign %}
 
                             {# разрыв старницы #}
                             <div style="page-break-after: always !important;"></div>
 
-
-
                             <div class="text-center" style="max-width: 280px;">
 
                                 <div>
-                                    <small>{{ part_number }} / {{ number }}</small>
+                                    <small>{{ part_number }} &nbsp; #{{ number }}</small>
                                 </div>
 
                                 <div>
@@ -115,13 +113,16 @@
                             {# разрыв старницы #}
                             <div style="page-break-after: always !important;"></div>
 
-                            {# <img nonce="{{ csp_nonce() }}" src="data:image/jpg;base64,{{ ozon }}" alt="sticker" #}
-                            <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon|raw }}" alt="sticker"
-                                 style="width: 280px; max-width: 280px; min-height: 280px;"/>
+                            <div class="text-center" style="max-width: 280px;">
 
-                            {#
-                            <img src="data:<?php echo htmlspecialchars($mime_type); ?>;base64,<?php echo base64_encode($image_data); ?>" alt="Изображение из BLOB">
-                            #}
+                                <div>
+                                    <small>{{ part_number }} &nbsp; #{{ number }}</small>
+                                </div>
+
+                                <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon|raw }}" alt="sticker"
+                                     style="width: 280px; max-width: 280px; min-height: 280px;"/>
+                            </div>
+
 
                         {% endfor %}
 
