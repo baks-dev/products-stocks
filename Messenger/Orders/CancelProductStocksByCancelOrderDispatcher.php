@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -74,6 +74,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             ->forOrder($message->getId())
             ->find();
 
+
         if(false === ($OrderEvent instanceof OrderEvent))
         {
             $this->logger->critical(
@@ -128,7 +129,10 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 
             if($ProductStock instanceof ProductStock)
             {
-                $this->logger->info(sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()));
+                $this->logger->info(
+                    sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()),
+                    [self::class.':'.__LINE__],
+                );
                 continue;
             }
 

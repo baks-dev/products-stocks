@@ -37,7 +37,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStockEvent */
+/** @see MaterialStockEvent */
 final class ProductStockDTO implements ProductStockEventInterface
 {
     /** Идентификатор */
@@ -53,7 +53,7 @@ final class ProductStockDTO implements ProductStockEventInterface
 
     /** Склад назначения при перемещении */
     #[Assert\Valid]
-    private Move\ProductStockMoveDTO $move;
+    private ProductStockMoveDTO $move;
 
     /** Коллекция продукции  */
     #[Assert\Valid]

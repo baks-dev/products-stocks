@@ -40,14 +40,14 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExt
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
-use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Обновляет статус заказа при сборке на складе Extradition «Укомплектована, готова к выдаче»
+ * Обновляет статус заказа при сборке на складе на Extradition «Готов к выдаче»
+ *
+ * @see OrderStatusExtradition
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
@@ -60,7 +60,6 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
         private OrderStatusHandler $OrderStatusHandler,
         private CentrifugoPublishInterface $CentrifugoPublish,
         private DeduplicatorInterface $deduplicator,
-        private UserTokenStorageInterface $UserTokenStorage,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -124,16 +123,12 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
-        /** Если асинхронная задача - авторизуем на пользователя, который изменил складскую заявку для лога изменений */
-        if(false === $this->UserTokenStorage->isUser() && ($ProductStockEvent->getModifyUser() instanceof UserUid))
-        {
-            $this->UserTokenStorage->authorization($ProductStockEvent->getModifyUser());
-        }
 
         $this->logger->info(
             'Обновляем статус заказа на "Собран, готов к отправке" (Extradition)',
             [self::class.':'.__LINE__],
         );
+
 
         $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
 

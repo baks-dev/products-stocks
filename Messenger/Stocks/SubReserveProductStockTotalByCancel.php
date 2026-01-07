@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,9 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Создаем события на снятие резерва при отмене складской заявки
+ * Отменяет резерв на складе при отмене складской заявки
+ *
+ * @see CancelProductStocksByCancelOrderDispatcher
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByCancel
@@ -62,11 +64,7 @@ final readonly class SubReserveProductStockTotalByCancel
         private EntityManagerInterface $entityManager,
     ) {}
 
-    /**
-     * Отменяет резерв на складе при отмене складской заявки
-     *
-     * @see CancelProductStocksByCancelOrderDispatcher
-     */
+
     public function __invoke(ProductStockMessage $message): void
     {
         if(false === ($message->getLast() instanceof ProductStockEventUid))
@@ -95,7 +93,7 @@ final readonly class SubReserveProductStockTotalByCancel
             return;
         }
 
-        // Если статус события заявки не является Cancel «Отменен».
+        /** Если статус события заявки НЕ является Cancel «Отменен» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
         {
             return;

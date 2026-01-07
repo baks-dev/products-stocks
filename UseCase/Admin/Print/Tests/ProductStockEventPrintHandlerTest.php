@@ -26,8 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Print\Tests;
 
 
-use BaksDev\Auth\Email\Entity\Event\AccountEvent;
-use BaksDev\Auth\Email\Type\Event\AccountEventUid;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Print\ProductStockEventPrintDTO;

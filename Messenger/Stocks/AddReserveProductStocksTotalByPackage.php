@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Резервирование на складе продукции при статусе складской заявки Package «Упаковка»
+ *
+ * @see MultiplyProductStocksPackageDispatcher
  */
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
@@ -76,6 +78,7 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
+        /** Если Статус НЕ является Package «Упаковка» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class))
         {
             return;
