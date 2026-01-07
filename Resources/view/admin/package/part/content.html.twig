@@ -20,15 +20,15 @@
 
                 {# СТИКЕР МАРКИРОВКИ УПАКОВКИ #}
 
-                <div class="text-center" style="max-width: 280px;">
+                <div class="text-center" style="max-width: 270px;">
 
                     <div>
                         <small>{{ stickers.number }} &nbsp; #{{ stickers.number }}</small>
                     </div>
 
                     <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
-                             style="width: 280px; max-width: 280px; min-height: 280px;"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="270"
+                             style="width: 270px; max-width: 270px; min-height: 270px;"
                              fill="currentColor"
                              viewBox="8 8 35 35">
                             {{ stickers.part|raw }}
@@ -74,15 +74,15 @@
                             {# разрыв старницы #}
                             <div style="page-break-after: always !important;"></div>
 
-                            <div class="text-center" style="max-width: 280px;">
+                            <div class="text-center" style="max-width: 270px;">
 
                                 <div>
                                     <small>{{ part_number }} &nbsp; #{{ number }}</small>
                                 </div>
 
                                 <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="280" height="280"
-                                         style="width: 280px; max-width: 280px;"
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="270"
+                                         style="width: 270px; max-width: 270px; min-height: 270px;"
                                          fill="currentColor"
                                          viewBox="8 8 40 40">
                                         {{ sign.image|raw }}
@@ -113,14 +113,27 @@
                             {# разрыв старницы #}
                             <div style="page-break-after: always !important;"></div>
 
-                            <div class="text-center" style="max-width: 280px;">
+                            <div class="text-center" style="max-width: 270px;">
 
                                 <div>
                                     <small>{{ part_number }} &nbsp; #{{ number }}</small>
                                 </div>
 
                                 <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon|raw }}" alt="sticker"
-                                     style="width: 280px; max-width: 280px; min-height: 280px;"/>
+                                     style="width: 270px; max-width: 270px; min-height: 270px;"/>
+                            </div>
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                            <div class="text-center" style="max-width: 270px;">
+
+                                <div>
+                                    <small>{{ part_number }} &nbsp; #{{ number }}</small>
+                                </div>
+
+                                <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ ozon|raw }}" alt="sticker"
+                                     style="width: 270px; max-width: 270px; min-height: 270px;"/>
                             </div>
 
 
