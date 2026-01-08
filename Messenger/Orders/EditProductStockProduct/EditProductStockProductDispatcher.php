@@ -94,7 +94,7 @@ final readonly class EditProductStockProductDispatcher
             ->addData(['order' => (string) $OrderEvent->getId()])
             ->send('orders');
 
-        /** Получаем складскую заявку по номеру заказа */
+        /** Получаем складскую заявку по идентификатору заказа */
         $productStocks = $this->productStocksByOrderRepository
             ->onOrder($OrderEvent->getMain())
             ->findAll();

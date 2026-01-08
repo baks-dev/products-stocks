@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Repository\Items\AllOrderProductItemConst\AllOrderProductItemConstInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Sign\Messenger\ProductSignStatus\ProductSignCancel\ProductSignCancelMessage;
@@ -75,7 +76,7 @@ final readonly class EditProductStockTotalDispatcher
         $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
-                (string) $message->getId(),
+                (string) $message->getEvent(),
                 self::class,
             ]);
 
@@ -127,18 +128,16 @@ final readonly class EditProductStockTotalDispatcher
              *
              * @var ProductStockProductDTO|null $lastProductStockProductDTO
              */
-            $lastProductStockProductDTO = $lastProductStocks->getProduct()->findFirst(function(
-                int $k,
-                ProductStockProductDTO $productStockDTO
-            ) use (
-                $currentProductStockProductDTO
-            ) {
-
-                return $productStockDTO->getProduct()->equals($currentProductStockProductDTO->getProduct())
-                    && ((is_null($productStockDTO->getOffer()) === true && is_null($currentProductStockProductDTO->getOffer()) === true) || $productStockDTO->getOffer()?->equals($currentProductStockProductDTO->getOffer()))
-                    && ((is_null($productStockDTO->getVariation()) === true && is_null($currentProductStockProductDTO->getVariation()) === true) || $productStockDTO->getVariation()?->equals($currentProductStockProductDTO->getVariation()))
-                    && ((is_null($productStockDTO->getModification()) === true && is_null($currentProductStockProductDTO->getModification()) === true) || $productStockDTO->getModification()?->equals($currentProductStockProductDTO->getModification()));
-            });
+            $lastProductStockProductDTO = $lastProductStocks
+                ->getProduct()
+                ->findFirst(
+                    function(int $k, ProductStockProductDTO $productStockDTO) use ($currentProductStockProductDTO) {
+                        return $productStockDTO->getProduct()->equals($currentProductStockProductDTO->getProduct())
+                            && ((is_null($productStockDTO->getOffer()) === true && is_null($currentProductStockProductDTO->getOffer()) === true) || $productStockDTO->getOffer()?->equals($currentProductStockProductDTO->getOffer()))
+                            && ((is_null($productStockDTO->getVariation()) === true && is_null($currentProductStockProductDTO->getVariation()) === true) || $productStockDTO->getVariation()?->equals($currentProductStockProductDTO->getVariation()))
+                            && ((is_null($productStockDTO->getModification()) === true && is_null($currentProductStockProductDTO->getModification()) === true) || $productStockDTO->getModification()?->equals($currentProductStockProductDTO->getModification()));
+                    },
+                );
 
             /** Уменьшаем коллекцию продуктов из предыдущего события - для списания резерва на складе */
             $lastProductStocks->getProduct()->removeElement($lastProductStockProductDTO);
@@ -196,19 +195,9 @@ final readonly class EditProductStockTotalDispatcher
                 {
                     $diffAdd = $currentStockTotal - $lastStockTotal;
 
-                    /**
-                     * Резервируем честные знаки
-                     */
+                    /** Резервируем честные знаки */
+                    $this->addProductSignReservation($currentProductStocks);
 
-                    $addProductSignReservation = $this->addProductSignReservation($currentProductStocks);
-
-                    /**
-                     * Если при резервировании ЧЗ произошла ошибка - прерываем резервирование остатков на складе
-                     */
-                    if(false === $addProductSignReservation)
-                    {
-                        break;
-                    }
 
                     $this->Logger->info(
                         message: sprintf(
@@ -240,7 +229,7 @@ final readonly class EditProductStockTotalDispatcher
                     {
                         $this->Logger->info(
                             message: sprintf(
-                                '%s: обновляем сразу весь резерв',
+                                '%s: обновляем сразу весь резерв в единственном складском месте',
                                 $currentProductStockNumber,
                             ),
                             context: [self::class.':'.__LINE__],
@@ -291,16 +280,9 @@ final readonly class EditProductStockTotalDispatcher
                 {
                     $diffSub = $lastStockTotal - $currentStockTotal;
 
-                    /** Снимаем резерв Честных знаков */
-                    $subProductSignReservation = $this->subProductSignReservation($lastProductStocks);
+                    /** Снимаем резерв с Честных знаков */
+                    $this->subProductSignReservation($lastProductStocks);
 
-                    /**
-                     * Если при снятии резервов ЧЗ произошла ошибка - прерываем снятие резервов на складе
-                     */
-                    if(false === $subProductSignReservation)
-                    {
-                        break;
-                    }
 
                     $this->Logger->info(
                         message: sprintf(
@@ -465,16 +447,9 @@ final readonly class EditProductStockTotalDispatcher
          */
         foreach($lastProductStocks->getProduct() as $lastProductStockProductDTO)
         {
-            /** Снимаем резерв Честных знаков */
-            $subProductSignReservation = $this->subProductSignReservation($lastProductStocks);
+            /** Снимаем резерв с Честных знаков */
+            $this->subProductSignReservation($lastProductStocks);
 
-            /**
-             * Если при снятии резервов ЧЗ произошла ошибка - прерываем снятие резервов на складе
-             */
-            if(false === $subProductSignReservation)
-            {
-                break;
-            }
 
             /**
              * Поверяем количество мест складирования продукции на складе
@@ -590,11 +565,11 @@ final readonly class EditProductStockTotalDispatcher
     private function addProductSignReservation(EditProductStockDTO $currentProductStocks): bool
     {
         /** Все единицы продукта из заказа без Честного знака */
-        $productItemsConsts = $this->allOrderProductItemConstRepository
+        $productItemsConstants = $this->allOrderProductItemConstRepository
             ->withoutSign()
             ->findAll($currentProductStocks->getOrd()->getOrd());
 
-        if(false === $productItemsConsts)
+        if(false === $productItemsConstants || false === $productItemsConstants->valid())
         {
             $this->Logger->critical(
                 message: 'Не найдены единицы продукции для резервирования Честных знаков',
@@ -614,7 +589,7 @@ final readonly class EditProductStockTotalDispatcher
 
         $ProductSignPart = new ProductSignUid();
 
-        foreach($productItemsConsts as $key => $const)
+        foreach($productItemsConstants as $key => $const)
         {
             $orderProductIds = $const->getParams();
 
@@ -624,7 +599,7 @@ final readonly class EditProductStockTotalDispatcher
                     message: 'Невозможно получить идентификаторы OrderProduct',
                     context: [
                         self::class.':'.__LINE__,
-                        var_export($productItemsConsts, true),
+                        var_export($productItemsConstants, true),
                     ],
                 );
 
@@ -683,46 +658,63 @@ final readonly class EditProductStockTotalDispatcher
     /**
      * Отправляет сообщение на снятие резерва с Честного знака
      */
-    private function subProductSignReservation(EditProductStockDTO $lastProductStocks): bool
+    private function subProductSignReservation(EditProductStockDTO $lastProductStocks): void
     {
         /** Честные знаки, у которых нужно снять резерв
          * - проверяем, что у ЧЗ есть связь с item
          * - так как этот item будет удален из заказа и складской заявки - снимаем резерв у ЧЗ - переводим в статус New
          */
-        $productsSign = $this->productSignByOrderRepository
-            ->forOrder($lastProductStocks->getOrd()->getOrd())
-            ->withoutItem()
-            ->findAll();
 
-        if(false === $productsSign)
+        $OrderUid = $lastProductStocks->getOrd()->getOrd();
+
+        if(false === ($OrderUid instanceof OrderUid))
         {
-            $this->Logger->critical(
-                message: 'Не найдены Честные знаки для снятия резерва',
+            $this->Logger->warning(
+                message: 'products-stocks: Не снимаем резервы с честных знаков. Идентификатор заказа не присвоен складской заявке',
                 context: [
                     self::class.':'.__LINE__,
-                    var_export($lastProductStocks, true),
+                    (string) $lastProductStocks->getOrd()->getOrd(),
                 ],
             );
 
-            return false;
+            return;
+        }
+
+        $result = $this->productSignByOrderRepository
+            ->forOrder($OrderUid)
+            ->withoutItem()
+            ->findAll();
+
+        $this->Logger->critical(' ----------------- ', [self::class.':'.__LINE__, var_export($result, true)]);
+
+        if(false === $result || false === $result->valid())
+        {
+            $this->Logger->warning(
+                message: 'products-stocks: Не найдены Честные знаки по заказу для снятия резерва и возврата в реализацию',
+                context: [
+                    self::class.':'.__LINE__,
+                    (string) $lastProductStocks->getOrd()->getOrd(),
+                ],
+            );
+
+            return;
         }
 
         $this->Logger->info(
-            message: 'снимаем резерв Честных знаков',
+            message: sprintf('%s: снимаем резерв Честных знаков', $OrderUid),
             context: [self::class.':'.__LINE__],
         );
 
-        foreach($productsSign as $sign)
+        foreach($result as $ProductSignByOrderResult)
         {
             $this->MessageDispatch->dispatch(
                 message: new ProductSignCancelMessage(
                     $lastProductStocks->getInvariable()->getProfile(),
-                    $sign->getSignEvent(),
+                    $ProductSignByOrderResult->getSignEvent(),
                 ),
                 transport: 'products-sign',
             );
         }
 
-        return true;
     }
 }
