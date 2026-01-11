@@ -92,6 +92,7 @@ final readonly class DecommissionProductStocksByDecommissionOrderDispatcher
          */
         if(false === $OrderEvent->isStatusEquals(OrderStatusDecommission::class))
         {
+            $Deduplicator->save();
             return;
         }
 

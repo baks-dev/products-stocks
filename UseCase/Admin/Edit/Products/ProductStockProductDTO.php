@@ -32,6 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/** @see ProductStockProduct */
 final class ProductStockProductDTO implements ProductStockProductInterface
 {
     /** Продукт */

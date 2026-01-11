@@ -31,6 +31,9 @@ use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventByStatusInterface;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPackage;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\EditOrderDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Edit\Products\OrderProductDTO;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
@@ -52,9 +55,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @note не изменяет статус складской заявки
  * @note всегда перезаписывает продукты в складской заявке
  * @note запускает процесс отслеживания изменений продукции в складской заявке
- * @see EditProductStockTotalDispatcher
+ * @see ReturnProductStockTotalDispatcher
  */
-#[AsMessageHandler(priority: 1000)]
+#[AsMessageHandler(priority: 0)]
 final readonly class EditProductStockProductDispatcher
 {
     public function __construct(
@@ -67,27 +70,41 @@ final readonly class EditProductStockProductDispatcher
         private CurrentOrderEventInterface $currentOrderEventRepository,
         private ProductStocksByOrderInterface $productStocksByOrderRepository,
         private UserTokenStorageInterface $userTokenStorageRepository,
+        private ExistOrderEventByStatusInterface $ExistOrderEventByStatusRepository,
     ) {}
 
     public function __invoke(EditProductStockProductMessage $message): void
     {
+        /** Проверяем, имеет ли заказ статус упаковки */
+
+        $isPackage = $this->ExistOrderEventByStatusRepository
+            ->forOrder($message->getOrderId())
+            ->forStatus(OrderStatusPackage::class)
+            ->isExists();
+
+        /** Заказ без упаковки не имеет складской заявки и резервов */
+        if(false === $isPackage)
+        {
+            return;
+        }
+
         /** Текущее событие заказа */
         $OrderEvent = $this->currentOrderEventRepository
             ->forOrder($message->getOrderId())
             ->find();
 
-        /** Номер заказ */
-        $OrderNumber = $OrderEvent->getOrderNumber();
-
         if(false === ($OrderEvent instanceof OrderEvent))
         {
             $this->logger->critical(
-                message: sprintf('%s Не найдено активное событие заказа', $OrderNumber),
+                message: sprintf('%s Не найдено активное событие заказа', $message->getOrderId()),
                 context: [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
         }
+
+        /** Номер заказ */
+        $OrderNumber = $OrderEvent->getOrderNumber();
 
         /** Скрываем заказ у всех пользователей */
         $this->publish
@@ -102,7 +119,7 @@ final readonly class EditProductStockProductDispatcher
         /** Если складская заявка по заказу не найдена - останавливаем процесс обработки заказа */
         if(true === empty($productStocks))
         {
-            $this->logger->critical(
+            $this->logger->error(
                 message: sprintf(
                     '%s Не найдена складская заявка по заказу со статусом `%s`',
                     $OrderNumber,
@@ -111,12 +128,12 @@ final readonly class EditProductStockProductDispatcher
                 context: [self::class.':'.__LINE__, var_export($message, true)],
             );
 
-            $this->messageDispatch
+            /*$this->messageDispatch
                 ->dispatch(
                     message: $message,
                     stamps: [new MessageDelay('15 seconds')],
                     transport: 'products-stocks',
-                );
+                );*/
 
             return;
         }

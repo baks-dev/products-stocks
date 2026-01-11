@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -103,14 +103,13 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             ->forEvent($message->getLast())
             ->find();
 
-        if(false === ($ProductStockEvent instanceof ProductStockEvent))
-        {
-            return;
-        }
-
-        /** Если статус Cancel «Отменен», и предыдущее событие НЕ является Completed «Выдан по месту назначения»  */
+        /**
+         * Если статус Cancel «Отменен», и предыдущее событие НЕ является Completed «Выдан по месту назначения»
+         * при возврате СЗ создается без предыдущего состояния
+         */
         if(
-            true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
+            true === ($ProductStockEvent instanceof ProductStockEvent)
+            && true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class)
             && false === $LastProductStockEvent->equalsProductStockStatus(ProductStockStatusCompleted::class)
         )
         {
