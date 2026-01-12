@@ -24,65 +24,33 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockProduct;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Orders;
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Type\Id\UserUid;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class EditProductStockProductMessage
+/** @see ProductStockOrder */
+final class DecommissionProductStockOrderDTO implements ProductStockOrderInterface
 {
-    private string $id;
-
-    private string $profile;
-
-    private string $current;
-
-    private string $number;
-
-    public function __construct(
-        OrderUid $id,
-        UserProfileUid $profile,
-        UserUid $current,
-        string $number,
-    )
-    {
-        $this->id = (string) $id;
-
-        $this->profile = (string) $profile;
-        $this->current = (string) $current;
-        $this->number = $number;
-    }
+    /**
+     * Идентификатор заказа для сборки
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private ?OrderUid $ord = null;
 
     /**
-     * Идентификатор заказа
+     * Идентификатор заказа для сборки
      */
-    public function getOrderId(): OrderUid
+    public function getOrd(): ?OrderUid
     {
-        return new OrderUid($this->id);
+        return $this->ord;
     }
 
-    /**
-     * Идентификатор профиля
-     */
-    public function getUserProfile(): UserProfileUid
+    public function setOrd(?OrderUid $ord): self
     {
-        return new UserProfileUid($this->profile);
-    }
-
-    /**
-     * Идентификатор текущего пользователя
-     */
-    public function getCurrentUser(): UserUid
-    {
-        return new UserUid($this->current);
-    }
-
-    /**
-     * Номер заказа
-     */
-    public function getNumber(): string
-    {
-        return $this->number;
+        $this->ord = $ord;
+        return $this;
     }
 }

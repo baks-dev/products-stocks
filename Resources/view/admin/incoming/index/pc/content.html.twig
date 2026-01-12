@@ -247,6 +247,7 @@
 
                 {% for item in query.data %}
 
+                    {# Плюсуем приходную часть #}
                     {% if item.status == 'incoming' %}
                         {% if app.user.profile == item.userProfileId and item.usersProfileDestination is not empty %}
                             {% set incoming = incoming + item.total %}
@@ -257,7 +258,8 @@
                         {% endif %}
                     {% endif %}
 
-                    {% if item.status == 'completed' %}
+                    {# Плюсуем расходную часть #}
+                    {% if item.status == 'completed' or item.status == 'decommission' %}
                         {% set completed = completed + item.total %}
                     {% endif %}
 
@@ -266,6 +268,7 @@
                             {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
                         </td>
                     </tr>
+
                 {% else %}
                     <div class="alert alert-warning m-0 w-100" role="alert">
                         <div class="d-flex align-items-baseline gap-3">

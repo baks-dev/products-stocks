@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,33 +19,40 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Invariable;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission;
 
+use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-
-final class NewDecommissionOrderInvariableForm extends AbstractType
+final class DecommissionProductStockHandler extends AbstractHandler
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
+    public function handle(DecommissionProductStockDTO $command): string|ProductStock
     {
-        $builder->add('number', TextType::class);
-    }
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(ProductStock::class, ProductStockEvent::class);
 
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => NewDecommissionOrderInvariableDTO::class,
-            'method' => 'POST',
-            'attr' => ['class' => 'w-100'],
-        ]);
+        /** Валидация всех объектов */
+        if($this->validatorCollection->isInvalid())
+        {
+            return $this->validatorCollection->getErrorUniqid();
+        }
+
+        $this->flush();
+
+        /* Отправляем сообщение в шину */
+        $this->messageDispatch->dispatch(
+            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+            transport: 'products-stocks',
+        );
+
+        return $this->main;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Package;
@@ -164,7 +165,8 @@ final class PartController extends AbstractController
         /** @var ProductStocksOrdersProductResult|ProductStocksOrdersPartResult $var */
         foreach($products as $result)
         {
-            $ProductStockPartUid = $result->getIdentifierPart();
+            $partNumber = $result->getPartNumber();
+            $ProductStockPartUid = new ProductStockPartUid()->stringToUuid($partNumber);
 
             /** Если продукция из заказов выбирается в первый раз - сохраняем сборочный лист */
             if(true === ($result instanceof ProductStocksOrdersProductResult) && $result->getProductStocksEvents())
@@ -173,7 +175,8 @@ final class PartController extends AbstractController
                 {
                     /** Обновляем заявку на упаковку партией  */
                     $ProductStockPartDTO = new ProductStockPartDTO($event)
-                        ->setValue($ProductStockPartUid);
+                        ->setValue($ProductStockPartUid)
+                        ->setNumber($partNumber);
 
                     $ProductStockPart = $ProductStockPartHandler->handle($ProductStockPartDTO);
 
@@ -190,37 +193,6 @@ final class PartController extends AbstractController
                     }
                 }
 
-
-                //                foreach($result->getMains() as $main)
-                //                {
-                //
-                //                }
-
-
-                //                /**
-                //                 * Обновляем продукция в заявке применяя партию
-                //                 */
-
-                /*foreach($result->getProductsCollection() as $ProductStockCollectionUid)
-                {
-                    $ProductStockPartDTO = new ProductStockPartDTO($ProductStockCollectionUid)
-                        ->setValue($ProductStockPartUid);
-
-                    $ProductStockProduct = $ProductStockPartHandler->handle($ProductStockPartDTO);
-
-                    if(false === ($ProductStockProduct instanceof ProductStockProduct))
-                    {
-                        $this->addFlash(
-                            type: 'danger',
-                            message: '%s: Ошибка печати сборочного листа',
-                            domain: 'products-stocks',
-                            arguments: $ProductStockProduct,
-                        );
-
-                        return $this->redirectToReferer();
-                    }
-
-                }*/
             }
 
             $strOffer = '';
@@ -268,6 +240,7 @@ final class PartController extends AbstractController
 
             $ProductStockPartMessage = new ProductStockPartMessage(
                 $ProductStockPartUid,
+                $partNumber,
                 $result->getProduct(),
                 $result->getOfferConst(),
                 $result->getVariationConst(),
@@ -275,7 +248,10 @@ final class PartController extends AbstractController
             );
 
             $ProductStockPartMessage->setOrders($result->getOrdersCollection());
+
             $MessageDispatch->dispatch(message: $ProductStockPartMessage);
+
+            // usleep(100000);
 
             $parts[(string) $ProductStockPartUid] = $ProductStockPartMessage->getStickers();
             $parts[(string) $ProductStockPartUid]['name'] = $result->getProductName();
@@ -286,9 +262,6 @@ final class PartController extends AbstractController
 
             foreach($result->getOrdersCollection() as $order)
             {
-                /** TODO: временно отключаем скрытие и печать */
-                break;
-
                 /** Если доставка в сортировочный центр маркетплейса */
                 if(
                     true === TypeProfileFbsOzon::equals($order->delivery)

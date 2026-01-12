@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\Controller\Admin\Incoming;
@@ -32,7 +33,6 @@ use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuant
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\IncomingProductStockHandler;
-use BaksDev\Products\Stocks\UseCase\Admin\Incoming\Products\ProductStockDTO;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -102,7 +102,7 @@ final class IncomingController extends AbstractController
 
         /** Рекомендуемое место складирования */
 
-        /** @var ProductStockDTO $ProductStockDTO */
+        /** @var IncomingProductStockDTO $ProductStockDTO */
 
         $ProductStockDTO = $IncomingProductStockDTO->getProduct()->current();
 

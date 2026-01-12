@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -59,6 +60,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDecommission;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
@@ -164,7 +166,11 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
             ->setParameter(
                 'status',
                 $this->filter_status?->getStatus() ? [$this->filter_status->getStatus()] :
-                    [ProductStockStatusIncoming::STATUS, ProductStockStatusCompleted::STATUS], // по умолчанию
+                    [
+                        ProductStockStatusIncoming::STATUS,
+                        ProductStockStatusCompleted::STATUS,
+                        ProductStockStatusDecommission::STATUS,
+                    ], // по умолчанию
                 ArrayParameterType::STRING,
             );
 

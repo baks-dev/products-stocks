@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -53,9 +53,9 @@ final class EditProductStockHandler extends AbstractHandler
                 id: $this->main->getId(),
                 number: $command->getInvariable()->getNumber(),
                 event: $this->main->getEvent(),
-                last: $command->getEvent()
+                last: $command->getEvent(),
             ),
-            transport: 'products-stocks'
+            transport: 'products-stocks',
         );
 
         return $this->main;

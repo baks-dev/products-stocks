@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCanceled;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusReturn;
 use BaksDev\Orders\Order\UseCase\Admin\Canceled\CanceledOrderDTO;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
@@ -43,15 +44,15 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Отменяем складскую заявку на продукцию при отмене заказа
+ * Отменяем складскую заявку на продукцию при отмене либо возврате заказа
  */
 #[AsMessageHandler(priority: 8)]
 final readonly class CancelProductStocksByCancelOrderDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private CurrentOrderEventInterface $currentOrderEvent,
-        private ProductStocksByOrderInterface $productStocksByOrder,
+        private CurrentOrderEventInterface $CurrentOrderEventRepository,
+        private ProductStocksByOrderInterface $ProductStocksByOrderRepository,
         private CancelProductStockHandler $cancelProductStockHandler,
         private DeduplicatorInterface $deduplicator,
     ) {}
@@ -71,7 +72,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         }
 
         /** Получаем активное состояние заказа */
-        $OrderEvent = $this->currentOrderEvent
+        $OrderEvent = $this->CurrentOrderEventRepository
             ->forOrder($message->getId())
             ->find();
 
@@ -87,16 +88,20 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         }
 
         /**
-         * Складскую заявку можно отменить только при условии, если заказ со статусом Canceled «Отменен»
+         * Складскую заявку можно отменить только при условии, если заказ со статусом:
+         * - Canceled «Отменен»
+         * - Return «Возврат»
          */
-        if(false === $OrderEvent->isStatusEquals(OrderStatusCanceled::class))
+        if(
+            false === $OrderEvent->isStatusEquals(OrderStatusCanceled::class)
+            && false === $OrderEvent->isStatusEquals(OrderStatusReturn::class)
+        )
         {
             return;
         }
 
-
         /** Получаем все заявки по идентификатору заказа */
-        $stocks = $this->productStocksByOrder
+        $stocks = $this->ProductStocksByOrderRepository
             ->onOrder($message->getId())
             ->findAll();
 
@@ -104,7 +109,6 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         {
             return;
         }
-
 
         /** @var ProductStockEvent $ProductStockEvent */
         foreach($stocks as $ProductStockEvent)
@@ -132,7 +136,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             {
                 $this->logger->info(
                     sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()),
-                    [self::class.':'.__LINE__]
+                    [self::class.':'.__LINE__],
                 );
                 continue;
             }

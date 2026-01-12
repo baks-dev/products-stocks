@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -47,21 +47,13 @@ final readonly class AddProductStocksReserveDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private ProductStockQuantityInterface $productStockMinQuantity,
         private AddProductStockInterface $addProductStock,
-        private DeduplicatorInterface $deduplicator,
         private MessageDispatchInterface $messageDispatch,
     ) {}
 
 
     public function __invoke(AddProductStocksReserveMessage $message): bool
     {
-        $DeduplicatorExecuted = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([$message, self::class]);
-
-        if($DeduplicatorExecuted->isExecuted())
-        {
-            return true;
-        }
+        /** @note Не создаем дедубликатор, т.к. заказ и складская заявка может меняться */
 
         $ProductStockTotal = $this->productStockMinQuantity
             ->profile($message->getProfile())
@@ -82,7 +74,7 @@ final readonly class AddProductStocksReserveDispatcher
                     'ProductVariationConst' => (string) $message->getVariation(),
                     'ProductModificationConst' => (string) $message->getModification(),
 
-                    self::class.':'.__LINE__,]
+                    self::class.':'.__LINE__,],
             );
 
             return false;
@@ -100,14 +92,12 @@ final readonly class AddProductStocksReserveDispatcher
                 'Не найдено продукции на складе для резервирования. Возможно остатки были изменены в указанном месте',
                 [
                     self::class.':'.__LINE__,
-                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-                ]
+                    'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+                ],
             );
 
             return false;
         }
-
-        $DeduplicatorExecuted->save();
 
         $this->messageDispatch->addClearCacheOther('products-stocks');
 
@@ -115,8 +105,8 @@ final readonly class AddProductStocksReserveDispatcher
             sprintf('Место %s: Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
-                'ProductStockTotalUid' => (string) $ProductStockTotal->getId()
-            ]
+                'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+            ],
         );
 
         return true;

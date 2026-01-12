@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +87,7 @@ class EditProductStockProductDebugDispatcherTest extends KernelTestCase
             new OrderUid('019b4f31-b3b2-7cc7-a2c6-b130526a4ff0'),
             new UserProfileUid('019053da-5c80-7345-b227-8609dd8380f3'),
             new UserUid('019053d9-d1cb-7416-b7e5-4cdd154a04c3'),
-            '176.656.019.352'
+            '176.656.019.352',
         );
 
         $ChangeProductStocksDispatcher($message);

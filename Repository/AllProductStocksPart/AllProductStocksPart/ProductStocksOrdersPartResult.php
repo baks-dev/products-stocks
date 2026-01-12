@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -47,7 +48,7 @@ final class ProductStocksOrdersPartResult
 
     public function __construct(
 
-        //private readonly string $mains,
+        private readonly ?string $part_number,
         private readonly string $events, //
         private readonly string $total, // 3
         private readonly string $product_name, // "Triangle AdvanteX TC101"
@@ -79,6 +80,11 @@ final class ProductStocksOrdersPartResult
         private readonly ?string $stocks_quantity, // "[{"total": 10, "reserve": 3, "storage": "new"}]"
     ) {}
 
+    public function getPartNumber(): string
+    {
+        return $this->part_number ?: '000.000.000.000';
+    }
+
     //    public function getMains(): ?array
     //    {
     //        if(is_null($this->mains))
@@ -93,6 +99,7 @@ final class ProductStocksOrdersPartResult
     //
     //        return json_decode($this->mains, false, 512, JSON_THROW_ON_ERROR);
     //    }
+
 
     public function getTotal(): int
     {

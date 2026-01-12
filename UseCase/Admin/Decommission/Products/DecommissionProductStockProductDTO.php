@@ -22,9 +22,9 @@
  *
  */
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Incoming\Products;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products;
 
-use BaksDev\Contacts\Region\Type\Call\ContactsRegionCallUid;
+use BaksDev\Orders\Order\Entity\Products\OrderProductInterface;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -32,8 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStockMaterial */
-final class ProductStockDTO implements ProductStockProductInterface
+final class DecommissionProductStockProductDTO implements ProductStockProductInterface
 {
     /** Продукт */
     #[Assert\NotBlank]
@@ -42,26 +41,18 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     /** Торговое предложение */
     #[Assert\Uuid]
-    private readonly ?ProductOfferConst $offer;
+    private ?ProductOfferConst $offer = null;
 
     /** Множественный вариант */
     #[Assert\Uuid]
-    private readonly ?ProductVariationConst $variation;
+    private ?ProductVariationConst $variation = null;
 
     /** Модификация множественного варианта */
     #[Assert\Uuid]
-    private readonly ?ProductModificationConst $modification;
+    private ?ProductModificationConst $modification = null;
 
-    /** Количество */
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 0)]
-    private int $total;
-
-    /** Место складирования */
-    private ?string $storage = null;
-
-    /** Вспомогательные свойства */
-    public ?array $detail = null;
+    /** Количество в заявке */
+    private int $total = 0;
 
     /** Продукт */
     public function getProduct(): ProductUid
@@ -69,10 +60,12 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
-    //    public function setProduct(ProductUid $product): void
-    //    {
-    //        $this->product = $product;
-    //    }
+    public function setProduct(ProductUid $product): self
+    {
+        $this->product = $product;
+
+        return $this;
+    }
 
     /** Торговое предложение */
     public function getOffer(): ?ProductOfferConst
@@ -80,10 +73,12 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-    //    public function setOffer(ProductOfferConst $offer): void
-    //    {
-    //        $this->offer = $offer;
-    //    }
+    public function setOffer(ProductOfferConst|null|false $offer): self
+    {
+        $this->offer = empty($offer) ? null : $offer;
+
+        return $this;
+    }
 
     /** Множественный вариант */
     public function getVariation(): ?ProductVariationConst
@@ -91,10 +86,12 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    //    public function setVariation(?ProductVariationConst $variation): void
-    //    {
-    //        $this->variation = $variation;
-    //    }
+    public function setVariation(ProductVariationConst|null|false $variation): self
+    {
+        $this->variation = empty($variation) ? null : $variation;
+
+        return $this;
+    }
 
     /** Модификация множественного варианта */
     public function getModification(): ?ProductModificationConst
@@ -102,35 +99,25 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-    //    public function setModification(?ProductModificationConst $modification): void
-    //    {
-    //        $this->modification = $modification;
-    //    }
-
-    /** Количество */
-    public function getTotal(): int
+    public function setModification(ProductModificationConst|null|false $modification): self
     {
-        return $this->total;
-    }
+        $this->modification = empty($modification) ? null : $modification;
 
-    public function setTotal(int $total): void
-    {
-        $this->total = $total;
-    }
-
-    /**
-     * Storage
-     */
-    public function getStorage(): ?string
-    {
-        return $this->storage;
-    }
-
-    public function setStorage(?string $storage): self
-    {
-        $this->storage = $storage;
         return $this;
     }
 
+    /** Количество в заявке */
+    public function getTotal(): int
+    {
+        /* Присваиваем значение из заказа */
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+
+        return $this;
+    }
 
 }

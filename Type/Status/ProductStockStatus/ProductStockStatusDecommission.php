@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,31 +19,28 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products\Price;
+namespace BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductStockStatusInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-final class NewDecommissionOrderPriceForm extends AbstractType
+/**
+ * Статус Decommission «Списание»
+ */
+#[AutoconfigureTag('baks.product.stock.status')]
+final class ProductStockStatusDecommission implements ProductStockStatusInterface
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder->add('total', IntegerType::class, ['attr' => ['min' => 1]]);
-    }
+    public const string STATUS = 'decommission';
 
-
-    public function configureOptions(OptionsResolver $resolver): void
+    /** Возвращает значение (value) */
+    public function getValue(): string
     {
-        $resolver->setDefaults([
-            'data_class' => NewDecommissionOrderPriceDTO::class,
-        ]);
+        return self::STATUS;
     }
 
 }
