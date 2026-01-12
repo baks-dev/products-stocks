@@ -33,23 +33,17 @@ final readonly class EditProductStockTotalMessage
 {
     private string $id;
 
-    private string $number;
-
     private string $event;
 
     private ?string $last;
 
     public function __construct(
         ProductStockUid|string $id,
-        string $number,
-
         ProductStockEventUid $event,
         ProductStockEventUid|null $last = null
     )
     {
         $this->id = (string) $id;
-        $this->number = $number;
-
         $this->event = (string) $event;
         $this->last = $last ? (string) $last : null;
     }
@@ -70,13 +64,5 @@ final readonly class EditProductStockTotalMessage
     public function getLast(): ?ProductStockEventUid
     {
         return $this->last ? new ProductStockEventUid($this->last) : null;
-    }
-
-    /**
-     * Номер заказа
-     */
-    public function getNumber(): string
-    {
-        return $this->number;
     }
 }

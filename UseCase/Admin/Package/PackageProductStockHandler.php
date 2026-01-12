@@ -1,6 +1,6 @@
-<?php 
+<?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
-use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal\EditProductStockTotalMessage;
 
 final class PackageProductStockHandler extends AbstractHandler
 {
@@ -48,8 +48,12 @@ final class PackageProductStockHandler extends AbstractHandler
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
-            message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'products-stocks'
+            message: new EditProductStockTotalMessage(
+                $this->main->getId(),
+                $this->main->getEvent(),
+                $command->getEvent(),
+            ),
+            transport: 'products-stocks',
         );
 
         return $this->main;

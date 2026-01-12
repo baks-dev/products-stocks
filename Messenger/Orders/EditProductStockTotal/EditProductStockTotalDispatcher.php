@@ -215,7 +215,7 @@ final readonly class EditProductStockTotalDispatcher
                     $diffAdd = $currentStockTotal - $lastStockTotal;
 
                     /** Резервируем честные знаки */
-                    $this->addProductSignReservation($currentProductStocks);
+                    // $this->addProductSignReservation($currentProductStocks);
 
 
                     $this->Logger->info(
@@ -300,8 +300,8 @@ final readonly class EditProductStockTotalDispatcher
 
                 if($currentStockTotal < $lastStockTotal)
                 {
-                    /** Снимаем резерв с Честных знаков */
-                    $this->subProductSignReservation($lastProductStocks);
+                    // /** Снимаем резерв с Честных знаков */
+                    // $this->subProductSignReservation($lastProductStocks);
 
                     $diffSub = $lastStockTotal - $currentStockTotal;
 
@@ -393,7 +393,7 @@ final readonly class EditProductStockTotalDispatcher
             if(false === $lastProductStockProductDTO instanceof ProductStockProductDTO)
             {
                 /** Резервируем честные знаки */
-                $this->addProductSignReservation($currentProductStocks);
+                // $this->addProductSignReservation($currentProductStocks);
 
                 $totalUp = $currentProductStockProductDTO->getTotal();
 
@@ -465,8 +465,8 @@ final readonly class EditProductStockTotalDispatcher
 
         foreach($lastProductStocks->getProduct() as $lastProductStockProductDTO)
         {
-            /** Снимаем резерв с Честных знаков */
-            $this->subProductSignReservation($lastProductStocks);
+            // /** Снимаем резерв с Честных знаков */
+            // $this->subProductSignReservation($lastProductStocks);
 
             /**
              * Поверяем количество мест складирования продукции на складе
@@ -574,6 +574,8 @@ final readonly class EditProductStockTotalDispatcher
     }
 
     /**
+     * @depricated
+     *
      * Отправляет сообщение на резерв Честного знака
      * - получаем все item по заказу без Честных знаков
      * - получаем константы по идентификаторам OrderProduct
@@ -581,6 +583,8 @@ final readonly class EditProductStockTotalDispatcher
      */
     private function addProductSignReservation(EditProductStockDTO $currentProductStocks): void
     {
+        return;
+
         if(false === class_exists(BaksDevProductsSignBundle::class))
         {
             return;
@@ -694,10 +698,14 @@ final readonly class EditProductStockTotalDispatcher
     }
 
     /**
+     * @depricated
+     *
      * Отправляет сообщение на снятие резерва с Честного знака
      */
     private function subProductSignReservation(EditProductStockDTO $lastProductStocks): void
     {
+        return;
+
         if(false === class_exists(BaksDevProductsSignBundle::class))
         {
             return;

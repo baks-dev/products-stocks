@@ -50,7 +50,6 @@ final class EditProductStockHandler extends AbstractHandler
         $this->messageDispatch->dispatch(
             message: new EditProductStockTotalMessage(
                 id: $this->main->getId(),
-                number: $command->getInvariable()->getNumber(),
                 event: $this->main->getEvent(),
                 last: $command->getEvent(),
             ),
