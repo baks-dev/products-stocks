@@ -194,6 +194,11 @@ final readonly class EditProductStockProductDispatcher
 
             /** Добавляем новый продукт в складскую заявку  */
             $EditProductStockDTO->addProduct($ProductStockProductDTO);
+
+            /** Скрываем идентификатор СЗ у остальных пользователей */
+            $this->publish
+                ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+                ->send('remove');
         }
 
         /** Номер текущей заявки */

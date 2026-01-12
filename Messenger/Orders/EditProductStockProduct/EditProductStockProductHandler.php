@@ -29,6 +29,7 @@ namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockProduct;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Messenger\EditOrder\EditOrderMessage;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusNew;
@@ -50,7 +51,7 @@ final class EditProductStockProductHandler
         private MessageDispatchInterface $messageDispatch,
     ) {}
 
-    public function __invoke(OrderMessage $message): void
+    public function __invoke(EditOrderMessage $message): void
     {
         $OrderEvent = $this->currentOrderEventRepository
             ->forOrder($message->getId())
