@@ -84,7 +84,6 @@ class EditProductStockTotalDebugDispatcherTest extends KernelTestCase
 
         $message = new EditProductStockTotalMessage(
             new ProductStockUid($Main),
-            '176.704.444.982',
             new ProductStockEventUid($currentEvent),
             new ProductStockEventUid($lastEvent),
         );
