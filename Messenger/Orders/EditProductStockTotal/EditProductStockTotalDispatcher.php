@@ -613,6 +613,18 @@ final readonly class EditProductStockTotalDispatcher
 
         foreach($productItemsConstants as $key => $const)
         {
+            $DeduplicatorConst = $this->Deduplicator
+                ->namespace('products-stocks')
+                ->deduplication([
+                    (string) $const,
+                    self::class,
+                ]);
+
+            if($DeduplicatorConst->isExecuted())
+            {
+                continue;
+            }
+
             $orderProductIds = $const->getParams();
 
             if(null === $orderProductIds)
@@ -656,6 +668,8 @@ final readonly class EditProductStockTotalDispatcher
                 $ProductSignPart = new ProductSignUid();
             }
 
+            /** Дедубликатор */
+
             $this->MessageDispatch
                 ->dispatch(
                     message: new ProductSignProcessMessage(
@@ -670,8 +684,11 @@ final readonly class EditProductStockTotalDispatcher
 
                         itemConst: $const,
                     ),
-                    transport: 'products-sign',
+
+                    transport: 'products-stocks',
                 );
+
+            $DeduplicatorConst->save();
         }
 
     }
