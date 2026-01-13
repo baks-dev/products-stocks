@@ -42,6 +42,7 @@ use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductS
 use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksReserve\SubProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\EditProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Products\ProductStockProductDTO;
@@ -67,9 +68,6 @@ final readonly class EditProductStockTotalDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CountProductStocksStorageInterface $CountProductStocksStorageRepository,
-        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
-        private AllOrderProductItemConstInterface $allOrderProductItemConstRepository,
-        private ProductSignByOrderInterface $productSignByOrderRepository,
         private MessageDispatchInterface $MessageDispatch,
         private DeduplicatorInterface $Deduplicator,
     ) {}
@@ -84,6 +82,15 @@ final readonly class EditProductStockTotalDispatcher
             ]);
 
         if($Deduplicator->isExecuted())
+        {
+            return;
+        }
+
+        /**
+         * Не изменяем складские остатки без изменений
+         * Резерв создается @see AddReserveProductStocksTotalByPackage
+         */
+        if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
             return;
         }
@@ -110,6 +117,7 @@ final readonly class EditProductStockTotalDispatcher
             $Deduplicator->save();
             return;
         }
+
 
         /**
          * Получаем предыдущее событие
