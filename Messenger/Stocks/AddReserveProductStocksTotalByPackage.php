@@ -29,10 +29,11 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
-use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
+use BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal\EditProductStockTotalMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -54,7 +55,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         private DeduplicatorInterface $deduplicator,
     ) {}
 
-    public function __invoke(ProductStockMessage $message): void
+    public function __invoke(EditProductStockTotalMessage $message): void
     {
         $DeduplicatorExecuted = $this->deduplicator
             ->namespace('products-stocks')
@@ -65,6 +66,13 @@ final readonly class AddReserveProductStocksTotalByPackage
 
         if($DeduplicatorExecuted->isExecuted())
         {
+            return;
+        }
+
+        /** Новая складская заявка не должна иметь предыдущего события */
+        if(true === ($message->getLast() instanceof ProductStockEventUid))
+        {
+            $DeduplicatorExecuted->save();
             return;
         }
 

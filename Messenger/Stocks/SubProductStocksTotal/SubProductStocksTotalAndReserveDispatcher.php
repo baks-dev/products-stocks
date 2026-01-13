@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -91,10 +91,10 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
         if(false === ($ProductStockTotal instanceof ProductStockTotal))
         {
             $this->logger->critical(
-                'Не найдено продукции на складе для списания',
+                'products-stocks: Не найдено продукции на складе для списания',
                 [
-                    var_export($message, true),
                     self::class.':'.__LINE__,
+                    var_export($message, true),
                 ]
             );
 
