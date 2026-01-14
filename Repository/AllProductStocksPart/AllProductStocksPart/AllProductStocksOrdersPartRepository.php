@@ -393,6 +393,14 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
             );
 
 
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.barcode, 
+                product_variation.barcode, 
+                product_offer.barcode
+            ) AS barcode
+		');
+
         $dbal->allGroupByExclude();
 
         return $dbal

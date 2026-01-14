@@ -35,7 +35,6 @@ use BaksDev\Orders\Order\UseCase\Admin\Canceled\CanceledOrderDTO;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
 use Psr\Log\LoggerInterface;
@@ -112,12 +111,6 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         /** @var ProductStockEvent $ProductStockEvent */
         foreach($stocks as $ProductStockEvent)
         {
-            /** Если статус складской заявки Canceled «Отменен» - пропускаем */
-            if(true === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusCancel::class))
-            {
-                continue;
-            }
-
             /**
              * Присваиваем рандомные пользователя и профиль,
              * т.к. при отмене заявки нам важен только комментарий
@@ -134,7 +127,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             if($ProductStock instanceof ProductStock)
             {
                 $this->logger->info(
-                    sprintf('Отменили складскую заявку %s при отмене заказа', $ProductStockEvent->getNumber()),
+                    sprintf('Отменили складскую заявку %s при возврате заказа', $ProductStockEvent->getNumber()),
                     [self::class.':'.__LINE__],
                 );
                 continue;

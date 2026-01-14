@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Messenger\Part;
 
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Product\Type\Barcode\ProductBarcode;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -49,6 +50,7 @@ final class ProductStockPartMessage
         private readonly ProductOfferConst|null|false $offer,
         private readonly ProductVariationConst|null|false $variation,
         private readonly ProductModificationConst|null|false $modification,
+        private readonly ProductBarcode|false $barcode
     ) {}
 
 
@@ -114,5 +116,10 @@ final class ProductStockPartMessage
     public function getModificationConst(): ProductModificationConst|false
     {
         return $this->modification ?: false;
+    }
+
+    public function getBarcode(): ProductBarcode|false
+    {
+        return $this->barcode ?: false;
     }
 }

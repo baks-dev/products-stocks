@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStoc
 
 use BaksDev\Core\Type\UidType\UidType;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Product\Type\Barcode\ProductBarcode;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
@@ -77,6 +78,7 @@ final class ProductStocksOrdersPartResult
         private readonly ?string $orders,
         // "[{"id": "019a2c0b-8380-7020-b432-b48685003fb5", "number": "176.167.550.297"}]
         private readonly ?string $stocks_quantity, // "[{"total": 10, "reserve": 3, "storage": "new"}]"
+        private readonly ?string $barcode,
     ) {}
 
     public function getPartNumber(): string
@@ -320,4 +322,8 @@ final class ProductStocksOrdersPartResult
         return json_decode($this->events, false, 512, JSON_THROW_ON_ERROR);
     }
 
+    public function getBarcode(): ProductBarcode|false
+    {
+        return $this->barcode ? new ProductBarcode($this->barcode) : false;
+    }
 }

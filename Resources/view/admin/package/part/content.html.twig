@@ -7,13 +7,13 @@
 
         {% set part_number = null %}
 
-
-
         {% if loop.first == false %}
             <div style="page-break-after: always !important;"></div>
         {% endif %}
 
         {% for stickers in data %}
+
+
 
             {% if stickers.part is defined %}
                 {% set part_number = stickers.number %}
@@ -57,13 +57,63 @@
                     </strong>
                 </div>
 
-
                 {# разрыв старницы #}
                 {# <div style="page-break-after: always !important;"></div> #}
 
+
+
             {% else %}
 
+
+
                 {% for number, sticker in stickers %}
+
+                    {# СТИКЕР ШТРИХКОДА ТОВАРА #}
+
+                    {% if sticker.barcode is defined %}
+
+                        {% for barcode in sticker.barcode %}
+
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
+
+                                <div style="text-align: center;">
+                                    <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="currentColor"
+                                            style="width: 180px;"
+                                            viewBox="5 0 115 25"
+                                    >
+                                        {{ barcode|raw }}
+                                    </svg>
+                                </div>
+
+                                {# Идентификатор штрихкода #}
+
+                                <div style="width: 100%; max-width: 200px; text-align: center; margin-bottom: 5px;">
+                                    {{ data.barcode }}
+                                </div>
+
+                                <div style="width: 100%; max-width: 200px; text-align: center; margin-bottom: 5px; font-size: 8px;">
+                                    {{ data.name }} {{ data.offer }}
+                                </div>
+
+                                <div style="width: 100%; max-width: 200px; text-align: center; margin-bottom: 5px; font-size: 8px;">
+                                    {{ part_number }} &nbsp; #{{ number }}
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+
+
+                    {% endif %}
+
+
 
                     {# СТИКЕР МАРКИРОВКИ ЧЕСТНЫЙ ЗНАК #}
 

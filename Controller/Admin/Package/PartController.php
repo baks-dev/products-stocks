@@ -244,6 +244,7 @@ final class PartController extends AbstractController
                 $result->getOfferConst(),
                 $result->getVariationConst(),
                 $result->getModificationConst(),
+                $result->getBarcode(),
             );
 
             $ProductStockPartMessage->setOrders($result->getOrdersCollection());
@@ -257,6 +258,7 @@ final class PartController extends AbstractController
             $parts[(string) $ProductStockPartUid]['offer'] = $strOffer;
             $parts[(string) $ProductStockPartUid]['total'] = $result->getTotal();
             $parts[(string) $ProductStockPartUid]['stock'] = $result->getStocksQuantity();
+            $parts[(string) $ProductStockPartUid]['barcode'] = (string) $result->getBarcode();
 
 
             foreach($result->getOrdersCollection() as $order)

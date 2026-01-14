@@ -1,5 +1,5 @@
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -1062,7 +1062,7 @@ function addProductPurchase()
         $offer.value = $preOffer?.value;
 
         let offerIndex = $preOffer.selectedIndex;
-        $offerName = $preOffer.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preOffer.id + "\"]").textContent + "</small> " + $preOffer.options[offerIndex].textContent : "";
+        $offerName = $preOffer.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preOffer.id + "\"]").textContent + ": </small> " + $preOffer.options[offerIndex].textContent : "";
     }
 
     /** Присваиваем элемент множественного варианта торгового предложения */
@@ -1074,7 +1074,7 @@ function addProductPurchase()
         $variation.value = $preVariation.value;
 
         let variationIndex = $preVariation.selectedIndex;
-        $variationName = $preVariation.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preVariation.id + "\"]").textContent + "</small> " + $preVariation.options[variationIndex].textContent : "";
+        $variationName = $preVariation.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preVariation.id + "\"]").textContent + ": </small> " + $preVariation.options[variationIndex].textContent : "";
     }
 
     /** Присваиваем элемент модификации множественного варианта торгового предложения */
@@ -1086,7 +1086,7 @@ function addProductPurchase()
         $modification.value = $preModification.value;
 
         let modificationIndex = $preModification.selectedIndex;
-        $modificationName = $preModification.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preModification.id + "\"]").textContent + "</small> " + $preModification.options[modificationIndex].textContent : "";
+        $modificationName = $preModification.tagName === "SELECT" ? "&nbsp; <small class=\"text-muted fw-normal\">" + document.querySelector("label[for=\"" + $preModification.id + "\"]").textContent + ": </small> " + $preModification.options[modificationIndex].textContent : "";
 
     }
 
