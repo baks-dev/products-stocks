@@ -76,7 +76,7 @@ final readonly class ReturnProductStockTotalDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
 
         private ProductStocksEventInterface $ProductStocksEventRepository,
-        private ProductSignByOrderInterface $productSignByOrderRepository,
+
         private AddProductStockInterface $AddProductStockRepository,
         private UserByUserProfileInterface $UserByUserProfileRepository,
         private ProductStocksTotalStorageInterface $ProductStocksTotalStorageRepository,
@@ -87,10 +87,17 @@ final readonly class ReturnProductStockTotalDispatcher
         private MessageDispatchInterface $MessageDispatch,
         private DeduplicatorInterface $Deduplicator,
         private EntityManagerInterface $entityManager,
+
+        private ?ProductSignByOrderInterface $productSignByOrderRepository = null,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
     {
+        if($this->productSignByOrderRepository instanceof ProductSignByOrderInterface)
+        {
+            return;
+        }
+
         $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
