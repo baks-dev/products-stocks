@@ -444,15 +444,9 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 ->addSearchLike('stock_part.number');
         }
 
-
-        //$dbal->addOrderBy('products_move', 'ASC');
+        $dbal->addOrderBy('order_event.danger', 'DESC');
         $dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
         $dbal->addOrderBy('invariable.number', 'ASC');
-        //$dbal->addOrderBy('stock.id', 'ASC');
-
-        //$dbal->addGroupBy('ord.ord');
-        //$dbal->allGroupByExclude();
-
 
         return $this->paginator->fetchAllHydrate($dbal, AllProductStocksPackageResult::class);
     }
