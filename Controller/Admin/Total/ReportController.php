@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,7 @@ final class ReportController extends AbstractController
 
         /**
          * Получаем список профилей
+         *
          * @var array<UserProfileUid>|null $profiles
          */
         $profiles = iterator_to_array($UserProfileChoiceRepository->getActiveUserProfile($this->getUsr()->getId()));
@@ -236,13 +237,17 @@ final class ReportController extends AbstractController
 
                 if(false === empty($total))
                 {
-                    $sheet->setCellValue($firstColumnLetter.$key, $total->stock_total);
-                    $sheet->setCellValue($lastColumnLetter.$key, $total->stock_reserve);
+                    $total_sum = array_sum(array_column($total, 'stock_total'));
+                    $total_reserve = array_sum(array_column($total, 'stock_reserve'));
+
+                    $sheet->setCellValue($firstColumnLetter.$key, $total_sum ?: '');
+                    $sheet->setCellValue($lastColumnLetter.$key, $total_reserve ?: '');
+
                     continue;
                 }
 
-                $sheet->setCellValue($firstColumnLetter.$key, 0);
-                $sheet->setCellValue($lastColumnLetter.$key, 0);
+                $sheet->setCellValue($firstColumnLetter.$key, '');
+                $sheet->setCellValue($lastColumnLetter.$key, '');
             }
 
             $key++;
@@ -261,7 +266,7 @@ final class ReportController extends AbstractController
         $response->headers->set('Content-Type', 'application/vnd.ms-excel');
         $response->headers->set(
             'Content-Disposition',
-            'attachment;filename="'.str_replace('"', '', $filename).'"'
+            'attachment;filename="'.str_replace('"', '', $filename).'"',
         );
         $response->headers->set('Cache-Control', 'max-age=0');
 
