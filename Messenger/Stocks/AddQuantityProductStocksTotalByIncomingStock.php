@@ -147,6 +147,16 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
+            if(empty($product->getTotal()))
+            {
+                $this->logger->warning(
+                    'Не добавляем приход с нулевым количеством продукции',
+                    [self::class.':'.__LINE__, var_export($product, true)],
+                );
+
+                continue;
+            }
+
             /** Получаем место для хранения указанной продукции данного профиля */
             $ProductStockTotal = $this->productStocksTotalStorage
                 ->profile($UserProfileUid)
