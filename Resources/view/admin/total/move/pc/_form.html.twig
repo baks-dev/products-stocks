@@ -1,12 +1,14 @@
 {% trans_default_domain 'products-stocks.admin' %}
 
-<div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+<div class="modal-dialog modal-dialog-centered" style="max-width: 700px;">
     {{ form_start(form) }}
 
     <div class="modal-content p-3 border-bottom border-5 border-primary">
 
         <div class="modal-header">
-            {{ 'page.storageMove'|trans }}
+            <h5 class="modal-title">
+                {{ 'page.storageMove'|trans }}
+            </h5>
         </div>
 
         <div class="modal-body d-flex justify-content-between gap-3">
