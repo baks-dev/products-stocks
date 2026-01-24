@@ -21,7 +21,7 @@
 {# <label>
     <input class="form-check-input ms-3 p-2" type="checkbox"
 #}{# onchange=checkedItem(); #}{#
-           value="{{ item.event }}">
+value="{{ item.event }}">
 </label> #}
 
 
@@ -42,7 +42,7 @@
         {% endif %} #}
 
         {# Удалить #}
-        {# {% if  is_granted(ROLE~'_DELETE') or is_granted('ROLE_ADMIN') %}
+        {% if  is_granted('ROLE_PRODUCT_STOCK_DELETE') or is_granted('ROLE_ADMIN') %}
 
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
                 <a href="{{ path('products-product:admin.delete', { id: item.event }) }}"
@@ -54,7 +54,7 @@
                 </a>
             </li>
 
-        {% endif %} #}
+        {% endif %}
 
     </ul>
 </div>
