@@ -79,7 +79,7 @@ final class DeleteController extends AbstractController
                 $handle,
             );
 
-            return $this->redirectToRoute('products-stocks:admin.purchase.index');
+            return $this->redirectToReferer(status: 307);
         }
 
         /**
@@ -108,6 +108,10 @@ final class DeleteController extends AbstractController
             throw new InvalidArgumentException('Product not found');
         }
 
-        return $this->render(['form' => $form->createView(), 'product' => $product]);
+        return $this->render([
+            'form' => $form->createView(),
+            'number' => $ProductStocksEvent->getNumber(),
+            'product' => $product,
+        ]);
     }
 }
