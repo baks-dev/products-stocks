@@ -70,16 +70,18 @@ final class DeleteController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
+            //$handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
 
-            $this->addFlash(
+            $handle = null;
+
+            $JsonResponse = $this->addFlash(
                 'page.purchase',
                 $handle instanceof ProductStock ? 'success.delete' : 'danger.delete',
                 'products-stocks.admin',
                 $handle,
             );
 
-            return $this->redirectToReferer(status: 307);
+            return $JsonResponse ?: $this->redirectToReferer();
         }
 
         /**

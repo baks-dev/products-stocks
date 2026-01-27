@@ -31,8 +31,10 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Orders\Order\UseCase\Admin\Return\Products\ReturnOrderProductDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Return\ReturnOrderDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Return\ReturnOrderHandler;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
@@ -51,6 +53,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Edit\EditProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Products\ProductStockProductDTO;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\User\Entity\User;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -82,6 +85,9 @@ final readonly class ReturnProductStockTotalDispatcher
         private ProductStocksTotalStorageInterface $ProductStocksTotalStorageRepository,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierByEventRepository,
+        private CurrentProductIdentifierByConstInterface $CurrentProductIdentifierByConstRepository,
+
+
         private ReturnOrderHandler $ReturnOrderHandler,
 
         private MessageDispatchInterface $MessageDispatch,
@@ -93,11 +99,6 @@ final readonly class ReturnProductStockTotalDispatcher
 
     public function __invoke(EditProductStockTotalMessage $message): void
     {
-        if($this->productSignByOrderRepository instanceof ProductSignByOrderInterface)
-        {
-            return;
-        }
-
         $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
@@ -122,7 +123,11 @@ final readonly class ReturnProductStockTotalDispatcher
             return;
         }
 
-        /** Только статус Completed «Выдан по месту назначения» */
+        /**
+         * Только статус Completed «Выдан по месту назначения»
+         *
+         * @see EditProductStockTotalDispatcher
+         */
         if(false === ($CurrentProductStockEvent->isStatusEquals(ProductStockStatusCompleted::class)))
         {
             return;
@@ -256,7 +261,7 @@ final readonly class ReturnProductStockTotalDispatcher
 
                 /** Создаем приход на продукт */
                 $diffSub = $lastStockTotal - $currentStockTotal;
-                $this->handle($ProductStockTotal, $diffSub);
+                $this->handleIncomingStocks($ProductStockTotal, $diffSub);
 
                 /** Создаем заказ со статусом Return «Возврат» на соответствующее количество */
 
@@ -281,6 +286,8 @@ final readonly class ReturnProductStockTotalDispatcher
          *
          * @var ProductStockProductDTO $lastProductStockProductDTO
          */
+
+        $OrderEvent = $this->CurrentOrderEventRepository->forOrder($OrderUid)->find();
 
         foreach($lastEditProductStockDTO->getProduct() as $lastProductStockProductDTO)
         {
@@ -358,17 +365,45 @@ final readonly class ReturnProductStockTotalDispatcher
 
             /** Создаем приход на продукт */
             $lastStockTotal = $lastProductStockProductDTO->getTotal();
-            $this->handle($ProductStockTotal, $lastStockTotal);
+            $this->handleIncomingStocks($ProductStockTotal, $lastStockTotal);
 
-            /** Создаем заказ со статусом Return «Возврат» на соответствующее количество */
+            /** Создаем заказ со статусом Return «Возврат» на удаленный продукт и соответствующее количество */
 
             if($OrderUid instanceof OrderUid)
             {
-                $this->orderHandler(
-                    $OrderUid,
-                    $lastProductStockProductDTO,
-                    $totalDown,
-                );
+                $ReturnOrderDTO = new ReturnOrderDTO();
+                $OrderEvent->getDto($ReturnOrderDTO);
+                $ReturnOrderDTO->setComment(sprintf('Частичный возврат заказа %s', $OrderEvent->getOrderNumber()));
+
+                /** Сбрасываем коллекцию продукции */
+                $ReturnOrderDTO->setProduct(new ArrayCollection());
+
+                $CurrentProductIdentifierResult = $this->CurrentProductIdentifierByConstRepository
+                    ->forProduct($lastProductStockProductDTO->getProduct())
+                    ->forOfferConst($lastProductStockProductDTO->getOffer())
+                    ->forVariationConst($lastProductStockProductDTO->getVariation())
+                    ->forModificationConst($lastProductStockProductDTO->getModification())
+                    ->find();
+
+                $ReturnOrderProductDTO = new ReturnOrderProductDTO()
+                    ->setProduct($CurrentProductIdentifierResult->getEvent())
+                    ->setOffer($CurrentProductIdentifierResult->getOffer())
+                    ->setVariation($CurrentProductIdentifierResult->getVariation())
+                    ->setModification($CurrentProductIdentifierResult->getModification());
+
+                $ReturnOrderProductDTO->getPrice()->setTotal($lastStockTotal);
+
+                $ReturnOrderDTO->addProduct($ReturnOrderProductDTO);
+
+                $Order = $this->ReturnOrderHandler->handle($ReturnOrderDTO);
+
+                if(false === ($Order instanceof Order))
+                {
+                    $this->Logger->critical(
+                        'products-stocks: Ошибка при создании заказа со статусом возврата на единицу продукции',
+                        [self::class.':'.__LINE__, $Order],
+                    );
+                }
             }
         }
 
@@ -381,6 +416,14 @@ final readonly class ReturnProductStockTotalDispatcher
      */
     private function subProductSignReservation(EditProductStockDTO $lastProductStocks): void
     {
+        /**
+         * Добавляем задание на возврат честных знаков
+         */
+
+        if(false === ($this->productSignByOrderRepository instanceof ProductSignByOrderInterface))
+        {
+            return;
+        }
 
         /** Честные знаки, у которых нужно снять резерв
          * - проверяем, что у ЧЗ есть связь с item
@@ -435,11 +478,10 @@ final readonly class ReturnProductStockTotalDispatcher
                 transport: 'products-sign',
             );
         }
-
     }
 
 
-    public function handle(ProductStockTotal $ProductStockTotal, int $total): void
+    public function handleIncomingStocks(ProductStockTotal $ProductStockTotal, int $total): void
     {
         /** Добавляем приход на указанный профиль (склад) */
         $rows = $this->AddProductStockRepository
@@ -486,6 +528,7 @@ final readonly class ReturnProductStockTotalDispatcher
             $ReturnOrderDTO = new ReturnOrderDTO();
             $OrderEvent->getDto($ReturnOrderDTO);
             $ReturnOrderDTO->setComment(sprintf('Частичный возврат заказа %s', $OrderEvent->getOrderNumber()));
+
 
             /** Итерируемся по продукции и удаляем все, кроме измененного продукта  */
             foreach($ReturnOrderDTO->getProduct() as $OrderProductDTO)

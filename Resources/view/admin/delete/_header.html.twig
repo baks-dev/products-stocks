@@ -1,0 +1,65 @@
+{% set arr_property = product.category_section_field|json_decode %}
+
+<div class="modal-header">
+
+    <div class="d-flex gap-3">
+
+        {# Обложка  #}
+        <div>
+            {% set image_path = '/assets/'~version~'/img/blank.svg' %}
+
+            {% if product.product_image_ext is defined and product.product_image_ext is not null %}
+                {% set img_host =  product.product_image_cdn == true  ? CDN_HOST : '' %}
+                {% set img_dir = product.product_image %}
+                {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ product.product_image_ext %}
+                {% set image_path = img_host ~ img_dir ~ img_file %}
+            {% endif %}
+
+            <div class="icon rounded-3 bg-contain lazy p-1" style="width: 50px; height: 50px;"
+                 data-bg="{{ image_path }}">
+            </div>
+        </div>
+
+        {# Название продукта  #}
+        <div class="d-flex flex-column align-items-start">
+
+            <h5 class="modal-title d-flex align-items-center gap-3">
+
+                {{ product.product_name }}
+
+                {# Значение множественного варианта ТП #}
+                {{ product.product_variation_value|call_twig_func(product.product_variation_reference~'_render')
+                ~ product.product_modification_value|call_twig_func(product.product_modification_reference~'_render') }}
+
+                {# Значение торгового предложения #}
+                {{ product.product_offer_value|call_twig_func(product.product_offer_reference~'_render') }}
+
+                {# Постфикс торгового предложения #}
+                {{ product.product_offer_postfix }}
+                {# Постфикс множественного варианта #}
+                {{ product.product_variation_postfix }}
+                {# Постфикс модификации #}
+                {{ product.product_modification_postfix }}
+
+                {# Свойства, учавствующие в названии #}
+                {% for name_property in arr_property | filter(props => props.field_name == true) %}
+                    {{ name_property.field_value|call_twig_func(name_property.field_type) }}
+                {% endfor %}
+
+            </h5>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="small">Артикул: {{ product.product_article }}</span>
+
+                {# Свойства, учавствующие в превью карточки #}
+                {% for name_property in  arr_property | filter(props => props.field_card is defined and props.field_card == true) %}
+                    {{ name_property.field_value|call_twig_func(name_property.field_type~'_render') }}
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+

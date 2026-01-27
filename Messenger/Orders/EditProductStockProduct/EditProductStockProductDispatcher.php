@@ -156,6 +156,9 @@ final readonly class EditProductStockProductDispatcher
         $EditOrderDTO = new EditOrderDTO();
         $OrderEvent->getDto($EditOrderDTO);
 
+        /** Номер текущей заявки */
+        $ProductStockNumber = $ProductStockEvent->getNumber();
+
         /**
          * Находим расхождение в количестве продукции между ЗАКАЗОМ и его СКЛАДСКОЙ ЗАЯВКОЙ
          *
@@ -201,8 +204,6 @@ final readonly class EditProductStockProductDispatcher
                 ->send('remove');
         }
 
-        /** Номер текущей заявки */
-        $ProductStockNumber = $ProductStockEvent->getNumber();
 
         /** Invariable */
         $ProductStockInvariableDTO = $EditProductStockDTO->getInvariable();

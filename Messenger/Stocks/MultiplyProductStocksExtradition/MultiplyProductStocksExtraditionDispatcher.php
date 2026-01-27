@@ -116,8 +116,10 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         }
 
         /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
-        $this->UserTokenStorage->authorization($message->getCurrentUser());
-
+        if(false === $this->UserTokenStorage->isUser())
+        {
+            $this->UserTokenStorage->authorization($message->getCurrentUser());
+        }
 
         $ProductStock = $this->ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
