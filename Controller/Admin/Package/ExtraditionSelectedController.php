@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -69,35 +69,7 @@ final class ExtraditionSelectedController extends AbstractController
             )
             ->handleRequest($request);
 
-        $products = [];
-        $stock_numbers = [];
-        $productStockEventEntity = null;
 
-        /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
-        foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
-        {
-            $productStockEventEntity = $productStocksEvent
-                ->forEvent($ExtraditionProductStockDTO->getEvent())
-                ->find();
-
-            if(false === ($productStockEventEntity instanceof ProductStockEvent))
-            {
-                $ExtraditionSelectedProductStockDTO->removeCollection($ExtraditionProductStockDTO);
-
-                continue;
-            }
-
-            /** Скрываем идентификатор у остальных пользователей */
-
-            $publish
-                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
-                ->addData(['identifier' => (string) $productStockEventEntity->getMain()])
-                ->send('remove');
-
-
-            $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
-        }
 
 
         if($form->isSubmitted() && $form->isValid() && $form->has('extradition_selected_package'))
@@ -141,6 +113,38 @@ final class ExtraditionSelectedController extends AbstractController
         {
             throw new InvalidArgumentException('Page Not Found');
         }
+
+
+        $products = [];
+        $stock_numbers = [];
+        $productStockEventEntity = null;
+
+        /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
+        foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
+        {
+            $productStockEventEntity = $productStocksEvent
+                ->forEvent($ExtraditionProductStockDTO->getEvent())
+                ->find();
+
+            if(false === ($productStockEventEntity instanceof ProductStockEvent))
+            {
+                $ExtraditionSelectedProductStockDTO->removeCollection($ExtraditionProductStockDTO);
+
+                continue;
+            }
+
+            /** Скрываем идентификатор у остальных пользователей */
+
+            $publish
+                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+                ->addData(['identifier' => (string) $productStockEventEntity->getMain()])
+                ->send('remove');
+
+
+            $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
+            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
+        }
+
 
 
         /** Выводим несколько заявок */

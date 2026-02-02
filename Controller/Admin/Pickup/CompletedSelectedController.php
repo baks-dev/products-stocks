@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -72,30 +72,6 @@ final class CompletedSelectedController extends AbstractController
             )
             ->handleRequest($request);
 
-        $products = [];
-
-        /** @var CompletedProductStockDTO $CompletedProductStockDTO */
-        foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
-        {
-            $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
-
-            if(false === ($productStocksEventEntity instanceof ProductStockEvent))
-            {
-                $CompletedSelectedProductStockDTO->removeCollection($productStocksEventEntity);
-
-                continue;
-            }
-
-            /** Скрываем идентификатор у остальных пользователей */
-
-            $publish
-                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
-                ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
-                ->send('remove');
-
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
-        }
-
 
         if($form->isSubmitted() && $form->isValid() && $form->has('completed_selected_package'))
         {
@@ -137,6 +113,31 @@ final class CompletedSelectedController extends AbstractController
         {
             throw new InvalidArgumentException('Page Not Found');
         }
+
+        $products = [];
+
+        /** @var CompletedProductStockDTO $CompletedProductStockDTO */
+        foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
+        {
+            $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
+
+            if(false === ($productStocksEventEntity instanceof ProductStockEvent))
+            {
+                $CompletedSelectedProductStockDTO->removeCollection($productStocksEventEntity);
+
+                continue;
+            }
+
+            /** Скрываем идентификатор у остальных пользователей */
+
+            $publish
+                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
+                ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
+                ->send('remove');
+
+            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
+        }
+
 
         /** Выводим несколько заказов */
         if($CompletedSelectedProductStockDTO->getCollection()->count() > 1)
