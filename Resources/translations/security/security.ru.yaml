@@ -27,6 +27,9 @@ ROLE_PRODUCT_STOCK_CANCEL:
   name: 'Отмена'
   desc: 'Отменить заявку'
 
+ROLE_PRODUCT_STOCK_DELETE:
+  name: 'Удалить'
+  desc: 'Удалить складскую заявку'
 
 # Правила
 
@@ -65,11 +68,6 @@ ROLE_PRODUCT_STOCK_PURCHASE:
 ROLE_PRODUCT_STOCK_PURCHASE_NEW:
   name: 'Добавить закупку'
   desc: 'Добавить закупку товара на склад'
-
-ROLE_PRODUCT_STOCK_PURCHASE_DELETE:
-  name: 'Удалить закупку'
-  desc: 'Удалить закупку'
-
 
 
 ROLE_PRODUCT_STOCK_WAREHOUSE:

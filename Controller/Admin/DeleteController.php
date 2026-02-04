@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Controller\Admin\Purchase;
+namespace BaksDev\Products\Stocks\Controller\Admin;
 
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
@@ -42,10 +42,10 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCK_PURCHASE_DELETE')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_DELETE')]
 final class DeleteController extends AbstractController
 {
-    #[Route('/admin/product/stock/purchase/delete/{id}', name: 'admin.purchase.delete', methods: ['GET', 'POST'])]
+    #[Route('/admin/product/stock/delete/{id}', name: 'admin.delete', methods: ['GET', 'POST'])]
     public function delete(
         Request $request,
         #[MapEntity] ProductStockEvent $ProductStocksEvent,
@@ -58,8 +58,8 @@ final class DeleteController extends AbstractController
 
         $form = $this->createForm(DeleteProductStocksForm::class, $ProductStocksDeleteDTO, [
             'action' => $this->generateUrl(
-                'products-stocks:admin.purchase.delete',
-                ['id' => $ProductStocksDeleteDTO->getEvent()]
+                'products-stocks:admin.delete',
+                ['id' => $ProductStocksDeleteDTO->getEvent()],
             ),
         ]);
 
@@ -70,21 +70,24 @@ final class DeleteController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            $handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
+            //$handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
 
-            $this->addFlash(
+            $handle = null;
+
+            $JsonResponse = $this->addFlash(
                 'page.purchase',
                 $handle instanceof ProductStock ? 'success.delete' : 'danger.delete',
                 'products-stocks.admin',
-                $handle
+                $handle,
             );
 
-            return $this->redirectToRoute('products-stocks:admin.purchase.index');
+            return $JsonResponse ?: $this->redirectToReferer();
         }
 
         /**
          * Получаем информацию о продукте для отображения в форме.
          * Предполагается что в коллекции закупки должен быть один продукт.
+         *
          * @var ProductStockProduct $ProductStockProduct
          */
 
@@ -107,6 +110,10 @@ final class DeleteController extends AbstractController
             throw new InvalidArgumentException('Product not found');
         }
 
-        return $this->render(['form' => $form->createView(), 'product' => $product]);
+        return $this->render([
+            'form' => $form->createView(),
+            'number' => $ProductStocksEvent->getNumber(),
+            'product' => $product,
+        ]);
     }
 }

@@ -303,7 +303,6 @@
             {# Текстовый результат фильтра #}
             {% include Template('@products-product/filter/'~baks_settings.device~'/filter_text.html.twig') %}
 
-
             {% for item in query.data %}
                 {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
             {% else %}
