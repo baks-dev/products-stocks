@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,6 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- *
  */
 
 declare(strict_types=1);
@@ -29,6 +28,7 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Archive\ProductStockArchive;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Print\ProductStockPrint;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Supply\ProductStockSupply;
@@ -130,6 +130,10 @@ class ProductStockEvent extends EntityEvent
     /** Флаг, если акт приема-передачи по заявке был отпечатан */
     #[ORM\OneToOne(targetEntity: ProductStockPrint::class, mappedBy: 'event', cascade: ['all'])]
     private ?ProductStockPrint $printed = null;
+
+    /** Флаг, помечает архивные заявки, возникает при нулевых остатках на складе */
+    #[ORM\OneToOne(targetEntity: ProductStockArchive::class, mappedBy: 'event', cascade: ['all'])]
+    private ?ProductStockArchive $archive = null;
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]

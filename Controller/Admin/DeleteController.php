@@ -70,9 +70,7 @@ final class DeleteController extends AbstractController
         {
             $this->refreshTokenForm($form);
 
-            //$handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
-
-            $handle = null;
+            $handle = $ProductStocksDeleteHandler->handle($ProductStocksDeleteDTO);
 
             $JsonResponse = $this->addFlash(
                 'page.purchase',
