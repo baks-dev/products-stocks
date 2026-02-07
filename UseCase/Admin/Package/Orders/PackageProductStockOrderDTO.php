@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -29,7 +29,7 @@ use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
 
 /** @see ProductStockOrder */
-final class ProductStockOrderDTO implements ProductStockOrderInterface
+final class PackageProductStockOrderDTO implements ProductStockOrderInterface
 {
     /** Идентификатор заказа для сборки */
     private ?OrderUid $ord = null;

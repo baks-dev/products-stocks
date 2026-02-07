@@ -133,7 +133,7 @@ class ProductStockEvent extends EntityEvent
 
     /** Флаг, помечает архивные заявки, возникает при нулевых остатках на складе */
     #[ORM\OneToOne(targetEntity: ProductStockArchive::class, mappedBy: 'event', cascade: ['all'])]
-    private ?ProductStockArchive $archive = null;
+    private ProductStockArchive $archive;
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -305,6 +305,11 @@ class ProductStockEvent extends EntityEvent
     public function isPrinted(): bool
     {
         return $this->printed?->isPrinted() === true;
+    }
+
+    public function isArchive(): bool
+    {
+        return $this->archive->isArchive() === true;
     }
 
     public function getStatus(): ProductStockStatus

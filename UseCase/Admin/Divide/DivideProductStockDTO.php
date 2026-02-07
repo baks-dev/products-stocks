@@ -29,6 +29,9 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDivide;
+use BaksDev\Products\Stocks\UseCase\Admin\Divide\Archive\DivideProductStockArchiveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Divide\Invariable\DivideOrderInvariableDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Divide\Orders\DivideProductStockOrderDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,6 +44,7 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
 
     /**
      * Ответственное лицо (Профиль пользователя)
+     *
      * @deprecated Переносится в Invariable
      */
     #[Assert\Uuid]
@@ -48,7 +52,7 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
 
     /** Постоянная величина */
     #[Assert\Valid]
-    private readonly Invariable\DivideOrderInvariableDTO $invariable;
+    private readonly DivideOrderInvariableDTO $invariable;
 
 
     /** Статус заявки - УПАКОВКА */
@@ -62,7 +66,7 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
     private string $number;
 
     /** Идентификатор заказа на сборку */
-    private Orders\DivideProductStockOrderDTO $ord;
+    private DivideProductStockOrderDTO $ord;
 
     /** Коллекция продукции  */
     #[Assert\Valid]
@@ -71,14 +75,19 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
     /** Комментарий */
     private ?string $comment = null;
 
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private DivideProductStockArchiveDTO $archive;
+
     public function __construct(/*User|UserUid $user*/)
     {
         $this->status = new ProductStockStatus(new ProductStockStatusDivide());
         $this->product = new ArrayCollection();
         $this->number = number_format(microtime(true) * 100, 0, '.', '.');
-        $this->ord = new Orders\DivideProductStockOrderDTO();
+        $this->ord = new DivideProductStockOrderDTO();
 
-        $this->invariable = new Invariable\DivideOrderInvariableDTO();
+        $this->invariable = new DivideOrderInvariableDTO();
+        $this->archive = new DivideProductStockArchiveDTO();
 
         //        $user = $user instanceof User ? $user->getId() : $user;
         //        $this->invariable->setUsr($user);
@@ -133,6 +142,7 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
 
     /**
      * Ответственное лицо (Профиль пользователя)
+     *
      * @deprecated Переносится в Invariable
      */
     public function getProfile(): ?UserProfileUid
@@ -181,13 +191,13 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
 
     /** Идентификатор заказа на сборку */
 
-    public function getOrd(): Orders\DivideProductStockOrderDTO
+    public function getOrd(): DivideProductStockOrderDTO
     {
         return $this->ord;
     }
 
 
-    public function setOrd(Orders\DivideProductStockOrderDTO $ord): void
+    public function setOrd(DivideProductStockOrderDTO $ord): void
     {
         $this->ord = $ord;
     }
@@ -195,9 +205,13 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
     /**
      * Invariable
      */
-    public function getInvariable(): Invariable\DivideOrderInvariableDTO
+    public function getInvariable(): DivideOrderInvariableDTO
     {
         return $this->invariable;
     }
 
+    public function getArchive(): DivideProductStockArchiveDTO
+    {
+        return $this->archive;
+    }
 }

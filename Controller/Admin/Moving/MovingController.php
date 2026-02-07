@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\CollectionMovingProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\CollectionMovingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockProductDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -53,12 +53,12 @@ final class MovingController extends AbstractController
         ProductDetailByConstInterface $productDetailByConst
     ): Response
     {
-        $movingDTO = new MovingProductStockDTO($this->getUsr())->setDestinationWarehouse($this->getProfileUid());
+        $movingDTO = new CollectionMovingProductStockDTO($this->getUsr())->setDestinationWarehouse($this->getProfileUid());
 
         // Форма заявки
         $form = $this
             ->createForm(
-                type: MovingProductStockForm::class,
+                type: CollectionMovingProductStockForm::class,
                 data: $movingDTO,
                 options: ['action' => $this->generateUrl('products-stocks:admin.moving.new')],
             )
@@ -74,7 +74,7 @@ final class MovingController extends AbstractController
              * Создаем каждое отдельно перемещение
              */
 
-            /** @var ProductStockDTO $move */
+            /** @var MovingProductStockDTO $move */
             foreach($movingDTO->getMove() as $move)
             {
                 /**

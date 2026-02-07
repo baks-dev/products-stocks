@@ -39,10 +39,9 @@ use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
-use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\ProductStockOrderDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\PackageProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
-use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\ProductStockDTO;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
@@ -126,7 +125,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
                 ->forModification($OrderProduct->getModification())
                 ->find();
 
-            $ProductStockDTO = new ProductStockDTO()
+            $ProductStockDTO = new PackageProductStockDTO()
                 ->setProduct($currentProductIdentifierResult->getProduct())
                 ->setOffer($currentProductIdentifierResult->getOfferConst())
                 ->setVariation($currentProductIdentifierResult->getVariationConst())
@@ -144,7 +143,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
             ->setProfile($message->getUserProfile());
 
         // Присваиваем заявке идентификатор заказа
-        $productStockOrderDTO = new ProductStockOrderDTO();
+        $productStockOrderDTO = new PackageProductStockOrderDTO();
         $productStockOrderDTO->setOrd($OrderEvent->getMain());
 
         $PackageProductStockDTO->setOrd($productStockOrderDTO);

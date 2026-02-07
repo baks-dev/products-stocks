@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\Collection\ProductSto
 use BaksDev\Products\Stocks\UseCase\Admin\Incoming\Tests\IncomingProductStockTest;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\CollectionPackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\Price\PackageOrderPriceDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\ProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
@@ -116,7 +116,7 @@ final class PackageProductStockTest extends KernelTestCase
         self::assertEquals('PackageComment', $PackageProductStockDTO->getComment());
 
 
-        $ProductStockDTO = new ProductStockDTO();
+        $ProductStockDTO = new CollectionPackageProductStockDTO();
 
         $ProductUid = new ProductUid();
         $ProductStockDTO->setProduct($ProductUid);

@@ -29,6 +29,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
+use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Archive\WarehouseProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Invariable\WarehouseProductStocksInvariableDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Move\ProductStockMoveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Warehouse\Products\ProductStockDTO;
@@ -64,8 +65,14 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     #[Assert\Valid]
     private ArrayCollection $product;
 
+    #[Assert\Valid]
     private WarehouseProductStocksInvariableDTO $invariable;
 
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private WarehouseProductStockArchiveDTO $archive;
+
+    #[Assert\Valid]
     private ?ProductStockSupplyDTO $supply = null;
 
     public function __construct()
@@ -74,6 +81,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         $this->fixed = null;
         $this->product = new ArrayCollection();
         $this->invariable = new WarehouseProductStocksInvariableDTO();
+        $this->archive = new WarehouseProductStockArchiveDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -161,7 +169,7 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     /**
      * Supply
      */
-    public function setSupply(?ProductStockSupplyDTO $supply): WarehouseProductStockDTO
+    public function setSupply(?ProductStockSupplyDTO $supply): self
     {
         $this->supply = $supply;
         return $this;
@@ -170,5 +178,10 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     public function getSupply(): ?ProductStockSupplyDTO
     {
         return $this->supply;
+    }
+
+    public function getArchive(): WarehouseProductStockArchiveDTO
+    {
+        return $this->archive;
     }
 }

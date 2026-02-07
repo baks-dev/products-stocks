@@ -32,6 +32,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDecommission;
+use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Archive\DecommissionProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Invariable\DecommissionProductStockInvariableDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Orders\DecommissionProductStockOrderDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -64,12 +65,17 @@ final class DecommissionProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private DecommissionProductStockArchiveDTO $archive;
+
     public function __construct()
     {
         $this->status = new ProductStockStatus(ProductStockStatusDecommission::class);
         $this->product = new ArrayCollection();
         $this->ord = new DecommissionProductStockOrderDTO();
         $this->invariable = new DecommissionProductStockInvariableDTO();
+        $this->archive = new DecommissionProductStockArchiveDTO();
     }
 
     public function getEvent(): ?Uid
@@ -159,5 +165,10 @@ final class DecommissionProductStockDTO implements ProductStockEventInterface
     {
         $this->invariable = $invariable;
         return $this;
+    }
+
+    public function getArchive(): DecommissionProductStockArchiveDTO
+    {
+        return $this->archive;
     }
 }

@@ -35,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @see ProductStockMaterial
  * @see OrderProduct
  */
-final class ProductStockDTO implements ProductStockProductInterface, OrderProductInterface
+final class CollectionPackageProductStockDTO implements ProductStockProductInterface, OrderProductInterface
 {
     /** Продукт */
     #[Assert\NotBlank]
@@ -60,6 +60,8 @@ final class ProductStockDTO implements ProductStockProductInterface, OrderProduc
 
     /** Количество в заявке */
     private int $total = 0;
+
+    public function __construct() {}
 
 
     /** Продукт */

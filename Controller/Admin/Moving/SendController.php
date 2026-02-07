@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstInterface;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\MovingProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockProductDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\ProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\SendProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Send\SendProductStockForm;
+use BaksDev\Products\Stocks\UseCase\Admin\Send\CollectionSendProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Send\CollectionSendProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Send\SendProductStockHandler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,14 +53,14 @@ final class SendController extends AbstractController
         ProductDetailByConstInterface $productDetailByConst
     ): Response
     {
-        $movingDTO = new SendProductStockDTO($this->getUsr())
+        $movingDTO = new CollectionSendProductStockDTO($this->getUsr())
             //->setDestinationWarehouse($this->getProfileUid())
             ->setTargetWarehouse($this->getProfileUid());
 
         // Форма заявки
         $form = $this
             ->createForm(
-                type: SendProductStockForm::class,
+                type: CollectionSendProductStockForm::class,
                 data: $movingDTO,
                 options: ['action' => $this->generateUrl('products-stocks:admin.moving.send')],
             )
@@ -76,7 +76,7 @@ final class SendController extends AbstractController
              * Создаем каждое отдельно перемещение
              */
 
-            /** @var ProductStockDTO $move */
+            /** @var MovingProductStockDTO $move */
             foreach($movingDTO->getMove() as $move)
             {
                 /**

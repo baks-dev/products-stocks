@@ -33,6 +33,8 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPurchase;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Archive\MovingProductStockArchiveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Archive\PurchaseProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Invariable\PurchaseProductStocksInvariableDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -46,11 +48,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     #[Assert\IsNull]
     private ?ProductStockEventUid $id = null;
 
-    //    /** Ответственное лицо (Профиль пользователя) */
-    //    #[Assert\NotBlank]
-    //    #[Assert\Uuid]
-    //    private readonly UserProfileUid $profile;
-
     /** Статус заявки - ПРИХОД */
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
@@ -63,7 +60,12 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    #[Assert\Valid]
     private PurchaseProductStocksInvariableDTO $invariable;
+
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private PurchaseProductStockArchiveDTO $archive;
 
     // Вспомогательные свойства
 
@@ -90,6 +92,7 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         $this->status = new ProductStockStatus(ProductStockStatusPurchase::class);
         $this->product = new ArrayCollection();
         $this->invariable = new PurchaseProductStocksInvariableDTO();
+        $this->archive = new PurchaseProductStockArchiveDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -158,19 +161,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
-    //    /** Ответственное лицо (Профиль пользователя) */
-    //    public function getProfile(): UserProfileUid
-    //    {
-    //        return $this->profile;
-    //    }
-    //
-    //    public function setProfile(UserProfileUid $profile): self
-    //    {
-    //        $this->profile = $profile;
-    //        return $this;
-    //    }
-
-
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
     {
@@ -184,35 +174,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
     {
         return $this->invariable;
     }
-
-
-
-    //    /** Номер заявки */
-    //
-    //    public function getNumber(): string
-    //    {
-    //        return $this->number;
-    //    }
-    //
-    //    public function setNumber(string $number): void
-    //    {
-    //        $this->number = $number;
-    //    }
-
-
-    /** ВСПОМОГАТЕЛЬНЫЕ СВОЙСТВА */
-
-    //    // WAREHOUSE
-    //
-    //    public function getPreWarehouse(): ?ContactsRegionCallUid
-    //    {
-    //        return $this->preWarehouse;
-    //    }
-    //
-    //    public function setPreWarehouse(?ContactsRegionCallUid $warehouse): void
-    //    {
-    //        $this->preWarehouse = $warehouse;
-    //    }
 
     // PRODUCT
 
@@ -274,5 +235,9 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         $this->preTotal = $total;
     }
 
+    public function getArchive(): PurchaseProductStockArchiveDTO
+    {
+        return $this->archive;
+    }
 
 }
