@@ -27,11 +27,11 @@ executeFunc((function productMovingForm()
 
     setTimeout(function init_YFwgubGn()
     {
-        let object_product = document.getElementById("moving_product_stock_form_preProduct");
+        let object_product = document.getElementById("collection_moving_product_stock_form_preProduct");
 
         if(object_product)
         {
-            let focus = document.getElementById("moving_product_stock_form_preProduct_select2");
+            let focus = document.getElementById("collection_moving_product_stock_form_preProduct_select2");
             /** Если значение уже выбрано - не фокусируемся */
             focus && !object_product.value ? focus.click() : null;
 
@@ -42,7 +42,7 @@ executeFunc((function productMovingForm()
                 return false;
             });
 
-            let $addButtonStock = document.getElementById("moving_product_stock_form_addMoving");
+            let $addButtonStock = document.getElementById("collection_moving_product_stock_form_addMoving");
 
             if($addButtonStock)
             {
@@ -51,7 +51,7 @@ executeFunc((function productMovingForm()
 
 
             /** Если есть предзаполненные данные по продукту - вешаем событие на определение max у поля preTotal */
-            let object_warehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+            let object_warehouse = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
 
             if(object_product.value)
             {
@@ -60,7 +60,7 @@ executeFunc((function productMovingForm()
 
 
             ///* Имя формы */
-            //let forms = document.forms.moving_product_stock_form;
+            //let forms = document.forms.collection_moving_product_stock_form;
             //
             ///* событие отправки формы */
             //forms.addEventListener("submit", function(event)
@@ -74,11 +74,11 @@ executeFunc((function productMovingForm()
             if(object_warehouse.value)
             {
                 let index = object_warehouse.selectedIndex;
-                document.getElementById("moving_product_stock_form_preTotal").setAttribute("max", object_warehouse.options[index].dataset.max);
+                document.getElementById("collection_moving_product_stock_form_preTotal").setAttribute("max", object_warehouse.options[index].dataset.max);
 
                 setTimeout(function()
                 {
-                    let focusTotal = document.getElementById("moving_product_stock_form_preTotal");
+                    let focusTotal = document.getElementById("collection_moving_product_stock_form_preTotal");
                 }, 100);
             }
 
@@ -137,7 +137,7 @@ executeFunc((function productMovingForm()
                 {
                     /** SELECT2 */
 
-                    let replaceOfferId = "moving_product_stock_form_preOffer";
+                    let replaceOfferId = "collection_moving_product_stock_form_preOffer";
 
                     let replacer = document.getElementById(replaceOfferId);
 
@@ -146,7 +146,7 @@ executeFunc((function productMovingForm()
                         new NiceSelect(replacer, {searchable : true});
                     }
 
-                    let focus = document.getElementById("moving_product_stock_form_preOffer_select2");
+                    let focus = document.getElementById("collection_moving_product_stock_form_preOffer_select2");
                     focus ? focus.click() : null;
                 }
                 else
@@ -158,7 +158,7 @@ executeFunc((function productMovingForm()
                         document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        let replacerWarehouse = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
                         replacer.addEventListener("change", changeObjectWarehouse, false);
 
                         if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
@@ -178,7 +178,7 @@ executeFunc((function productMovingForm()
 
 
                 /** Событие на изменение торгового предложения */
-                let offerChange = document.getElementById("moving_product_stock_form_preOffer");
+                let offerChange = document.getElementById("collection_moving_product_stock_form_preOffer");
 
                 if(offerChange)
                 {
@@ -235,7 +235,7 @@ executeFunc((function productMovingForm()
                     document.getElementById("preVariation").replaceWith(preVariation);
 
                     /** SELECT2 */
-                    let replacer = document.getElementById("moving_product_stock_form_preVariation");
+                    let replacer = document.getElementById("collection_moving_product_stock_form_preVariation");
 
                     if(replacer)
                     {
@@ -250,7 +250,7 @@ executeFunc((function productMovingForm()
                             return false;
                         });
 
-                        let focus = document.getElementById("moving_product_stock_form_preVariation_select2");
+                        let focus = document.getElementById("collection_moving_product_stock_form_preVariation_select2");
                         focus ? focus.click() : null;
                     }
                 }
@@ -264,7 +264,7 @@ executeFunc((function productMovingForm()
                         document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        let replacerWarehouse = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
                         replacer.addEventListener("change", changeObjectWarehouse, false);
 
                         if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
@@ -320,7 +320,7 @@ executeFunc((function productMovingForm()
                     document.getElementById("preModification").replaceWith(preModification);
 
                     /** SELECT2 */
-                    let replacer = document.getElementById("moving_product_stock_form_preModification");
+                    let replacer = document.getElementById("collection_moving_product_stock_form_preModification");
 
                     /** Событие на изменение модификации */
                     if(replacer)
@@ -336,7 +336,7 @@ executeFunc((function productMovingForm()
                             return false;
                         });
 
-                        let focus = document.getElementById("moving_product_stock_form_preModification_select2");
+                        let focus = document.getElementById("collection_moving_product_stock_form_preModification_select2");
                         focus ? focus.click() : null;
                     }
                 }
@@ -350,7 +350,7 @@ executeFunc((function productMovingForm()
                         document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacerWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        let replacerWarehouse = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
                         replacer.addEventListener("change", changeObjectWarehouse, false);
 
                         if(replacerWarehouse && replacerWarehouse.tagName === "SELECT")
@@ -404,7 +404,7 @@ executeFunc((function productMovingForm()
 
                     let targetWarehouse = result.getElementById("targetWarehouse");
 
-                    targetWarehouse.querySelector("#moving_product_stock_form_targetWarehouse").classList.remove("is-invalid");
+                    targetWarehouse.querySelector("#collection_moving_product_stock_form_targetWarehouse").classList.remove("is-invalid");
                     (targetWarehouse.querySelector(".invalid-feedback"))?.remove();
 
                     if(targetWarehouse)
@@ -413,7 +413,7 @@ executeFunc((function productMovingForm()
                         document.getElementById("targetWarehouse").replaceWith(targetWarehouse);
 
                         /** SELECT2 */
-                        let replacer = document.getElementById("moving_product_stock_form_targetWarehouse");
+                        let replacer = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
                         replacer.addEventListener("change", changeObjectWarehouse, false);
 
                         if(replacer && replacer.tagName === "SELECT")
@@ -421,7 +421,7 @@ executeFunc((function productMovingForm()
                             new NiceSelect(replacer, {searchable : true});
                         }
 
-                        let focus = document.getElementById("moving_product_stock_form_targetWarehouse_select2");
+                        let focus = document.getElementById("collection_moving_product_stock_form_targetWarehouse_select2");
                         focus ? focus.click() : null;
 
                     }
@@ -435,11 +435,11 @@ executeFunc((function productMovingForm()
     function changeObjectWarehouse()
     {
         let index = this.selectedIndex;
-        document.getElementById("moving_product_stock_form_preTotal").setAttribute("max", this.options[index].dataset.max);
+        document.getElementById("collection_moving_product_stock_form_preTotal").setAttribute("max", this.options[index].dataset.max);
 
         setTimeout(function()
         {
-            let focusTotal = document.getElementById("moving_product_stock_form_preTotal");
+            let focusTotal = document.getElementById("collection_moving_product_stock_form_preTotal");
             focusTotal ? focusTotal.focus() : null;
         }, 100);
     }
@@ -457,7 +457,7 @@ executeFunc((function productMovingForm()
         let header = "Добавить лист перемещения продукции";
 
 
-        let $preTotal = document.getElementById("moving_product_stock_form_preTotal");
+        let $preTotal = document.getElementById("collection_moving_product_stock_form_preTotal");
         let $TOTAL = $preTotal.value * 1;
 
         let $totalMax = $preTotal.getAttribute("max");
@@ -490,7 +490,7 @@ executeFunc((function productMovingForm()
         }
 
 
-        let $targetWarehouse = document.getElementById("moving_product_stock_form_targetWarehouse");
+        let $targetWarehouse = document.getElementById("collection_moving_product_stock_form_targetWarehouse");
         if($targetWarehouse.value.length === 0)
         {
 
@@ -501,7 +501,7 @@ executeFunc((function productMovingForm()
         }
 
 
-        let $preProduct = document.getElementById("moving_product_stock_form_preProduct");
+        let $preProduct = document.getElementById("collection_moving_product_stock_form_preProduct");
         if($preProduct.value.length === 0)
         {
 
@@ -511,9 +511,9 @@ executeFunc((function productMovingForm()
 
         }
 
-        let $destinationWarehouse = document.getElementById("moving_product_stock_form_destinationWarehouse");
+        let $destinationWarehouse = document.getElementById("collection_moving_product_stock_form_destinationWarehouse");
 
-        let $preOffer = document.getElementById("moving_product_stock_form_preOffer");
+        let $preOffer = document.getElementById("collection_moving_product_stock_form_preOffer");
         if($preOffer)
         {
             if($preOffer.tagName === "SELECT" && $preOffer.value.length === 0)
@@ -526,7 +526,7 @@ executeFunc((function productMovingForm()
         }
 
 
-        let $preVariation = document.getElementById("moving_product_stock_form_preVariation");
+        let $preVariation = document.getElementById("collection_moving_product_stock_form_preVariation");
         if($preVariation)
         {
             if($preVariation.tagName === "SELECT" && $preVariation.value.length === 0)
@@ -538,7 +538,7 @@ executeFunc((function productMovingForm()
             }
         }
 
-        let $preModification = document.getElementById("moving_product_stock_form_preModification");
+        let $preModification = document.getElementById("collection_moving_product_stock_form_preModification");
         if($preModification)
         {
             if($preModification.tagName === "SELECT" && $preModification.value.length === 0)
@@ -617,19 +617,19 @@ executeFunc((function productMovingForm()
 
         /** Заполняем значения скрытых элементо */
 
-        let $warehouse = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_move_warehouse");
+        let $warehouse = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_move_warehouse");
 
-        let $destination = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_move_destination");
+        let $destination = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_move_destination");
 
-        let $product = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_product_" + index + "_product");
+        let $product = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_product_" + index + "_product");
 
-        let $offer = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_product_" + index + "_offer");
+        let $offer = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_product_" + index + "_offer");
 
-        let $variation = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_product_" + index + "_variation");
+        let $variation = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_product_" + index + "_variation");
 
-        let $modification = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_product_" + index + "_modification");
+        let $modification = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_product_" + index + "_modification");
 
-        let $total = stockDiv.querySelector("#moving_product_stock_form_move_" + index + "_product_" + index + "_total");
+        let $total = stockDiv.querySelector("#collection_moving_product_stock_form_move_" + index + "_product_" + index + "_total");
 
 
         $warehouse.value = $targetWarehouse.value;
@@ -656,19 +656,19 @@ executeFunc((function productMovingForm()
 
         collectionStock.set($targetWarehouse.value + $preProduct.value + $preOffer.value + $preVariation.value + $preModification.value);
 
-        document.getElementById("moving_product_stock_form_preOffer_select2").remove();
-        //document.getElementById('moving_product_stock_form_preOffer').remove();
+        document.getElementById("collection_moving_product_stock_form_preOffer_select2").remove();
+        //document.getElementById('collection_moving_product_stock_form_preOffer').remove();
 
-        document.getElementById("moving_product_stock_form_preVariation_select2").remove();
-        //document.getElementById('moving_product_stock_form_preVariation').remove();
+        document.getElementById("collection_moving_product_stock_form_preVariation_select2").remove();
+        //document.getElementById('collection_moving_product_stock_form_preVariation').remove();
 
-        document.getElementById("moving_product_stock_form_preModification_select2").remove();
-        //document.getElementById('moving_product_stock_form_preModification').remove();
+        document.getElementById("collection_moving_product_stock_form_preModification_select2").remove();
+        //document.getElementById('collection_moving_product_stock_form_preModification').remove();
 
 
         setTimeout(() =>
         {
-            document.getElementById("moving_product_stock_form_preProduct_select2").click();
+            document.getElementById("collection_moving_product_stock_form_preProduct_select2").click();
         }, 100);
     }
 
