@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Modify\ProductModify;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\Price\ProductOfferPrice;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
@@ -193,6 +194,15 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_event',
             'product_event.id = product.event',
         );
+
+        $dbal
+            ->addSelect('product_modify.mod_date AS modify')
+            ->leftJoin(
+                'product',
+                ProductModify::class,
+                'product_modify',
+                'product_modify.event = product.event',
+            );
 
         $dbal
             ->addSelect('product_info.url AS product_url')
@@ -744,7 +754,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         $dbal->addOrderBy('product_offer.value');
         $dbal->addOrderBy('product_variation.value');
         $dbal->addOrderBy('product_modification.value');
-
 
 
         if($this->limit)

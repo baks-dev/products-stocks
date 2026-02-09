@@ -1,6 +1,6 @@
-<?php 
+<?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModifi
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Reference\Money\Type\Money;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use DateTimeImmutable;
 
 final readonly class AllProductStocksResult implements ProductPriceResultInterface
 {
@@ -50,6 +51,8 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private string $product_event, //" => "01963548-294f-71a6-b4b5-705cc4c470bd"
         private string $product_url, //" => "triangle_advantex_tc101"
         private string $product_name, //" => "Triangle AdvanteX TC101"
+        private string $modify, //" => "Triangle AdvanteX TC101"
+
         private ?string $product_offer_uid, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
         private ?string $product_offer_value, //" => "15"
         private ?string $product_offer_postfix, //" => null
@@ -337,5 +340,10 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
     public function getProductModificationConst(): ?string
     {
         return $this->product_modification_const;
+    }
+
+    public function getDateModify(): DateTimeImmutable
+    {
+        return new DateTimeImmutable($this->modify);
     }
 }
