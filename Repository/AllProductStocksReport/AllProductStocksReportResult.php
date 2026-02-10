@@ -43,6 +43,7 @@ final readonly class AllProductStocksReportResult
         private ?string $product_modification_postfix,
         private ?string $product_modification_reference,
         private ?string $product_article,
+        private ?string $barcode,
         private ?string $profiles_totals,
         private ?int $product_price,
         private ?int $old_product_price,
@@ -142,5 +143,10 @@ final readonly class AllProductStocksReportResult
     public function getOldProductPrice(): ?Money
     {
         return false === empty($this->old_product_price) ? new Money($this->old_product_price, true) : null;
+    }
+
+    public function getBarcode(): ?string
+    {
+        return $this->barcode;
     }
 }

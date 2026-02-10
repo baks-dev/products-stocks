@@ -88,7 +88,7 @@ final class ReportController extends AbstractController
         /**
          * Задаем список колонок, которые будут отображаться перед колонками с количеством продукции на разных складах
          */
-        $columns = ['Артикул', 'Наименование', 'Торговое предложение', 'Стоимость', 'Старая цена'];
+        $columns = ['Штрихкод', 'Артикул', 'Наименование', 'Торговое предложение', 'Стоимость', 'Старая цена'];
 
 
         /** Количество колонок */
@@ -155,6 +155,7 @@ final class ReportController extends AbstractController
         /** Заполнение данных начиная с ряда $key */
         $key = 3;
 
+        /** @var AllProductStocksReportResult $data */
         foreach($query as $data)
         {
             /**
@@ -203,24 +204,27 @@ final class ReportController extends AbstractController
             $Money = $data->getProductPrice();
 
 
+            // Штрихкод
+            $sheet->setCellValue('A'.$key, $data->getBarcode());
+
             // Артикул
-            $sheet->setCellValue('A'.$key, trim($data->getProductArticle()));
+            $sheet->setCellValue('B'.$key, trim($data->getProductArticle()));
 
 
             // Наименование товара
-            $sheet->setCellValue('B'.$key, $data->getProductName());
+            $sheet->setCellValue('C'.$key, $data->getProductName());
 
 
             // Торговое предложение
-            $sheet->setCellValue('C'.$key, str_replace(' /', '/', $strOffer));
+            $sheet->setCellValue('D'.$key, str_replace(' /', '/', $strOffer));
 
 
             // Стоимость
-            $sheet->setCellValue('D'.$key, $Money ? $Money->getValue() : 0);
+            $sheet->setCellValue('E'.$key, $Money ? $Money->getValue() : 0);
 
 
             // Предыдущая стоимость
-            $sheet->setCellValue('E'.$key,
+            $sheet->setCellValue('F'.$key,
                 $data->getOldProductPrice() && $data->getOldProductPrice()->getValue() !== $Money->getValue()
                     ? $data->getOldProductPrice()->getValue()
                     : '',
