@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,137 +25,111 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Moving;
 
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
+use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
+use BaksDev\Products\Stocks\UseCase\Admin\Divide\Archive\DivideProductStockArchiveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Archive\MovingProductStockArchiveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Invariable\ProductStockInvariableDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Move\ProductStockMoveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Orders\ProductStockOrderDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Moving\Products\ProductStockProductDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class MovingProductStockDTO
+/** @see MaterialStockEvent */
+final class MovingProductStockDTO implements ProductStockEventInterface
 {
-    /** Целевой склад */
-    private ?UserProfileUid $targetWarehouse = null;
+    /** Идентификатор */
+    private ?ProductStockEventUid $id = null;
 
-    /** Склад назначения */
-    private ?UserProfileUid $destinationWarehouse = null;
+    /** Ответственное лицо (Профиль пользователя) */
+    #[Assert\Uuid]
+    private ?UserProfileUid $profile = null;
 
-    /** Продукт */
-    private ?ProductUid $preProduct = null;
+    /** Статус заявки - ПЕРЕМЕЩЕНИЕ */
+    #[Assert\NotBlank]
+    private readonly ProductStockStatus $status;
 
-    /** Торговое предложение */
-    private ?ProductOfferConst $preOffer = null;
-
-    /** Множественный вариант */
-    private ?ProductVariationConst $preVariation = null;
-
-    /** Модификация множественного варианта */
-    private ?ProductModificationConst $preModification = null;
-
-    /** Количество */
-    private ?int $preTotal = null;
-
-    /** Коллекция перемещения  */
+    /** Склад назначения при перемещении */
     #[Assert\Valid]
-    private ArrayCollection $move;
+    private ProductStockMoveDTO $move;
+
+    /** Коллекция продукции  */
+    #[Assert\Valid]
+    private ArrayCollection $product;
 
     /** Комментарий */
     private ?string $comment = null;
 
-    private UserUid $usr;
+    /** Идентификатор заказа на сборку */
+    #[Assert\Valid]
+    private ProductStockOrderDTO $ord;
 
-    public function __construct(User|UserUid $usr)
+    #[Assert\Valid]
+    private ProductStockInvariableDTO $invariable;
+
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private MovingProductStockArchiveDTO $archive;
+
+    public function __construct()
     {
-        $this->usr = $usr instanceof User ? $usr->getId() : $usr;
+        $this->status = new ProductStockStatus(new ProductStockStatusMoving());
+        $this->product = new ArrayCollection();
 
-        $this->move = new ArrayCollection();
+        $this->move = new ProductStockMoveDTO();
+        $this->ord = new ProductStockOrderDTO();
+
+        $this->invariable = new ProductStockInvariableDTO();
+        $this->archive = new MovingProductStockArchiveDTO();
     }
 
-
-    // WAREHOUSE
-    public function getTargetWarehouse(): ?UserProfileUid
+    public function getEvent(): ?ProductStockEventUid
     {
-        return $this->targetWarehouse;
+        return $this->id;
     }
 
-    public function setTargetWarehouse(?UserProfileUid $warehouse): self
+    public function setId(ProductStockEventUid $id): void
     {
-        $this->targetWarehouse = $warehouse;
-        return $this;
+        $this->id = $id;
     }
 
-    public function getDestinationWarehouse(): ?UserProfileUid
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
     {
-        return $this->destinationWarehouse;
+        /** Сбрасываем идентификатор заявки */
+        return $this->product;
     }
 
-    public function setDestinationWarehouse(?UserProfileUid $warehouse): self
+    public function setProduct(ArrayCollection $product): void
     {
-        $this->destinationWarehouse = $warehouse;
-        return $this;
+        $this->product = $product;
     }
 
-    // PRODUCT
-    public function getPreProduct(): ?ProductUid
+    public function addProduct(ProductStockProductDTO $product): void
     {
-        return $this->preProduct;
+        $containsProducts = $this->product->filter(function(ProductStockProductDTO $element) use ($product) {
+
+            return
+                $element->getProduct()->equals($product->getProduct()) &&
+                $element->getOffer()?->equals($product->getOffer()) &&
+                $element->getVariation()?->equals($product->getVariation()) &&
+                $element->getModification()?->equals($product->getModification());
+        });
+
+
+        if($containsProducts->isEmpty())
+        {
+            $this->product->add($product);
+        }
     }
 
-    public function setPreProduct(?ProductUid $product): self
+    public function removeProduct(ProductStockProductDTO $product): void
     {
-        $this->preProduct = $product;
-        return $this;
-    }
-
-    // OFFER
-    public function getPreOffer(): ?ProductOfferConst
-    {
-        return $this->preOffer;
-    }
-
-    public function setPreOffer(?ProductOfferConst $offer): self
-    {
-        $this->preOffer = $offer;
-        return $this;
-    }
-
-    // VARIATION
-    public function getPreVariation(): ?ProductVariationConst
-    {
-        return $this->preVariation;
-    }
-
-    public function setPreVariation(?ProductVariationConst $preVariation): self
-    {
-        $this->preVariation = $preVariation;
-        return $this;
-    }
-
-    // MODIFICATION
-    public function getPreModification(): ?ProductModificationConst
-    {
-        return $this->preModification;
-    }
-
-    public function setPreModification(?ProductModificationConst $preModification): self
-    {
-        $this->preModification = $preModification;
-        return $this;
-    }
-
-    // TOTAL
-    public function getPreTotal(): ?int
-    {
-        return $this->preTotal;
-    }
-
-    public function setPreTotal(int $total): self
-    {
-        $this->preTotal = $total;
-        return $this;
+        $this->product->removeElement($product);
     }
 
     /** Комментарий */
@@ -164,45 +138,49 @@ final class MovingProductStockDTO
         return $this->comment;
     }
 
-    public function setComment(?string $comment): self
+    public function setComment(?string $comment): void
     {
         $this->comment = $comment;
-        return $this;
     }
 
-    /**
-     * Коллекция продукции
-     *
-     * @return ArrayCollection<ProductStockDTO>
-     */
-    public function getMove(): ArrayCollection
+    /** Статус заявки - ПРИХОД */
+    public function getStatus(): ProductStockStatus
+    {
+        return $this->status;
+    }
+
+
+    /** Склад назначения при перемещении */
+    public function getMove(): ProductStockMoveDTO
     {
         return $this->move;
     }
 
-    public function setMove(ArrayCollection $move): self
+    public function setMove(ProductStockMoveDTO $move): void
     {
         $this->move = $move;
-        return $this;
     }
 
-    public function addMove(ProductStockDTO $move): self
+    /** Идентификатор заказа на сборку */
+
+    public function getOrd(): ProductStockOrderDTO
     {
-        $this->move->add($move);
-        return $this;
+        return $this->ord;
     }
 
-    public function removeMove(ProductStockDTO $move): self
+
+    public function setOrd(ProductStockOrderDTO $ord): void
     {
-        $this->move->removeElement($move);
-        return $this;
+        $this->ord = $ord;
     }
 
-    /**
-     * Usr
-     */
-    public function getUsr(): UserUid
+    public function getInvariable(): ProductStockInvariableDTO
     {
-        return $this->usr;
+        return $this->invariable;
+    }
+
+    public function getArchive(): MovingProductStockArchiveDTO
+    {
+        return $this->archive;
     }
 }

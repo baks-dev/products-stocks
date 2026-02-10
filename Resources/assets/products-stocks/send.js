@@ -25,11 +25,11 @@
 executeFunc((function productSendForm()
 {
 
-    const forms = document.forms.send_product_stock_form;
+    const forms = document.forms.collection_send_product_stock_form;
 
     if(typeof forms !== "object")
     {
-        console.error("Элемент формы \"send_product_stock_form\" не найден");
+        console.error("Элемент формы \"collection_send_product_stock_form\" не найден");
         return;
     }
 

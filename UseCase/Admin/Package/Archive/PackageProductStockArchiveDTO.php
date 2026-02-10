@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -19,31 +19,29 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
- *
  */
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Package\Orders;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Package\Archive;
 
-use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Archive\ProductStockArchiveInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStockOrder */
-final class ProductStockOrderDTO implements ProductStockOrderInterface
+/** @see ProductStockArchive */
+final class PackageProductStockArchiveDTO implements ProductStockArchiveInterface
 {
-    /** Идентификатор заказа для сборки */
-    private ?OrderUid $ord = null;
+    /** Значение свойства */
+    private bool $value = false;
 
-
-    /** Идентификатор заказа для сборки */
-    public function getOrd(): ?OrderUid
+    /**
+     * Значение свойства
+     *
+     * @see ProductStockArchive
+     */
+    public function getValue(): bool
     {
-        return $this->ord;
+        return $this->value === true;
     }
 
-    public function setOrd(?OrderUid $ord): void
-    {
-        $this->ord = $ord;
-    }
 }

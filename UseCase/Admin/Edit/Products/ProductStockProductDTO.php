@@ -76,9 +76,9 @@ final class ProductStockProductDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-    public function setOffer(ProductOfferConst $offer): self
+    public function setOffer(ProductOfferConst|null|false $offer): self
     {
-        $this->offer = $offer;
+        $this->offer = empty($offer) ? null : $offer;
         return $this;
     }
 
@@ -88,9 +88,9 @@ final class ProductStockProductDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    public function setVariation(?ProductVariationConst $variation): self
+    public function setVariation(ProductVariationConst|null|false $variation): self
     {
-        $this->variation = $variation;
+        $this->variation = empty($variation) ? null : $variation;
         return $this;
     }
 
@@ -100,9 +100,9 @@ final class ProductStockProductDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-    public function setModification(?ProductModificationConst $modification): self
+    public function setModification(ProductModificationConst|null|false $modification): self
     {
-        $this->modification = $modification;
+        $this->modification = empty($modification) ? null : $modification;
         return $this;
     }
 

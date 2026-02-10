@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\Edit;
 
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Edit\Archive\EditProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Invariable\ProductStockInvariableDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Orders\ProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Products\ProductStockProductDTO;
@@ -57,6 +58,10 @@ final class EditProductStockDTO implements ProductStockEventInterface
     #[Assert\Valid]
     private ProductStockOrderDTO $ord;
 
+    /** Флаг архивной транзакции */
+    #[Assert\Valid]
+    private EditProductStockArchiveDTO $archive;
+
     /**
      * @deprecated переносится в Invariable
      *
@@ -64,11 +69,13 @@ final class EditProductStockDTO implements ProductStockEventInterface
      */
     private ?UserProfileUid $profile = null;
 
+
     public function __construct(ProductStockEventUid $id)
     {
         $this->id = $id;
         $this->product = new ArrayCollection();
         $this->ord = new ProductStockOrderDTO();
+        $this->archive = new EditProductStockArchiveDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -139,5 +146,10 @@ final class EditProductStockDTO implements ProductStockEventInterface
     public function removeProduct(ProductStockProductDTO $product): void
     {
         $this->product->removeElement($product);
+    }
+
+    public function getArchive(): EditProductStockArchiveDTO
+    {
+        return $this->archive;
     }
 }

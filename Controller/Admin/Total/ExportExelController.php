@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -88,17 +88,18 @@ final class ExportExelController extends AbstractController
 
         // Запись заголовков
         $sheet
-            ->setCellValue('A1', 'Артикул')
-            ->setCellValue('B1', 'Наименование')
-            ->setCellValue('C1', 'Торговое предложение')
-            ->setCellValue('D1', 'Стоимость')
-            ->setCellValue('E1', 'Старая цена')
-            ->setCellValue('F1', 'Наличие')
-            ->setCellValue('G1', 'Резерв')
-            ->setCellValue('H1', 'Доступно')
-            ->setCellValue('I1', 'Сумма')
-            ->setCellValue('J1', 'Место')
-            ->setCellValue('K1', 'Комментарий');
+            ->setCellValue('A1', 'Обновление')
+            ->setCellValue('B1', 'Артикул')
+            ->setCellValue('C1', 'Наименование')
+            ->setCellValue('D1', 'Торговое предложение')
+            ->setCellValue('E1', 'Стоимость')
+            ->setCellValue('F1', 'Старая цена')
+            ->setCellValue('G1', 'Наличие')
+            ->setCellValue('H1', 'Резерв')
+            ->setCellValue('I1', 'Доступно')
+            ->setCellValue('J1', 'Сумма')
+            ->setCellValue('K1', 'Место')
+            ->setCellValue('L1', 'Комментарий');
 
 
         $sheet->getColumnDimension('A')->setAutoSize(25);
@@ -113,6 +114,7 @@ final class ExportExelController extends AbstractController
         $sheet->getColumnDimension('I')->setAutoSize(10);
         $sheet->getColumnDimension('J')->setAutoSize(10);
         $sheet->getColumnDimension('K')->setAutoSize(10);
+        $sheet->getColumnDimension('L')->setAutoSize(10);
 
         $key = 2;
 
@@ -179,24 +181,24 @@ final class ExportExelController extends AbstractController
                 ? $data->getProductPrice()->multiplication($data->getStockTotal())
                 : new Money(0);
 
-            $sheet->setCellValue('A'.$key, trim($data->getProductArticle())); // Артикул
-            $sheet->setCellValue('B'.$key, $data->getProductName()); // Наименование товара
-            $sheet->setCellValue('C'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
+            $sheet->setCellValue('A'.$key, $data->getDateModify()->format('d.m.Y H:i')); // Обновление
+            $sheet->setCellValue('B'.$key, trim($data->getProductArticle())); // Артикул
+            $sheet->setCellValue('C'.$key, $data->getProductName()); // Наименование товара
+            $sheet->setCellValue('D'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение
+            $sheet->setCellValue('E'.$key, $Money ? $Money->getValue() : 0); // Стоимость
 
-            $sheet->setCellValue('D'.$key, $Money ? $Money->getValue() : 0); // Стоимость
-
-            $sheet->setCellValue('E'.$key,
+            $sheet->setCellValue('F'.$key,
                 $data->getOldProductPrice() && $data->getOldProductPrice()->getValue() !== $Money->getValue()
                     ? $data->getOldProductPrice()->getValue()
                     : '',
             ); // Предыдущая стоимость
 
-            $sheet->setCellValue('F'.$key, $data->getStockTotal()); // Наличие
-            $sheet->setCellValue('G'.$key, $data->getStockReserve()); // Резерв
-            $sheet->setCellValue('H'.$key, $data->getQuantity()); // Доступно
-            $sheet->setCellValue('I'.$key, $total_price); // Сумма
-            $sheet->setCellValue('J'.$key, $data->getStockStorage()); // Место
-            $sheet->setCellValue('K'.$key, $data->getStockComment()); // Комментарий
+            $sheet->setCellValue('G'.$key, $data->getStockTotal()); // Наличие
+            $sheet->setCellValue('H'.$key, $data->getStockReserve()); // Резерв
+            $sheet->setCellValue('I'.$key, $data->getQuantity()); // Доступно
+            $sheet->setCellValue('J'.$key, $total_price); // Сумма
+            $sheet->setCellValue('K'.$key, $data->getStockStorage()); // Место
+            $sheet->setCellValue('L'.$key, $data->getStockComment()); // Комментарий
 
 
             /** Подсчет ИТОГО */
