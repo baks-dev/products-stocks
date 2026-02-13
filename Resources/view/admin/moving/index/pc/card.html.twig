@@ -229,7 +229,9 @@
 
             <div class="w-25">
 
-                {% if app.user.profile == item.userProfileId and item.isWarehouse is not null and (is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN')) %}
+                {% if
+                    app.user.profile == item.userProfileId and item.isWarehouse is not null
+                    and (is_granted('ROLE_PRODUCT_STOCK_MOVING_SEND') or is_granted('ROLE_ADMIN')) %}
 
                     <button data-href="{{ path('products-stocks:admin.warehouse.send', { id : item.event }) }}"
                             class="btn btn-primary modal-link disabled text-nowrap"
