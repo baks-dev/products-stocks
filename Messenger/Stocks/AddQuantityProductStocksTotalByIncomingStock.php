@@ -150,8 +150,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             if(empty($product->getTotal()))
             {
                 $this->logger->warning(
-                    'Не добавляем приход с нулевым количеством продукции',
-                    [self::class.':'.__LINE__, var_export($product, true)],
+                    sprintf('%s: Не добавляем приход с нулевым количеством продукции', $ProductStockEvent->getNumber()),
+                    [self::class.':'.__LINE__],
                 );
 
                 continue;
