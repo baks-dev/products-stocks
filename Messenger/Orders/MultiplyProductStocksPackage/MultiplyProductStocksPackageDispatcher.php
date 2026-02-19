@@ -139,7 +139,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         // Присваиваем заявке склад для сборки
         $PackageProductStockDTO
             ->getInvariable()
-            ->setNumber($OrderEvent->getOrderNumber())
+            ->setNumber($OrderEvent->getPostingNumber())
             ->setUsr($OrderEvent->getOrderUser())
             ->setProfile($message->getUserProfile());
 

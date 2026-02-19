@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStoc
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Delivery\Entity\Delivery;
 use BaksDev\Delivery\Entity\Event\DeliveryEvent;
+use BaksDev\Orders\Order\Entity\Event\Posting\OrderPosting;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
@@ -324,21 +325,30 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product_stock_order.event = product_stock_product.event',
             );
 
-        $dbal
-            //->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
-            ->leftJoin(
-                'product_stock_order',
-                OrderInvariable::class,
-                'orders_invariable',
-                'orders_invariable.main = product_stock_order.ord',
-            );
+        //        $dbal
+        //            //->addSelect("JSON_AGG (DISTINCT orders_invariable.main) AS mains")
+        //            ->leftJoin(
+        //                'product_stock_order',
+        //                OrderInvariable::class,
+        //                'orders_invariable',
+        //                'orders_invariable.main = product_stock_order.ord',
+        //            );
+
+
+        $dbal->leftJoin(
+            'product_stock_order',
+            OrderPosting::class,
+            'orders_posting',
+            'orders_posting.main = product_stock_order.ord',
+        );
+
 
         $dbal
             ->leftJoin(
-                'orders_invariable',
+                'orders_posting',
                 OrderUser::class,
                 'orders_user',
-                'orders_user.event = orders_invariable.event',
+                'orders_user.event = orders_posting.event',
             );
 
         $dbal
@@ -369,9 +379,9 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
         $dbal
             ->addSelect("JSON_AGG ( 
                 DISTINCT JSONB_BUILD_OBJECT (
-                    'id', orders_invariable.main,
-                    'event', orders_invariable.event,
-                    'number', orders_invariable.number,
+                    'id', orders_posting.main,
+                    'event', orders_posting.event,
+                    'number', orders_posting.value,
                     'delivery', delivery_event.type,
                     'hide', product_stock.id
                 )) AS orders",
