@@ -34,6 +34,10 @@ use BaksDev\Products\Stocks\Type\Part\ProductStockPartType;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionType;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
+use BaksDev\Products\Stocks\Type\Settings\Event\ProductStockSettingsEventType;
+use BaksDev\Products\Stocks\Type\Settings\Event\ProductStockSettingsEventUid;
+use BaksDev\Products\Stocks\Type\Settings\Id\ProductStockSettingsType;
+use BaksDev\Products\Stocks\Type\Settings\Id\ProductStockSettingsUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatusType;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalType;
@@ -57,6 +61,9 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
     $doctrine->dbal()->type(ProductStockTotalUid::TYPE)->class(ProductStockTotalType::class);
     $doctrine->dbal()->type(ProductStockParameterUid::TYPE)->class(ProductStockParameterType::class);
     $doctrine->dbal()->type(ProductStockPartUid::TYPE)->class(ProductStockPartType::class);
+
+    $doctrine->dbal()->type(ProductStockSettingsUid::TYPE)->class(ProductStockSettingsType::class);
+    $doctrine->dbal()->type(ProductStockSettingsEventUid::TYPE)->class(ProductStockSettingsEventType::class);
 
     $emDefault = $doctrine->orm()->entityManager('default')->autoMapping(true);
 
