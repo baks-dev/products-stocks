@@ -120,7 +120,7 @@
 
             {# Approve #}
             {# Если Порог наличия для профиля меньше разницы Наличие - Резевр и НЕ подтверждено #}
-            {% if stock_settings.threshold > (item.stockTotal - item.stockReserve) and item.approve == false %}
+            {% if stock_settings and stock_settings.threshold > (item.stockTotal - item.stockReserve) and item.approve == false %}
 
                     <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
                        class="btn btn-warning small my-2 modal-link"

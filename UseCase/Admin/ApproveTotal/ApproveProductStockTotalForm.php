@@ -21,17 +21,40 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductStockSettings;
+declare(strict_types=1);
 
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+namespace BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal;
 
-interface ProductStockSettingsByProfileInterface
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+/**
+ * Форма подтверждения порога остатков для соотв. места
+ */
+class ApproveProductStockTotalForm extends AbstractType
 {
-    public function profile(UserProfile|UserProfileUid|string $profile): self;
 
-    /**
-     * Возвращает настройки складского учета по профилю
-     */
-    public function find(): ProductStockSettingsByProfileResult|false;
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        /* Подтвердить ******************************************************/
+        $builder->add(
+            'approve',
+            SubmitType::class,
+            ['label' => 'Подтвердить', 'label_html' => true, 'attr' => ['class' => 'btn-warning']]
+        );
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(
+            [
+                'data_class' => ApproveProductStockTotalDTO::class,
+                'method' => 'POST',
+                'attr' => ['class' => 'w-100'],
+            ]
+        );
+    }
+
 }

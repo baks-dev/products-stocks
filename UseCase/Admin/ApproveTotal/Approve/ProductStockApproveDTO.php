@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,38 +23,27 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Approve;
+namespace BaksDev\Products\Stocks\UseCase\Admin\EditTotal\Approve;
 
-use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
-use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\Approve\ProductStockApproveDTO;
+use BaksDev\Products\Stocks\Entity\Total\Approve\ProductStockApproveInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class ApproveProductStockTotalDTO implements ProductStockTotalInterface
+/** @see ProductStockApprove */
+final class ProductStockApproveDTO implements ProductStockApproveInterface
 {
 
-    /** ID */
     #[Assert\NotBlank]
-    private readonly ProductStockTotalUid $id;
+    private bool $value = true;
 
-    /** Approve остатков  */
-    private ProductStockApproveDTO $approve;
-
-    /** Id */
-    public function getId(): ProductStockTotalUid
+    public function getValue(): bool
     {
-        return $this->id;
+        return $this->value;
     }
 
-    /** Approve */
-    public function getApprove(): ProductStockApproveDTO
+    public function setValue(bool $value): self
     {
-        return $this->approve;
-    }
+        $this->value = $value;
 
-    public function setApprove(ProductStockApproveDTO $approve): self
-    {
-        $this->approve = $approve;
         return $this;
     }
 

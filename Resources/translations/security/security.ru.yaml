@@ -2,7 +2,7 @@
 ROLE_PRODUCT_STOCK:
   header: 'Склад'
   name: 'Складской учет'
-  desc: 'Складской учет товаров'
+  desc: 'Складской учет продукции'
 
 
 
@@ -10,7 +10,7 @@ ROLE_PRODUCT_STOCK:
 ROLE_PRODUCT_STOCK_INDEX:
   header: 'Заказы'
   name: 'Просмотр'
-  desc: 'Складской учет товаров'
+  desc: 'Складской учет продукции'
 
 
 ROLE_PRODUCT_STOCK_EDIT:
@@ -93,3 +93,11 @@ ROLE_PRODUCT_STOCK_PART:
 ROLE_PRODUCT_STOCK_REPORT:
   name: 'Отчёт об остатках продукции на складе'
   desc: 'Скачать отчёт об остатках продукции на складе'
+
+ROLE_PRODUCT_STOCK_SETTINGS:
+  name: 'Настройки'
+  desc: 'Настройки складского учета'
+
+ROLE_PRODUCT_STOCK_APPROVE:
+  name: 'Подтвердить остаток'
+  desc: 'Подтверить остаток при достижении порога подтверждения'

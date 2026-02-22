@@ -20,18 +20,29 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\ProductStockSettings;
+namespace BaksDev\Products\Stocks\Security;
 
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Menu\Admin\Command\Upgrade\MenuAdminInterface;
+use BaksDev\Menu\Admin\Type\SectionGroup\Group\Collection\MenuAdminSectionGroupCollectionInterface;
+use BaksDev\Users\Profile\Group\Security\RoleInterface;
+use BaksDev\Users\Profile\Group\Security\VoterInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-interface ProductStockSettingsByProfileInterface
+#[AutoconfigureTag('baks.security.voter')]
+final class VoterSettings implements VoterInterface
 {
-    public function profile(UserProfile|UserProfileUid|string $profile): self;
+    /** Добавить закупку */
+    public const string VOTER = 'SETTINGS';
 
-    /**
-     * Возвращает настройки складского учета по профилю
-     */
-    public function find(): ProductStockSettingsByProfileResult|false;
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
+    }
+
+    public function equals(RoleInterface $role): bool
+    {
+        return $role->getRole() === Role::ROLE;
+    }
 }

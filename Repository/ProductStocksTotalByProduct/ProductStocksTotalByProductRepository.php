@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -35,7 +35,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 
 /**
- * Получаем массив складских остатков (ProductStockTotal) ( указанной продукции) профиля
+ * Получаем массив складских остатков (ProductStockTotal) (указанной продукции) профиля
  */
 final class ProductStocksTotalByProductRepository implements ProductStocksTotalByProductInterface
 {
@@ -130,7 +130,11 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
     }
 
 
-    /** Метод возвращает складские остатки ( указанной продукции) профиля */
+    /**
+     * Метод возвращает места для хранения указанной продукции указанного профиля со складскими остатками
+     *
+     * @return array<ProductStockTotal>|false
+     */
     public function findAll(): array|false
     {
         if(empty($this->profile))
@@ -154,7 +158,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
             ->setParameter(
                 key: 'profile',
                 value: $this->profile,
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $orm
@@ -162,7 +166,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
             ->setParameter(
                 key: 'product',
                 value: $this->product,
-                type: ProductUid::TYPE
+                type: ProductUid::TYPE,
             );
 
 
@@ -173,7 +177,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
                 ->setParameter(
                     key: 'offer',
                     value: $this->offer,
-                    type: ProductOfferConst::TYPE
+                    type: ProductOfferConst::TYPE,
                 );
         }
         else
@@ -188,7 +192,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
                 ->setParameter(
                     key: 'variation',
                     value: $this->variation,
-                    type: ProductVariationConst::TYPE
+                    type: ProductVariationConst::TYPE,
                 );
         }
         else
@@ -203,7 +207,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
                 ->setParameter(
                     key: 'modification',
                     value: $this->modification,
-                    type: ProductModificationConst::TYPE
+                    type: ProductModificationConst::TYPE,
                 );
         }
         else
@@ -213,6 +217,7 @@ final class ProductStocksTotalByProductRepository implements ProductStocksTotalB
 
 
         $result = $orm->getResult();
+
         return $result ?? false;
     }
 }

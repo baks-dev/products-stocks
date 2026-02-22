@@ -14,7 +14,7 @@ page:
   pickup: 'Выдача заказов'
   cancel: 'Отмена заявки'
 
-  settings: "Настройки порога остатков"
+  settings: "Настройки складского учета"
   storageMove: 'Перемещение по складу'
   threshold: 'Настроить порог остатков'
 
@@ -84,8 +84,9 @@ settings:
 
 btn:
   approve: "Подтвердить"
+
 label:
-  threshold: "Порог наличия остатков"
+  threshold: "Порог подтвеждения наличия остатков"
 
 confirm:
   approve:

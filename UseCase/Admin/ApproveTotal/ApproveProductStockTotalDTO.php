@@ -21,17 +21,45 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\ProductStockSettings;
+declare(strict_types=1);
 
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+namespace BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal;
 
-interface ProductStockSettingsByProfileInterface
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
+use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
+use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\Approve\ProductStockApproveDTO;
+use Symfony\Component\Validator\Constraints as Assert;
+
+final class ApproveProductStockTotalDTO implements ProductStockTotalInterface
 {
-    public function profile(UserProfile|UserProfileUid|string $profile): self;
+    /** ID */
+    #[Assert\NotBlank]
+    private readonly ProductStockTotalUid $id;
 
-    /**
-     * Возвращает настройки складского учета по профилю
-     */
-    public function find(): ProductStockSettingsByProfileResult|false;
+    /** Approve остатков  */
+    private ProductStockApproveDTO $approve;
+
+    public function __construct()
+    {
+        $this->approve = new ProductStockApproveDTO();
+    }
+
+    /** Id */
+    public function getId(): ProductStockTotalUid
+    {
+        return $this->id;
+    }
+
+    /** Approve */
+    public function getApprove(): ProductStockApproveDTO
+    {
+        return $this->approve;
+    }
+
+    public function setApprove(ProductStockApproveDTO $approve): self
+    {
+        $this->approve = $approve;
+        return $this;
+    }
+
 }
