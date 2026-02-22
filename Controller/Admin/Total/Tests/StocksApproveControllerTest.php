@@ -36,7 +36,7 @@ final class StocksApproveControllerTest extends WebTestCase
 {
     private const string URL = '/admin/product/stocks/settings';
 
-    private const string ROLE = 'ROLE_PRODUCT_STOCK_INDEX';
+    private const string ROLE = 'ROLE_PRODUCT_STOCK_SETTINGS';
 
     /** Доступы по роли */
     public function testRoleSuccessful(): void
