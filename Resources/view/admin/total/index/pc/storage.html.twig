@@ -24,8 +24,10 @@
                     data-formname="collection_moving_product_stock_form"
                     data-post-class="add-one-to-collection"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                          d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
                 </svg>
             </button>
         {% endif %}
@@ -122,20 +124,37 @@
             {# Если Порог наличия для профиля меньше разницы Наличие - Резевр и НЕ подтверждено #}
             {% if stock_settings and stock_settings.threshold > (item.stockTotal - item.stockReserve) and item.approve == false %}
 
+
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE') %}
+
                     <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
                        class="btn btn-warning small my-2 modal-link"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Подтвердить остатки с учетом порога наличия остатков "
                        style="width: 125px;"
-                    > <span>{{ 'btn.approve'|trans }} {{ item.stockTotal - item.stockReserve }}</span>
+                    >
+                        <span>{{ 'btn.approve'|trans }} {{ item.stockTotal - item.stockReserve }}</span>
                     </a>
 
+                {% else %}
+
+                    <div class="h6 m-0 small">
+                        <span class="badge text-bg-warning text-nowrap py-1 px-2">
+                            {{ 'btn.approve'|trans }} наличие
+                        </span>
+                    </div>
+
+                {% endif %}
+
             {% else %}
+
                 {{ item.stockTotal - item.stockReserve }}
+
             {% endif %}
 
         {% else %}
+
             <span
                     class="pointer badge text-bg-danger"
                     role="tooltip"
@@ -143,8 +162,10 @@
                     data-bs-placement="bottom"
                     data-bs-delay='{"show":600,"hide":100}'
                     title='Ожидается поступление'
-            > {{ item.stockTotal - item.stockReserve }}
-        </span>
+            >
+                {{ item.stockTotal - item.stockReserve }}
+            </span>
+
         {% endif %}
 
     </td>

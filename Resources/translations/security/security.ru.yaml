@@ -95,7 +95,7 @@ ROLE_PRODUCT_STOCK_REPORT:
   desc: 'Скачать отчёт об остатках продукции на складе'
 
 ROLE_PRODUCT_STOCK_SETTINGS:
-  name: 'Настройки'
+  name: 'Настройки складского учета'
   desc: 'Настройки складского учета'
 
 ROLE_PRODUCT_STOCK_APPROVE:
