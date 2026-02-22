@@ -88,7 +88,14 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private bool|null $promotion_active = null,
         private string|int|null $promotion_price = null,
 
+        private bool|null $approve = true,
+
     ) {}
+
+    public function getApprove(): bool
+    {
+        return $this->approve === true;
+    }
 
     public function getStockId(): ProductStockTotalUid
     {

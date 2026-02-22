@@ -30,6 +30,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Stocks\Entity\Total\Approve\ProductStockApprove;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
@@ -100,6 +101,10 @@ class ProductStockTotal extends EntityState
     /** Место с высоким приоритетом */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $priority = false;
+
+    /** Approve - одобрено с учетом настройки порога остатков */
+    #[ORM\OneToOne(targetEntity: ProductStockApprove::class, mappedBy: 'main', cascade: ['all'], fetch: 'EAGER')]
+    private ProductStockApprove $approve;
 
     public function __construct(
         UserUid $usr,
@@ -251,4 +256,19 @@ class ProductStockTotal extends EntityState
         $this->comment = $comment;
         return $this;
     }
+
+    /**
+     * Approve
+     */
+    public function getApprove(): ProductStockApprove
+    {
+        return $this->approve;
+    }
+
+    public function setApprove(ProductStockApprove $approve): self
+    {
+        $this->approve = $approve;
+        return $this;
+    }
+
 }

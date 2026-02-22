@@ -63,6 +63,7 @@ use BaksDev\Products\Promotion\Entity\Event\Period\ProductPromotionPeriod;
 use BaksDev\Products\Promotion\Entity\Event\Price\ProductPromotionPrice;
 use BaksDev\Products\Promotion\Entity\Event\ProductPromotionEvent;
 use BaksDev\Products\Promotion\Entity\ProductPromotion;
+use BaksDev\Products\Stocks\Entity\Total\Approve\ProductStockApprove;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Search\Index\SearchIndexInterface;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
@@ -175,6 +176,16 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 );
         }
 
+
+        // Approve
+        $dbal
+            ->addSelect('stock_approve.value as approve')
+            ->leftJoin(
+                'stock_product',
+                ProductStockApprove::class,
+                'stock_approve',
+                'stock_approve.main = stock_product.id',
+            );
 
         // Product
         $dbal
