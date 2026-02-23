@@ -53,7 +53,7 @@ ROLE_PRODUCT_STOCK_MOVING_NEW:
   desc: 'Добавить заявку на указанный склад для перемещение товаров'
 
 ROLE_PRODUCT_STOCK_MOVING_SEND:
-  name: 'Добавить отправление'
+  name: 'Добавить/Oтправить перемещение'
   desc: 'Добавить отправление продукции с активного скалда на другой'
 
 ROLE_PRODUCT_STOCK_STORAGE_MOVE:

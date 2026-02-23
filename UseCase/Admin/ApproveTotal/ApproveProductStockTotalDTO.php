@@ -27,7 +27,7 @@ namespace BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal;
 
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use BaksDev\Products\Stocks\UseCase\Admin\EditTotal\Approve\ProductStockApproveDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal\Approve\ProductStockApproveDTO;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class ApproveProductStockTotalDTO implements ProductStockTotalInterface

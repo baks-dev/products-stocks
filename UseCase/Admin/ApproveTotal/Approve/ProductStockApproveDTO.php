@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\EditTotal\Approve;
+namespace BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal\Approve;
 
 use BaksDev\Products\Stocks\Entity\Total\Approve\ProductStockApproveInterface;
 use Symfony\Component\Validator\Constraints as Assert;
