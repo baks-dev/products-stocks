@@ -95,13 +95,23 @@
         </div>
     </td>
 
-    <td>
+    <td class="text-end">
         {% if item.productPrice %}
-            {{ money(item.productPrice) }}
+
+            <div class="h5">
+                <span class="badge text-bg-light text-nowrap text-primary border border-1">
+                    {{ money(item.productPrice) }}
+                </span>
+            </div>
+
         {% else %}
-            <span class="badge text-bg-danger text-nowrap">
-                Цена не указана
-            </span>
+
+            <div class="h6 small">
+                <span class="badge text-bg-danger text-nowrap py-1 px-2">
+                    Цена не указана
+                </span>
+            </div>
+
         {% endif %}
     </td>
 

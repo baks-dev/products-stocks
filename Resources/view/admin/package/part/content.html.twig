@@ -191,6 +191,50 @@
 
                     {% endif %}
 
+
+
+                    {# СТИКЕР МАРКИРОВКИ YANDEX #}
+
+                    {% if sticker.yandex is defined %}
+
+                        {% for yandex in sticker.yandex %}
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                            <div class="text-center" style="max-width: 270px;">
+
+                                <div>
+                                    <small>{{ part_number }} &nbsp; #{{ number }}</small>
+                                </div>
+
+                                <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ yandex|raw }}"
+                                     alt="sticker"
+                                     style="width: 270px; max-width: 270px; min-height: 270px;"/>
+                            </div>
+
+                            {# разрыв старницы #}
+                            <div style="page-break-after: always !important;"></div>
+
+                            <div class="text-center" style="max-width: 270px;">
+
+                                <div>
+                                    <small>{{ part_number }} &nbsp; #{{ number }}</small>
+                                </div>
+
+                                <img nonce="{{ csp_nonce() }}" src="data:image/png;base64,{{ yandex|raw }}"
+                                     alt="sticker"
+                                     style="width: 270px; max-width: 270px; min-height: 270px;"/>
+                            </div>
+
+
+                        {% endfor %}
+
+                    {% endif %}
+
+
+
+
                 {% endfor %}
 
 

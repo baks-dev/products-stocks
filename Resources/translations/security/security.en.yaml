@@ -83,3 +83,11 @@ ROLE_PRODUCT_STOCK_PART:
 ROLE_PRODUCT_STOCK_REPORT:
   name: 'Products stocks report'
   desc: 'Download products stocks report'
+
+ROLE_PRODUCT_STOCK_SETTINGS:
+  name: 'Settings'
+  desc: 'Warehouse Accounting Settings'
+
+ROLE_PRODUCT_STOCK_APPROVE:
+  name: 'Confirm Balance'
+  desc: 'Confirm balance when the confirmation threshold is reached'
