@@ -41,7 +41,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_PRODUCT_STOCK_MOVING_SENT_NEW')]
+#[RoleSecurity('ROLE_PRODUCT_STOCK_WAREHOUSE_SEND_NEW')]
 final class SendController extends AbstractController
 {
     /** Отправить товар на другой склад */

@@ -74,9 +74,14 @@ ROLE_PRODUCT_STOCK_WAREHOUSE:
   name: 'Поступления на склад'
   desc: 'Список поступлений на склад'
 
+
+ROLE_PRODUCT_STOCK_WAREHOUSE_SEND_NEW:
+  name: 'Добавить отправление'
+  desc: 'Добавить отправление для перемещения товара на другой склад'
+
 ROLE_PRODUCT_STOCK_WAREHOUSE_SEND:
-  name: 'Отправить на склад закупку'
-  desc: 'Отправить на склад товар по закупке'
+  name: 'Отправить продукцию на склад'
+  desc: 'Отправить на склад товар по закупке, перемещению либо отправлению'
 
 ROLE_PRODUCT_STOCK_PACKAGE:
   name: 'Упаковка заказов'
