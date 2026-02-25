@@ -104,5 +104,5 @@ ROLE_PRODUCT_STOCK_SETTINGS:
   desc: 'Настройки складского учета'
 
 ROLE_PRODUCT_STOCK_APPROVE:
-  name: 'Подтвердить остаток'
+  name: 'Подтвердить'
   desc: 'Подтверить остаток при достижении порога подтверждения'
