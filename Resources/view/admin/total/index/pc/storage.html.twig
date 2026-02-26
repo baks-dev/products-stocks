@@ -118,53 +118,50 @@
 
     <td class="text-center">
 
-        {% if item.stockTotal >= item.stockReserve %}
+        {% if stock_settings and stock_settings.threshold > item.stockTotal and item.approve == false %}
 
-            {# Approve #}
-            {# Если Порог наличия для профиля меньше разницы Наличие - Резевр и НЕ подтверждено #}
-            {% if stock_settings and stock_settings.threshold > (item.stockTotal - item.stockReserve) and item.approve == false %}
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE') %}
 
-
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE') %}
-
-                    <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
-                       class="btn btn-sm btn-warning small my-2 modal-link"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal"
-                       title="Подтвердить остатки с учетом порога наличия остатков "
-                       style="width: 125px;"
-                    >
-                        <span>{{ 'btn.approve'|trans }} {{ item.stockTotal - item.stockReserve }}</span>
-                    </a>
-
-                {% else %}
-
-                    <div class="h6 m-0 small">
-                        <span class="badge text-bg-warning text-nowrap py-1 px-2">
-                            {{ 'btn.approve'|trans }} наличие
-                        </span>
-                    </div>
-
-                {% endif %}
+                <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
+                   class="btn btn-sm btn-warning small my-2 modal-link"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal"
+                   title="Подтвердить остатки с учетом порога наличия остатков "
+                   style="width: 125px;"
+                >
+                    <span>{{ 'btn.approve'|trans }} {{ item.stockTotal - item.stockReserve }}</span>
+                </a>
 
             {% else %}
 
-                {{ item.stockTotal - item.stockReserve }}
+                <div class="h6 m-0 small">
+                        <span class="badge text-bg-warning text-nowrap py-1 px-2">
+                            {{ 'btn.approve'|trans }} наличие
+                        </span>
+                </div>
 
             {% endif %}
 
         {% else %}
 
-            <span
-                    class="pointer badge text-bg-danger"
-                    role="tooltip"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-delay='{"show":600,"hide":100}'
-                    title='Ожидается поступление'
-            >
+            {% if item.stockTotal >= item.stockReserve %}
+
+                {{ item.stockTotal - item.stockReserve }}
+
+            {% else %}
+
+                <span
+                        class="pointer badge text-bg-danger"
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title='Ожидается поступление'
+                >
                 {{ item.stockTotal - item.stockReserve }}
             </span>
+
+            {% endif %}
 
         {% endif %}
 

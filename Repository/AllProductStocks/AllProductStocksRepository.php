@@ -762,13 +762,11 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         }
 
         /** Требующие подтверждения остатка всегда выше */
-        $dbal->addOrderBy('stock_approve.value');
 
         $dbal->addOrderBy('product.id');
         $dbal->addOrderBy('product_offer.value');
         $dbal->addOrderBy('product_variation.value');
         $dbal->addOrderBy('product_modification.value');
-
 
         if($this->limit)
         {
