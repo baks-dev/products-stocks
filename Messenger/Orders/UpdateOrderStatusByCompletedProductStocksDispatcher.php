@@ -47,7 +47,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Обновляет статус заказа при доставке (Completed «Выдан по месту назначения»)
  */
-#[AsMessageHandler]
+#[AsMessageHandler(priority: 0)]
 final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 {
     public function __construct(

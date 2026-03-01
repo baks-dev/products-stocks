@@ -43,7 +43,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * Задаем значение approve ProductStockTotal = false, при условии,
  * что заявка Completed «Выдан по месту назначения»
  */
-#[AsMessageHandler]
+#[AsMessageHandler(priority: 0)]
 final readonly class UpdateStockTotalApproveDispatcher
 {
     public function __construct(

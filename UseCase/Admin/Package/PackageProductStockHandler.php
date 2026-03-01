@@ -29,7 +29,9 @@ use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal\EditProductStockTotalMessage;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(public: true)]
 final class PackageProductStockHandler extends AbstractHandler
 {
     public function handle(PackageProductStockDTO $command): string|ProductStock

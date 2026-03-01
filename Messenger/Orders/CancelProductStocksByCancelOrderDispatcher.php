@@ -38,12 +38,14 @@ use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrder
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Отменяем складскую заявку на продукцию при отмене либо возврате заказа
  */
+#[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 8)]
 final readonly class CancelProductStocksByCancelOrderDispatcher
 {

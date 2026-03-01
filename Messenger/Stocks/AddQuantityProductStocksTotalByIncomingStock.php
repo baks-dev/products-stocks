@@ -42,12 +42,14 @@ use BaksDev\Users\User\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
  */
+#[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksTotalByIncomingStock
 {

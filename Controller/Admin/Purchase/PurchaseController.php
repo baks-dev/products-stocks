@@ -31,7 +31,6 @@ use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\PurchaseProductStockHandler;
 use Doctrine\Common\Collections\ArrayCollection;
-use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -51,14 +50,6 @@ final class PurchaseController extends AbstractController
         PurchaseProductStockHandler $PurchaseProductStockHandler
     ): Response
     {
-
-        throw new InvalidArgumentException(54654);
-
-        if(!$this->getProfileUid())
-        {
-            throw new UserNotFoundException('User Profile not found');
-        }
-
         $purchaseDTO = new PurchaseProductStockDTO();
 
         // Форма добавления
@@ -95,7 +86,7 @@ final class PurchaseController extends AbstractController
             $this->addFlash(
                 'page.purchase',
                 'success.purchase',
-                'products-stocks.admin'
+                'products-stocks.admin',
             );
 
             return $this->redirectToRoute('products-stocks:admin.purchase.index');
