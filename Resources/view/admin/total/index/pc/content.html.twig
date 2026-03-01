@@ -338,6 +338,7 @@
                                     </button>
 
                                     <ul class="dropdown-menu">
+
                                         <li>
                                             <a href="{{ path('products-stocks:admin.total.export') }}"
                                                class="dropdown-item">
@@ -352,6 +353,15 @@
                                                     Отчет по всем регионам
                                                 </a>
                                             </li>
+
+                                            <li>
+                                                <a href="{{ path('products-stocks:admin.total.size.export') }}"
+                                                   class="dropdown-item">
+                                                    Отчет по размерам
+                                                </a>
+                                            </li>
+
+
                                         {% endif %}
 
                                     </ul>

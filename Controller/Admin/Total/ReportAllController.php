@@ -47,7 +47,7 @@ use Twig\Environment;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_REPORT')]
-final class ReportController extends AbstractController
+final class ReportAllController extends AbstractController
 {
     #[Route('/admin/products/stock/all/export', name: 'admin.total.all.export', methods: ['GET', 'POST'])]
     public function index(

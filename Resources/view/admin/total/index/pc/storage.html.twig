@@ -120,16 +120,16 @@
 
         {% if stock_settings and stock_settings.threshold > item.stockTotal and item.approve == false %}
 
-            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE') %}
+            {% if app.user.profile == item.usersProfileId and (is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE')) %}
 
                 <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
                    class="btn btn-sm btn-warning small my-2 modal-link"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
-                   title="Подтвердить остатки с учетом порога наличия остатков "
+                   title="Подтвердить остаток с учетом порога подтверждения наличия"
                    style="width: 125px;"
                 >
-                    <span>{{ 'btn.approve'|trans }} {{ item.stockTotal - item.stockReserve }}</span>
+                    <span>{{ 'btn.approve'|trans }} {{ item.stockTotal }}</span>
                 </a>
 
             {% else %}
