@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -43,7 +44,10 @@ final readonly class AllProductStocksReportResult
         private ?string $product_modification_postfix,
         private ?string $product_modification_reference,
         private ?string $product_article,
+
         private ?string $barcode,
+        private ?string $barcodes,
+
         private ?string $profiles_totals,
         private ?int $product_price,
         private ?int $old_product_price,
@@ -147,6 +151,31 @@ final readonly class AllProductStocksReportResult
 
     public function getBarcode(): ?string
     {
-        return $this->barcode;
+        return true === empty($this->barcode) ? null : $this->barcode;
+    }
+
+    /**
+     * @return array<int, string>|null
+     */
+    public function getBarcodes(): array|null
+    {
+        if(is_null($this->barcodes))
+        {
+            return null;
+        }
+
+        if(false === json_validate($this->barcodes))
+        {
+            return null;
+        }
+
+        $barcodes = json_decode($this->barcodes, true, 512, JSON_THROW_ON_ERROR);
+
+        if(true === empty(current($barcodes)))
+        {
+            return null;
+        }
+
+        return $barcodes;
     }
 }
