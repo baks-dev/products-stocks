@@ -79,7 +79,9 @@ final class ProductStocksOrdersPartResult
         private readonly ?string $orders,
         // "[{"id": "019a2c0b-8380-7020-b432-b48685003fb5", "number": "176.167.550.297"}]
         private readonly ?string $stocks_quantity, // "[{"total": 10, "reserve": 3, "storage": "new"}]"
+
         private readonly ?string $barcode,
+        private readonly ?string $barcodes,
     ) {}
 
     public function getPartNumber(): string
@@ -326,5 +328,37 @@ final class ProductStocksOrdersPartResult
     public function getBarcode(): ProductBarcode|false
     {
         return $this->barcode ? new ProductBarcode($this->barcode) : false;
+    }
+
+    /**
+     * @return array<int, ProductBarcode>|null
+     */
+    public function getBarcodes(): array|null
+    {
+        if(is_null($this->barcodes))
+        {
+            return null;
+        }
+
+        if(false === json_validate($this->barcodes))
+        {
+            return null;
+        }
+
+        $barcodes = json_decode($this->barcodes, true, 512, JSON_THROW_ON_ERROR);
+
+        if(true === empty(current($barcodes)))
+        {
+            return null;
+        }
+
+        $barcodesObjects = null;
+
+        foreach($barcodes as $barcode)
+        {
+            $barcodesObjects[] = new ProductBarcode($barcode);
+        }
+
+        return $barcodesObjects;
     }
 }

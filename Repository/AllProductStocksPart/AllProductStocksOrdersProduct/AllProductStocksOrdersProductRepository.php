@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -35,7 +36,11 @@ use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Barcode\ProductOfferBarcode;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Barcode\ProductVariationBarcode;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Barcode\ProductModificationBarcode;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
@@ -170,6 +175,16 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product.id = product_stock_product.product',
             );
 
+        /** Product Info */
+
+        $dbal
+            ->leftJoin(
+                'product',
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product.id'
+            );
+
         /** Название продукта */
         $dbal
             ->addSelect('product_trans.name AS product_name')
@@ -196,6 +211,16 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                         AND product_offer.const = product_stock_product.offer
                     ');
 
+        /** Offer Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_offer',
+                ProductOfferBarcode::class,
+                'product_offer_barcode',
+                'product_offer_barcode.offer = product_offer.id'
+            );
+
         /** ТИП торгового предложения */
         $dbal
             ->addSelect('product_category_offers.reference as product_offer_reference')
@@ -218,6 +243,16 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                         product_variation.offer = product_offer.id 
                         AND product_variation.const = product_stock_product.variation
                     ');
+
+        /** Variation Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_variation',
+                ProductVariationBarcode::class,
+                'product_variation_barcode',
+                'product_variation_barcode.variation = product_variation.id'
+            );
 
         /** ТИП варианта торгового предложения */
         $dbal
@@ -242,6 +277,16 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                         product_modification.variation = product_variation.id 
                         AND product_modification.const = product_stock_product.modification
                     ');
+
+        /** Modification Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_modification',
+                ProductModificationBarcode::class,
+                'product_modification_barcode',
+                'product_modification_barcode.modification = product_modification.id'
+            );
 
         /** ТИП модификации множественного варианта */
         $dbal
@@ -387,18 +432,42 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 )) AS orders",
             );
 
+        /** Штрихкоды продукта */
+
+        $dbal->addSelect(
+            "
+            JSON_AGG
+                    (DISTINCT
+         			CASE
+         			    WHEN product_modification_barcode.value IS NOT NULL
+                        THEN product_modification_barcode.value
+                        
+                        WHEN product_variation_barcode.value IS NOT NULL
+                        THEN product_variation_barcode.value
+                        
+                        WHEN product_offer_barcode.value IS NOT NULL
+                        THEN product_offer_barcode.value
+                        
+                        WHEN product_info.barcode IS NOT NULL
+                        THEN product_info.barcode
+                        
+                        ELSE NULL
+                    END
+                    )
+                    AS barcodes"
+        );
+
         $dbal->addSelect('
             COALESCE(
-                product_modification.barcode, 
-                product_variation.barcode, 
-                product_offer.barcode
+                product_modification.barcode_old, 
+                product_variation.barcode_old, 
+                product_offer.barcode_old,
+                product_info.barcode
             ) AS barcode
 		');
 
         $dbal->allGroupByExclude();
 
-        return $dbal
-            // ->enableCache('Namespace', 3600)
-            ->fetchAllHydrate(ProductStocksOrdersProductResult::class);
+        return $dbal->fetchAllHydrate(ProductStocksOrdersProductResult::class);
     }
 }
