@@ -1,6 +1,6 @@
-<?php 
+<?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,12 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
 
 return static function(ContainerConfigurator $configurator): void {
+
     $services = $configurator->services()
         ->defaults()
         ->autowire()
-        ->autoconfigure();
+        ->autoconfigure()
+        ->public();
 
     $NAMESPACE = BaksDevProductsStocksBundle::NAMESPACE;
     $PATH = BaksDevProductsStocksBundle::PATH;
@@ -38,12 +40,13 @@ return static function(ContainerConfigurator $configurator): void {
         ->exclude([
             $PATH.'{Entity,Resources,Type}',
             $PATH.'**'.DIRECTORY_SEPARATOR.'*Message.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Result.php',
             $PATH.'**'.DIRECTORY_SEPARATOR.'*DTO.php',
             $PATH.'**'.DIRECTORY_SEPARATOR.'*Test.php',
         ]);
 
     $services->load(
         $NAMESPACE.'Type\Status\ProductStockStatus\\',
-        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Status', 'ProductStockStatus']) // .'Type/Status/ProductStockStatus'
+        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Status', 'ProductStockStatus']), // .'Type/Status/ProductStockStatus'
     );
 };

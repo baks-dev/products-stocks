@@ -43,7 +43,7 @@ use Twig\Environment;
 
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCT_STOCK_INDEX')]
-final class ExportExelController extends AbstractController
+final class ReportTotalController extends AbstractController
 {
     /**
      * Печать остатков всего склада

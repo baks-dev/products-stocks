@@ -21,24 +21,31 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Products\Stocks\Repository\AllProductStocksSizeStocks;
 
-namespace BaksDev\Products\Stocks\Messenger;
+use BaksDev\Core\Form\Search\SearchDTO;
+use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
+use Generator;
 
-use BaksDev\Core\Cache\AppCacheInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-
-/** Сбрасывает кеш модуля products-product */
-#[AsMessageHandler(priority: 0)]
-final readonly class ProductStockDispatch
+interface AllProductStocksSizeInterface
 {
-    public function __construct(private AppCacheInterface $cache) {}
+    public function search(SearchDTO $search): self;
 
-    public function __invoke(ProductStockMessage $message): void
-    {
-        /// cacheClear
-        $cache = $this->cache->init('products-product');
-        $cache->clear();
-    }
+    public function filter(ProductFilterDTO $filter): self;
+
+    public function forProfile(UserProfileUid|UserProfile $profile): self;
+
+    public function forUser(User|UserUid $user): self;
+
+    /**
+     * Метод возвращает полное состояние складских остатков продукции
+     *
+     * @return Generator<AllProductStocksSizeResult>|false
+     */
+    public function findAll(): Generator|false;
 }
