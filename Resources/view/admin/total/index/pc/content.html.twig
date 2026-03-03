@@ -364,6 +364,17 @@
 
                                         {% endif %}
 
+                                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_REPORT') %}
+                                            {% if stock_settings %}
+                                                <li>
+                                                    <a href="{{ path('products-stocks:admin.total.approve.export') }}"
+                                                       class="dropdown-item">
+                                                        Отчет об остатках, требующих подтверждение
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+
                                     </ul>
                                 </div>
 
