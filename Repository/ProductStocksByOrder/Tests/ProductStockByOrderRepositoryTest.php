@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,19 @@ namespace BaksDev\Products\Stocks\Repository\ProductStocksByOrder\Tests;
 
 use BaksDev\DeliveryTransport\Type\ProductStockStatus\ProductStockStatusDelivery;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use PHPUnit\Framework\Attributes\Group;
+use ReflectionClass;
+use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 #[When(env: 'test')]
 #[Group('products-stocks')]
@@ -39,20 +48,45 @@ class ProductStockByOrderRepositoryTest extends KernelTestCase
 
     public function testFindAll(): void
     {
+        self::assertTrue(true);
+
+        // Бросаем событие консольной комманды
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
+        $dispatcher->dispatch($event, 'console.command');
+
 
         /** @var ProductStocksByOrderInterface $ProductStocksByOrderInterface */
         $ProductStocksByOrderInterface = self::getContainer()->get(ProductStocksByOrderInterface::class);
 
 
-        $orderID = new OrderUid();
-        $status = ProductStockStatusDelivery::class;
+        $orderID = new OrderUid('019cb527-ef55-7f86-b1e2-8bb5949f750e');
+        $status = ProductStockStatusPackage::class;
 
         $result = $ProductStocksByOrderInterface
             ->onOrder($orderID)
             ->onStatus($status)
             ->findAll();
 
-        self::assertTrue(true);
-    }
+        if(true === empty($result))
+        {
+            foreach($result as $ProductStockEvent)
+            {
+                // Вызываем все геттеры
+                $reflectionClass = new ReflectionClass(ProductStockEvent::class);
+                $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
+                foreach($methods as $method)
+                {
+                    // Методы без аргументов
+                    if($method->getNumberOfParameters() === 0)
+                    {
+                        // Вызываем метод
+                        $data = $method->invoke($ProductStockEvent);
+                        // dump($data);
+                    }
+                }
+            }
+        }
+    }
 }
