@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2026.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,18 +31,20 @@ use BaksDev\Products\Stocks\Repository\ProductStocksApproveReport\ProductStocksA
 use BaksDev\Products\Stocks\Repository\ProductStocksApproveReport\ProductStocksApproveReportRepository;
 use BaksDev\Products\Stocks\Repository\ProductStocksApproveReport\ProductStocksApproveReportResult;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
-use PHPUnit\Framework\Attributes\Group;
 
 #[Group('products-stocks')]
 #[When(env: 'test')]
 class ProductStocksApproveReportRepositoryTest extends KernelTestCase
 {
+    public function testFindAll(): void
+    {
+        self::assertTrue(true);
 
-    public function testFindAll(): void {
         $ProductStocksApproveReportRepository = self::getContainer()
             ->get(ProductStocksApproveReportInterface::class);
 
@@ -58,11 +60,13 @@ class ProductStocksApproveReportRepositoryTest extends KernelTestCase
             ->threshold($threshold)
             ->findAll();
 
-        if (false === $result) {
+        if(false === $result)
+        {
             return;
         }
 
-        foreach($result as $productStocksApproveReport) {
+        foreach($result as $productStocksApproveReport)
+        {
             self::assertInstanceOf(ProductStocksApproveReportResult::class, $productStocksApproveReport);
 
             /* Вызвать все геттеры */
@@ -76,13 +80,11 @@ class ProductStocksApproveReportRepositoryTest extends KernelTestCase
                 {
                     /* Вызвать метод */
                     $data = $method->invoke($productStocksApproveReport);
-//                                        dump($data);
+                    //                                        dump($data);
                 }
             }
 
             break;
         }
-
-        self::assertTrue(true);
     }
 }

@@ -68,7 +68,7 @@ class ProductStockByOrderRepositoryTest extends KernelTestCase
             ->onStatus($status)
             ->findAll();
 
-        if(true === empty($result))
+        if(false === empty($result))
         {
             foreach($result as $ProductStockEvent)
             {
