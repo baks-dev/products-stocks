@@ -324,9 +324,22 @@ final class ProductStocksOrdersPartResult
         return json_decode($this->events, false, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @depricated переносится в массив barcodes
+     */
     public function getBarcode(): ProductBarcode|false
     {
-        return $this->barcode ? new ProductBarcode($this->barcode) : false;
+        if($this->barcode)
+        {
+            return new ProductBarcode($this->barcode);
+        }
+
+        if(empty($this->getBarcodes()))
+        {
+            return false;
+        }
+
+        return current($this->getBarcodes());
     }
 
     /**

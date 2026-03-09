@@ -326,9 +326,20 @@ final class ProductStocksOrdersProductResult
         return number_format(microtime(true) * 100, 0, '.', '.');
     }
 
+    /** @depricated переносится в массив barcodes */
     public function getBarcode(): ProductBarcode|false
     {
-        return $this->barcode ? new ProductBarcode($this->barcode) : false;
+        if($this->barcode)
+        {
+            return new ProductBarcode($this->barcode);
+        }
+
+        if(empty($this->getBarcodes()))
+        {
+            return false;
+        }
+
+        return current($this->getBarcodes());
     }
 
     /**
