@@ -49,7 +49,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
  */
-#[Autoconfigure(public: true)]
+// #[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksTotalByIncomingStock
 {

@@ -46,7 +46,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Пополнение наличием в карточке при поступлении на склад
  */
-#[Autoconfigure(public: true)]
+// #[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 20)]
 final readonly class AddQuantityProductByIncomingStock
 {
