@@ -249,7 +249,7 @@ class ProductStockEvent extends EntityEvent
         return $this->move;
     }
 
-    public function getNumber(): string
+    public function getNumber(): ?string
     {
         return $this->invariable?->getNumber();
     }
