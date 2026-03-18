@@ -98,10 +98,16 @@
     <td class="text-end">
         {% if item.productPrice %}
 
-            <div class="h5">
-                <span class="badge text-bg-light text-nowrap text-primary border border-1">
-                    {{ money(item.productPrice) }}
-                </span>
+            <div class="d-flex align-items-center gap-1">
+                <div class="small text-secondary me-4 text-nowrap">
+                    <small>{{ item.productPriceDateUpdate|date('d.m.Y H:i') }}</small>
+                </div>
+
+                <div class="h5 m-0">
+                    <span class="badge text-bg-light text-nowrap text-primary border border-1">
+                        {{ money(item.productPrice) }}
+                    </span>
+                </div>
             </div>
 
         {% else %}
