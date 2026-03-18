@@ -23,13 +23,31 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity\Quantity\Event;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\Comment;
 
-use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
+use BaksDev\Products\Stocks\Entity\Quantity\Comment\ProductStockQuantityCommentInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
-interface ProductStockQuantityEventInterface
+/** @see ProductStockQuantityApprove */
+final class ProductStockQuantityNewEditCommentDTO implements ProductStockQuantityCommentInterface
 {
-    public function getEvent(): ?ProductStockQuantityEventUid;
+    /** Значение свойства */
+    #[Assert\NotBlank]
+    private string $value;
 
-    public function setId(ProductStockQuantityEventUid $id): self;
+    /**
+     * Значение свойства
+     *
+     * @see ProductStockQuantityComment
+     */
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    public function setValue(string $value): self
+    {
+        $this->value = $value;
+        return $this;
+    }
 }

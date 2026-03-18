@@ -23,13 +23,29 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Entity\Quantity\Event;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\Approve;
 
-use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
+use BaksDev\Products\Stocks\Entity\Quantity\Approve\ProductStockQuantityApproveInterface;
 
-interface ProductStockQuantityEventInterface
+/** @see ProductStockQuantityApprove */
+final class ProductStockQuantityNewEditApproveDTO implements ProductStockQuantityApproveInterface
 {
-    public function getEvent(): ?ProductStockQuantityEventUid;
+    /** Значение свойства */
+    private bool $value = true;
 
-    public function setId(ProductStockQuantityEventUid $id): self;
+    /**
+     * Значение свойства
+     *
+     * @see ProductStockQuantityApprove
+     */
+    public function getValue(): bool
+    {
+        return $this->value === true;
+    }
+
+    public function setValue(bool $value): self
+    {
+        $this->value = $value;
+        return $this;
+    }
 }

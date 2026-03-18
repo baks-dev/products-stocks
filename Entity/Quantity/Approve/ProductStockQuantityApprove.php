@@ -25,8 +25,9 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Quantity\Approve;
 
-use BaksDev\Core\Entity\EntityState;
+use BaksDev\Core\Entity\EntityReadonly;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
+use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
@@ -35,11 +36,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 /* ProductStockQuantityApprove */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_quantity_approve')]
-class ProductStockQuantityApprove extends EntityState
+class ProductStockQuantityApprove extends EntityReadonly
 {
+    /**
+     * Идентификатор Main
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\Id]
+    #[ORM\Column(type: ProductStockQuantityUid::TYPE)]
+    private ProductStockQuantityUid $main;
+
     /** Связь на событие */
     #[Assert\NotBlank]
-    #[ORM\Id]
+    #[Assert\Uuid]
     #[ORM\OneToOne(targetEntity: ProductStockQuantityEvent::class, inversedBy: 'approve')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockQuantityEvent $event;
@@ -51,11 +61,12 @@ class ProductStockQuantityApprove extends EntityState
     public function __construct(ProductStockQuantityEvent $event)
     {
         $this->event = $event;
+        $this->main = $event->getMain();
     }
 
     public function __toString(): string
     {
-        return (string) $this->event;
+        return (string) $this->main;
     }
 
     public function isValue(): bool
@@ -65,6 +76,8 @@ class ProductStockQuantityApprove extends EntityState
 
     public function getDto($dto): mixed
     {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if($dto instanceof ProductStockQuantityApproveInterface)
         {
             return parent::getDto($dto);
@@ -75,7 +88,7 @@ class ProductStockQuantityApprove extends EntityState
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof ProductStockQuantityApproveInterface)
+        if($dto instanceof ProductStockQuantityApproveInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
@@ -83,9 +96,25 @@ class ProductStockQuantityApprove extends EntityState
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
+    public function setEvent(ProductStockQuantityEvent $event): self
+    {
+        $this->event = $event;
+        return $this;
+    }
+
+    public function getEvent(): ProductStockQuantityEvent
+    {
+        return $this->event;
+    }
+
     public function setValue(bool $value): self
     {
         $this->value = $value;
         return $this;
+    }
+
+    public function getMain(): ProductStockQuantityUid
+    {
+        return $this->main;
     }
 }

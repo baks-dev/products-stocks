@@ -25,11 +25,8 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Quantity\Invariable;
 
-use BaksDev\Core\Entity\EntityState;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Core\Entity\EntityReadonly;
+use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -42,8 +39,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_quantity_invariable')]
 #[ORM\Index(columns: ['usr', 'profile'])]
-#[ORM\Index(columns: ['profile', 'product', 'offer', 'variation', 'modification'])]
-class ProductStockQuantityInvariable extends EntityState
+#[ORM\Index(columns: ['profile', 'invariable'])]
+class ProductStockQuantityInvariable extends EntityReadonly
 {
     /**
      * Идентификатор Main
@@ -64,20 +61,8 @@ class ProductStockQuantityInvariable extends EntityState
     private ProductStockQuantityEvent $event;
 
     /** ID продукта */
-    #[ORM\Column(type: ProductUid::TYPE)]
-    private ProductUid $product;
-
-    /** Постоянный уникальный идентификатор ТП */
-    #[ORM\Column(type: ProductOfferConst::TYPE, nullable: true)]
-    private ?ProductOfferConst $offer;
-
-    /** Постоянный уникальный идентификатор варианта */
-    #[ORM\Column(type: ProductVariationConst::TYPE, nullable: true)]
-    private ?ProductVariationConst $variation;
-
-    /** Постоянный уникальный идентификатор модификации */
-    #[ORM\Column(type: ProductModificationConst::TYPE, nullable: true)]
-    private ?ProductModificationConst $modification;
+    #[ORM\Column(type: ProductInvariableUid::TYPE)]
+    private ProductInvariableUid $invariable;
 
     /** ID пользователя */
     #[ORM\Column(type: UserUid::TYPE, nullable: true, options: ['default' => null])]
@@ -141,23 +126,24 @@ class ProductStockQuantityInvariable extends EntityState
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getProduct(): ProductUid
+    public function setEvent(ProductStockQuantityEvent $event): self
     {
-        return $this->product;
+        $this->event = $event;
+        return $this;
     }
 
-    public function getModification(): ?ProductModificationConst
+    public function getEvent(): ProductStockQuantityEvent
     {
-        return $this->modification;
+        return $this->event;
     }
 
-    public function getOffer(): ?ProductOfferConst
+    public function getMain(): ProductStockQuantityUid
     {
-        return $this->offer;
+        return $this->main;
     }
 
-    public function getVariation(): ?ProductVariationConst
+    public function getInvariable(): ProductInvariableUid
     {
-        return $this->variation;
+        return $this->invariable;
     }
 }

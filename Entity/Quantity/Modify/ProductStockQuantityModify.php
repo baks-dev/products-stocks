@@ -107,7 +107,6 @@ class ProductStockQuantityModify extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-
     public function setEntity($dto): mixed
     {
         if($dto instanceof ProductStockQuantityModifyInterface || $dto instanceof self)

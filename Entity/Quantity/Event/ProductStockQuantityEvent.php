@@ -30,19 +30,20 @@ use BaksDev\Products\Stocks\Entity\Quantity\Approve\ProductStockQuantityApprove;
 use BaksDev\Products\Stocks\Entity\Quantity\Comment\ProductStockQuantityComment;
 use BaksDev\Products\Stocks\Entity\Quantity\Invariable\ProductStockQuantityInvariable;
 use BaksDev\Products\Stocks\Entity\Quantity\Modify\ProductStockQuantityModify;
-use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
+use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// ProductStockQuantity
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_quantity_event')]
 class ProductStockQuantityEvent extends EntityEvent
 {
-    /** ID  */
+    /** ID */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
     #[ORM\Id]
     #[ORM\Column(type: ProductStockQuantityEventUid::TYPE)]
     private ProductStockQuantityEventUid $id;
@@ -90,12 +91,9 @@ class ProductStockQuantityEvent extends EntityEvent
 
     public function __construct()
     {
-        $this->id = clone new ProductStockQuantityEventUid();
-
+        $this->id = new ProductStockQuantityEventUid();
         $this->modify = new ProductStockQuantityModify($this);
-        $this->invariable = new ProductStockQuantityInvariable($this);
-
-        $this->approve = new ProductStockQuantityApprove($this);
+        $this->comment = new ProductStockQuantityComment($this);
     }
 
     public function __clone()
@@ -120,7 +118,7 @@ class ProductStockQuantityEvent extends EntityEvent
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if($dto instanceof ProductStockQuantityInterface)
+        if($dto instanceof ProductStockQuantityEventInterface)
         {
             return parent::getDto($dto);
         }
@@ -130,7 +128,7 @@ class ProductStockQuantityEvent extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof ProductStockQuantityInterface || $dto instanceof self)
+        if($dto instanceof ProductStockQuantityEventInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
@@ -141,5 +139,27 @@ class ProductStockQuantityEvent extends EntityEvent
     public function getMain(): ?ProductStockQuantityUid
     {
         return $this->main;
+    }
+
+    public function setMain(ProductStockQuantityUid|ProductStockQuantity $main): self
+    {
+        $this->main = $main instanceof ProductStockQuantity ? $main->getId() : $main;
+        return $this;
+    }
+
+    public function setInvariable(ProductStockQuantityInvariable $invariable): self
+    {
+        $this->invariable = $invariable;
+        return $this;
+    }
+
+    public function getInvariable(): ProductStockQuantityInvariable
+    {
+        return $this->invariable;
+    }
+
+    public function getComment(): ?ProductStockQuantityComment
+    {
+        return $this->comment;
     }
 }

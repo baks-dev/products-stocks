@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Quantity\Comment;
 
-use BaksDev\Core\Entity\EntityState;
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -35,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /* ProductStockQuantityComment */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_quantity_comment')]
-class ProductStockQuantityComment extends EntityState
+class ProductStockQuantityComment extends EntityEvent
 {
     /** Связь на событие */
     #[Assert\NotBlank]

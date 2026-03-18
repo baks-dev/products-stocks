@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Quantity;
 
+use BaksDev\Core\Entity\EntityState;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
@@ -34,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /* ProductStockQuantity */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_quantity')]
-class ProductStockQuantity
+class ProductStockQuantity extends EntityState
 {
     /**
      * Идентификатор сущности
@@ -79,8 +80,9 @@ class ProductStockQuantity
         return $this->event;
     }
 
-    public function setEvent(ProductStockQuantityEventUid|ProductStockQuantityEvent $event): void
+    public function setEvent(ProductStockQuantityEventUid|ProductStockQuantityEvent $event): self
     {
         $this->event = $event instanceof ProductStockQuantityEvent ? $event->getId() : $event;
+        return $this;
     }
 }
