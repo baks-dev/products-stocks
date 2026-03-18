@@ -511,6 +511,15 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_modification_price.modification = product_modification.id',
         );
 
+        $dbal
+            ->leftJoin(
+                'product',
+                ProductModify::class,
+                'product_modify',
+                'product_modify.event = product.event',
+            );
+
+
         $dbal->addSelect('
             COALESCE(
                 product_modification_price.price,
@@ -534,7 +543,7 @@ final class AllProductStocksRepository implements AllProductStocksInterface
                 product_modification_price.up,
                 product_variation_price.up,
                 product_offer_price.up,
-                product_price.up
+                product_modify.mod_date
             ) AS product_price_update
         ');
 
