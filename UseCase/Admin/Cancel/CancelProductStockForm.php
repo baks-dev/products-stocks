@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -41,7 +41,7 @@ final class CancelProductStockForm extends AbstractType
         $builder->add(
             'product_stock_cancel',
             SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-warning']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-warning']],
         );
     }
 

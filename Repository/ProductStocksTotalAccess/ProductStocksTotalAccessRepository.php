@@ -42,20 +42,16 @@ use Symfony\Contracts\Service\ResetInterface;
 final class ProductStocksTotalAccessRepository implements ProductStocksTotalAccessInterface, ResetInterface
 {
 
+    private UserProfileUid|false $profile = false;
+    private ProductUid|false $product = false;
+    private ProductOfferConst|false $offer = false;
+    private ProductVariationConst|false $variation = false;
+    private ProductModificationConst|false $modification = false;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
-
-    private UserProfileUid|false $profile = false;
-
-    private ProductUid|false $product = false;
-
-    private ProductOfferConst|false $offer = false;
-
-    private ProductVariationConst|false $variation = false;
-
-    private ProductModificationConst|false $modification = false;
 
     public function forProfile(UserProfile|UserProfileUid $profile): self
     {

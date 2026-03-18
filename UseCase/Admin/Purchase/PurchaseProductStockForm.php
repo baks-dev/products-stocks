@@ -94,7 +94,7 @@ final class PurchaseProductStockForm extends AbstractType
                     },
                     function($product) {
                         return $product ? new ProductUid($product) : null;
-                    }
+                    },
                 ),
             );
 
@@ -115,7 +115,7 @@ final class PurchaseProductStockForm extends AbstractType
                 },
                 function($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
-                }
+                },
             ),
         );
 
@@ -135,7 +135,7 @@ final class PurchaseProductStockForm extends AbstractType
                 },
                 function($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
-                }
+                },
             ),
         );
 
@@ -155,7 +155,7 @@ final class PurchaseProductStockForm extends AbstractType
                 },
                 function($modification) {
                     return $modification ? new ProductModificationConst($modification) : null;
-                }
+                },
             ),
         );
 
@@ -223,7 +223,7 @@ final class PurchaseProductStockForm extends AbstractType
         $builder->add(
             'purchase',
             ButtonType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']],
         );
 
     }
@@ -256,7 +256,7 @@ final class PurchaseProductStockForm extends AbstractType
                     ] : [];
                 },
                 'label' => false,
-            ]
+            ],
         );
     }
 
@@ -427,7 +427,7 @@ final class PurchaseProductStockForm extends AbstractType
                 'data_class' => PurchaseProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-            ]
+            ],
         );
     }
 }

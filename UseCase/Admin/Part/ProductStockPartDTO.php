@@ -58,15 +58,15 @@ final class ProductStockPartDTO implements ProductStockPartInterface
         return $this->id;
     }
 
+    public function getValue(): ?ProductStockPartUid
+    {
+        return $this->value;
+    }
+
     public function setValue(?ProductStockPartUid $value): self
     {
         $this->value = $value;
         return $this;
-    }
-
-    public function getValue(): ?ProductStockPartUid
-    {
-        return $this->value;
     }
 
     public function getNumber(): ?string

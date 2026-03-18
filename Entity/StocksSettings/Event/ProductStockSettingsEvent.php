@@ -97,9 +97,9 @@ class ProductStockSettingsEvent extends EntityEvent
         return (string) $this->id;
     }
 
-    public function getId(): ProductStockSettingsEventUid
+    public function getMain(): ?ProductStockSettingsUid
     {
-        return $this->id;
+        return $this->main;
     }
 
     /**
@@ -110,9 +110,9 @@ class ProductStockSettingsEvent extends EntityEvent
         $this->main = $main instanceof ProductStockSettings ? $main->getId() : $main;
     }
 
-    public function getMain(): ?ProductStockSettingsUid
+    public function getId(): ProductStockSettingsEventUid
     {
-        return $this->main;
+        return $this->id;
     }
 
     public function getDto($dto): mixed

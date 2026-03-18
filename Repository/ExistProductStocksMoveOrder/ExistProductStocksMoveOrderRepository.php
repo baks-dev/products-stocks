@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -54,7 +54,7 @@ final readonly class ExistProductStocksMoveOrderRepository implements ExistProdu
                 'move',
                 ProductStockEvent::class,
                 'event',
-                'event.id = move.event AND event.status != :incoming '
+                'event.id = move.event AND event.status != :incoming ',
             )
             ->setParameter('incoming', ProductStockStatusIncoming::class, ProductStockStatus::TYPE);
 
@@ -62,7 +62,7 @@ final readonly class ExistProductStocksMoveOrderRepository implements ExistProdu
             'event',
             ProductStock::class,
             'stock',
-            'stock.event = event.id'
+            'stock.event = event.id',
         );
 
         return $dbal->fetchExist();

@@ -142,6 +142,24 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
         return $this;
     }
 
+    /**
+     * Метод возвращает место складирования продукции с минимальным количеством в наличии без учета резерва
+     */
+    public function findOneByTotalMin(): ?ProductStockTotal
+    {
+
+        $orm = $this->builder();
+
+        $orm->orderBy('stock.total');
+
+        /* складские места только с наличием */
+        $orm->andWhere('stock.total > 0');
+
+        /* складские места только с резервом */
+        $orm->andWhere('stock.reserve > 0');
+
+        return $orm->getOneOrNullResult();
+    }
 
     private function builder(): ORMQueryBuilder
     {
@@ -228,25 +246,6 @@ final class ProductStockQuantityRepository implements ProductStockQuantityInterf
 
         return $orm;
 
-    }
-
-    /**
-     * Метод возвращает место складирования продукции с минимальным количеством в наличии без учета резерва
-     */
-    public function findOneByTotalMin(): ?ProductStockTotal
-    {
-
-        $orm = $this->builder();
-
-        $orm->orderBy('stock.total');
-
-        /* складские места только с наличием */
-        $orm->andWhere('stock.total > 0');
-
-        /* складские места только с резервом */
-        $orm->andWhere('stock.reserve > 0');
-
-        return $orm->getOneOrNullResult();
     }
 
     /**

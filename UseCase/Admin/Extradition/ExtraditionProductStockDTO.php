@@ -60,16 +60,6 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         return $this->id;
     }
 
-    public function setId(ProductStockEventUid $id): self
-    {
-        if(false === new ReflectionProperty(self::class, 'id')->isInitialized($this))
-        {
-            $this->id = $id;
-        }
-        return $this;
-    }
-
-
     /** Комментарий */
     public function getComment(): ?string
     {
@@ -81,17 +71,17 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
         $this->comment = $comment;
     }
 
+    public function getFixed(): ?UserProfileUid
+    {
+        return $this->fixed;
+    }
+
     /** Ответственное лицо за упаковку (Профиль пользователя) */
 
     public function setFixed(?UserProfileUid $fixed): self
     {
         $this->fixed = $fixed;
         return $this;
-    }
-
-    public function getFixed(): ?UserProfileUid
-    {
-        return $this->fixed;
     }
 
     /** Статус заявки - ПРИХОД */
@@ -103,5 +93,14 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     public function getId(): ProductStockEventUid
     {
         return ($this->id instanceof ProductStockEventUid) ? $this->id : new ProductStockEventUid($this->id);
+    }
+
+    public function setId(ProductStockEventUid $id): self
+    {
+        if(false === new ReflectionProperty(self::class, 'id')->isInitialized($this))
+        {
+            $this->id = $id;
+        }
+        return $this;
     }
 }

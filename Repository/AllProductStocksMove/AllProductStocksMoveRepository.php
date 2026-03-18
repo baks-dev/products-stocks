@@ -130,6 +130,16 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         return $this;
     }
 
+    /**
+     * Метод возвращает все заявки, требующие перемещения между складами
+     */
+    public function findPaginator(): PaginatorInterface
+    {
+        $dbal = $this->builder();
+
+        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
+    }
+
     private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
@@ -714,16 +724,5 @@ final class AllProductStocksMoveRepository implements AllProductStocksMoveInterf
         $dbal->allGroupByExclude();
 
         return $dbal;
-    }
-
-
-    /**
-     * Метод возвращает все заявки, требующие перемещения между складами
-     */
-    public function findPaginator(): PaginatorInterface
-    {
-        $dbal = $this->builder();
-
-        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksMoveResult::class);
     }
 }

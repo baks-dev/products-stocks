@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -83,18 +83,18 @@ final class CancelProductStockDTO implements ProductStockEventInterface
         return $this->status;
     }
 
-    public function setComment(?string $comment): self
-    {
-        $this->comment = $comment;
-        return $this;
-    }
-
     /**
      * Comment
      */
     public function getComment(): ?string
     {
         return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
     }
 
 }

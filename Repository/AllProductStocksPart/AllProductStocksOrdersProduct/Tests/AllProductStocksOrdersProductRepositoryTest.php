@@ -57,8 +57,7 @@ class AllProductStocksOrdersProductRepositoryTest extends KernelTestCase
 
         $result = $AllProductStocksOrdersProductRepository
             ->forProfile(new UserProfileUid('019577a9-71a3-714b-a99c-0386833d802f'))
-            ->findAll($ids)
-        ;
+            ->findAll($ids);
 
         if(false === $result || false === $result->valid())
         {

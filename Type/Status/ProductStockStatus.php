@@ -78,15 +78,20 @@ final class ProductStockStatus
 
     }
 
-    public function __toString(): string
-    {
-        return $this->status ? $this->status->getValue() : '';
-    }
-
     /** Возвращает значение (value) страны String */
     public function getProductStockStatus(): ProductStockStatusInterface
     {
         return $this->status;
+    }
+
+    public static function getDeclared(): array
+    {
+        return array_filter(
+            get_declared_classes(),
+            static function($className) {
+                return in_array(ProductStockStatusInterface::class, class_implements($className), true);
+            },
+        );
     }
 
     /** Возвращает значение (value) страны String */
@@ -110,16 +115,10 @@ final class ProductStockStatus
         return $case;
     }
 
-    public static function getDeclared(): array
+    public function __toString(): string
     {
-        return array_filter(
-            get_declared_classes(),
-            static function($className) {
-                return in_array(ProductStockStatusInterface::class, class_implements($className), true);
-            }
-        );
+        return $this->status ? $this->status->getValue() : '';
     }
-
 
     public function equals(mixed $status): bool
     {

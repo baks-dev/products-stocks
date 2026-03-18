@@ -32,8 +32,8 @@ use BaksDev\Products\Stocks\UseCase\Admin\Stock\MovingProductToStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Stock\MovingProductToStockForm;
 use BaksDev\Products\Stocks\UseCase\Admin\Stock\MovingProductToStockHandler;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -59,10 +59,10 @@ final class MoveToStockStorageController extends AbstractController
             $movingProductToStockDTO,
             options: ['action' => $this->generateUrl(
                 'products-stocks:admin.total.move',
-                ['id' => $stockTotal->getId()]
-            )]
+                ['id' => $stockTotal->getId()],
+            )],
         )
-        ->handleRequest($request);
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('product_stock_storage_move'))
         {
@@ -72,7 +72,7 @@ final class MoveToStockStorageController extends AbstractController
                 'page.storageMove',
                 $handle instanceof ProductStockTotal ? 'success.storageMove' : 'danger.storageMove',
                 'products-stocks.admin',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();

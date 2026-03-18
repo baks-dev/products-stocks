@@ -39,9 +39,10 @@ final class VoterPickup implements VoterInterface, MenuAdminInterface
 
     public const string KEY = 'gffSfwdcg';
 
-    public static function getVoter(): string
+    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
+    public static function getSortMenu(): int
     {
-        return Role::ROLE.'_'.self::VOTER;
+        return 906;
     }
 
     public function equals(RoleInterface $role): bool
@@ -59,6 +60,11 @@ final class VoterPickup implements VoterInterface, MenuAdminInterface
     public function getRole(): string
     {
         return self::getVoter();
+    }
+
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
     }
 
     /** Метод возвращает PATH раздела */
@@ -79,12 +85,6 @@ final class VoterPickup implements VoterInterface, MenuAdminInterface
     public function getGroupMenu(): array|false
     {
         return [new MenuGroupStocks(), new MenuGroupProducts()];
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public static function getSortMenu(): int
-    {
-        return 906;
     }
 
     /** Метод возвращает флаг "Показать в выпадающем меню"  */

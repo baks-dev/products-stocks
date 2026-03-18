@@ -46,7 +46,7 @@ final class WarehouseProductStocksInvariableForm extends AbstractType
                 },
                 function($profile) {
                     return $profile ? new UserProfileUid($profile) : null;
-                }
+                },
             ),
         );
     }

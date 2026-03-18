@@ -88,9 +88,6 @@ final class IncomingProductStockTest extends KernelTestCase
 
 
         self::assertEquals(100, $ProductStockDTO->getTotal());
-        /** TODO: Временно блокируем изменение прихода */
-        //$ProductStockDTO->setTotal(200);
-
 
         /** @var IncomingProductStockHandler $IncomingProductStockHandler */
         $IncomingProductStockHandler = self::getContainer()->get(IncomingProductStockHandler::class);

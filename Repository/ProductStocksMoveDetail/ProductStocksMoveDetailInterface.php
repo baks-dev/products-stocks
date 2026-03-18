@@ -23,7 +23,6 @@
 
 namespace BaksDev\Products\Stocks\Repository\ProductStocksMoveDetail;
 
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Repository\AllProductStocksMove\AllProductStocksMoveResult;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
@@ -32,5 +31,6 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 interface ProductStocksMoveDetailInterface
 {
     public function find(ProductStockUid $id): AllProductStocksMoveResult|false;
+
     public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
 }

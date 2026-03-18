@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -34,15 +34,6 @@ final class MenuGroupStocks implements MenuAdminSectionGroupCollectionInterface
     public const string GROUP = 'stocks';
 
     /**
-     * Возвращает значение (value)
-     */
-    public function getValue(): string
-    {
-        return self::GROUP;
-    }
-
-
-    /**
      * Сортировка (чем меньше число - тем первым в итерации будет значение)
      */
     public static function sort(): int
@@ -56,5 +47,13 @@ final class MenuGroupStocks implements MenuAdminSectionGroupCollectionInterface
     public static function equals(string $group): bool
     {
         return self::GROUP === mb_strtolower($group);
+    }
+
+    /**
+     * Возвращает значение (value)
+     */
+    public function getValue(): string
+    {
+        return self::GROUP;
     }
 }

@@ -33,7 +33,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPurchase;
-use BaksDev\Products\Stocks\UseCase\Admin\Moving\Archive\MovingProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Archive\PurchaseProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Purchase\Invariable\PurchaseProductStocksInvariableDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -119,17 +118,6 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         return $this;
     }
 
-    /** Коллекция продукции  */
-    public function getProduct(): ArrayCollection
-    {
-        return $this->product;
-    }
-
-    public function setProduct(ArrayCollection $product): void
-    {
-        $this->product = $product;
-    }
-
     public function addProduct(Products\ProductStockDTO $product): void
     {
         $filter = $this->product->filter(function(Products\ProductStockDTO $element) use ($product) {
@@ -143,6 +131,17 @@ final class PurchaseProductStockDTO implements ProductStockEventInterface
         {
             $this->product->add($product);
         }
+    }
+
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
+    {
+        return $this->product;
+    }
+
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
     }
 
     public function removeProduct(Products\ProductStockDTO $product): void

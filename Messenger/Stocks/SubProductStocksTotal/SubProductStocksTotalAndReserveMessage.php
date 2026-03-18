@@ -106,18 +106,18 @@ final class SubProductStocksTotalAndReserveMessage
         return $this->modification ? new ProductModificationConst($this->modification) : false;
     }
 
-    public function setIterate(int $iterate): self
-    {
-        $this->iterate = $iterate;
-        return $this;
-    }
-
     /**
      * Iterate
      */
     public function getIterate(): string
     {
         return md5($this->iterate.$this->order);
+    }
+
+    public function setIterate(int $iterate): self
+    {
+        $this->iterate = $iterate;
+        return $this;
     }
 
     /**

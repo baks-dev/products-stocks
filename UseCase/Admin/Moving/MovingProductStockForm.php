@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -49,7 +49,7 @@ final class MovingProductStockForm extends AbstractType
                 'allow_delete' => true,
                 'allow_add' => true,
                 'prototype_name' => '__product__',
-            ]
+            ],
         );
     }
 

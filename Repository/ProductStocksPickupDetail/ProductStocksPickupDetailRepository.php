@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -87,12 +87,12 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 '
                 invariable.main = stock.id AND 
                 invariable.profile = :profile
-            '
+            ',
             )
             ->setParameter(
                 key: 'profile',
                 value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $dbal
@@ -100,12 +100,12 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'
+                'event.id = stock.event AND event.status = :status',
             )
             ->setParameter(
                 'status',
                 ProductStockStatusExtradition::class,
-                ProductStockStatus::TYPE
+                ProductStockStatus::TYPE,
             );
 
         $dbal
@@ -114,7 +114,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             );
 
 
@@ -124,7 +124,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -132,7 +132,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
         $dbal
@@ -141,7 +141,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_event',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         // Product Trans
@@ -151,7 +151,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         // Торговое предложение
@@ -163,7 +163,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
         // Получаем тип торгового предложения
@@ -173,7 +173,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
 
@@ -186,7 +186,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
         // Получаем тип множественного варианта
@@ -196,7 +196,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_offer_variation',
-                'category_offer_variation.id = product_variation.category_variation'
+                'category_offer_variation.id = product_variation.category_variation',
             );
 
 
@@ -209,7 +209,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
             );
 
 
@@ -220,7 +220,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
         // Артикул продукта
@@ -243,7 +243,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
             '
 			product_modification_image.modification = product_modification.id AND
 			product_modification_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -253,7 +253,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
             '
 			product_variation_image.variation = product_variation.id AND
 			product_variation_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -264,7 +264,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
 			product_variation_image.name IS NULL AND
 			product_offer_images.offer = product_offer.id AND
 			product_offer_images.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -275,7 +275,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
 			product_offer_images.name IS NULL AND
 			product_photo.event = product_event.id AND
 			product_photo.root = true
-			'
+			',
         );
 
         $dbal->addSelect(
@@ -296,7 +296,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
 					
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         // Расширение файла
@@ -319,7 +319,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
 			   ELSE NULL
 			   
 			END AS product_image_ext
-		"
+		",
         );
 
         // Флаг загрузки файла CDN
@@ -337,7 +337,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
 					
 			   ELSE NULL
 			END AS product_image_cdn
-		'
+		',
         );
 
         // Категория
@@ -345,14 +345,14 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
             'product_event',
             ProductCategory::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true'
+            'product_event_category.event = product_event.id AND product_event_category.root = true',
         );
 
         $dbal->leftJoin(
             'product_event_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_event_category.category'
+            'category.id = product_event_category.category',
         );
 
         $dbal
@@ -361,7 +361,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'category',
                 CategoryProductTrans::class,
                 'category_trans',
-                'category_trans.event = category.event AND category_trans.local = :local'
+                'category_trans.event = category.event AND category_trans.local = :local',
             );
 
         $dbal
@@ -370,7 +370,7 @@ final class ProductStocksPickupDetailRepository implements ProductStocksPickupDe
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
 
         $dbal->allGroupByExclude();

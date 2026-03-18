@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -166,7 +166,7 @@ final class CountProductStocksStorageRepository implements CountProductStocksSto
                 ->setParameter(
                     key: 'offer',
                     value: $this->offer,
-                    type: ProductOfferConst::TYPE
+                    type: ProductOfferConst::TYPE,
                 );
         }
         else
@@ -181,7 +181,7 @@ final class CountProductStocksStorageRepository implements CountProductStocksSto
                 ->setParameter(
                     key: 'variation',
                     value: $this->variation,
-                    type: ProductVariationConst::TYPE
+                    type: ProductVariationConst::TYPE,
                 );
         }
         else
@@ -196,7 +196,7 @@ final class CountProductStocksStorageRepository implements CountProductStocksSto
                 ->setParameter(
                     key: 'modification',
                     value: $this->modification,
-                    type: ProductModificationConst::TYPE
+                    type: ProductModificationConst::TYPE,
                 );
         }
         else

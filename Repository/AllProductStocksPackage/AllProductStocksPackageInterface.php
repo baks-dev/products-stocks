@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -41,6 +41,7 @@ interface AllProductStocksPackageInterface
 
     /**
      * Метод возвращает все заявки на упаковку заказов в виде коллекции объектов.
+     *
      * @see AllProductStocksPackageResult
      */
     public function findPaginator(): PaginatorInterface;

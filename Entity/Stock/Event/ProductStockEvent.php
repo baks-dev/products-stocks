@@ -156,9 +156,9 @@ class ProductStockEvent extends EntityEvent
         return (string) $this->id;
     }
 
-    public function getId(): ProductStockEventUid
+    public function getMain(): ?ProductStockUid
     {
-        return $this->id;
+        return $this->main;
     }
 
     public function setMain(ProductStockUid|ProductStock $main): void
@@ -166,14 +166,19 @@ class ProductStockEvent extends EntityEvent
         $this->main = $main instanceof ProductStock ? $main->getId() : $main;
     }
 
-    public function getMain(): ?ProductStockUid
+    public function getId(): ProductStockEventUid
     {
-        return $this->main;
+        return $this->id;
     }
 
     public function isInvariable(): bool
     {
         return $this->invariable instanceof ProductStocksInvariable;
+    }
+
+    public function getInvariable(): ?ProductStocksInvariable
+    {
+        return $this->invariable;
     }
 
     public function setInvariable(ProductStocksInvariable|false|null $invariable): self
@@ -185,12 +190,6 @@ class ProductStockEvent extends EntityEvent
 
         return $this;
     }
-
-    public function getInvariable(): ?ProductStocksInvariable
-    {
-        return $this->invariable;
-    }
-
 
     public function equalsProductStockStatus(mixed $status): bool
     {
@@ -220,19 +219,19 @@ class ProductStockEvent extends EntityEvent
     //    }
 
     /**
-     * Идентификатор заказа.
-     */
-    public function getOrder(): ?OrderUid
-    {
-        return $this->ord?->getOrder();
-    }
-
-    /**
      * Идентификатор заказа при перемещении.
      */
     public function getMoveOrder(): ?OrderUid
     {
         return $this->move?->getOrder();
+    }
+
+    /**
+     * Идентификатор заказа.
+     */
+    public function getOrder(): ?OrderUid
+    {
+        return $this->ord?->getOrder();
     }
 
     /**

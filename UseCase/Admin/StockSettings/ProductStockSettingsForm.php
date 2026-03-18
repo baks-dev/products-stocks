@@ -43,7 +43,7 @@ final class ProductStockSettingsForm extends AbstractType
         $builder->add(
             'product_stock_settings',
             SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']],
         );
     }
 

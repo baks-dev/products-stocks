@@ -47,14 +47,14 @@ final readonly class ProductStockByNumberRepository implements ProductStockByNum
             ->where('invariable.number = :number')
             ->setParameter(
                 key: 'number',
-                value: $number
+                value: $number,
             );
 
         $qb->join(
             ProductStock::class,
             'stock',
             'WITH',
-            'stock.id = invariable.main'
+            'stock.id = invariable.main',
         );
 
         $qb
@@ -63,7 +63,7 @@ final readonly class ProductStockByNumberRepository implements ProductStockByNum
                 ProductStockEvent::class,
                 'event',
                 'WITH',
-                'event.id = stock.event'
+                'event.id = stock.event',
             );
 
         return $qb->getOneOrNullResult() ?: false;

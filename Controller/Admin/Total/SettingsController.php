@@ -74,7 +74,7 @@ final class SettingsController extends AbstractController
             ->createForm(
                 type: ProductStockSettingsForm::class,
                 data: $ProductStockSettingsDTO,
-                options: ['action' => $this->generateUrl('products-stocks:admin.total.settings')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.total.settings')],
             )
             ->handleRequest($request);
 
@@ -88,7 +88,7 @@ final class SettingsController extends AbstractController
                 'page.settings',
                 $handle instanceof ProductStockSettings ? 'settings.update' : 'settings.danger',
                 'products-stocks.admin',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();

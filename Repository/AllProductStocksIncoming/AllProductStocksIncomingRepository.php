@@ -74,19 +74,16 @@ use Doctrine\DBAL\Types\Types;
 
 final class AllProductStocksIncomingRepository implements AllProductStocksIncomingInterface
 {
+    private UserProfileUid|false $profile = false;
+    private ?ProductFilterDTO $filter = null;
+    private ?ProductStockStatusFilterDTO $filter_status = null;
+    private ?SearchDTO $search = null;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
-
-    private UserProfileUid|false $profile = false;
-
-    private ?ProductFilterDTO $filter = null;
-
-    private ?ProductStockStatusFilterDTO $filter_status = null;
-
-    private ?SearchDTO $search = null;
 
     public function search(SearchDTO $search): static
     {

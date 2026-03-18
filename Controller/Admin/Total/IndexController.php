@@ -110,7 +110,7 @@ final class IndexController extends AbstractController
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
                 'info' => $info,
-                'stock_settings' => $stockSettings
+                'stock_settings' => $stockSettings,
             ],
         );
     }

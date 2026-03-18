@@ -161,7 +161,7 @@ for (checkbox_all_to_invoice of checkboxs_all_to_invoice) {
 
     setTimeout(function xA2vFjaW7B()
     {
-        if(typeof centrifuge !== 'object')
+        if(typeof centrifuge !== "object")
         {
             if(hfSaZAPeF > 1000) { return; }
 
@@ -169,9 +169,9 @@ for (checkbox_all_to_invoice of checkboxs_all_to_invoice) {
             return setTimeout(xA2vFjaW7B, hfSaZAPeF);
         }
 
-        const publish = centrifuge.newSubscription('products-stocks');
+        const publish = centrifuge.newSubscription("products-stocks");
 
-        publish.on('publication', function(ctx)
+        publish.on("publication", function(ctx)
         {
 
             if(ctx.data.profile !== '{{ current_profile }}')

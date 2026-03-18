@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotalInterface;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
+use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class MovingProductToStockDTO implements ProductStockTotalInterface
@@ -83,65 +84,15 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this->fromId;
     }
 
-    public function getToId(): ?ProductStockTotalUid
-    {
-        return $this->toId;
-    }
-
-    public function getUsr(): ?UserUid
-    {
-        return $this->usr;
-    }
-
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function getProduct(): ProductUid
-    {
-        return $this->product;
-    }
-
-    public function getOffer(): ?ProductOfferConst
-    {
-        return $this->offer;
-    }
-
-    public function getVariation(): ?ProductVariationConst
-    {
-        return $this->variation;
-    }
-
-    public function getModification(): ?ProductModificationConst
-    {
-        return $this->modification;
-    }
-
-    public function getComment(): ?string
-    {
-        return $this->comment;
-    }
-
-    public function getStorage(): ?string
-    {
-        return $this->storage;
-    }
-
-    public function getTotal(): int
-    {
-        return $this->total;
-    }
-
-    public function getReserve(): int
-    {
-        return $this->reserve;
-    }
-
     public function setFromId(ProductStockTotalUid $fromId): self
     {
         $this->fromId = $fromId;
         return $this;
+    }
+
+    public function getToId(): ?ProductStockTotalUid
+    {
+        return $this->toId;
     }
 
     public function setToId(?ProductStockTotalUid $toId): self
@@ -150,10 +101,20 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getUsr(): ?UserUid
+    {
+        return $this->usr;
+    }
+
     public function setUsr(?UserUid $usr): self
     {
         $this->usr = $usr;
         return $this;
+    }
+
+    public function getProfile(): UserProfileUid
+    {
+        return $this->profile;
     }
 
     public function setProfile(UserProfileUid $profile): self
@@ -162,10 +123,20 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getProduct(): ProductUid
+    {
+        return $this->product;
+    }
+
     public function setProduct(ProductUid $product): self
     {
         $this->product = $product;
         return $this;
+    }
+
+    public function getOffer(): ?ProductOfferConst
+    {
+        return $this->offer;
     }
 
     public function setOffer(?ProductOfferConst $offer): self
@@ -174,10 +145,20 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getVariation(): ?ProductVariationConst
+    {
+        return $this->variation;
+    }
+
     public function setVariation(?ProductVariationConst $variation): self
     {
         $this->variation = $variation;
         return $this;
+    }
+
+    public function getModification(): ?ProductModificationConst
+    {
+        return $this->modification;
     }
 
     public function setModification(?ProductModificationConst $modification): self
@@ -186,10 +167,20 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
         return $this;
+    }
+
+    public function getStorage(): ?string
+    {
+        return $this->storage;
     }
 
     public function setStorage(?string $storage): self
@@ -198,10 +189,20 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
     public function setTotal(int $total): self
     {
         $this->total = $total;
         return $this;
+    }
+
+    public function getReserve(): int
+    {
+        return $this->reserve;
     }
 
     public function getTotalToMove(): int
@@ -215,11 +216,11 @@ final class MovingProductToStockDTO implements ProductStockTotalInterface
         return $this;
     }
 
-    public function isValidTotal() : bool
+    public function isValidTotal(): bool
     {
         $move = ($this->total - $this->totalToMove) >= $this->reserve;
 
-        $move ?: throw new \InvalidArgumentException('Invalid Argument Total');
+        $move ?: throw new InvalidArgumentException('Invalid Argument Total');
 
         return $move;
     }

@@ -286,7 +286,6 @@ final class ProductStockInfoRepository implements ProductStockInfoInterface
             //            ")
 
             ->addSelect("SUM(current_stock_total.total - current_stock_total.reserve) AS min_stock_total")
-
             ->leftJoin(
                 'stock_total',
                 ProductStockTotal::class,

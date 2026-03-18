@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -38,9 +38,10 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
 
     public const string KEY = 'mKFuBeagW';
 
-    public static function getVoter(): string
+    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
+    public static function getSortMenu(): int
     {
-        return Role::ROLE.'_'.self::VOTER;
+        return 905;
     }
 
     public function equals(RoleInterface $role): bool
@@ -58,6 +59,11 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     public function getRole(): string
     {
         return self::getVoter();
+    }
+
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
     }
 
     /** Метод возвращает PATH раздела */
@@ -78,12 +84,6 @@ final class VoterPackage implements VoterInterface, MenuAdminInterface
     public function getGroupMenu(): array
     {
         return [new MenuGroupStocks(), new MenuGroupProducts()];
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public static function getSortMenu(): int
-    {
-        return 905;
     }
 
     /** Метод возвращает флаг "Показать в выпадающем меню"  */

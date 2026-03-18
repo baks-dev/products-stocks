@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -94,12 +94,12 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 '
                 invariable.main = stock.id AND 
                 invariable.profile = :profile
-            '
+            ',
             )
             ->setParameter(
                 key: 'profile',
                 value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
 
@@ -117,7 +117,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
         $dbal->setParameter(
             'package',
             new ProductStockStatus(new ProductStockStatusPackage()),
-            ProductStockStatus::TYPE
+            ProductStockStatus::TYPE,
         );
 
         $dbal
@@ -126,7 +126,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             );
 
         $dbal
@@ -143,7 +143,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 (total.variation IS NULL OR total.variation = stock_product.variation) AND 
                 (total.modification IS NULL OR total.modification = stock_product.modification) AND
                 total.total > 0
-            '
+            ',
             );
 
 
@@ -153,7 +153,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -161,7 +161,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
         // Product Info
@@ -171,7 +171,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_event',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         // Product Trans
@@ -181,7 +181,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         /*
@@ -195,7 +195,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
         // Получаем тип торгового предложения
@@ -205,7 +205,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
         $dbal
@@ -214,7 +214,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'category_offer',
                 CategoryProductOffersTrans::class,
                 'category_offer_trans',
-                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local',
             );
 
         /*
@@ -228,7 +228,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
         // Получаем тип множественного варианта
@@ -238,7 +238,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_variation',
-                'category_variation.id = product_variation.category_variation'
+                'category_variation.id = product_variation.category_variation',
             );
 
         $dbal
@@ -247,7 +247,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'category_variation',
                 CategoryProductVariationTrans::class,
                 'category_variation_trans',
-                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local',
             );
 
         /*
@@ -261,7 +261,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
             );
 
         // Получаем тип модификации множественного варианта
@@ -271,7 +271,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
         $dbal
@@ -280,7 +280,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'category_modification',
                 CategoryProductModificationTrans::class,
                 'category_modification_trans',
-                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local',
             );
 
         // Артикул продукта
@@ -303,7 +303,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
             '
                 product_modification_image.modification = product_modification.id AND
                 product_modification_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -313,7 +313,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
             '
                 product_variation_image.variation = product_variation.id AND
                 product_variation_image.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -324,7 +324,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 product_variation_image.name IS NULL AND
                 product_offer_images.offer = product_offer.id AND
                 product_offer_images.root = true
-			'
+			',
         );
 
         $dbal->leftJoin(
@@ -335,7 +335,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
 			product_offer_images.name IS NULL AND
 			product_photo.event = product_event.id AND
 			product_photo.root = true
-			'
+			',
         );
 
         $dbal->addSelect(
@@ -352,7 +352,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
 					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         // Расширение файла
@@ -368,7 +368,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
 			   ELSE NULL
 			   
 			END AS product_image_ext
-		"
+		",
         );
 
         // Флаг загрузки файла CDN
@@ -383,7 +383,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
 					product_photo.cdn
 			   ELSE NULL
 			END AS product_image_cdn
-		'
+		',
         );
 
         // Категория
@@ -391,14 +391,14 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
             'product_event',
             ProductCategory::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true'
+            'product_event_category.event = product_event.id AND product_event_category.root = true',
         );
 
         $dbal->leftJoin(
             'product_event_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_event_category.category'
+            'category.id = product_event_category.category',
         );
 
         $dbal->addSelect('category_trans.name AS category_name');
@@ -406,7 +406,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
             'category',
             CategoryProductTrans::class,
             'category_trans',
-            'category_trans.event = category.event AND category_trans.local = :local'
+            'category_trans.event = category.event AND category_trans.local = :local',
         );
 
         $dbal
@@ -415,7 +415,7 @@ final class ProductStocksPackageDetailRepository implements ProductStocksPackage
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
 
         $dbal->allGroupByExclude();

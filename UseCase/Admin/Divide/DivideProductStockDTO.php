@@ -160,6 +160,14 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
         $this->profile = $profile;
     }
 
+    /**
+     * Invariable
+     */
+    public function getInvariable(): DivideOrderInvariableDTO
+    {
+        return $this->invariable;
+    }
+
     /** Статус заявки - ПРИХОД */
     public function getStatus(): ProductStockStatus
     {
@@ -170,11 +178,6 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
     public function getNumber(): string
     {
         return $this->number;
-    }
-
-    public function setNumber(string $number): void
-    {
-        $this->number = $number;
     }
 
     //    /** Константа Целевого склада */
@@ -188,6 +191,10 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
     //        $this->warehouse = $warehouse;
     //    }
 
+    public function setNumber(string $number): void
+    {
+        $this->number = $number;
+    }
 
     /** Идентификатор заказа на сборку */
 
@@ -196,18 +203,9 @@ final class DivideProductStockDTO implements ProductStockEventInterface, OrderEv
         return $this->ord;
     }
 
-
     public function setOrd(DivideProductStockOrderDTO $ord): void
     {
         $this->ord = $ord;
-    }
-
-    /**
-     * Invariable
-     */
-    public function getInvariable(): DivideOrderInvariableDTO
-    {
-        return $this->invariable;
     }
 
     public function getArchive(): DivideProductStockArchiveDTO

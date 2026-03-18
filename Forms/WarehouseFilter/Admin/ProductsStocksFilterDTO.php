@@ -30,6 +30,8 @@ final class ProductsStocksFilterDTO implements ProductsStocksFilterInterface
     private Request $request;
 
     private ?UserProfileUid $profile;
+    /** Склад */
+    private ?ContactsRegionCallConst $warehouse = null;
 
     public function __construct(Request $request, ?UserProfileUid $profile)
     {
@@ -37,8 +39,10 @@ final class ProductsStocksFilterDTO implements ProductsStocksFilterInterface
         $this->profile = $profile;
     }
 
-    /** Склад */
-    private ?ContactsRegionCallConst $warehouse = null;
+    public function getWarehouse(): ?ContactsRegionCallConst
+    {
+        return $this->warehouse ?: $this->request->getSession()->get(self::warehouse);
+    }
 
     public function setWarehouse(?ContactsRegionCallConst $warehouse): void
     {
@@ -47,11 +51,6 @@ final class ProductsStocksFilterDTO implements ProductsStocksFilterInterface
             $this->request->getSession()->remove(self::warehouse);
         }
         $this->warehouse = $warehouse;
-    }
-
-    public function getWarehouse(): ?ContactsRegionCallConst
-    {
-        return $this->warehouse ?: $this->request->getSession()->get(self::warehouse);
     }
 
     /** Профиль пользователя */

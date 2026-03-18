@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -70,7 +70,7 @@ final class ProductsStocksFilterForm extends AbstractType
 
                 $this->request->getSession()->set(ProductsStocksFilterDTO::warehouse, $data->getWarehouse());
 
-            }
+            },
         );
     }
 
@@ -81,7 +81,7 @@ final class ProductsStocksFilterForm extends AbstractType
             [
                 'data_class' => ProductsStocksFilterDTO::class,
                 'method' => 'POST',
-            ]
+            ],
         );
     }
 }

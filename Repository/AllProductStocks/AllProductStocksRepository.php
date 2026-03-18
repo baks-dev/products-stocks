@@ -106,12 +106,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
         return $this;
     }
 
-    public function setLimit(int $limit): self
-    {
-        $this->limit = $limit;
-        return $this;
-    }
-
     public function forProfile(UserProfileUid|UserProfile $profile): self
     {
         if($profile instanceof UserProfile)
@@ -135,7 +129,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
         return $this;
     }
-
 
     /**
      * Метод возвращает полное состояние складских остатков продукции
@@ -205,15 +198,6 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             'product_event',
             'product_event.id = product.event',
         );
-
-        $dbal
-            ->addSelect('product_modify.mod_date AS modify')
-            ->leftJoin(
-                'product',
-                ProductModify::class,
-                'product_modify',
-                'product_modify.event = product.event',
-            );
 
         $dbal
             ->addSelect('product_info.url AS product_url')
@@ -545,6 +529,15 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ) AS old_product_price
         ');
 
+        $dbal->addSelect('
+            COALESCE(
+                product_modification_price.up,
+                product_variation_price.up,
+                product_offer_price.up,
+                product_price.up
+            ) AS product_price_update
+        ');
+
 
         /** Персональная скидка из профиля авторизованного пользователя */
         if(true === $dbal->bindCurrentProfile())
@@ -777,5 +770,11 @@ final class AllProductStocksRepository implements AllProductStocksInterface
             ->paginator
             ->fetchAllHydrate($dbal, AllProductStocksResult::class);
 
+    }
+
+    public function setLimit(int $limit): self
+    {
+        $this->limit = $limit;
+        return $this;
     }
 }

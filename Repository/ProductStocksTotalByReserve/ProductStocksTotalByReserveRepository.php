@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -38,17 +38,12 @@ use InvalidArgumentException;
 final class ProductStocksTotalByReserveRepository implements ProductStocksTotalByReserveInterface
 {
     private bool $isOnlyLogisticWarehouse = false;
-
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
-
     private ProductUid $product;
-
     private ?ProductOfferConst $offer = null;
-
     private ?ProductVariationConst $variation = null;
-
     private ?ProductModificationConst $modification = null;
 
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function product(ProductUid|string $product): self
     {
@@ -119,7 +114,6 @@ final class ProductStocksTotalByReserveRepository implements ProductStocksTotalB
         $this->isOnlyLogisticWarehouse = true;
         return $this;
     }
-
 
 
     /** Метод возвращает общее количество резерва продукции на всех складах */

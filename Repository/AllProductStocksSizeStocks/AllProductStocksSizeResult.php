@@ -49,23 +49,20 @@ final readonly class AllProductStocksSizeResult
 
     ) {}
 
+    public function getQuantity(): int
+    {
+        return $this->getStockTotal() - $this->getStockReserve();
+    }
 
     public function getStockTotal(): ?int
     {
         return $this->stock_total ?: 0;
     }
 
-
     public function getStockReserve(): ?int
     {
         return $this->stock_reserve ?: 0;
     }
-
-    public function getQuantity(): int
-    {
-        return $this->getStockTotal() - $this->getStockReserve();
-    }
-
 
     public function getProductOfferValue(): ?string
     {

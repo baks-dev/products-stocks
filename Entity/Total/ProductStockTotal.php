@@ -158,20 +158,21 @@ class ProductStockTotal extends EntityState
         return $this;
     }
 
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
     public function setTotal(int $total): self
     {
         $this->total = $total;
         return $this;
     }
 
-    public function getTotal(): int
-    {
-        return $this->total;
-    }
-
     /** Резервирование */
 
     // Увеличиваем количество
+
     public function addReserve(int $reserve): self
     {
         $this->reserve += $reserve;

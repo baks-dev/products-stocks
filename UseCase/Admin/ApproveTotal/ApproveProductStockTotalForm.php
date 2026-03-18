@@ -42,7 +42,7 @@ class ApproveProductStockTotalForm extends AbstractType
         $builder->add(
             'approve',
             SubmitType::class,
-            ['label' => 'Подтвердить', 'label_html' => true, 'attr' => ['class' => 'btn-warning']]
+            ['label' => 'Подтвердить', 'label_html' => true, 'attr' => ['class' => 'btn-warning']],
         );
     }
 
@@ -53,7 +53,7 @@ class ApproveProductStockTotalForm extends AbstractType
                 'data_class' => ApproveProductStockTotalDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-            ]
+            ],
         );
     }
 

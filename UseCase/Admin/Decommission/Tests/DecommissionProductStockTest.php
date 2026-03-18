@@ -50,36 +50,6 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 #[Group('products-stocks')]
 final class DecommissionProductStockTest extends KernelTestCase
 {
-    #[DependsOnClass(IncomingProductStockTest::class)]
-    public static function setUpBeforeClass(): void
-    {
-        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
-
-        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
-        $ProductStockStatusCollection->cases();
-
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get(EntityManagerInterface::class);
-
-        $main = $em->getRepository(ProductStock::class)
-            ->findBy(['id' => ProductStockUid::TEST]);
-
-        foreach($main as $remove)
-        {
-            $em->remove($remove);
-        }
-
-        $event = $em->getRepository(ProductStockEvent::class)
-            ->findBy(['main' => ProductStockUid::TEST]);
-
-        foreach($event as $remove)
-        {
-            $em->remove($remove);
-        }
-
-        $em->flush();
-    }
-
     /**
      * Тест создания заказа на упаковку
      */
@@ -148,5 +118,35 @@ final class DecommissionProductStockTest extends KernelTestCase
         /** Очистка тестовых данных  */
         self::setUpBeforeClass();
 
+    }
+
+    #[DependsOnClass(IncomingProductStockTest::class)]
+    public static function setUpBeforeClass(): void
+    {
+        /** @var ProductStockStatusCollection $ProductStockStatusCollection */
+
+        $ProductStockStatusCollection = self::getContainer()->get(ProductStockStatusCollection::class);
+        $ProductStockStatusCollection->cases();
+
+        /** @var EntityManagerInterface $em */
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $main = $em->getRepository(ProductStock::class)
+            ->findBy(['id' => ProductStockUid::TEST]);
+
+        foreach($main as $remove)
+        {
+            $em->remove($remove);
+        }
+
+        $event = $em->getRepository(ProductStockEvent::class)
+            ->findBy(['main' => ProductStockUid::TEST]);
+
+        foreach($event as $remove)
+        {
+            $em->remove($remove);
+        }
+
+        $em->flush();
     }
 }

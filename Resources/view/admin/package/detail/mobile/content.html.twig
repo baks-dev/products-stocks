@@ -5,6 +5,6 @@
 
     {% for item in query %}
 
-    {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
+        {{ include(_self|replace({ "content.html.twig": "_table.tbody.html.twig" })) }}
     {% endfor %}
 </table>

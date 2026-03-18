@@ -181,7 +181,7 @@ final class ReportTotalController extends AbstractController
                 ? $data->getProductPrice()->multiplication($data->getStockTotal())
                 : new Money(0);
 
-            $sheet->setCellValue('A'.$key, $data->getDateModify()->format('d.m.Y H:i')); // Обновление
+            $sheet->setCellValue('A'.$key, $data->getProductPriceDateUpdate()?->format('d.m.Y H:i')); // Обновление
             $sheet->setCellValue('B'.$key, trim($data->getProductArticle())); // Артикул
             $sheet->setCellValue('C'.$key, $data->getProductName()); // Наименование товара
             $sheet->setCellValue('D'.$key, str_replace(' /', '/', $strOffer)); // Торговое предложение

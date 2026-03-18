@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -70,21 +70,21 @@ final class ProductStockPickupFilterForm extends AbstractType
 
                 $this->request->getSession()->set(ProductStockPickupFilterDTO::date, $data->getDate());
                 $this->request->getSession()->set(ProductStockPickupFilterDTO::delivery, $data->getDelivery());
-            }
+            },
         );
 
 
         $builder->add(
             'back',
             SubmitType::class,
-            ['label' => 'Back', 'label_html' => true, 'attr' => ['class' => 'btn-light']]
+            ['label' => 'Back', 'label_html' => true, 'attr' => ['class' => 'btn-light']],
         );
 
 
         $builder->add(
             'next',
             SubmitType::class,
-            ['label' => 'next', 'label_html' => true, 'attr' => ['class' => 'btn-light']]
+            ['label' => 'next', 'label_html' => true, 'attr' => ['class' => 'btn-light']],
         );
     }
 
@@ -94,7 +94,7 @@ final class ProductStockPickupFilterForm extends AbstractType
             [
                 'data_class' => ProductStockPickupFilterDTO::class,
                 'method' => 'POST',
-            ]
+            ],
         );
     }
 }

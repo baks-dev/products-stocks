@@ -83,7 +83,7 @@ final class ProductStocksEventRepository implements ProductStocksEventInterface
             ->setParameter(
                 key: 'event',
                 value: $this->event,
-                type: ProductStockEventUid::TYPE
+                type: ProductStockEventUid::TYPE,
             );
 
         /** @var ProductStockEvent $ProductStockEvent */

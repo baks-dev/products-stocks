@@ -198,7 +198,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                 'product',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
 
@@ -235,7 +235,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                 'product_offer',
                 ProductOfferBarcode::class,
                 'product_offer_barcode',
-                'product_offer_barcode.offer = product_offer.id'
+                'product_offer_barcode.offer = product_offer.id',
             );
 
         /** ТИП торгового предложения */
@@ -268,7 +268,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                 'product_variation',
                 ProductVariationBarcode::class,
                 'product_variation_barcode',
-                'product_variation_barcode.variation = product_variation.id'
+                'product_variation_barcode.variation = product_variation.id',
             );
 
         /** ТИП варианта торгового предложения */
@@ -302,7 +302,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                 'product_modification',
                 ProductModificationBarcode::class,
                 'product_modification_barcode',
-                'product_modification_barcode.modification = product_modification.id'
+                'product_modification_barcode.modification = product_modification.id',
             );
 
         /** ТИП модификации множественного варианта */
@@ -395,7 +395,6 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
         //        );
 
 
-
         $dbal->leftJoin(
             'product_stock_order',
             OrderPosting::class,
@@ -470,7 +469,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
                         ELSE NULL
                     END
                     )
-                    AS barcodes"
+                    AS barcodes",
         );
 
         $dbal->addSelect('

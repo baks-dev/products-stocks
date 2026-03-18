@@ -34,124 +34,124 @@
             {% for product in form.product %}
 
 
-                {% set detail = product.vars.data.detail %}
+            {% set detail = product.vars.data.detail %}
 
-                {% if detail %}
+            {% if detail %}
 
-                    <div class="d-flex gap-2 overflow-auto">
-                        <div class="d-flex flex-column gap-2">
-                            <p>
-                                Продукция
-                            </p>
-                            {# Обложка #}
-                            {% set image_path = '/assets/'~version~'/img/blank.svg' %}
+            <div class="d-flex gap-2 overflow-auto">
+                <div class="d-flex flex-column gap-2">
+                    <p>
+                        Продукция
+                    </p>
+                    {# Обложка #}
+                    {% set image_path = '/assets/'~version~'/img/blank.svg' %}
 
-                            {% if detail.product_image_ext is defined and detail.product_image_ext is not null %}
-                                {% set img_host = detail.product_image_cdn  == true  ? CDN_HOST : '' %}
-                                {% set img_dir = detail.product_image %}
-                                {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ detail.product_image_ext %}
-                                {% set image_path = img_host ~ img_dir ~ img_file %}
-                            {% endif %}
+                    {% if detail.product_image_ext is defined and detail.product_image_ext is not null %}
+                        {% set img_host = detail.product_image_cdn  == true  ? CDN_HOST : '' %}
+                        {% set img_dir = detail.product_image %}
+                        {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ detail.product_image_ext %}
+                        {% set image_path = img_host ~ img_dir ~ img_file %}
+                    {% endif %}
 
-                            <div class="rounded-circle bg-contain lazy p-1" style="width: 80px; height: 80px;"
-                                 data-bg="{{ image_path }}">
-                            </div>
-
-                            <div>
-
-                                <strong>{{ detail.product_name }}</strong>
-
-                                <div class="text-muted small">
-
-                                    {% if detail.product_offer_value %}
-                                        {{ detail.product_offer_name }}:
-                                        <strong>{{ detail.product_offer_value|call_twig_func(detail.product_offer_reference) }}</strong>
-                                    {% endif %}
-
-                                    {% if detail.product_variation_value %}
-                                        &nbsp;  {{ detail.product_variation_name }}:
-                                        <strong>{{ detail.product_variation_value|call_twig_func(detail.product_variation_reference) }}</strong>
-                                    {% endif %}
-
-                                    {% if detail.product_modification_value %}
-                                        &nbsp;  {{ detail.product_modification_name }}:
-                                        <strong>{{ detail.product_modification_value|call_twig_func(detail.product_modification_reference) }}</strong>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex flex-column gap-2">
-                            <p>
-                                Количество
-                            </p>
-                            {{ form_widget(product.total, { attr: { placeholder : 'Количество'} }) }}
-                        </div>
-
-                        <div class="d-flex flex-column gap-2 {{ order ? 'd-none' }}">
-                            {% if not order %}
-                            <p>
-                                Место
-                            </p>
-                            {% endif %}
-                            {{ form_widget(product.storage, { attr: { placeholder : 'Место'} }) }}
-                        </div>
+                    <div class="rounded-circle bg-contain lazy p-1" style="width: 80px; height: 80px;"
+                         data-bg="{{ image_path }}">
                     </div>
 
+                    <div>
 
-                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <strong>{{ detail.product_name }}</strong>
 
-                        <div class="w-100 d-flex align-items-center gap-3">
+                        <div class="text-muted small">
 
+                            {% if detail.product_offer_value %}
+                                {{ detail.product_offer_name }}:
+                                <strong>{{ detail.product_offer_value|call_twig_func(detail.product_offer_reference) }}</strong>
+                            {% endif %}
 
-                            </div>
+                            {% if detail.product_variation_value %}
+                                &nbsp;  {{ detail.product_variation_name }}:
+                                <strong>{{ detail.product_variation_value|call_twig_func(detail.product_variation_reference) }}</strong>
+                            {% endif %}
+
+                            {% if detail.product_modification_value %}
+                                &nbsp;  {{ detail.product_modification_name }}:
+                                <strong>{{ detail.product_modification_value|call_twig_func(detail.product_modification_reference) }}</strong>
+                            {% endif %}
                         </div>
-
-                        <div class="ms-3 fw-bolder w-25 text-center h5">
-
-                        </div>
-
-                        <div class="ms-3 fw-bolder w-25 text-center h5 {{ order ? 'd-none' }}">
-
-                        </div>
-
                     </div>
+                </div>
 
-                {% endif %}
-            {% endfor %}
+                <div class="d-flex flex-column gap-2">
+                    <p>
+                        Количество
+                    </p>
+                    {{ form_widget(product.total, { attr: { placeholder : 'Количество'} }) }}
+                </div>
 
-
-            <div class="mt-3">
-                {{ form_widget(form.comment, { attr: { placeholder : 'Комментарий'} }) }}
+                <div class="d-flex flex-column gap-2 {{ order ? 'd-none' }}">
+                    {% if not order %}
+                        <p>
+                            Место
+                        </p>
+                    {% endif %}
+                    {{ form_widget(product.storage, { attr: { placeholder : 'Место'} }) }}
+                </div>
             </div>
+
+
+            <div class="d-flex justify-content-between align-items-center gap-3">
+
+                <div class="w-100 d-flex align-items-center gap-3">
+
+
+                </div>
+            </div>
+
+            <div class="ms-3 fw-bolder w-25 text-center h5">
+
+            </div>
+
+            <div class="ms-3 fw-bolder w-25 text-center h5 {{ order ? 'd-none' }}">
+
+            </div>
+
         </div>
 
-
-        <div class="modal-footer ">
-
-            <div class="flex-grow-1">
-                &nbsp;
-            </div>
-
-            <div class="d-flex gap-3">
-                {# Отмена #}
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
-                </button>
+        {% endif %}
+        {% endfor %}
 
 
-                {# Сохранить #}
-                {{ form_widget(form.incoming, { label: '
+        <div class="mt-3">
+            {{ form_widget(form.comment, { attr: { placeholder : 'Комментарий'} }) }}
+        </div>
+    </div>
+
+
+    <div class="modal-footer ">
+
+        <div class="flex-grow-1">
+            &nbsp;
+        </div>
+
+        <div class="d-flex gap-3">
+            {# Отмена #}
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                {{ 'btn.cancel'|trans({}, 'core.btn') }}
+            </button>
+
+
+            {# Сохранить #}
+            {{ form_widget(form.incoming, { label: '
                     <span>'~ 'btn.save'|trans({}, 'core.btn') ~'</span>
                     <span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
 			    ',
-                    attr: { class:  order ? 'btn-warning' : 'btn-primary' }
-                }) }}
-            </div>
+                attr: { class:  order ? 'btn-warning' : 'btn-primary' }
+            }) }}
         </div>
-
-
     </div>
 
-    {{ form_end(form) }}
+
+</div>
+
+{{ form_end(form) }}
 </div>

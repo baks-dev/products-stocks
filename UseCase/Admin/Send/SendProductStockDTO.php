@@ -88,18 +88,6 @@ final class SendProductStockDTO implements ProductStockEventInterface
         $this->id = $id;
     }
 
-    /** Коллекция продукции  */
-    public function getProduct(): ArrayCollection
-    {
-        /** Сбрасываем идентификатор заявки */
-        return $this->product;
-    }
-
-    public function setProduct(ArrayCollection $product): void
-    {
-        $this->product = $product;
-    }
-
     public function addProduct(ProductStockProductDTO $product): void
     {
         $containsProducts = $this->product->filter(function(ProductStockProductDTO $element) use ($product) {
@@ -116,6 +104,18 @@ final class SendProductStockDTO implements ProductStockEventInterface
         {
             $this->product->add($product);
         }
+    }
+
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
+    {
+        /** Сбрасываем идентификатор заявки */
+        return $this->product;
+    }
+
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
     }
 
     public function removeProduct(ProductStockProductDTO $product): void

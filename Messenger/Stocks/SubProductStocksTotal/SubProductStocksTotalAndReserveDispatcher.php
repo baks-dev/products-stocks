@@ -95,7 +95,7 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
                 [
                     self::class.':'.__LINE__,
                     var_export($message, true),
-                ]
+                ],
             );
 
             return;
@@ -113,8 +113,8 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
                 'Невозможно снять резерв и остаток продукции, которой нет в наличии или заранее не зарезервирована',
                 [
                     self::class.':'.__LINE__,
-                    var_export($message, true)
-                ]
+                    var_export($message, true),
+                ],
             );
 
             return;
@@ -126,8 +126,8 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
             sprintf('место: %s : Сняли резерв и уменьшили количество на единицу продукции', $ProductStockTotal->getStorage()),
             [
                 self::class.':'.__LINE__,
-                var_export($message, true)
-            ]
+                var_export($message, true),
+            ],
         );
     }
 }

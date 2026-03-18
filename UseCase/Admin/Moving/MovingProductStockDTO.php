@@ -29,7 +29,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
-use BaksDev\Products\Stocks\UseCase\Admin\Divide\Archive\DivideProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\Archive\MovingProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\Invariable\ProductStockInvariableDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Moving\Move\ProductStockMoveDTO;
@@ -97,18 +96,6 @@ final class MovingProductStockDTO implements ProductStockEventInterface
         $this->id = $id;
     }
 
-    /** Коллекция продукции  */
-    public function getProduct(): ArrayCollection
-    {
-        /** Сбрасываем идентификатор заявки */
-        return $this->product;
-    }
-
-    public function setProduct(ArrayCollection $product): void
-    {
-        $this->product = $product;
-    }
-
     public function addProduct(ProductStockProductDTO $product): void
     {
         $containsProducts = $this->product->filter(function(ProductStockProductDTO $element) use ($product) {
@@ -125,6 +112,18 @@ final class MovingProductStockDTO implements ProductStockEventInterface
         {
             $this->product->add($product);
         }
+    }
+
+    /** Коллекция продукции  */
+    public function getProduct(): ArrayCollection
+    {
+        /** Сбрасываем идентификатор заявки */
+        return $this->product;
+    }
+
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
     }
 
     public function removeProduct(ProductStockProductDTO $product): void

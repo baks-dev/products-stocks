@@ -42,7 +42,7 @@
 
                 setTimeout(function mUBDCGqW()
                 {
-                    if(typeof centrifuge !== 'object')
+                    if(typeof centrifuge !== "object")
                     {
                         if(WuByvhAd > 1000) { return; }
 
@@ -51,7 +51,7 @@
                     }
 
                     /** Удаляем из списка тикет у других */
-                    centrifuge.newSubscription('remove').on('publication', function(ctx)
+                    centrifuge.newSubscription("remove").on("publication", function(ctx)
                     {
                         if(ctx.data.profile === '{{ current_profile }}')
                         {

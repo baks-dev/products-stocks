@@ -60,7 +60,7 @@ final readonly class AddReserveProductStocksTotalByMove
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusMoving::STATUS,
-                self::class
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -92,7 +92,7 @@ final readonly class AddReserveProductStocksTotalByMove
         {
             $this->Logger->warning(
                 'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -102,7 +102,7 @@ final readonly class AddReserveProductStocksTotalByMove
         {
             $this->Logger->warning(
                 'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -119,7 +119,7 @@ final readonly class AddReserveProductStocksTotalByMove
                     self::class.':'.__LINE__,
                     'total' => $product->getTotal(),
                     'number' => $productStockEvent->getNumber(),
-                ]
+                ],
             );
 
             /**
@@ -132,7 +132,7 @@ final readonly class AddReserveProductStocksTotalByMove
                 product: $product->getProduct(),
                 offer: $product->getOffer(),
                 variation: $product->getVariation(),
-                modification: $product->getModification()
+                modification: $product->getModification(),
             );
 
 
@@ -154,7 +154,7 @@ final readonly class AddReserveProductStocksTotalByMove
                         self::class.':'.__LINE__,
                         'profile' => (string) $userProfileUid,
                         var_export($addProductStocksReserve, true),
-                    ]
+                    ],
                 );
 
                 continue;
@@ -175,7 +175,7 @@ final readonly class AddReserveProductStocksTotalByMove
 
                 $this->MessageDispatch->dispatch(
                     $addProductStocksReserve,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks',
                 );
 
                 continue;
@@ -189,7 +189,7 @@ final readonly class AddReserveProductStocksTotalByMove
 
                 $this->MessageDispatch->dispatch(
                     $addProductStocksReserve,
-                    transport: 'products-stocks'
+                    transport: 'products-stocks',
                 );
 
                 if($i === $product->getTotal())

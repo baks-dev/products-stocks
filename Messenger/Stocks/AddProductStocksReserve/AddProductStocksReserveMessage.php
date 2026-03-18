@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -120,6 +120,11 @@ final class AddProductStocksReserveMessage
         return $this;
     }
 
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
     /**
      * Total
      */
@@ -128,11 +133,6 @@ final class AddProductStocksReserveMessage
     {
         $this->total = $total;
         return $this;
-    }
-
-    public function getTotal(): int
-    {
-        return $this->total;
     }
 
 }

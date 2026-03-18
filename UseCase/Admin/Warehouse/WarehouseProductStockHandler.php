@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -53,7 +53,7 @@ final class WarehouseProductStockHandler extends AbstractHandler
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'products-stocks'
+            transport: 'products-stocks',
         );
 
         return $this->main;

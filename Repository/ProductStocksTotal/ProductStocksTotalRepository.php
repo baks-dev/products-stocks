@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -37,17 +37,13 @@ use InvalidArgumentException;
 
 final class ProductStocksTotalRepository implements ProductStocksTotalInterface
 {
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
-
     private ProductUid $product;
-
     private ProductOfferConst|false $offer = false;
-
     private ProductVariationConst|false $variation = false;
-
     private ProductModificationConst|false $modification = false;
-
     private bool $isOnlyLogisticWarehouse = false;
+
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function product(ProductUid|string $product): self
     {

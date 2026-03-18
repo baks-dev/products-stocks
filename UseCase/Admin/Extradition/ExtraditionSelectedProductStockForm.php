@@ -55,7 +55,7 @@ final class ExtraditionSelectedProductStockForm extends AbstractType
             [
                 'data_class' => ExtraditionSelectedProductStockDTO::class,
                 'method' => 'POST',
-                'attr' => ['class' => 'w-100']
+                'attr' => ['class' => 'w-100'],
             ],
         );
     }

@@ -35,6 +35,7 @@ interface AllProductStocksReportInterface
 
     /**
      * Получаем данные для отчета об остатках на всех складах
+     *
      * @return Generator<AllProductStocksReportResult>
      */
     public function findAll(): Generator;

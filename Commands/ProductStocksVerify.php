@@ -124,7 +124,7 @@ class ProductStocksVerify extends Command
                 'event',
                 ProductStock::class,
                 'stock',
-                'stock.event = event.id'
+                'stock.event = event.id',
 
             );
 
@@ -135,7 +135,7 @@ class ProductStocksVerify extends Command
                 'event',
                 ProductStockMove::class,
                 'move',
-                'move.event = event.id'
+                'move.event = event.id',
             );
 
 
@@ -148,7 +148,7 @@ class ProductStocksVerify extends Command
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             )
 
             //            ->addGroupBy('stock_product.product')
@@ -167,7 +167,7 @@ class ProductStocksVerify extends Command
                 'stock_product',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
         // Product Event
@@ -175,7 +175,7 @@ class ProductStocksVerify extends Command
             'product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = product.event'
+            'product_event.id = product.event',
         );
 
 
@@ -186,7 +186,7 @@ class ProductStocksVerify extends Command
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         // Торговое предложение
@@ -199,7 +199,7 @@ class ProductStocksVerify extends Command
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer'
+                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
             );
 
 
@@ -213,7 +213,7 @@ class ProductStocksVerify extends Command
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
 
@@ -227,7 +227,7 @@ class ProductStocksVerify extends Command
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
             );
 
 
@@ -245,7 +245,7 @@ class ProductStocksVerify extends Command
                 new ProductUid($item['product']),
                 new ProductOfferConst($item['offer']),
                 new ProductVariationConst($item['variation']),
-                new ProductModificationConst($item['modification'])
+                new ProductModificationConst($item['modification']),
             );
 
             //$total = $item['sum_stock_product_total'] / $item['counter'];

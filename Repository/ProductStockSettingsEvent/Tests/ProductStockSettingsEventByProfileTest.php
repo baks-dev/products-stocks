@@ -27,9 +27,9 @@ namespace BaksDev\Products\Stocks\Repository\ProductStockSettingsEvent\Tests;
 
 use BaksDev\Products\Stocks\Repository\ProductStockSettingsEvent\ProductStockSettingsEventByProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
-use PHPUnit\Framework\Attributes\Group;
 
 #[When(env: 'test')]
 #[Group('products-stocks')]
@@ -46,7 +46,7 @@ class ProductStockSettingsEventByProfileTest extends KernelTestCase
             ->profile(UserProfileUid::TEST)
             ->getSettingEvent();
 
-//        dd($settingEvent);
+        //        dd($settingEvent);
 
     }
 }

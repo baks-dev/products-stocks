@@ -30,5 +30,6 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 interface ProductStockSettingsEventByProfileInterface
 {
     public function profile(UserProfile|UserProfileUid|string $profile): self;
+
     public function getSettingEvent(): ProductStockSettingsEvent|false;
 }

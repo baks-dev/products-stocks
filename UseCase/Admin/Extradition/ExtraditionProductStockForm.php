@@ -42,8 +42,8 @@ final class ExtraditionProductStockForm extends AbstractType
                 },
                 function($id) {
                     return $id ? new ProductStockEventUid($id) : null;
-                }
-            )
+                },
+            ),
         );
 
     }
@@ -55,7 +55,7 @@ final class ExtraditionProductStockForm extends AbstractType
                 'data_class' => ExtraditionProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-            ]
+            ],
         );
     }
 }

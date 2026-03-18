@@ -70,8 +70,6 @@ final class ExtraditionSelectedController extends AbstractController
             ->handleRequest($request);
 
 
-
-
         if($form->isSubmitted() && $form->isValid() && $form->has('extradition_selected_package'))
         {
             $this->refreshTokenForm($form);
@@ -144,7 +142,6 @@ final class ExtraditionSelectedController extends AbstractController
             $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
             $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
         }
-
 
 
         /** Выводим несколько заявок */

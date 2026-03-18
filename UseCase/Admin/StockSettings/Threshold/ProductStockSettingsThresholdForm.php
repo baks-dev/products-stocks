@@ -37,7 +37,7 @@ final class ProductStockSettingsThresholdForm extends AbstractType
     {
         /** Значение порога наличия остатков */
         $builder->add('value', IntegerType::class, [
-            'label' => false
+            'label' => false,
         ]);
     }
 

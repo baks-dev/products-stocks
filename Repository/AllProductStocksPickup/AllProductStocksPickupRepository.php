@@ -83,6 +83,18 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         return $this;
     }
 
+    /**
+     * Метод возвращает пагинатор ProductStocks
+     *
+     * @deprecated
+     */
+    public function findPaginator(): PaginatorInterface
+    {
+        $dbal = $this->builder();
+
+        return $this->paginator->fetchAllAssociative($dbal);
+    }
+
     private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class)->bindLocal();
@@ -94,7 +106,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             ->setParameter(
                 key: 'profile',
                 value: false === empty($this->profile) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $dbal
@@ -104,7 +116,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'invariable',
                 ProductStock::class,
                 'stock',
-                'stock.id = invariable.main'
+                'stock.id = invariable.main',
             );
 
         $dbal
@@ -114,12 +126,12 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'stock',
                 ProductStockEvent::class,
                 'event',
-                'event.id = stock.event AND event.status = :status'
+                'event.id = stock.event AND event.status = :status',
             )
             ->setParameter(
                 'status',
                 ProductStockStatusExtradition::class,
-                ProductStockStatus::TYPE
+                ProductStockStatus::TYPE,
             );
 
 
@@ -130,7 +142,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = stock.event'
+                'modify.event = stock.event',
             );
 
         $dbal
@@ -138,7 +150,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'event',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             );
 
 
@@ -150,7 +162,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'event',
                 UserProfile::class,
                 'users_profile',
-                'users_profile.id = invariable.profile'
+                'users_profile.id = invariable.profile',
             );
 
 
@@ -158,7 +170,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
             'stock',
             ProductStockOrder::class,
             'product_stock_order',
-            'product_stock_order.event = stock.event'
+            'product_stock_order.event = stock.event',
         );
 
 
@@ -168,7 +180,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'product_stock_order',
                 Order::class,
                 'ord',
-                'ord.id = product_stock_order.ord'
+                'ord.id = product_stock_order.ord',
             );
 
         $dbal
@@ -187,7 +199,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'ord',
                 OrderUser::class,
                 'order_user',
-                'order_user.event = ord.event'
+                'order_user.event = ord.event',
             );
 
 
@@ -219,7 +231,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                     'order_user',
                     UserProfileValue::class,
                     'client_profile_value',
-                    " client_profile_value.event = order_user.profile AND client_profile_value.value LIKE '%' || :phone || '%'"
+                    " client_profile_value.event = order_user.profile AND client_profile_value.value LIKE '%' || :phone || '%'",
                 );
 
                 $phone = explode('(', $this->filter->getPhone());
@@ -233,14 +245,14 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'order_user',
                 OrderDelivery::class,
                 'order_delivery',
-                $delivery_condition
+                $delivery_condition,
             );
 
         $dbal->leftJoin(
             'order_delivery',
             DeliveryEvent::class,
             'delivery_event',
-            'delivery_event.id = order_delivery.event'
+            'delivery_event.id = order_delivery.event',
         );
 
         $dbal
@@ -249,7 +261,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'delivery_event',
                 DeliveryTrans::class,
                 'delivery_trans',
-                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local'
+                'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local',
             );
 
         // Поиск
@@ -268,18 +280,8 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
     }
 
     /**
-     * Метод возвращает пагинатор ProductStocks
-     * @deprecated
-     */
-    public function findPaginator(): PaginatorInterface
-    {
-        $dbal = $this->builder();
-
-        return $this->paginator->fetchAllAssociative($dbal);
-    }
-
-    /**
      * Метод возвращает пагинатор ProductStocks с гидрацией на объект резалта
+     *
      * @see AllProductStocksPickupResult
      */
     public function findResultPaginator(): PaginatorInterface

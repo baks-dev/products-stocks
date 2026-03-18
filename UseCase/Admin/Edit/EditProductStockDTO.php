@@ -107,22 +107,6 @@ final class EditProductStockDTO implements ProductStockEventInterface
      * Коллекция продукции
      */
 
-    /**
-     * @return ArrayCollection<int, ProductStockProductDTO>
-     */
-    public function getProduct(): ArrayCollection
-    {
-        return $this->product;
-    }
-
-    /**
-     * @param ArrayCollection<int, ProductStockProductDTO> $product
-     */
-    public function setProduct(ArrayCollection $product): void
-    {
-        $this->product = $product;
-    }
-
     public function addProduct(ProductStockProductDTO $product): void
     {
         $exist = $this->product->exists(function(int $k, ProductStockProductDTO $element) use ($product) {
@@ -140,6 +124,22 @@ final class EditProductStockDTO implements ProductStockEventInterface
         {
             $this->product->add($product);
         }
+    }
+
+    /**
+     * @return ArrayCollection<int, ProductStockProductDTO>
+     */
+    public function getProduct(): ArrayCollection
+    {
+        return $this->product;
+    }
+
+    /**
+     * @param ArrayCollection<int, ProductStockProductDTO> $product
+     */
+    public function setProduct(ArrayCollection $product): void
+    {
+        $this->product = $product;
     }
 
     public function removeProduct(ProductStockProductDTO $product): void

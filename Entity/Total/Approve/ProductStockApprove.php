@@ -65,6 +65,12 @@ class ProductStockApprove extends EntityState
         return $this->value === true;
     }
 
+    public function setValue(bool $value): self
+    {
+        $this->value = $value;
+        return $this;
+    }
+
     public function getDto($dto): mixed
     {
         if($dto instanceof ProductStockApproveInterface)
@@ -83,12 +89,6 @@ class ProductStockApprove extends EntityState
         }
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
-    }
-
-    public function setValue(bool $value): self
-    {
-        $this->value = $value;
-        return $this;
     }
 
 }

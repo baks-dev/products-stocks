@@ -71,6 +71,14 @@ class ProductStockArchive extends EntityReadonly
         $this->main = $event->getMain();
     }
 
+    /**
+     * Main
+     */
+    public function getMain(): ProductStockUid
+    {
+        return $this->main;
+    }
+
     public function __toString(): string
     {
         return (string) $this->main;
@@ -79,14 +87,6 @@ class ProductStockArchive extends EntityReadonly
     public function isArchive(): bool
     {
         return $this->value === true;
-    }
-
-    /**
-     * Main
-     */
-    public function getMain(): ProductStockUid
-    {
-        return $this->main;
     }
 
     public function setEvent(ProductStockEvent $event): self

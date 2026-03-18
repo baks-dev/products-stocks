@@ -47,7 +47,7 @@ final class IncomingProductStockForm extends AbstractType
         $builder->add(
             'incoming',
             SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']],
         );
     }
 
@@ -58,7 +58,7 @@ final class IncomingProductStockForm extends AbstractType
                 'data_class' => IncomingProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-            ]
+            ],
         );
     }
 }

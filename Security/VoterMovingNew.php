@@ -38,11 +38,6 @@ final class VoterMovingNew implements VoterInterface
 
     public const string KEY = 'xCpNhVPK';
 
-    public static function getVoter(): string
-    {
-        return Role::ROLE.'_'.self::VOTER;
-    }
-
     public function equals(RoleInterface $role): bool
     {
         return $role->getRole() === Role::ROLE;
@@ -52,5 +47,10 @@ final class VoterMovingNew implements VoterInterface
     public function getRole(): string
     {
         return self::getVoter();
+    }
+
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
     }
 }

@@ -47,7 +47,7 @@ final class ProductsStocksAction extends AbstractController
     ): Response
     {
         return $this->render([
-            'actions' => $productsStocksAction->main($ProductStock)->findAll()
+            'actions' => $productsStocksAction->main($ProductStock)->findAll(),
         ]);
     }
 }

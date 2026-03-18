@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  

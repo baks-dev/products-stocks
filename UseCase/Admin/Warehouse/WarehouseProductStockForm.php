@@ -57,7 +57,7 @@ final class WarehouseProductStockForm extends AbstractType
         $builder->add(
             'send',
             SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary']],
         );
     }
 
@@ -68,8 +68,8 @@ final class WarehouseProductStockForm extends AbstractType
                 'data_class' => WarehouseProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-                'csrf_protection' => false
-            ]
+                'csrf_protection' => false,
+            ],
         );
     }
 }

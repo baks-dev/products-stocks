@@ -30,10 +30,10 @@ use BaksDev\Products\Stocks\Repository\ProductStocksPickupDetail\ProductStocksPi
 use BaksDev\Products\Stocks\Repository\ProductStocksPickupDetail\ProductStocksPickupDetailResult;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;
-use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProductStocksPickupDetailRepositoryTest extends KernelTestCase
 {
@@ -48,7 +48,8 @@ final class ProductStocksPickupDetailRepositoryTest extends KernelTestCase
             ->profile(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
             ->find(new ProductStockUid('0197ee82-48b1-7ed5-8716-6ef7a7cd5fd9'));
 
-        foreach($result as $product) {
+        foreach($result as $product)
+        {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(ProductStocksPickupDetailResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);

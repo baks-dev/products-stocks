@@ -73,7 +73,7 @@ final class ExistProductStocksStatusRepository implements ExistProductStocksStat
                 'main',
                 ProductStockEvent::class,
                 'event',
-                'event.id != :event AND event.status = :status'
+                'event.id != :event AND event.status = :status',
             )
             ->setParameter('event', $event, ProductStockEventUid::TYPE)
             ->setParameter('status', $status, ProductStockStatus::TYPE);

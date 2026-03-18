@@ -52,7 +52,7 @@ final class CurrentProductStocksRepository implements CurrentProductStocksInterf
                 ProductStockEvent::class,
                 'event',
                 'WITH',
-                'event.id = main.event'
+                'event.id = main.event',
             );
 
         return $qb->getOneOrNullResult();

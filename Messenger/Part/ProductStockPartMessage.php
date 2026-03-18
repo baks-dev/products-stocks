@@ -53,6 +53,11 @@ final class ProductStockPartMessage
         private readonly ProductBarcode|false $barcode
     ) {}
 
+    /** @return array{id : OrderUid, number: string} */
+    public function getOrders(): array
+    {
+        return $this->orders;
+    }
 
     public function setOrders(?array $orders): self
     {
@@ -65,13 +70,6 @@ final class ProductStockPartMessage
         $this->orders = $orders;
         return $this;
     }
-
-    /** @return array{id : OrderUid, number: string} */
-    public function getOrders(): array
-    {
-        return $this->orders;
-    }
-
 
     public function getStickers(): array
     {

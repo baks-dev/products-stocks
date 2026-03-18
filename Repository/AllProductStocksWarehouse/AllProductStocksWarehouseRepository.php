@@ -70,17 +70,15 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
 {
 
 
+    private UserProfileUid|false $profile = false;
+    private ?ProductFilterDTO $filter = null;
+    private ?SearchDTO $search = null;
+
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly PaginatorInterface $paginator,
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
-
-    private UserProfileUid|false $profile = false;
-
-    private ?ProductFilterDTO $filter = null;
-
-    private ?SearchDTO $search = null;
 
     public function search(SearchDTO $search): static
     {
@@ -490,7 +488,6 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
                 'users_profile_personal_destination',
                 'users_profile_personal_destination.event = users_profile_destination.event',
             );
-
 
 
         // ОТВЕТСТВЕННЫЙ

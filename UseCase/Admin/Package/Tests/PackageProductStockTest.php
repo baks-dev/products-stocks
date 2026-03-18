@@ -104,7 +104,6 @@ final class PackageProductStockTest extends KernelTestCase
         self::assertSame($UserUid, $PackageOrderInvariableDTO->getUsr());
 
 
-
         $ProductStockOrderDTO = $PackageProductStockDTO->getOrd();
 
         $OrderUid = new OrderUid();
@@ -168,7 +167,7 @@ final class PackageProductStockTest extends KernelTestCase
                 'offer' => $ProductOfferConst,
                 'variation' => $ProductVariationConst,
                 'modification' => $ProductModificationConst,
-            ]
+            ],
         );
 
         /** Общий остаток 200, резерв 123 */

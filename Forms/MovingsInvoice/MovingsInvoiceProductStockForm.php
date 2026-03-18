@@ -45,8 +45,8 @@ final class MovingsInvoiceProductStockForm extends AbstractType
                 },
                 function($stock) {
                     return $stock ? new ProductStockUid($stock) : null;
-                }
-            )
+                },
+            ),
         );
     }
 

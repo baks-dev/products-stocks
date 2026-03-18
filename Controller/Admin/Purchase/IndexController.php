@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -54,7 +54,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('products-stocks:admin.purchase.index')]
+                options: ['action' => $this->generateUrl('products-stocks:admin.purchase.index')],
             )
             ->handleRequest($request);
 
@@ -71,7 +71,7 @@ final class IndexController extends AbstractController
                 'search' => $searchForm->createView(),
                 'current_profile' => $this->getCurrentProfileUid(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
-            ]
+            ],
         );
     }
 }

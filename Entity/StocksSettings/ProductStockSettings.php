@@ -65,14 +65,6 @@ class ProductStockSettings
     }
 
     /**
-     * Идентификатор
-     */
-    public function getId(): ProductStockSettingsUid
-    {
-        return $this->id;
-    }
-
-    /**
      * Идентификатор события
      */
     public function getEvent(): ProductStockSettingsEventUid
@@ -83,5 +75,13 @@ class ProductStockSettings
     public function setEvent(ProductStockSettingsEventUid|ProductStockSettingsEvent $event): void
     {
         $this->event = $event instanceof ProductStockSettingsEvent ? $event->getId() : $event;
+    }
+
+    /**
+     * Идентификатор
+     */
+    public function getId(): ProductStockSettingsUid
+    {
+        return $this->id;
     }
 }

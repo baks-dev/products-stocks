@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -98,7 +98,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'stock',
                 ProductStockProduct::class,
                 'stock_product',
-                'stock_product.event = stock.event'
+                'stock_product.event = stock.event',
             );
 
 
@@ -140,7 +140,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'stock_move',
                 UserProfile::class,
                 'destination',
-                'destination.id = stock_move.destination '
+                'destination.id = stock_move.destination ',
             );
 
 
@@ -152,7 +152,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'destination',
                 UserProfilePersonal::class,
                 'destination_personal',
-                'destination_personal.event = destination.event '
+                'destination_personal.event = destination.event ',
             );
 
 
@@ -160,7 +160,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'orders',
             OrderEvent::class,
             'orders_event',
-            'orders_event.id = orders.event'
+            'orders_event.id = orders.event',
         );
 
 
@@ -170,7 +170,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'orders',
                 OrderUser::class,
                 'order_user',
-                'order_user.event = orders.event'
+                'order_user.event = orders.event',
             );
 
 
@@ -178,28 +178,28 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'order_user',
             OrderDelivery::class,
             'order_delivery',
-            'order_delivery.usr = order_user.id'
+            'order_delivery.usr = order_user.id',
         );
 
         $dbal->leftJoin(
             'order_delivery',
             OrderDeliveryField::class,
             'order_delivery_fields',
-            'order_delivery_fields.delivery = order_delivery.id'
+            'order_delivery_fields.delivery = order_delivery.id',
         );
 
         $dbal->leftJoin(
             'order_delivery',
             DeliveryField::class,
             'delivery_field',
-            'delivery_field.id = order_delivery_fields.field'
+            'delivery_field.id = order_delivery_fields.field',
         );
 
         $dbal->leftJoin(
             'delivery_field',
             DeliveryFieldTrans::class,
             'delivery_field_trans',
-            'delivery_field_trans.field = delivery_field.id AND delivery_field_trans.local = :local'
+            'delivery_field_trans.field = delivery_field.id AND delivery_field_trans.local = :local',
         );
 
 
@@ -215,7 +215,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                         'order_field_value', order_delivery_fields.value
                     )
             )
-			AS order_fields"
+			AS order_fields",
         );
 
 
@@ -229,7 +229,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'stock',
                 Product::class,
                 'product',
-                'product.id = stock_product.product'
+                'product.id = stock_product.product',
             );
 
 
@@ -238,7 +238,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'product',
             ProductInfo::class,
             'product_info',
-            'product_info.product = stock_product.product '
+            'product_info.product = stock_product.product ',
         );
 
 
@@ -248,7 +248,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product.event AND product_trans.local = :local'
+                'product_trans.event = product.event AND product_trans.local = :local',
             );
 
 
@@ -262,7 +262,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.const = stock_product.offer AND product_offer.event = product.event'
+                'product_offer.const = stock_product.offer AND product_offer.event = product.event',
             );
 
 
@@ -275,7 +275,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
         /* Название торгового предложения */
@@ -283,7 +283,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'category_offer',
             CategoryProductOffersTrans::class,
             'category_offer_trans',
-            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local',
         );
 
 
@@ -299,7 +299,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation'
+                'stock_product.variation IS NOT NULL AND  product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
             );
 
         /* Получаем тип множественного варианта */
@@ -310,7 +310,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_variation',
-                'category_variation.id = product_variation.category_variation'
+                'category_variation.id = product_variation.category_variation',
             );
 
         /* Получаем название множественного варианта */
@@ -320,7 +320,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'category_variation',
                 CategoryProductVariationTrans::class,
                 'category_variation_trans',
-                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local',
             );
 
 
@@ -336,7 +336,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification'
+                'stock_product.modification IS NOT NULL AND product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
             );
 
 
@@ -346,7 +346,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
         /* Получаем название типа модификации */
@@ -356,7 +356,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'category_modification',
                 CategoryProductModificationTrans::class,
                 'category_modification_trans',
-                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local',
             );
 
 
@@ -366,28 +366,28 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'product',
             ProductPhoto::class,
             'product_photo',
-            'product_photo.event = product.event AND product_photo.root = true'
+            'product_photo.event = product.event AND product_photo.root = true',
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductOfferImage::class,
             'product_offer_image',
-            'product_offer_image.offer = product_offer.id AND product_offer_image.root = true'
+            'product_offer_image.offer = product_offer.id AND product_offer_image.root = true',
         );
 
         $dbal->leftJoin(
             'product_variation',
             ProductVariationImage::class,
             'product_variation_image',
-            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
+            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true',
         );
 
         $dbal->leftJoin(
             'product_modification',
             ProductModificationImage::class,
             'product_modification_image',
-            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
+            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true',
         );
 
         $dbal
@@ -451,7 +451,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'product',
             ProductCategory::class,
             'product_category',
-            'product_category.event = product.event AND product_category.root = true'
+            'product_category.event = product.event AND product_category.root = true',
         );
 
 
@@ -459,7 +459,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
             'product_category',
             CategoryProduct::class,
             'category',
-            'category.id = product_category.category'
+            'category.id = product_category.category',
         );
 
 
@@ -469,7 +469,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                 'category',
                 CategoryProductInfo::class,
                 'category_info',
-                'category_info.event = category.event'
+                'category_info.event = category.event',
             );
 
 
@@ -487,7 +487,7 @@ final class ProductsByProductStocksRepository implements ProductsByProductStocks
                     stock_total.offer = product_offer.const AND
                     stock_total.variation = product_variation.const AND
                     stock_total.modification = product_modification.const
-                '
+                ',
             );
 
 

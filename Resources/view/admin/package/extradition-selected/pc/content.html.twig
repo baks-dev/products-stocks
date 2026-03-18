@@ -13,17 +13,17 @@
         </div>
 
         <div class="modal-body">
-        {% for stock_number in stock_numbers %}
+            {% for stock_number in stock_numbers %}
 
-            <div class="p-2" style="font-size:1.1rem;">
-                #{{ stock_number }}
-            </div>
+                <div class="p-2" style="font-size:1.1rem;">
+                    #{{ stock_number }}
+                </div>
 
-            {# "Скрыть" поле comment #}
-            {% do form.collection[loop.index0].comment.setRendered() %}
+                {# "Скрыть" поле comment #}
+                {% do form.collection[loop.index0].comment.setRendered() %}
 
 
-        {% endfor %}
+            {% endfor %}
         </div>
 
         <div class="alert alert-warning" role="alert">

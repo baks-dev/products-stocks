@@ -182,7 +182,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product.id'
+                'product_info.product = product.id',
             );
 
         /** Название продукта */
@@ -218,7 +218,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product_offer',
                 ProductOfferBarcode::class,
                 'product_offer_barcode',
-                'product_offer_barcode.offer = product_offer.id'
+                'product_offer_barcode.offer = product_offer.id',
             );
 
         /** ТИП торгового предложения */
@@ -251,7 +251,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product_variation',
                 ProductVariationBarcode::class,
                 'product_variation_barcode',
-                'product_variation_barcode.variation = product_variation.id'
+                'product_variation_barcode.variation = product_variation.id',
             );
 
         /** ТИП варианта торгового предложения */
@@ -285,7 +285,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                 'product_modification',
                 ProductModificationBarcode::class,
                 'product_modification_barcode',
-                'product_modification_barcode.modification = product_modification.id'
+                'product_modification_barcode.modification = product_modification.id',
             );
 
         /** ТИП модификации множественного варианта */
@@ -454,7 +454,7 @@ final class AllProductStocksOrdersProductRepository implements AllProductStocksO
                         ELSE NULL
                     END
                     )
-                    AS barcodes"
+                    AS barcodes",
         );
 
         $dbal->addSelect('

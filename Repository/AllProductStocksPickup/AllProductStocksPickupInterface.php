@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -41,12 +41,14 @@ interface AllProductStocksPickupInterface
 
     /**
      * Метод возвращает пагинатор ProductStocks
+     *
      * @deprecated
      */
     public function findPaginator(): PaginatorInterface;
 
     /**
      * Метод возвращает пагинатор ProductStocks с гидрацией на объект резалта
+     *
      * @see AllProductStocksPickupResult
      */
     public function findResultPaginator(): PaginatorInterface;

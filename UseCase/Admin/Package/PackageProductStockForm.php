@@ -52,7 +52,7 @@ final class PackageProductStockForm extends AbstractType
                 'data_class' => PackageProductStockDTO::class,
                 'method' => 'POST',
                 'attr' => ['class' => 'w-100'],
-                'csrf_protection' => false
+                'csrf_protection' => false,
             ],
         );
     }

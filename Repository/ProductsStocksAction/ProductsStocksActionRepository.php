@@ -83,7 +83,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'event',
                 ProductStocksInvariable::class,
                 'invariable',
-                'invariable.event = event.id'
+                'invariable.event = event.id',
             );
 
         $dbal
@@ -92,7 +92,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'event',
                 ProductStockModify::class,
                 'modify',
-                'modify.event = event.id'
+                'modify.event = event.id',
             );
 
         $dbal
@@ -100,7 +100,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'modify',
                 UserProfileInfo::class,
                 'info',
-                'info.usr = modify.usr AND info.active = true'
+                'info.usr = modify.usr AND info.active = true',
             );
 
 
@@ -109,7 +109,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'info',
                 UserProfile::class,
                 'profile',
-                'profile.id = info.profile'
+                'profile.id = info.profile',
             );
 
         $dbal
@@ -118,7 +118,7 @@ final class ProductsStocksActionRepository implements ProductsStocksActionInterf
                 'info',
                 UserProfilePersonal::class,
                 'personal',
-                'personal.event = profile.event'
+                'personal.event = profile.event',
             );
 
 

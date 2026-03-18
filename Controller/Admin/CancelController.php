@@ -70,7 +70,7 @@ final class CancelController extends AbstractController
                 'page.cancel',
                 $handle instanceof ProductStock ? 'success.cancel' : 'danger.cancel',
                 'products-stocks.admin',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();
@@ -78,7 +78,7 @@ final class CancelController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'number' => $Event->getInvariable()?->getNumber()
+            'number' => $Event->getInvariable()?->getNumber(),
         ]);
     }
 }

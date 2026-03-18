@@ -29,7 +29,6 @@ use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see MovingsInvoiceProductStockForm */
-
 final readonly class MovingsInvoiceProductStockDTO
 {
     /**

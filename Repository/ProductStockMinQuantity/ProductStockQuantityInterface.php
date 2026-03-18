@@ -44,9 +44,9 @@ interface ProductStockQuantityInterface
     public function modificationConst(ProductModificationConst|string|null|false $modification): self;
 
 
-
     /**
-     * Метод возвращает одно место складирования продукции с минимальным количеством в наличии без учета резерва, но с наличием резерва
+     * Метод возвращает одно место складирования продукции с минимальным количеством в наличии без учета резерва, но с
+     * наличием резерва
      */
     public function findOneByTotalMin(): ?ProductStockTotal;
 

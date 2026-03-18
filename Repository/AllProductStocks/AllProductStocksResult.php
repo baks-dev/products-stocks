@@ -51,7 +51,6 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private string $product_event, //" => "01963548-294f-71a6-b4b5-705cc4c470bd"
         private string $product_url, //" => "triangle_advantex_tc101"
         private string $product_name, //" => "Triangle AdvanteX TC101"
-        private string $modify, //" => "Triangle AdvanteX TC101"
 
         private ?string $product_offer_uid, //" => "01963548-2954-7b9a-a892-858b6f10f6c6"
         private ?string $product_offer_value, //" => "15"
@@ -87,6 +86,7 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
 
         private bool|null $promotion_active = null,
         private string|int|null $promotion_price = null,
+        private string|null $product_price_update = null,
 
         private bool|null $approve = true,
 
@@ -102,24 +102,24 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         return new ProductStockTotalUid($this->stock_id);
     }
 
-    public function getStockTotal(): ?int
-    {
-        return $this->stock_total ?: 0;
-    }
-
     public function getStockStorage(): string
     {
         return $this->stock_storage ?: '-';
     }
 
-    public function getStockReserve(): ?int
-    {
-        return $this->stock_reserve ?: 0;
-    }
-
     public function getQuantity(): int
     {
         return $this->getStockTotal() - $this->getStockReserve();
+    }
+
+    public function getStockTotal(): ?int
+    {
+        return $this->stock_total ?: 0;
+    }
+
+    public function getStockReserve(): ?int
+    {
+        return $this->stock_reserve ?: 0;
     }
 
     public function getStockComment(): ?string
@@ -349,8 +349,10 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         return $this->product_modification_const;
     }
 
-    public function getDateModify(): DateTimeImmutable
+    public function getProductPriceDateUpdate(): DateTimeImmutable|null
     {
-        return new DateTimeImmutable($this->modify);
+        return $this->product_price_update ? new DateTimeImmutable($this->product_price_update) : null;
     }
+
+
 }

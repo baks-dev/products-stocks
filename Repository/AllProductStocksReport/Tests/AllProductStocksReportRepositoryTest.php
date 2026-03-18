@@ -73,7 +73,7 @@ final class AllProductStocksReportRepositoryTest extends KernelTestCase
                 {
                     // Вызываем метод
                     $data = $method->invoke($AllProductStocksReportResult);
-//                    dump($data);
+                    //                    dump($data);
                 }
             }
 

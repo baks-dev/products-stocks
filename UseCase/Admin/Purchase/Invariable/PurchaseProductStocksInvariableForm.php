@@ -58,7 +58,7 @@ final class PurchaseProductStocksInvariableForm extends AbstractType
 
                 $UserProfileUid = $this->UserProfileTokenStorage->getProfile();
                 $data->setProfile($UserProfileUid);
-            }
+            },
         );
     }
 

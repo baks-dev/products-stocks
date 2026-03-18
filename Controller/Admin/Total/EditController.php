@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -65,7 +65,7 @@ final class EditController extends AbstractController
             ->createForm(
                 type: ProductStockTotalEditForm::class,
                 data: $ProductStocksDTO,
-                options: ['action' => $this->generateUrl('products-stocks:admin.total.edit', ['id' => (string) $ProductStocksTotal]),]
+                options: ['action' => $this->generateUrl('products-stocks:admin.total.edit', ['id' => (string) $ProductStocksTotal]),],
             )
             ->handleRequest($request);
 
@@ -79,7 +79,7 @@ final class EditController extends AbstractController
                 'page.total',
                 $handle instanceof ProductStockTotal ? 'success.total' : 'danger.total',
                 'products-stocks.admin',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();
@@ -94,7 +94,7 @@ final class EditController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'card' => $ProductDetail
+            'card' => $ProductDetail,
         ]);
     }
 }

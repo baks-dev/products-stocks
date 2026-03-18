@@ -39,9 +39,10 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
 
     public const string KEY = 'RwSvcPwpT';
 
-    public static function getVoter(): string
+    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
+    public static function getSortMenu(): int
     {
-        return Role::ROLE.'_'.self::VOTER;
+        return 130;
     }
 
     public function equals(RoleInterface $role): bool
@@ -62,6 +63,11 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
         return self::getVoter();
     }
 
+    public static function getVoter(): string
+    {
+        return Role::ROLE.'_'.self::VOTER;
+    }
+
     /** Метод возвращает PATH раздела */
     public function getPath(): string
     {
@@ -76,17 +82,10 @@ final class VoterWarehouse implements VoterInterface, MenuAdminInterface
         return self::KEY;
     }
 
-
     /** Метод возвращает секцию, в которую помещается ссылка на раздел */
     public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
     {
         return new MenuGroupStocks();
-    }
-
-    /** Метод возвращает позицию, в которую располагается ссылка в секции меню */
-    public static function getSortMenu(): int
-    {
-        return 130;
     }
 
     /** Метод возвращает флаг "Показать в выпадающем меню"  */

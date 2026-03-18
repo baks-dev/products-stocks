@@ -85,6 +85,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
 
     /**
      * Получаем данные для отчета об остатках на всех складах
+     *
      * @return Generator<AllProductStocksReportResult>
      */
     public function findAll(): Generator
@@ -165,7 +166,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                 'product_offer',
                 ProductOfferBarcode::class,
                 'product_offer_barcode',
-                'product_offer_barcode.offer = product_offer.id'
+                'product_offer_barcode.offer = product_offer.id',
             );
 
         // Получаем тип торгового предложения
@@ -197,7 +198,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                 'product_variation',
                 ProductVariationBarcode::class,
                 'product_variation_barcode',
-                'product_variation_barcode.variation = product_variation.id'
+                'product_variation_barcode.variation = product_variation.id',
             );
 
         if($this->filter?->getVariation())
@@ -240,7 +241,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                 'product_modification',
                 ProductModificationBarcode::class,
                 'product_modification_barcode',
-                'product_modification_barcode.modification = product_modification.id'
+                'product_modification_barcode.modification = product_modification.id',
             );
 
         if($this->filter?->getModification())
@@ -294,7 +295,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                         ELSE NULL
                     END
                     )
-                    AS barcodes"
+                    AS barcodes",
         );
 
         $dbal->addSelect('
@@ -408,7 +409,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
         $dbal->addOrderBy('product_modification.value');
 
         return $dbal
-             ->enableCache('products-stocks', 3600)
+            ->enableCache('products-stocks', 3600)
             ->fetchAllHydrate(AllProductStocksReportResult::class);
     }
 }

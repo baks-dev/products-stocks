@@ -25,16 +25,16 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\Tests;
 
+use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\ProductStocksTotalByProductChoiceInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalByProductChoice\ProductStocksTotalByProductChoiceRepository;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Products\Stocks\Type\Total\ProductStockTotalUid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;
-use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
 #[When(env: 'test')]
@@ -56,7 +56,7 @@ final class ProductStocksTotalByProductChoiceRepositoryTest extends KernelTestCa
         foreach($result as $stock)
         {
             self::assertInstanceOf(ProductStockTotalUid::class, $stock);
-            
+
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(ProductStockUid::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);

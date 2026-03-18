@@ -121,7 +121,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusMoving::STATUS,
-                md5(self::class)
+                md5(self::class),
             ]);
 
         if($Deduplicator->isExecuted())
@@ -152,7 +152,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
-                $product->getModification()
+                $product->getModification(),
             );
         }
 
@@ -164,7 +164,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             $productUpdateQuantityReserve = $this->VariationQuantity->getProductVariationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
-                $product->getVariation()
+                $product->getVariation(),
             );
         }
 
@@ -175,7 +175,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
 
             $productUpdateQuantityReserve = $this->OfferQuantity->getProductOfferQuantity(
                 $product->getProduct(),
-                $product->getOffer()
+                $product->getOffer(),
             );
         }
 
@@ -185,7 +185,7 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             $this->EntityManager->clear();
 
             $productUpdateQuantityReserve = $this->ProductQuantity->getProductQuantity(
-                $product->getProduct()
+                $product->getProduct(),
             );
         }
 

@@ -80,7 +80,7 @@ final class SubProductStockRepository implements SubProductStockInterface
             ->setParameter(
                 key: 'identifier',
                 value: $id,
-                type: ProductStockTotalUid::TYPE
+                type: ProductStockTotalUid::TYPE,
             );
 
         /** Если указан остаток - снимаем */
@@ -91,7 +91,7 @@ final class SubProductStockRepository implements SubProductStockInterface
                 ->setParameter(
                     key: 'total',
                     value: $this->total,
-                    type: ParameterType::INTEGER
+                    type: ParameterType::INTEGER,
                 );
 
             $dbal->andWhere('total != 0');
@@ -106,7 +106,7 @@ final class SubProductStockRepository implements SubProductStockInterface
                 ->setParameter(
                     key: 'reserve',
                     value: $this->reserve,
-                    type: ParameterType::INTEGER
+                    type: ParameterType::INTEGER,
                 );
 
             $dbal->andWhere('reserve != 0');
@@ -140,7 +140,7 @@ final class SubProductStockRepository implements SubProductStockInterface
             ->setParameter(
                 key: 'identifier',
                 value: $id,
-                type: ProductStockTotalUid::TYPE
+                type: ProductStockTotalUid::TYPE,
             )
             ->executeStatement();
     }

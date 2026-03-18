@@ -82,14 +82,14 @@ final class ProductWarehouseByOrderRepository implements ProductWarehouseByOrder
             ->setParameter(
                 key: 'order',
                 value: $this->order,
-                type: OrderUid::TYPE
+                type: OrderUid::TYPE,
             );
 
         $dbal->join(
             'ord',
             ProductStock::class,
             'stock',
-            'stock.event = ord.event'
+            'stock.event = ord.event',
         );
 
         $dbal
@@ -98,7 +98,7 @@ final class ProductWarehouseByOrderRepository implements ProductWarehouseByOrder
                 'stock',
                 ProductStocksInvariable::class,
                 'invariable',
-                'invariable.main = stock.id'
+                'invariable.main = stock.id',
             );
 
         $dbal->setMaxResults(1);

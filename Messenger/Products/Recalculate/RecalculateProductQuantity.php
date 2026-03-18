@@ -135,9 +135,6 @@ final readonly class RecalculateProductQuantity
         }
 
 
-
-
-
         /**
          * Количественный учет множественного варианта торгового предложения
          */

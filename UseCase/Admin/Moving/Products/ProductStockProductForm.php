@@ -49,8 +49,8 @@ final class ProductStockProductForm extends AbstractType
                 },
                 function($product) {
                     return new ProductUid($product);
-                }
-            )
+                },
+            ),
         );
 
         // Торговое предложение
@@ -63,8 +63,8 @@ final class ProductStockProductForm extends AbstractType
                 },
                 function($offer) {
                     return $offer ? new ProductOfferConst($offer) : null;
-                }
-            )
+                },
+            ),
         );
 
         // Множественный вариант
@@ -77,8 +77,8 @@ final class ProductStockProductForm extends AbstractType
                 },
                 function($variation) {
                     return $variation ? new ProductVariationConst($variation) : null;
-                }
-            )
+                },
+            ),
         );
 
         // Модификация множественного варианта
@@ -92,8 +92,8 @@ final class ProductStockProductForm extends AbstractType
                 function($modification) {
 
                     return $modification ? new ProductModificationConst($modification) : null;
-                }
-            )
+                },
+            ),
         );
 
         // Количество

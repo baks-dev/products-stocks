@@ -295,18 +295,6 @@ final class CollectionMovingProductStockForm extends AbstractType
         );
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults(
-            [
-                'data_class' => CollectionMovingProductStockDTO::class,
-                'method' => 'POST',
-                'attr' => ['class' => 'w-100'],
-            ],
-        );
-    }
-
-
     private function formOfferModifier(FormInterface $form, ProductUid $product): void
     {
         $offer = $this->productOfferChoiceWarehouse
@@ -382,6 +370,80 @@ final class CollectionMovingProductStockForm extends AbstractType
                     'placeholder' => sprintf('Выберите %s из списка...', $label),
                 ],
             );
+    }
+
+    private function formTargetWarehouseModifier(
+        FormInterface $form,
+        ProductUid $product,
+        ?ProductOfferConst $offer = null,
+        ?ProductVariationConst $variation = null,
+        ?ProductModificationConst $modification = null,
+    ): void
+    {
+
+        $warehouses = $this->productWarehouseChoice
+            ->product($product)
+            ->offerConst($offer)
+            ->variationConst($variation)
+            ->modificationConst($modification)
+            ->fetchWarehouseByProduct();
+
+        if(false === $warehouses->valid())
+        {
+            $form->add(
+                'targetWarehouse',
+                ChoiceType::class,
+                [
+                    'choices' => [],
+                    'label' => false,
+                    'required' => false,
+                ],
+            );
+
+            return;
+        }
+
+        $warehouses = iterator_to_array($warehouses);
+        $warehouses = array_filter($warehouses, function($v) {
+            return $v->equals($this->UserProfileTokenStorage->getProfile()) === false;
+        }, ARRAY_FILTER_USE_BOTH);
+
+
+        $form->add(
+            'targetWarehouse',
+            ChoiceType::class,
+            [
+                'choices' => $warehouses,
+                'choice_value' => function(?UserProfileUid $warehouse) {
+                    return $warehouse?->getValue();
+                },
+                'choice_label' => function(UserProfileUid $warehouse) {
+                    return $warehouse->getAttr();
+                },
+                'choice_attr' => function(?UserProfileUid $warehouse) {
+
+                    if(!$warehouse)
+                    {
+                        return [];
+                    }
+
+                    if($warehouse->getAttr())
+                    {
+                        $attr['data-name'] = $warehouse->getAttr();
+                    }
+
+                    if($warehouse->getProperty())
+                    {
+                        $attr['data-max'] = $warehouse->getProperty();
+                        $attr['data-filter'] = '('.$warehouse->getProperty().')';
+                    }
+
+                    return $attr;
+                },
+                'label' => false,
+                'required' => false,
+            ],
+        );
     }
 
     private function formVariationModifier(FormInterface $form, ProductUid $product, ProductOfferConst $offer): void
@@ -534,76 +596,13 @@ final class CollectionMovingProductStockForm extends AbstractType
             );
     }
 
-    private function formTargetWarehouseModifier(
-        FormInterface $form,
-        ProductUid $product,
-        ?ProductOfferConst $offer = null,
-        ?ProductVariationConst $variation = null,
-        ?ProductModificationConst $modification = null,
-    ): void
+    public function configureOptions(OptionsResolver $resolver): void
     {
-
-        $warehouses = $this->productWarehouseChoice
-            ->product($product)
-            ->offerConst($offer)
-            ->variationConst($variation)
-            ->modificationConst($modification)
-            ->fetchWarehouseByProduct();
-
-        if(false === $warehouses->valid())
-        {
-            $form->add(
-                'targetWarehouse',
-                ChoiceType::class,
-                [
-                    'choices' => [],
-                    'label' => false,
-                    'required' => false,
-                ],
-            );
-
-            return;
-        }
-
-        $warehouses = iterator_to_array($warehouses);
-        $warehouses = array_filter($warehouses, function($v) {
-            return $v->equals($this->UserProfileTokenStorage->getProfile()) === false;
-        }, ARRAY_FILTER_USE_BOTH);
-
-
-        $form->add(
-            'targetWarehouse',
-            ChoiceType::class,
+        $resolver->setDefaults(
             [
-                'choices' => $warehouses,
-                'choice_value' => function(?UserProfileUid $warehouse) {
-                    return $warehouse?->getValue();
-                },
-                'choice_label' => function(UserProfileUid $warehouse) {
-                    return $warehouse->getAttr();
-                },
-                'choice_attr' => function(?UserProfileUid $warehouse) {
-
-                    if(!$warehouse)
-                    {
-                        return [];
-                    }
-
-                    if($warehouse->getAttr())
-                    {
-                        $attr['data-name'] = $warehouse->getAttr();
-                    }
-
-                    if($warehouse->getProperty())
-                    {
-                        $attr['data-max'] = $warehouse->getProperty();
-                        $attr['data-filter'] = '('.$warehouse->getProperty().')';
-                    }
-
-                    return $attr;
-                },
-                'label' => false,
-                'required' => false,
+                'data_class' => CollectionMovingProductStockDTO::class,
+                'method' => 'POST',
+                'attr' => ['class' => 'w-100'],
             ],
         );
     }

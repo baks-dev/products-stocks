@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -30,7 +30,7 @@ return static function(TwigConfig $twig) {
 
     $twig->path(
         BaksDevProductsStocksBundle::PATH.implode(DIRECTORY_SEPARATOR, ['Resources', 'view', '']), // .'Resources/view',
-        'products-stocks'
+        'products-stocks',
     );
 
 };

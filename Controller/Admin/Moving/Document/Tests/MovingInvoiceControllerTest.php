@@ -26,20 +26,18 @@ namespace BaksDev\Products\Stocks\Controller\Admin\Moving\Document\Tests;
 
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\User\Tests\TestUserAccount;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
-use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DependsOnClass;
 
 #[Group('products-stocks')]
 #[When(env: 'test')]
 final class MovingInvoiceControllerTest extends WebTestCase
 {
     private const string URL = '/admin/product/stocks/moving/document?print=1';
-
-    private static ?array $post_data = null;
-
     private const string ROLE = 'ROLE_PRODUCT_STOCK_MOVING';
+    private static ?array $post_data = null;
 
     public static function setUpBeforeClass(): void
     {
@@ -50,7 +48,7 @@ final class MovingInvoiceControllerTest extends WebTestCase
                         'stock' => ProductStockUid::TEST,
                     ],
                 ],
-            ]
+            ],
         ];
     }
 

@@ -86,8 +86,7 @@ final readonly class AddReserveProductByProductStockMove
          */
         $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
             ->forProfile($productStockEvent->getInvariable()?->getProfile())
-            ->isLogisticWarehouse()
-        ;
+            ->isLogisticWarehouse();
 
         if(false === $isLogisticWarehouse)
         {
@@ -109,7 +108,7 @@ final readonly class AddReserveProductByProductStockMove
             ->deduplication([
                 (string) $message->getId(),
                 ProductStockStatusMoving::STATUS,
-                md5(self::class)
+                md5(self::class),
             ]);
 
         if($Deduplicator->isExecuted())
@@ -142,7 +141,7 @@ final readonly class AddReserveProductByProductStockMove
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
-                $product->getModification()
+                $product->getModification(),
             );
         }
 
@@ -154,7 +153,7 @@ final readonly class AddReserveProductByProductStockMove
             $productUpdateReserve = $this->VariationQuantity->getProductVariationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
-                $product->getVariation()
+                $product->getVariation(),
             );
         }
 
@@ -165,7 +164,7 @@ final readonly class AddReserveProductByProductStockMove
 
             $productUpdateReserve = $this->OfferQuantity->getProductOfferQuantity(
                 $product->getProduct(),
-                $product->getOffer()
+                $product->getOffer(),
             );
         }
 
@@ -175,7 +174,7 @@ final readonly class AddReserveProductByProductStockMove
             $this->EntityManager->clear();
 
             $productUpdateReserve = $this->ProductQuantity->getProductQuantity(
-                $product->getProduct()
+                $product->getProduct(),
             );
         }
 

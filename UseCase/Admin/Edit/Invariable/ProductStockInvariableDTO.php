@@ -60,15 +60,15 @@ final class ProductStockInvariableDTO implements ProductStocksInvariableInterfac
         return $this;
     }
 
+    public function getNumber(): string
+    {
+        return $this->number;
+    }
+
     public function setNumber(string $number): ProductStockInvariableDTO
     {
         $this->number = $number;
         return $this;
-    }
-
-    public function getNumber(): string
-    {
-        return $this->number;
     }
 
     public function getUsr(): UserUid

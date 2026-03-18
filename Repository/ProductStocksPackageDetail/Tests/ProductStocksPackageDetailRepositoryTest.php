@@ -30,10 +30,10 @@ use BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\ProductStocksP
 use BaksDev\Products\Stocks\Repository\ProductStocksPackageDetail\ProductStocksPackageDetailResult;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use PHPUnit\Framework\Attributes\Group;
 use ReflectionClass;
 use ReflectionMethod;
-use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProductStocksPackageDetailRepositoryTest extends KernelTestCase
 {
@@ -48,7 +48,8 @@ final class ProductStocksPackageDetailRepositoryTest extends KernelTestCase
             ->profile(new UserProfileUid('01941715-9d2a-7d23-8bef-2f7dbc98331a'))
             ->find(new ProductStockUid('0199330e-fdf6-7289-b982-3be3bc7e4187'));
 
-        foreach($result as $product) {
+        foreach($result as $product)
+        {
             // Вызываем все геттеры
             $reflectionClass = new ReflectionClass(ProductStocksPackageDetailResult::class);
             $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);

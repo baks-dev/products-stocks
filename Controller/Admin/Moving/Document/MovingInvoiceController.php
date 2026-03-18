@@ -90,12 +90,14 @@ final class MovingInvoiceController extends AbstractController
 
                 $productStocks[] = $ProductsStockInfo;
 
-                if (false === $ProductsStockInfo->isPrinted()) {
+                if(false === $ProductsStockInfo->isPrinted())
+                {
                     $productsStockEventPrintDTO = new ProductStockEventPrintDTO($ProductsStockInfo->getEvent());
 
                     $productsStockEventPrinted = $ProductStockEventPrintHandler->handle($productsStockEventPrintDTO);
 
-                    if (false === $productsStockEventPrinted) {
+                    if(false === $productsStockEventPrinted)
+                    {
                         $logger->warning(
                             'products-stocks: Ошибка сохранения данных о печати акта приема-передачи',
                             [self::class.':'.__LINE__,],
@@ -125,7 +127,7 @@ final class MovingInvoiceController extends AbstractController
             [
                 'productStocks' => $productStocks,
                 'profile' => $UserProfileByIdRepository->find(),
-            ]
+            ],
         );
     }
 }

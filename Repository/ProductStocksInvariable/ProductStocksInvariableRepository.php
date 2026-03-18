@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -80,7 +80,7 @@ final class ProductStocksInvariableRepository implements ProductStocksInvariable
             ->setParameter(
                 key: 'id',
                 value: $this->stocks,
-                type: ProductStockUid::TYPE
+                type: ProductStockUid::TYPE,
             );
 
         /** @var ProductStocksInvariable $ProductStocksInvariable */

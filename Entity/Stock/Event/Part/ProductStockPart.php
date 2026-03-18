@@ -74,16 +74,6 @@ class ProductStockPart extends EntityEvent
         return (string) $this->event;
     }
 
-    public function getValue(): ProductStockPartUid
-    {
-        return $this->value;
-    }
-
-    public function getNumber(): string
-    {
-        return $this->number;
-    }
-
     /** @return ProductStockPartInterface */
     public function getDto($dto): mixed
     {
@@ -121,5 +111,15 @@ class ProductStockPart extends EntityEvent
         }
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    public function getValue(): ProductStockPartUid
+    {
+        return $this->value;
+    }
+
+    public function getNumber(): string
+    {
+        return $this->number;
     }
 }

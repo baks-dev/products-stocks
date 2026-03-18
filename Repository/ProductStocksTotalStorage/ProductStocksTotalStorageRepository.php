@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -170,7 +170,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
             ->setParameter(
                 key: 'profile',
                 value: $this->profile,
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $orm
@@ -178,7 +178,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
             ->setParameter(
                 key: 'product',
                 value: $this->product,
-                type: ProductUid::TYPE
+                type: ProductUid::TYPE,
             );
 
 
@@ -188,7 +188,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
                 ->andWhere('LOWER(stock.storage) = :storage')
                 ->setParameter(
                     key: 'storage',
-                    value: $this->storage
+                    value: $this->storage,
                 );
         }
         else
@@ -203,7 +203,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
                 ->setParameter(
                     key: 'offer',
                     value: $this->offer,
-                    type: ProductOfferConst::TYPE
+                    type: ProductOfferConst::TYPE,
                 );
         }
         else
@@ -218,7 +218,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
                 ->setParameter(
                     key: 'variation',
                     value: $this->variation,
-                    type: ProductVariationConst::TYPE
+                    type: ProductVariationConst::TYPE,
                 );
         }
         else
@@ -233,7 +233,7 @@ final class ProductStocksTotalStorageRepository implements ProductStocksTotalSto
                 ->setParameter(
                     key: 'modification',
                     value: $this->modification,
-                    type: ProductModificationConst::TYPE
+                    type: ProductModificationConst::TYPE,
                 );
         }
         else

@@ -34,33 +34,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 /** @see ProductStockMaterial */
 final class ProductStockDTO implements ProductStockProductInterface
 {
+    /** Вспомогательные свойства */
+    public ?array $detail = null;
     /** Продукт */
     #[Assert\NotBlank]
     #[Assert\Uuid]
     private ProductUid $product;
-
     /** Торговое предложение */
     #[Assert\Uuid]
     private readonly ?ProductOfferConst $offer;
-
     /** Множественный вариант */
     #[Assert\Uuid]
     private readonly ?ProductVariationConst $variation;
-
     /** Модификация множественного варианта */
     #[Assert\Uuid]
     private readonly ?ProductModificationConst $modification;
-
     /** Количество */
     #[Assert\NotBlank]
     #[Assert\Range(min: 0)]
     private int $total;
-
     /** Место складирования */
     private ?string $storage = null;
-
-    /** Вспомогательные свойства */
-    public ?array $detail = null;
 
     /** Продукт */
     public function getProduct(): ProductUid

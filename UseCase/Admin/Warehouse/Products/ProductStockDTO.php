@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
@@ -31,35 +31,30 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProductInterface;
+use ReflectionProperty;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class ProductStockDTO implements ProductStockProductInterface
 {
+    /** Вспомогательные свойства */
+    public ?array $detail = null;
     /** Продукт */
     #[Assert\NotBlank]
     #[Assert\Uuid]
     private ProductUid $product;
-
     /** Торговое предложение */
     #[Assert\Uuid]
     private readonly ?ProductOfferConst $offer;
-
     /** Множественный вариант */
     #[Assert\Uuid]
     private readonly ?ProductVariationConst $variation;
-
     /** Модификация множественного варианта */
     #[Assert\Uuid]
     private readonly ?ProductModificationConst $modification;
-
     /** Количество */
     #[Assert\NotBlank]
     #[Assert\Range(min: 0)]
     private int $total;
-
-
-    /** Вспомогательные свойства */
-    public ?array $detail = null;
 
     /** Продукт */
     public function getProduct(): ProductUid
@@ -81,7 +76,7 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     public function setOffer(?ProductOfferConst $offer): ProductStockDTO
     {
-        if(false === (new \ReflectionProperty(self::class, 'offer'))->isInitialized($this))
+        if(false === (new ReflectionProperty(self::class, 'offer'))->isInitialized($this))
         {
             $this->offer = $offer;
         }
@@ -97,7 +92,7 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     public function setVariation(?ProductVariationConst $variation): ProductStockDTO
     {
-        if(false === (new \ReflectionProperty(self::class, 'variation'))->isInitialized($this))
+        if(false === (new ReflectionProperty(self::class, 'variation'))->isInitialized($this))
         {
             $this->variation = $variation;
         }
@@ -113,7 +108,7 @@ final class ProductStockDTO implements ProductStockProductInterface
 
     public function setModification(?ProductModificationConst $modification): ProductStockDTO
     {
-        if(false === (new \ReflectionProperty(self::class, 'modification'))->isInitialized($this))
+        if(false === (new ReflectionProperty(self::class, 'modification'))->isInitialized($this))
         {
             $this->modification = $modification;
         }

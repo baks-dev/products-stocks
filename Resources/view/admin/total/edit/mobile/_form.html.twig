@@ -20,26 +20,24 @@
                 <div class="d-flex gap-3 align-items-center">
 
 
-                        {# Обложка  #}
+                    {# Обложка  #}
                     {% set image_path = '/assets/'~version~'/img/blank.svg' %}
 
-                        {% if card.product_image_ext is defined and card.product_image_ext is not null %}
-                            {% set img_host =  card.product_image_cdn == true  ? CDN_HOST : '' %}
-                            {% set img_dir = card.product_image %}
-                            {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ card.product_image_ext %}
-                            {% set image_path = img_host ~ img_dir ~ img_file %}
-                        {% endif %}
+                    {% if card.product_image_ext is defined and card.product_image_ext is not null %}
+                        {% set img_host =  card.product_image_cdn == true  ? CDN_HOST : '' %}
+                        {% set img_dir = card.product_image %}
+                        {% set img_file = (img_host is empty ? '/image.' : '/min.') ~ card.product_image_ext %}
+                        {% set image_path = img_host ~ img_dir ~ img_file %}
+                    {% endif %}
 
-                        {% set product_href = path('products-product:public.detail', {
-                            category: card.category_url,
-                            url: card.product_url,
-                            offer : card.product_offer_value,
-                            variation : card.product_variation_value,
-                            modification : card.product_modification_value,
-                            postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
-                        }) %}
-
-
+                    {% set product_href = path('products-product:public.detail', {
+                        category: card.category_url,
+                        url: card.product_url,
+                        offer : card.product_offer_value,
+                        variation : card.product_variation_value,
+                        modification : card.product_modification_value,
+                        postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
+                    }) %}
 
 
                     <div class="d-flex flex-column align-items-start">

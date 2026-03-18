@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -166,6 +166,11 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
         return $this->invariable;
     }
 
+    public function getSupply(): ?ProductStockSupplyDTO
+    {
+        return $this->supply;
+    }
+
     /**
      * Supply
      */
@@ -173,11 +178,6 @@ final class WarehouseProductStockDTO implements ProductStockEventInterface
     {
         $this->supply = $supply;
         return $this;
-    }
-
-    public function getSupply(): ?ProductStockSupplyDTO
-    {
-        return $this->supply;
     }
 
     public function getArchive(): WarehouseProductStockArchiveDTO

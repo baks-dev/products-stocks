@@ -54,8 +54,8 @@ final class QrcodeController extends AbstractController
         return $this->render(
             [
                 'qrcode' => (new QRCode())->render($data),
-                'number' => $number
-            ]
+                'number' => $number,
+            ],
         );
     }
 }

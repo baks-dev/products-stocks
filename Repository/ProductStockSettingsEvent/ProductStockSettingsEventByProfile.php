@@ -41,6 +41,11 @@ final class ProductStockSettingsEventByProfile implements ProductStockSettingsEv
 
     private UserProfileUid|false $profile = false;
 
+    public function __construct(
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
+        private readonly ORMQueryBuilder $ORMQueryBuilder
+    ) {}
+
     /**
      * Profile
      */
@@ -61,11 +66,6 @@ final class ProductStockSettingsEventByProfile implements ProductStockSettingsEv
         return $this;
     }
 
-    public function __construct(
-        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
-        private readonly ORMQueryBuilder $ORMQueryBuilder
-    ) {}
-
     public function getSettingEvent(): ProductStockSettingsEvent|false
     {
         $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
@@ -78,7 +78,7 @@ final class ProductStockSettingsEventByProfile implements ProductStockSettingsEv
                 ProductStockSettingsEvent::class,
                 'event',
                 'WITH',
-                'settings.event = event.id'
+                'settings.event = event.id',
             );
 
         $qb
@@ -97,7 +97,7 @@ final class ProductStockSettingsEventByProfile implements ProductStockSettingsEv
             );
 
         $result = $qb->getOneOrNullResult();
-        
+
         return $result ?? false;
 
     }

@@ -75,7 +75,7 @@ final class PackageOrderInvariableForm extends AbstractType
                         'label' => false,
                         'required' => true,
                     ]);
-            }
+            },
         );
     }
 

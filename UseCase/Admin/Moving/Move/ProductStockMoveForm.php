@@ -47,7 +47,7 @@ final class ProductStockMoveForm extends AbstractType
                 },
                 function($destination) {
                     return $destination ? new UserProfileUid($destination) : null;
-                }
+                },
             ),
         );
 
@@ -61,7 +61,7 @@ final class ProductStockMoveForm extends AbstractType
                 },
                 function($destination) {
                     return $destination ? new UserProfileUid($destination) : null;
-                }
+                },
             ),
         );
     }
