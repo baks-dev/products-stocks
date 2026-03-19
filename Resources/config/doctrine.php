@@ -34,6 +34,10 @@ use BaksDev\Products\Stocks\Type\Part\ProductStockPartType;
 use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionType;
 use BaksDev\Products\Stocks\Type\Product\ProductStockCollectionUid;
+use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventType;
+use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
+use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityType;
+use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
 use BaksDev\Products\Stocks\Type\Settings\Event\ProductStockSettingsEventType;
 use BaksDev\Products\Stocks\Type\Settings\Event\ProductStockSettingsEventUid;
 use BaksDev\Products\Stocks\Type\Settings\Id\ProductStockSettingsType;
@@ -64,6 +68,9 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
 
     $doctrine->dbal()->type(ProductStockSettingsUid::TYPE)->class(ProductStockSettingsType::class);
     $doctrine->dbal()->type(ProductStockSettingsEventUid::TYPE)->class(ProductStockSettingsEventType::class);
+
+    $doctrine->dbal()->type(ProductStockQuantityUid::TYPE)->class(ProductStockQuantityType::class);
+    $doctrine->dbal()->type(ProductStockQuantityEventUid::TYPE)->class(ProductStockQuantityEventType::class);
 
     $emDefault = $doctrine->orm()->entityManager('default')->autoMapping(true);
 
