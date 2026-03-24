@@ -30,6 +30,7 @@ use BaksDev\Products\Product\UseCase\Admin\NewEdit\Tests\ProductsProductNewAdmin
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
+use BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\Comment\ProductStockQuantityNewEditCommentDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\ProductStockQuantityNewEditDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\ProductStockQuantityNewEditHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -41,11 +42,13 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 
 #[When(env: 'test')]
 #[Group('products-stocks')]
+#[Group('products-stocks-repository')]
 #[Group('products-stocks-usecase')]
 final class NewProductStockQuantityNewEditHandlerTest extends KernelTestCase
 {
     public static function setUpBeforeClass(): void
     {
+        /** Подчищаем тестовые данные, которые могли остаться с предыдущих запусков тестов */
         $container = self::getContainer();
 
         /** @var EntityManagerInterface $EntityManager */
@@ -90,7 +93,8 @@ final class NewProductStockQuantityNewEditHandlerTest extends KernelTestCase
 
 
         /** Comment */
-        $productStockQuantityNewDTO->getComment()->setValue('test');
+        $productStockQuantityNewCommentDTO = new ProductStockQuantityNewEditCommentDTO()->setValue('test');
+        $productStockQuantityNewDTO->setComment($productStockQuantityNewCommentDTO);
 
 
         /** Invariable */
@@ -101,6 +105,12 @@ final class NewProductStockQuantityNewEditHandlerTest extends KernelTestCase
             ->setProfile(new UserProfileUid())
             ->setStorage('test')
             ->setPriority(false);
+
+
+        /** Total/Reserve */
+        $productStockQuantityNewDTO
+            ->setTotal(10000)
+            ->setReserve(1);
 
 
         /** @var ProductStockQuantityNewEditHandler $ProductStockQuantityNewHandler */

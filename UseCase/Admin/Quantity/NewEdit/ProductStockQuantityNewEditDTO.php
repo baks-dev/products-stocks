@@ -50,11 +50,18 @@ final class ProductStockQuantityNewEditDTO implements ProductStockQuantityEventI
     #[Assert\Valid]
     private ProductStockQuantityNewEditApproveDTO $approve;
 
+    /** Общее количество на данном складе */
+    #[Assert\NotBlank]
+    private int $total = 0;
+
+    /** Зарезервировано на данном складе */
+    #[Assert\NotBlank]
+    private int $reserve = 0;
+
     public function __construct()
     {
         $this->invariable = new ProductStockQuantityNewEditInvariableDTO();
         $this->approve = new ProductStockQuantityNewEditApproveDTO();
-        $this->comment = new ProductStockQuantityNewEditCommentDTO();
     }
 
     /**
@@ -84,5 +91,33 @@ final class ProductStockQuantityNewEditDTO implements ProductStockQuantityEventI
     public function getApprove(): ProductStockQuantityNewEditApproveDTO
     {
         return $this->approve;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
+    }
+
+    public function getReserve(): int
+    {
+        return $this->reserve;
+    }
+
+    public function setReserve(int $reserve): self
+    {
+        $this->reserve = $reserve;
+        return $this;
+    }
+
+    public function setComment(ProductStockQuantityNewEditCommentDTO $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
     }
 }

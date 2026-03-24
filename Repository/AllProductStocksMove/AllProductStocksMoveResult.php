@@ -79,10 +79,10 @@ final readonly class AllProductStocksMoveResult
 
         private string $category_name, // "Triangle" - название категории
         private string $category_url, // "triangle" - URL категории
-        private string $users_profile_event, // "0199a537-c513-7892-9b17-2dc33bda7c71" - событие профиля пользователя
+        private ?string $users_profile_event, // "0199a537-c513-7892-9b17-2dc33bda7c71" - событие профиля пользователя
 
-        private string $users_profile_username, // "ООО "Рога и копыта"" - имя пользователя профиля
-        private string $users_profile_destination, // "admin" - назначение профиля пользователя
+        private ?string $users_profile_username, // "ООО "Рога и копыта"" - имя пользователя профиля
+        private ?string $users_profile_destination, // "admin" - назначение профиля пользователя
 
         private string $product_stock_id, // "0199caa9-8030-75ea-98db-6496128fbb2e" - идентификатор запаса товара
 

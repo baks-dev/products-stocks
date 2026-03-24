@@ -58,7 +58,7 @@ final readonly class ProductStocksWarehouseResult
         private string $product_event, // ID события продукта
         private string $product_url, // URL продукта
         private string $product_name, // Название продукта
-        private string $product_article, // Артикул продукта
+        private ?string $product_article, // Артикул продукта
 
         private ?string $product_offer_uid, // UID предложения продукта
         private ?string $product_offer_value, // Значение предложения
@@ -79,8 +79,8 @@ final readonly class ProductStocksWarehouseResult
         private ?string $product_image_ext, // Расширение изображения
         private ?bool $product_image_cdn, // Использование CDN для изображения
 
-        private string $category_name, // Название категории
-        private string $category_url, // URL категории
+        private ?string $category_name, // Название категории
+        private ?string $category_url, // URL категории
 
         private string $users_profile_event, // Событие профиля пользователей
         private string $users_profile_username, // Имя пользователя
@@ -224,7 +224,7 @@ final readonly class ProductStocksWarehouseResult
     }
 
 
-    public function getProductArticle(): string
+    public function getProductArticle(): ?string
     {
         return $this->product_article;
     }
@@ -244,12 +244,12 @@ final readonly class ProductStocksWarehouseResult
         return $this->product_image_cdn === true;
     }
 
-    public function getCategoryName(): string
+    public function getCategoryName(): ?string
     {
         return $this->category_name;
     }
 
-    public function getCategoryUrl(): string
+    public function getCategoryUrl(): ?string
     {
         return $this->category_url;
     }

@@ -1,0 +1,387 @@
+{% trans_default_domain 'products-stocks.admin' %}
+<main class="main d-print-none">
+
+    <section class="container px-4 mb-5">
+
+        <div class="mt-3 d-flex justify-content-between">
+            {{ include(_self|replace({ "content.html.twig": "breadcrumb.html.twig" })) }}
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div class="w-100">
+                <h1 class="h4 text-uppercase fw-bolder mb-0">
+                    {{ 'page.index'|trans }}
+                </h1>
+            </div>
+
+            <div class="w-100 d-flex align-items-center justify-content-end gap-3">
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE_NEW') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.purchase.new') }}"
+                       class="btn btn-danger modal-link disabled"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal"
+                       title="Добавить закупку">
+                        {{ 'Добавить закупку продукции'|trans({}, 'messages') }}
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK') or is_granted('ROLE_ADMIN') %}
+                    <button
+                            class="btn btn-light opacity-25"
+                            role="tooltip"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-delay='{"show":600,"hide":100}'
+                            title="Складской учет"
+
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-bar-chart-steps" viewBox="0 0 16 16">
+                            <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0zM2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5v-1zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5v-1zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1z"/>
+                        </svg>
+                    </button>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.purchase.index') }}"
+                       class="btn btn-light"
+                       role="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
+                       title="Список закупок продукции"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-journal-plus" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M8 5.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 .5-.5z"></path>
+                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"></path>
+                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.warehouse.index') }}"
+                       class="btn btn-light"
+                       role="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
+                       title="Поступления на склад"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-box-arrow-in-down-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M6.364 2.5a.5.5 0 0 1 .5-.5H13.5A1.5 1.5 0 0 1 15 3.5v10a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 2 13.5V6.864a.5.5 0 1 1 1 0V13.5a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5H6.864a.5.5 0 0 1-.5-.5z"/>
+                            <path fill-rule="evenodd"
+                                  d="M11 10.5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1 0-1h3.793L1.146 1.854a.5.5 0 1 1 .708-.708L10 9.293V5.5a.5.5 0 0 1 1 0v5z"/>
+                        </svg>
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_INCOMING') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.incoming.index') }}"
+                       class="btn btn-light"
+                       role="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
+                       title="Приходные ордера"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-card-checklist" viewBox="0 0 16 16">
+                            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                            <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_PACKAGE') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.package.index') }}"
+                       class="btn btn-light bold"
+                       role="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
+                       title="Упаковка заказов"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-box-seam" viewBox="0 0 16 16">
+                            <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                        </svg>
+                    </a>
+
+                {% endif %}
+
+                {% if is_granted('ROLE_PRODUCT_STOCK_MOVING') or is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('products-stocks:admin.moving.index') }}"
+                       class="btn btn-light"
+                       role="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="bottom"
+                       data-bs-delay='{"show":600,"hide":100}'
+                       title="Перемещения между складами"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                             class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+                        </svg>
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="border border-light rounded-4 p-3">
+
+            <div class="d-flex gap-3 justify-content-between mb-3 align-items-center">
+
+                {# Форма поиска по разделу #}
+                {% include Template('/_includes/'~baks_settings.device~'/search.html.twig') %}
+
+                {# Фильтр по продукции #}
+                <div class="w-100 d-flex gap-3 p-0">
+                    {% include Template('@products-product/admin/filter/'~baks_settings.device~'/filter.html.twig') %}
+                </div>
+
+            </div>
+
+            {# Инфо-блок с предложением переместить остатки по товару #}
+            {% if (info) %}
+                {{ include(_self|replace({ "content.html.twig": "info.html.twig" })) }}
+            {% endif %}
+
+            {# @var item \BaksDev\Products\Stocks\Repository\Quantity\AllProductStocks\AllProductStocksResult #}
+            {% if query.data %}
+
+                <table class="table table-striped table-borderless"
+                       style='--bs-table-striped-bg: rgba(249,249,249,0.7);'>
+
+                    <tbody>
+
+                    {% set name = null %}
+                    {% set storage_count = 0 %}
+                    {% set product_exist = 0 %}
+                    {% set product_reserve = 0 %}
+                    {% set product_group = 0 %}
+
+                    {% set total = 0 %}
+                    {% set total_reserve = 0 %}
+
+                    {% for item in query.data %}
+
+                        {% set total = total + item.stockTotal %}
+                        {% set total_reserve = total_reserve + item.stockReserve %}
+
+                        {% if product_group != item.productArticle %}
+
+                            {# Общие остатки указанной продукции #}
+                            {% if storage_count > 1 %}
+                                {{ include(_self|replace({ "content.html.twig": "totals.html.twig" })) }}
+                            {% endif %}
+
+                            {% set storage_count = 0 %}
+                            {% set product_exist = 0 %}
+                            {% set product_reserve = 0 %}
+                            {% set product_group = item.productArticle %}
+
+                            {# Модель #}
+                            {% if name != item.productName %}
+
+                                {% if name is not null %}
+                                    <tr>
+                                        <td class="p-0" style="background-color: unset; box-shadow: unset;">&nbsp;</td>
+                                    </tr>
+                                {% endif %}
+
+                                {% set name = item.productName %}
+                                <tr>
+                                    <th colspan="8" class="p-0">
+                                        <span class="badge text-bg-primary">
+                                            {{ item.productName }}
+                                        </span>
+                                    </th>
+                                </tr>
+
+                            {% endif %}
+
+                            {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+
+                            <tr class="">
+                                <th class="small py-0">#</th>
+                                <th class="text-muted small py-0">Склад</th>
+                                <th class="w-100 py-0">&nbsp;</th>
+
+                                <th class="text-center text-muted small py-0">Наличие</th>
+                                <th class="text-center small text-muted py-0">Место</th>
+
+                                <th class="text-center text-muted small py-0">Резерв</th>
+                                <th class="text-center w-100 text-muted small py-0">Доступно</th>
+                            </tr>
+
+                        {% endif %}
+
+                        {% set storage_count = storage_count + 1 %}
+                        {% set product_exist = product_exist + item.stockTotal %}
+                        {% set product_reserve = product_reserve + item.stockReserve %}
+
+                        {{ include(_self|replace({ "content.html.twig": "storage.html.twig" })) }}
+
+                    {% endfor %}
+
+
+                    {# Общие остатки указанной продукции #}
+                    {% if storage_count > 1 %}
+                        {{ include(_self|replace({ "content.html.twig": "totals.html.twig" })) }}
+                    {% endif %}
+                    </tbody>
+
+                    <thead>
+
+                    <tr class="">
+                        <th class="small py-0" colspan="3">&nbsp;</th>
+                        <th class="text-center text-muted small py-0">Наличие</th>
+                        <th class="text-center text-muted small py-0">Резерв</th>
+                        <th class="text-center w-100 text-muted small py-0">Доступно</th>
+                        <th class="text-center small text-muted py-0">&nbsp;</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="pb-3">
+                            {# Текстовый результат фильтра #}
+                            {% include Template('@products-product/filter/'~baks_settings.device~'/filter_text.html.twig') %}
+
+                        </th>
+                        <th class="text-center text-muted small py-0 pb-3">
+                            <div class="m-0 h6 btn">
+                                    <span class="badge text-bg-primary">
+                                        {{ total }}
+                                    </span>
+                            </div>
+                        </th>
+                        <th class="text-center text-muted small py-0 pb-3">
+                            {% if total_reserve %}
+                                <div class="m-0 h6 btn">
+                                        <span class="badge text-bg-danger">
+                                            {{ total_reserve }}
+                                        </span>
+                                </div>
+                            {% else %}
+                                &nbsp;
+                            {% endif %}
+                        </th>
+                        <th class="text-center w-100 text-muted small py-0 pb-3">
+                            <div class="m-0 h6 btn">
+                                    <span class="badge text-bg-success">
+                                        {{ total - total_reserve }}
+                                    </span>
+                            </div>
+                        </th>
+
+                        <th class="text-center text-muted small py-0 pb-4">
+
+                            <div class="d-flex gap-1">
+                                {# Скачать отчет об остатках на складе #}
+                                <div class="dropdown">
+
+                                    <button
+                                            class="btn btn-sm btn-outline-success d-flex gap-2 align-items-center dropdown-toggle"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                    >
+                                        <span class="d-flex gap-1 align-items-center">
+                                            {{ 'Отчет'|trans({}, 'core.btn') }}
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                                 fill="currentColor"
+                                                 class="bi bi-filetype-xlsx" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd"
+                                                      d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM7.86 14.841a1.13 1.13 0 0 0 .401.823q.195.162.479.252.284.091.665.091.507 0 .858-.158.355-.158.54-.44a1.17 1.17 0 0 0 .187-.656q0-.336-.135-.56a1 1 0 0 0-.375-.357 2 2 0 0 0-.565-.21l-.621-.144a1 1 0 0 1-.405-.176.37.37 0 0 1-.143-.299q0-.234.184-.384.188-.152.513-.152.214 0 .37.068a.6.6 0 0 1 .245.181.56.56 0 0 1 .12.258h.75a1.1 1.1 0 0 0-.199-.566 1.2 1.2 0 0 0-.5-.41 1.8 1.8 0 0 0-.78-.152q-.44 0-.777.15-.336.149-.527.421-.19.273-.19.639 0 .302.123.524t.351.367q.229.143.54.213l.618.144q.31.073.462.193a.39.39 0 0 1 .153.326.5.5 0 0 1-.085.29.56.56 0 0 1-.255.193q-.168.07-.413.07-.176 0-.32-.04a.8.8 0 0 1-.249-.115.58.58 0 0 1-.255-.384zm-3.726-2.909h.893l-1.274 2.007 1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415H1.5l1.24-2.016-1.228-1.983h.931l.832 1.438h.036zm1.923 3.325h1.697v.674H5.266v-3.999h.791zm7.636-3.325h.893l-1.274 2.007 1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415h-.861l1.24-2.016-1.228-1.983h.931l.832 1.438h.036z"/>
+
+                                            </svg>
+                                        </span>
+
+                                    </button>
+
+                                    <ul class="dropdown-menu">
+
+                                        <li>
+                                            <a href="{{ path('products-stocks:admin.total.export') }}"
+                                               class="dropdown-item">
+                                                Отчет об остатках на складе
+                                            </a>
+                                        </li>
+
+                                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_REPORT') %}
+                                            <li>
+                                                <a href="{{ path('products-stocks:admin.total.all.export') }}"
+                                                   class="dropdown-item">
+                                                    Отчет по всем регионам
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a href="{{ path('products-stocks:admin.total.size.export') }}"
+                                                   class="dropdown-item">
+                                                    Отчет по размерам
+                                                </a>
+                                            </li>
+
+
+                                        {% endif %}
+
+                                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_REPORT') %}
+                                            {% if stock_settings %}
+                                                <li>
+                                                    <a href="{{ path('products-stocks:admin.total.approve.export') }}"
+                                                       class="dropdown-item">
+                                                        Отчет об остатках, требующих подтверждение
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+
+                                    </ul>
+                                </div>
+
+                                {# Настройки порога остатков для профиля #}
+                                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_SETTINGS') %}
+                                    <div class="d-flex align-items-center">
+                                        <button data-href="{{ path('products-stocks:admin.total.settings') }}"
+                                                class="btn btn-light btn-sm text-decoration-none text-dark w-100 disabled"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modal"
+                                                title="Настройки складского учета">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                 fill="currentColor" viewBox="0 0 50 50">
+                                                <path d="M 22.205078 2 A 1.0001 1.0001 0 0 0 21.21875 2.8378906 L 20.246094 8.7929688 C 19.076509 9.1331971 17.961243 9.5922728 16.910156 10.164062 L 11.996094 6.6542969 A 1.0001 1.0001 0 0 0 10.708984 6.7597656 L 6.8183594 10.646484 A 1.0001 1.0001 0 0 0 6.7070312 11.927734 L 10.164062 16.873047 C 9.583454 17.930271 9.1142098 19.051824 8.765625 20.232422 L 2.8359375 21.21875 A 1.0001 1.0001 0 0 0 2.0019531 22.205078 L 2.0019531 27.705078 A 1.0001 1.0001 0 0 0 2.8261719 28.691406 L 8.7597656 29.742188 C 9.1064607 30.920739 9.5727226 32.043065 10.154297 33.101562 L 6.6542969 37.998047 A 1.0001 1.0001 0 0 0 6.7597656 39.285156 L 10.648438 43.175781 A 1.0001 1.0001 0 0 0 11.927734 43.289062 L 16.882812 39.820312 C 17.936999 40.39548 19.054994 40.857928 20.228516 41.201172 L 21.21875 47.164062 A 1.0001 1.0001 0 0 0 22.205078 48 L 27.705078 48 A 1.0001 1.0001 0 0 0 28.691406 47.173828 L 29.751953 41.1875 C 30.920633 40.838997 32.033372 40.369697 33.082031 39.791016 L 38.070312 43.291016 A 1.0001 1.0001 0 0 0 39.351562 43.179688 L 43.240234 39.287109 A 1.0001 1.0001 0 0 0 43.34375 37.996094 L 39.787109 33.058594 C 40.355783 32.014958 40.813915 30.908875 41.154297 29.748047 L 47.171875 28.693359 A 1.0001 1.0001 0 0 0 47.998047 27.707031 L 47.998047 22.207031 A 1.0001 1.0001 0 0 0 47.160156 21.220703 L 41.152344 20.238281 C 40.80968 19.078827 40.350281 17.974723 39.78125 16.931641 L 43.289062 11.933594 A 1.0001 1.0001 0 0 0 43.177734 10.652344 L 39.287109 6.7636719 A 1.0001 1.0001 0 0 0 37.996094 6.6601562 L 33.072266 10.201172 C 32.023186 9.6248101 30.909713 9.1579916 29.738281 8.8125 L 28.691406 2.828125 A 1.0001 1.0001 0 0 0 27.705078 2 L 22.205078 2 z M 23.056641 4 L 26.865234 4 L 27.861328 9.6855469 A 1.0001 1.0001 0 0 0 28.603516 10.484375 C 30.066026 10.848832 31.439607 11.426549 32.693359 12.185547 A 1.0001 1.0001 0 0 0 33.794922 12.142578 L 38.474609 8.7792969 L 41.167969 11.472656 L 37.835938 16.220703 A 1.0001 1.0001 0 0 0 37.796875 17.310547 C 38.548366 18.561471 39.118333 19.926379 39.482422 21.380859 A 1.0001 1.0001 0 0 0 40.291016 22.125 L 45.998047 23.058594 L 45.998047 26.867188 L 40.279297 27.871094 A 1.0001 1.0001 0 0 0 39.482422 28.617188 C 39.122545 30.069817 38.552234 31.434687 37.800781 32.685547 A 1.0001 1.0001 0 0 0 37.845703 33.785156 L 41.224609 38.474609 L 38.53125 41.169922 L 33.791016 37.84375 A 1.0001 1.0001 0 0 0 32.697266 37.808594 C 31.44975 38.567585 30.074755 39.148028 28.617188 39.517578 A 1.0001 1.0001 0 0 0 27.876953 40.3125 L 26.867188 46 L 23.052734 46 L 22.111328 40.337891 A 1.0001 1.0001 0 0 0 21.365234 39.53125 C 19.90185 39.170557 18.522094 38.59371 17.259766 37.835938 A 1.0001 1.0001 0 0 0 16.171875 37.875 L 11.46875 41.169922 L 8.7734375 38.470703 L 12.097656 33.824219 A 1.0001 1.0001 0 0 0 12.138672 32.724609 C 11.372652 31.458855 10.793319 30.079213 10.427734 28.609375 A 1.0001 1.0001 0 0 0 9.6328125 27.867188 L 4.0019531 26.867188 L 4.0019531 23.052734 L 9.6289062 22.117188 A 1.0001 1.0001 0 0 0 10.435547 21.373047 C 10.804273 19.898143 11.383325 18.518729 12.146484 17.255859 A 1.0001 1.0001 0 0 0 12.111328 16.164062 L 8.8261719 11.46875 L 11.523438 8.7734375 L 16.185547 12.105469 A 1.0001 1.0001 0 0 0 17.28125 12.148438 C 18.536908 11.394293 19.919867 10.822081 21.384766 10.462891 A 1.0001 1.0001 0 0 0 22.132812 9.6523438 L 23.056641 4 z M 25 17 C 20.593567 17 17 20.593567 17 25 C 17 29.406433 20.593567 33 25 33 C 29.406433 33 33 29.406433 33 25 C 33 20.593567 29.406433 17 25 17 z M 25 19 C 28.325553 19 31 21.674447 31 25 C 31 28.325553 28.325553 31 25 31 C 21.674447 31 19 28.325553 19 25 C 19 21.674447 21.674447 19 25 19 z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                        </th>
+
+                    </tr>
+                    </thead>
+
+                </table>
+
+            {% else %}
+                <div class="alert alert-warning m-3" role="alert">
+                    Информация о складских остатках отсутствует
+                </div>
+            {% endif %}
+
+            {% include Template('_includes/'~baks_settings.device~'/pagination.html.twig') with { 'pagination' : query } %}
+
+        </div>
+
+    </section>
+</main>

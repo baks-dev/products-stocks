@@ -182,4 +182,15 @@ class ProductStockProduct extends EntityEvent
     {
         return $this->part?->getValue() instanceof ProductStockPartUid;
     }
+
+    public function getInvariable(): ProductInvariableUid
+    {
+        return $this->invariable;
+    }
+
+    public function setInvariable(ProductInvariableUid $invariable): self
+    {
+        $this->invariable = $invariable;
+        return $this;
+    }
 }
