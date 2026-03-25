@@ -29,9 +29,7 @@ use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Products\Stocks\Messenger\Quantity\ProductStockQuantityMessage;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-#[Autoconfigure(public: true)]
 final class ProductStockQuantityNewEditHandler extends AbstractHandler
 {
     public function handle(ProductStockQuantityNewEditDTO $command): string|ProductStockQuantity

@@ -72,6 +72,12 @@ final class EditProductStockQuantityNewEditHandlerTest extends KernelTestCase
             ->setPriority(true);
 
 
+        /** Total/Reserve */
+        $productStockQuantityNewDTO
+            ->setTotal(20000)
+            ->setReserve(2);
+
+
         /** @var ProductStockQuantityNewEditHandler $ProductStockQuantityNewHandler */
         $handle = $ProductStockQuantityNewHandler->handle($productStockQuantityNewDTO);
 

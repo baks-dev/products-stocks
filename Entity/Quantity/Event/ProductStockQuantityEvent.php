@@ -33,6 +33,7 @@ use BaksDev\Products\Stocks\Entity\Quantity\Modify\ProductStockQuantityModify;
 use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Products\Stocks\Type\Quantity\Event\ProductStockQuantityEventUid;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -89,11 +90,18 @@ class ProductStockQuantityEvent extends EntityEvent
     )]
     private ProductStockQuantityApprove $approve;
 
+    /** Общее количество на данном складе */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $total = 0;
+
+    /** Зарезервировано на данном складе */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $reserve = 0;
+
     public function __construct()
     {
         $this->id = new ProductStockQuantityEventUid();
         $this->modify = new ProductStockQuantityModify($this);
-        $this->comment = new ProductStockQuantityComment($this);
     }
 
     public function __clone()
@@ -161,5 +169,59 @@ class ProductStockQuantityEvent extends EntityEvent
     public function getComment(): ?ProductStockQuantityComment
     {
         return $this->comment;
+    }
+
+    /** Количество */
+
+    // Увеличиваем количество
+    public function addTotal(int $total): self
+    {
+        $this->total += $total;
+        return $this;
+    }
+
+    // Уменьшаем количество
+    public function subTotal(int $total): self
+    {
+        $this->total -= $total;
+        return $this;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
+        return $this;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /** Резервирование */
+
+    // Увеличиваем количество
+    public function addReserve(int $reserve): self
+    {
+        $this->reserve += $reserve;
+        return $this;
+    }
+
+    // Уменьшаем количество
+    public function subReserve(int $reserve): self
+    {
+        $this->reserve -= $reserve;
+
+        if($this->reserve < 0)
+        {
+            $this->reserve = 0;
+        }
+
+        return $this;
+    }
+
+    public function getReserve(): int
+    {
+        return $this->reserve;
     }
 }

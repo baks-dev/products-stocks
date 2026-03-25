@@ -78,7 +78,7 @@ final readonly class ProductStocksIncomingResult
         private ?string $product_modification_postfix, // Постфикс модификации
         private ?string $product_modification_reference, // Ссылка на модификацию
 
-        private string $product_article, // Артикул продукта
+        private ?string $product_article, // Артикул продукта
 
         private ?string $product_image, // Изображение продукта
         private ?string $product_image_ext, // Расширение изображения
@@ -235,7 +235,7 @@ final readonly class ProductStocksIncomingResult
     }
 
 
-    public function getProductArticle(): string
+    public function getProductArticle(): ?string
     {
         return $this->product_article;
     }
