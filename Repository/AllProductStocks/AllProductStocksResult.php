@@ -70,7 +70,7 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private ?string $product_article, //" => "TC101-15-185-55-82V"
         private ?int $product_price, //" => 490000
         private ?int $old_product_price, //" => 490000
-        private string|null $product_price_update = null,
+
 
         private ?string $product_image, //" => "/upload/product_photo/6c0003c59af4454b3e3697ddec435f3f"
         private ?string $product_image_ext, //" => "webp"
@@ -89,6 +89,7 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         private string|int|null $promotion_price = null,
 
         private bool|null $approve = true,
+        private string|null $product_price_update = null,
 
     ) {}
 

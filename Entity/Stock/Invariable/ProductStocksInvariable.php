@@ -135,4 +135,8 @@ class ProductStocksInvariable extends EntityReadonly
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
+    public function getUsr(): UserUid
+    {
+        return $this->usr;
+    }
 }
