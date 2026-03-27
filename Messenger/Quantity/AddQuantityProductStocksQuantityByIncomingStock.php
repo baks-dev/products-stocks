@@ -65,6 +65,9 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
 
     public function __invoke(ProductStockMessage $message): void
     {
+
+        return;
+
         $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
@@ -76,7 +79,6 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
         {
             return;
         }
-
 
         /** Получаем складскую заявку */
         $productStockEvent = $this->ProductStocksEventRepository
@@ -191,6 +193,9 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
             /** Если нужно создать новое место складирования на указанный профиль и пользователя */
             if(false === ($productStockQuantity instanceof ProductStockQuantity))
             {
+
+                $productStockQuantity = new ProductStockQuantity();
+
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
                 $user = $this->UserByUserProfileRepository
                     ->forProfile($userProfileUid)
