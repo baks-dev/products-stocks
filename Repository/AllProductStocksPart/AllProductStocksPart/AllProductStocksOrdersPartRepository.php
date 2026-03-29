@@ -484,7 +484,7 @@ final class AllProductStocksOrdersPartRepository implements AllProductStocksOrde
         $dbal->allGroupByExclude();
 
         return $dbal
-            //->enableCache('products-stocks', '1 day')
+            ->enableCache('products-stocks', '1 day')
             ->fetchAllHydrate(ProductStocksOrdersPartResult::class);
     }
 }

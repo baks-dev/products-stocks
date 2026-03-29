@@ -116,18 +116,17 @@
     </td>
 
 
-    <td class="text-center">
+    <td class="text-center d-flex align-items-center align-content-center">
 
         {% if stock_settings and stock_settings.threshold > item.stockTotal and item.approve == false %}
 
             {% if app.user.profile == item.usersProfileId and (is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE')) %}
 
                 <a href="{{ path('products-stocks:admin.total.approve', {id: item.stockId}) }}"
-                   class="btn btn-sm btn-warning small my-2 modal-link"
+                   class="btn btn-sm btn-warning small my-2 modal-link text-nowrap"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
                    title="Подтвердить остаток с учетом порога подтверждения наличия"
-                   style="width: 125px;"
                 >
                     <span>{{ 'btn.approve'|trans }} {{ item.stockTotal }}</span>
                 </a>
@@ -135,8 +134,8 @@
             {% else %}
 
                 <div class="h6 m-0 small">
-                        <span class="badge text-bg-warning text-nowrap py-1 px-2">
-                            {{ 'btn.approve'|trans }} наличие
+                        <span class="badge text-bg-secondary text-nowrap py-1 px-2">
+                            Остаток не подтвержден
                         </span>
                 </div>
 

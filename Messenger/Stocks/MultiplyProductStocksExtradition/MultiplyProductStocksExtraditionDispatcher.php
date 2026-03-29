@@ -91,15 +91,20 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
             return;
         }
 
-        /** Скрываем СЗ у всех пользователей */
+        /** Скрываем элементы */
+
         $this->publish
             ->addData(['profile' => false]) // Скрывает у всех
             ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
             ->send('remove');
 
-
-        /** Скрываем заказ у всех пользователей */
         $this->publish
+            ->addData(['profile' => false]) // Скрывает у всех
+            ->addData(['identifier' => (string) $ProductStockEvent->getId()])
+            ->send('remove');
+
+        $this->publish
+            ->addData(['profile' => false]) // Скрывает у всех
             ->addData(['order' => (string) $ProductStockEvent->getOrder()])
             ->send('orders');
 
