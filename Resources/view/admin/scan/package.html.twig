@@ -1,0 +1,87 @@
+{% trans_default_domain 'manufacture-part.admin' %}
+
+<div class="modal-dialog modal-dialog-centered modal-fullscreen">
+    {{ form_start(form) }}
+    <div class="modal-content p-3 border-bottom border-5 border-warning">
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+                {# Заголовок модального окна #}
+                Упаковка #{{ number }}
+            </h5>
+
+            <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                <span class="svg-icon svg-icon-2x"></span>
+            </div>
+        </div>
+
+        <div class="modal-body">
+
+            {% set total = 0 %}
+
+            {# @var product \BaksDev\Products\Stocks\Repository\AllProductStocksPart\AllProductStocksPart\ProductStocksOrdersPartResult #}
+
+            {% for product in products %}
+
+                <h3 class="text-secondary">
+                    {{ product.productName|capitalize }}
+                </h3>
+
+                <h2 class="fw-bolder">
+
+                    {# Значение множественного варианта ТП #}
+                    {{ product.productVariationValue|call_twig_func(product.productVariationReference~'_render') ~
+                    product.productModificationValue|call_twig_func(product.productModificationReference~'_render') }}
+
+                    {# Значение торгового предложения #}
+                    {{ product.productOfferValue|call_twig_func(product.productOfferReference~'_render') }}
+
+
+                    <span class="text-primary">
+
+                    {# Постфикс торгового предложения #}
+                        {{ product.productOfferPostfix }}
+                        {# Постфикс множественного варианта #}
+                        {{ product.productVariationPostfix }}
+                        {# Постфикс модификации #}
+                        {{ product.productModificationPostfix }}
+
+                    </span>
+
+                    &nbsp; - &nbsp;<span class="text-danger">{{ product.total }} шт.</span>
+
+                    {% set total = total + product.total %}
+
+                </h2>
+
+                <h5>Список заказов:</h5>
+
+                {% for order in product.ordersCollection %}
+                    {{ order.number }}<br>
+                {% endfor %}
+
+            {% endfor %}
+
+
+        </div>
+
+        <div class="modal-footer">
+            <div class="flex-grow-1">
+                &nbsp;
+            </div>
+            <div class="d-flex gap-3">
+                {# Отмена #}
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
+                </button>
+
+                {# Удалить #}
+                {{ form_widget(form.part_scanner, { label: '
+				<span>Выполнено '~total~' шт.</span>
+				<span class="spinner-border spinner-border-sm vertical-middle d-none"></span>
+			'}) }}
+            </div>
+        </div>
+    </div>
+    {{ form_end(form) }}
+</div>
