@@ -57,23 +57,14 @@ use Twig\Environment;
 
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
-final class PartScannerDispatcher
+final readonly class PartScannerDispatcher
 {
-    public const string KEY = 'UfjQCCzp';
-
-    private TelegramRequestIdentifier $request;
-
     public function __construct(
-        #[Target('manufacturePartTelegramLogger')] private readonly LoggerInterface $logger,
-        private readonly AllProductStocksOrdersPartInterface $AllProductStocksOrdersPartRepository,
-
-
-        private readonly ActiveWorkingManufacturePartInterface $activeWorkingManufacturePart,
-        private readonly AllWorkingByManufacturePartInterface $allWorkingByManufacturePart,
-        private readonly CurrentManufacturePartEventInterface $CurrentManufacturePartEventRepository,
-        private readonly FormFactoryInterface $formFactory,
-        private readonly RouterInterface $router,
-        private readonly Environment $twig,
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
+        private AllProductStocksOrdersPartInterface $AllProductStocksOrdersPartRepository,
+        private FormFactoryInterface $formFactory,
+        private RouterInterface $router,
+        private Environment $twig,
     ) {}
 
 
