@@ -28,11 +28,13 @@ namespace BaksDev\Products\Stocks\Messenger\Quantity;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
+use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity\CurrentProductStocksQuantityInterface;
 use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
@@ -44,12 +46,14 @@ use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserPro
 use BaksDev\Users\User\Entity\User;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class AddQuantityProductStocksQuantityByIncomingStock
 {
@@ -61,13 +65,11 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
         private ProductStockQuantityNewEditHandler $ProductStockQuantityNewEditHandler,
         private DeduplicatorInterface $Deduplicator,
         private CurrentProductIdentifierByConstInterface $CurrentProductIdentifierByConstRepository,
+        private CurrentProductStocksQuantityInterface $CurrentProductStocksQuantityRepository,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
     {
-
-        return;
-
         $Deduplicator = $this->Deduplicator
             ->namespace('products-stocks')
             ->deduplication([
@@ -183,19 +185,29 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
             $productStockQuantityDTO = new ProductStockQuantityNewEditDTO();
 
 
-            /** Если уже существует такое место складирования - просто получаем DTO */
+            /** Если уже существует такое место складирования - просто получаем его событие и сеттим на DTO */
             if(true === ($productStockQuantity instanceof ProductStockQuantity))
             {
-                $productStockQuantity->getDto($productStockQuantityDTO);
+                $ProductStockQuantityEvent = $this->CurrentProductStocksQuantityRepository
+                    ->getCurrentEvent($productStockQuantity->getId());
+
+                if(false === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
+                {
+                    $this->Logger->critical(
+                        sprintf('Событие места складирования %s не было найдено', $productStockQuantity->getId()),
+                        [self::class.':'.__LINE__, var_export($message, true)]
+                    );
+
+                    return;
+                }
+
+                $ProductStockQuantityEvent->getDto($productStockQuantityDTO);
             }
 
 
             /** Если нужно создать новое место складирования на указанный профиль и пользователя */
             if(false === ($productStockQuantity instanceof ProductStockQuantity))
             {
-
-                $productStockQuantity = new ProductStockQuantity();
-
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
                 $user = $this->UserByUserProfileRepository
                     ->forProfile($userProfileUid)
@@ -242,15 +254,6 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
                     ->setInvariable($currentProductIdentifierResult->getProductInvariable())
                     ->setStorage($product->getStorage());
 
-                if(false === empty($productStockEvent->getComment()))
-                {
-                    /** Сохраняем комментарий из прихода */
-                    $productStockQuantityCommentDTO = new ProductStockQuantityNewEditCommentDTO()
-                        ->setValue($productStockEvent->getComment());
-
-                    $productStockQuantityDTO->setComment($productStockQuantityCommentDTO);
-                }
-
                 $this->ProductStockQuantityNewEditHandler->handle($productStockQuantityDTO);
 
                 $this->Logger->info(
@@ -262,16 +265,19 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
                 );
             }
 
+            if(false === empty($productStockEvent->getComment()))
+            {
+                /** Сохраняем комментарий из прихода */
+                $productStockQuantityCommentDTO = new ProductStockQuantityNewEditCommentDTO()
+                    ->setValue($productStockEvent->getComment());
+
+                $productStockQuantityDTO->setComment($productStockQuantityCommentDTO);
+            }
+
             $this->Logger->info(
                 sprintf('Добавляем приход продукции по заявке %s', $productStockEvent->getNumber()),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
-
-            if(false === empty($productStockEvent->getComment()))
-            {
-                /** Сохраняем комментарий из прихода */
-                $productStockQuantity->setComment($productStockEvent->getComment());
-            }
 
             $this->handle($productStockQuantityDTO, $product->getTotal());
         }
