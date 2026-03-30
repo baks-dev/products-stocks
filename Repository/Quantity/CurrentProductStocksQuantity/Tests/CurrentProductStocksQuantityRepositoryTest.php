@@ -23,14 +23,13 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\Tests;
+namespace BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity\Tests;
 
-use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
-use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageInterface;
-use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageRepository;
+use BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity\CurrentProductStocksQuantityInterface;
+use BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity\CurrentProductStocksQuantityRepository;
+use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
 use BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\Tests\NewProductStockQuantityNewEditHandlerTest;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use PHPUnit\Framework\Attributes\DependsOnClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -39,20 +38,16 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 #[Group('products-stocks')]
 #[Group('products-stocks-repository')]
 #[When(env: 'test')]
-final class ProductStocksQuantityStorageRepositoryTest extends KernelTestCase
+final class CurrentProductStocksQuantityRepositoryTest extends KernelTestCase
 {
     #[DependsOnClass(NewProductStockQuantityNewEditHandlerTest::class)]
     public function testFindAll(): void
     {
-        $ProductStocksQuantityStorageRepository = self::getContainer()
-            ->get(ProductStocksQuantityStorageInterface::class);
+        $CurrentProductStocksQuantityRepository = self::getContainer()
+            ->get(CurrentProductStocksQuantityInterface::class);
 
-        /** @var ProductStocksQuantityStorageRepository $ProductStocksQuantityStorageRepository */
-        $result = $ProductStocksQuantityStorageRepository
-            ->profile(new UserProfileUid())
-            ->invariable(new ProductInvariableUid())
-            ->storage('test')
-            ->find();
+        /** @var CurrentProductStocksQuantityRepository $CurrentProductStocksQuantityRepository */
+        $result = $CurrentProductStocksQuantityRepository->getCurrentEvent(new ProductStockQuantityUid());
 
         self::assertInstanceOf(ProductStockQuantityEvent::class, $result);
     }

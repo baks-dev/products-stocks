@@ -60,7 +60,7 @@ class ProductStockQuantityInvariable extends EntityReadonly
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockQuantityEvent $event;
 
-    /** ID продукта */
+    /** Invariable продукта */
     #[ORM\Column(type: ProductInvariableUid::TYPE)]
     private ProductInvariableUid $invariable;
 

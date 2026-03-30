@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
@@ -23,20 +23,17 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage;
+namespace BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity;
 
-use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-interface ProductStocksQuantityStorageInterface
+#[Autoconfigure(public: true)]
+interface CurrentProductStocksQuantityInterface
 {
-    public function profile(UserProfileUid|string $profile): self;
-
-    public function invariable(ProductInvariableUid|string $invariable): self;
-
-    public function storage(string|false|null $storage): self;
-
-    /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
-    public function find(): ?ProductStockQuantityEvent;
+    /**
+     * Метод возвращает активное событие
+     */
+    public function getCurrentEvent(ProductStockQuantityUid $main): ?ProductStockQuantityEvent;
 }
