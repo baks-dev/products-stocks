@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\Tests;
 
 use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
-use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
+use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageInterface;
 use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageRepository;
 use BaksDev\Products\Stocks\UseCase\Admin\Quantity\NewEdit\Tests\NewProductStockQuantityNewEditHandlerTest;
@@ -54,6 +54,6 @@ final class ProductStocksQuantityStorageRepositoryTest extends KernelTestCase
             ->storage('test')
             ->find();
 
-        self::assertInstanceOf(ProductStockQuantity::class, $result);
+        self::assertInstanceOf(ProductStockQuantityEvent::class, $result);
     }
 }

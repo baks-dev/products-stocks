@@ -34,7 +34,6 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
-use BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuantity\CurrentProductStocksQuantityInterface;
 use BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage\ProductStocksQuantityStorageInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
@@ -65,7 +64,6 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
         private ProductStockQuantityNewEditHandler $ProductStockQuantityNewEditHandler,
         private DeduplicatorInterface $Deduplicator,
         private CurrentProductIdentifierByConstInterface $CurrentProductIdentifierByConstRepository,
-        private CurrentProductStocksQuantityInterface $CurrentProductStocksQuantityRepository,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -175,7 +173,7 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
 
 
             /** Получаем место для хранения указанной продукции данного профиля */
-            $productStockQuantity = $this->ProductStocksQuantityStorageRepository
+            $ProductStockQuantityEvent = $this->ProductStocksQuantityStorageRepository
                 ->profile($userProfileUid)
                 ->invariable($currentProductIdentifierResult->getProductInvariable())
                 ->storage($product->getStorage())
@@ -185,28 +183,15 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
             $productStockQuantityDTO = new ProductStockQuantityNewEditDTO();
 
 
-            /** Если уже существует такое место складирования - просто получаем его событие и сеттим на DTO */
-            if(true === ($productStockQuantity instanceof ProductStockQuantity))
+            /** Если уже существует такое место складирования - сеттим на DTO */
+            if(true === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
             {
-                $ProductStockQuantityEvent = $this->CurrentProductStocksQuantityRepository
-                    ->getCurrentEvent($productStockQuantity->getId());
-
-                if(false === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
-                {
-                    $this->Logger->critical(
-                        sprintf('Событие места складирования %s не было найдено', $productStockQuantity->getId()),
-                        [self::class.':'.__LINE__, var_export($message, true)]
-                    );
-
-                    return;
-                }
-
                 $ProductStockQuantityEvent->getDto($productStockQuantityDTO);
             }
 
 
             /** Если нужно создать новое место складирования на указанный профиль и пользователя */
-            if(false === ($productStockQuantity instanceof ProductStockQuantity))
+            if(false === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
             {
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
                 $user = $this->UserByUserProfileRepository

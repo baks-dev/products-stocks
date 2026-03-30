@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStorage;
 
 use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
-use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
+use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface ProductStocksQuantityStorageInterface
@@ -38,5 +38,5 @@ interface ProductStocksQuantityStorageInterface
     public function storage(string|false|null $storage): self;
 
     /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
-    public function find(): ?ProductStockQuantity;
+    public function find(): ?ProductStockQuantityEvent;
 }

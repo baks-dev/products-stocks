@@ -27,6 +27,7 @@ namespace BaksDev\Products\Stocks\Repository\Quantity\ProductStocksQuantityStora
 
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
+use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Entity\Quantity\Invariable\ProductStockQuantityInvariable;
 use BaksDev\Products\Stocks\Entity\Quantity\ProductStockQuantity;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -83,7 +84,7 @@ final class ProductStocksQuantityStorageRepository implements ProductStocksQuant
 
 
     /** Метод возвращает складской остаток (место для хранения указанной продукции) указанного профиля */
-    public function find(): ?ProductStockQuantity
+    public function find(): ?ProductStockQuantityEvent
     {
         if(empty($this->profile))
         {
@@ -98,7 +99,7 @@ final class ProductStocksQuantityStorageRepository implements ProductStocksQuant
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
         $orm
-            ->select('stock')
+            ->select('event')
             ->from(ProductStockQuantityInvariable::class, 'stock_invariable')
             ->where('stock_invariable.profile = :profile')
             ->setParameter(
@@ -113,6 +114,14 @@ final class ProductStocksQuantityStorageRepository implements ProductStocksQuant
                 'stock',
                 'WITH',
                 'stock.id = stock_invariable.main'
+            );
+
+        $orm
+            ->join(
+                ProductStockQuantityEvent::class,
+                'event',
+                'WITH',
+                'event.id = stock.event'
             );
 
         $orm

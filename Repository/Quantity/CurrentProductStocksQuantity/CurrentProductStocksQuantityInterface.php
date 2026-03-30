@@ -27,7 +27,9 @@ namespace BaksDev\Products\Stocks\Repository\Quantity\CurrentProductStocksQuanti
 
 use BaksDev\Products\Stocks\Entity\Quantity\Event\ProductStockQuantityEvent;
 use BaksDev\Products\Stocks\Type\Quantity\Id\ProductStockQuantityUid;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(public: true)]
 interface CurrentProductStocksQuantityInterface
 {
     /**
