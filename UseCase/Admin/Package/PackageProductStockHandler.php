@@ -54,7 +54,7 @@ final class PackageProductStockHandler extends AbstractHandler
                 $this->main->getEvent(),
                 $command->getEvent(),
             ),
-            transport: 'products-stocks',
+            transport: 'orders-order',
         );
 
         return $this->main;

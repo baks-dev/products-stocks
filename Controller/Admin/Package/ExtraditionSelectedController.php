@@ -36,7 +36,6 @@ use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInte
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
-use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -109,7 +108,15 @@ final class ExtraditionSelectedController extends AbstractController
 
         if(true === $ExtraditionSelectedProductStockDTO->getCollection()->isEmpty())
         {
-            throw new InvalidArgumentException('Page Not Found');
+            $this->addFlash
+            (
+                type: 'page.package',
+                message: 'danger.extradition',
+                domain: 'products-stocks.admin',
+                arguments: [404],
+            );
+
+            $this->redirectToRoute('products-stocks:admin.package.index');
         }
 
 
