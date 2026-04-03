@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -40,8 +41,8 @@ use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInte
 use BaksDev\Products\Stocks\Repository\ProductStocksTotalAccess\ProductStocksTotalAccessInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
-use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
+use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
@@ -66,7 +67,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         private DeduplicatorInterface $deduplicator,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private ProductStocksTotalAccessInterface $ProductStocksTotalAccessRepository,
-        private CancelProductStockHandler $СancelProductStockHandler,
+        private DeleteProductStocksHandler $deleteProductStocksHandler,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
@@ -178,11 +179,10 @@ final readonly class AddReserveProductStocksTotalByPackage
 
 
                 /** Нужно отменить складскую заявку */
-                $CancelProductStockDTO = new CancelProductStockDTO();
-                $ProductStockEvent->getDto($CancelProductStockDTO);
-                $CancelProductStockDTO->setComment('Недостаточное количество продукции на сладе');
+                $DeleteProductStocksDTO = new DeleteProductStocksDTO();
+                $ProductStockEvent->getDto($DeleteProductStocksDTO);
 
-                $ProductStock = $this->СancelProductStockHandler->handle($CancelProductStockDTO);
+                $ProductStock = $this->deleteProductStocksHandler->handle($DeleteProductStocksDTO);
 
                 if($ProductStock instanceof ProductStock)
                 {
