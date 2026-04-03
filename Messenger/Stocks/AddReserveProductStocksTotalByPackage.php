@@ -27,15 +27,25 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Messenger\MultiplyOrdersPackage\OrdersPackageByMultiplyMessage;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal\EditProductStockTotalMessage;
 use BaksDev\Products\Stocks\Messenger\Stocks\AddProductStocksReserve\AddProductStocksReserveMessage;
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotalAccess\ProductStocksTotalAccessInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\CancelProductStockHandler;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -44,6 +54,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  *
  * @see MultiplyProductStocksPackageDispatcher
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
 {
@@ -53,6 +64,9 @@ final readonly class AddReserveProductStocksTotalByPackage
         private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
+        private CurrentOrderEventInterface $CurrentOrderEventRepository,
+        private ProductStocksTotalAccessInterface $ProductStocksTotalAccessRepository,
+        private CancelProductStockHandler $СancelProductStockHandler,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
@@ -68,6 +82,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             return;
         }
+
 
         /** Новая складская заявка не должна иметь предыдущего события */
         if(true === ($message->getLast() instanceof ProductStockEventUid))
@@ -86,11 +101,13 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
+
         /** Если Статус НЕ является Package «Упаковка» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class))
         {
             return;
         }
+
 
         // Получаем всю продукцию в ордере
         $products = $ProductStockEvent->getProduct();
@@ -115,11 +132,72 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
+
+        $UserUid = $ProductStockEvent->getInvariable()?->getUsr();
+        if(false === ($UserUid instanceof UserUid))
+        {
+            $this->logger->critical(
+                'Пользователь не найден',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+            return;
+        }
+
         $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
+        if(false === ($UserProfileUid instanceof UserProfileUid))
+        {
+            $this->logger->critical(
+                'Профиль пользователя не найден',
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+            return;
+        }
+
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
         {
+            /** Проверяем остаток */
+            $total = $this->ProductStocksTotalAccessRepository
+                ->forProfile($UserProfileUid)
+                ->forProduct($product->getProduct())
+                ->forOfferConst($product->getOffer())
+                ->forVariationConst($product->getVariation())
+                ->forModificationConst($product->getModification())
+                ->get();
+
+            if($total < $product->getTotal())
+            {
+                $this->logger->warning(
+                    sprintf(
+                        'Недостаточно доступной продукции %s на складе для изменения резерва',
+                        $product->getProduct(),
+                    ),
+                    [self::class]
+                );
+
+
+                /** Нужно отменить складскую заявку */
+                $CancelProductStockDTO = new CancelProductStockDTO();
+                $ProductStockEvent->getDto($CancelProductStockDTO);
+                $CancelProductStockDTO->setComment('Недостаточное количество продукции на сладе');
+
+                $ProductStock = $this->СancelProductStockHandler->handle($CancelProductStockDTO);
+
+                if($ProductStock instanceof ProductStock)
+                {
+                    $this->logger->info(
+                        sprintf(
+                            '%s: Отменили складскую заявку при недостаточном количестве продукции на складе',
+                            $ProductStockEvent->getNumber(),
+                        ),
+                        [self::class]
+                    );
+                }
+
+                return;
+            }
+
             $this->logger->info(
                 'Добавляем резерв продукции на складе при создании заявки на упаковку',
                 ['total' => $product->getTotal()],
@@ -161,6 +239,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                 continue;
             }
 
+
             /**
              * Если на складе количество мест одно - обновляем сразу весь резерв
              */
@@ -171,10 +250,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                     ->setIterate(1)
                     ->setTotal($productTotal);
 
-                $this->messageDispatch->dispatch(
-                    $AddProductStocksReserve,
-                    transport: 'products-stocks',
-                );
+                $this->messageDispatch->dispatch($AddProductStocksReserve);
 
                 continue;
             }
@@ -191,10 +267,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                     ->setIterate($i)
                     ->setTotal(1);
 
-                $this->messageDispatch->dispatch(
-                    $AddProductStocksReserve,
-                    transport: 'products-stocks',
-                );
+                $this->messageDispatch->dispatch($AddProductStocksReserve);
 
                 if($i >= $productTotal)
                 {
@@ -202,6 +275,36 @@ final readonly class AddReserveProductStocksTotalByPackage
                 }
             }
         }
+
+
+        /** Получаем текуще событие заказа из заявки */
+        $OrderEvent = $this->CurrentOrderEventRepository
+            ->forOrder($ProductStockEvent->getOrder())
+            ->find();
+
+        if(false === ($OrderEvent instanceof OrderEvent))
+        {
+            $this->logger->critical(
+                sprintf(
+                    'orders-order: Ошибка при получении информации о заказе при упаковке %s',
+                    $ProductStockEvent->getOrder()
+                ),
+                [self::class],
+            );
+
+            return;
+        }
+
+
+        /** Бросаем сообщение на обновление статуса */
+        $OrdersPackageByMultiplyMessage = new OrdersPackageByMultiplyMessage(
+            $OrderEvent->getId(),
+            $ProductStockEvent->getModifyUser(),
+            $UserProfileUid,
+            $OrderEvent->getComment()
+        );
+
+        $this->messageDispatch->dispatch(message: $OrdersPackageByMultiplyMessage, transport: 'orders-order');
 
         $DeduplicatorExecuted->save();
     }

@@ -35,14 +35,15 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use InvalidArgumentException;
 use Symfony\Contracts\Service\ResetInterface;
 
 final class ProductStocksTotalAccessRepository implements ProductStocksTotalAccessInterface, ResetInterface
 {
-
     private UserProfileUid|false $profile = false;
+    private UserUid|false $user = false;
     private ProductUid|false $product = false;
     private ProductOfferConst|false $offer = false;
     private ProductVariationConst|false $variation = false;
@@ -62,6 +63,18 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
         }
 
         $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function forUser(User|UserUid $user): self
+    {
+        if($user instanceof User)
+        {
+            $user = $user->getId();
+        }
+
+        $this->user = $user;
 
         return $this;
     }
@@ -135,27 +148,29 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
 
-        $dbal
-            ->andWhere('stock.usr = :usr')
-            ->setParameter(
-                key: 'usr',
-                value: $this->UserProfileTokenStorage->getUser(),
-                type: UserUid::TYPE,
-            );
+        if(true === ($this->user instanceof UserUid))
+        {
+            $dbal
+                ->andWhere('stock.usr = :usr')
+                ->setParameter(
+                    key: 'usr',
+                    value: $this->user,
+                    type: UserUid::TYPE,
+                );
+        }
+
 
         /**
          * Поиск только по определенному профилю пользователя
          */
-        if($this->profile instanceof UserProfileUid)
-        {
-            $dbal
-                ->andWhere('stock.profile = :profile')
-                ->setParameter(
-                    key: 'profile',
-                    value: $this->UserProfileTokenStorage->getProfile(),
-                    type: UserProfileUid::TYPE,
-                );
-        }
+
+        $dbal
+            ->andWhere('stock.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: ($this->profile instanceof UserProfileUid) ? $this->profile : $this->UserProfileTokenStorage->getProfile(),
+                type: UserProfileUid::TYPE,
+            );
 
         if($this->offer instanceof ProductOfferConst)
         {
@@ -202,7 +217,7 @@ final class ProductStocksTotalAccessRepository implements ProductStocksTotalAcce
             $dbal->andWhere('stock.modification IS NULL');
         }
 
-        return max($dbal->fetchOne(), 0);
+        return (int) max($dbal->fetchOne(), 0);
     }
 
     /**
