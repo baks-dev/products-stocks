@@ -45,7 +45,7 @@ final class ProductCatalogWarmupDispatcher
         $Deduplicator = $this->deduplicator
             ->namespace('warmup')
             ->expiresAfter('1 minute')
-            ->deduplication([self::class]);
+            ->deduplication([self::class, (string) $message->getCategory()]);
 
         if($Deduplicator->isExecuted())
         {
