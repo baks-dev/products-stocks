@@ -26,7 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Messenger\Warmup\ModelsByCategory;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Products\Category\Repository\AllCategory\AllCategoryInterface;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Repository\Cards\ModelsByCategory\ModelsByCategoryInterface;
+use BaksDev\Products\Product\Repository\Cards\ProductCatalog\ProductCatalogInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -37,6 +40,7 @@ final readonly class ModelsByCategoryWarmupDispatcher
     public function __construct(
         private DeduplicatorInterface $deduplicator,
         private ModelsByCategoryInterface $ModelsByCategoryRepository,
+        private AllCategoryInterface $allCategoryRepository,
     ) {}
 
     public function __invoke(ModelsByCategoryWarmupMessage $message): void
@@ -53,10 +57,27 @@ final readonly class ModelsByCategoryWarmupDispatcher
 
         $Deduplicator->save();
 
-        $this->ModelsByCategoryRepository
+
+        /** Список только дочерних категорий */
+        $childrenCategories = $this->allCategoryRepository->getOnlyChildren();
+
+        $array = array_column($childrenCategories, 'id');
+
+        $ids = array_map(static fn($uuid) => new CategoryProductUid($uuid), $array);
+
+        $result = $this->ModelsByCategoryRepository
             ->onlyActive()
+            ->maxResult(6)
+            ->inCategories($ids)
             ->findAll();
 
         $Deduplicator->delete();
+
+        if(false === $result || false === $result->valid())
+        {
+            return;
+        }
+
+        iterator_to_array($result);
     }
 }

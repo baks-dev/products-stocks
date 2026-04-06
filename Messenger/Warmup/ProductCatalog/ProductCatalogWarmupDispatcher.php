@@ -54,12 +54,19 @@ final class ProductCatalogWarmupDispatcher
 
         $Deduplicator->save();
 
-        $this->ProductCatalogRepository
+        $result = $this->ProductCatalogRepository
             ->forCategory($message->getCategory())
             ->onlyActive()
             ->maxResult(6)
             ->findAll();
 
         $Deduplicator->delete();
+
+        if(false === $result || false === $result->valid())
+        {
+            return;
+        }
+
+        iterator_to_array($result);
     }
 }
