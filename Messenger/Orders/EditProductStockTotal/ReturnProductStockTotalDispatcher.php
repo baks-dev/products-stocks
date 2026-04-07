@@ -327,13 +327,13 @@ final readonly class ReturnProductStockTotalDispatcher
 
                 /* Создаем новое место складирования на указанный профиль пользователя */
                 $ProductStockTotal = new ProductStockTotal(
-                    $User->getId(),
-                    $UserProfileUid,
-                    $currentProductStockProductDTO->getProduct(),
-                    $currentProductStockProductDTO->getOffer(),
-                    $currentProductStockProductDTO->getVariation(),
-                    $currentProductStockProductDTO->getModification(),
-                    null,
+                    usr: $User->getId(),
+                    profile: $UserProfileUid,
+                    product: $lastProductStockProductDTO->getProduct(),
+                    offer: $lastProductStockProductDTO->getOffer(),
+                    variation: $lastProductStockProductDTO->getVariation(),
+                    modification: $lastProductStockProductDTO->getModification(),
+                    storage: null,
                 );
 
                 $this->entityManager->persist($ProductStockTotal);
@@ -344,6 +344,7 @@ final readonly class ReturnProductStockTotalDispatcher
                     [
                         self::class.':'.__LINE__,
                         'profile' => (string) $UserProfileUid,
+                        'id' => (string) $ProductStockTotal->getId(),
                     ],
                 );
             }
@@ -352,7 +353,7 @@ final readonly class ReturnProductStockTotalDispatcher
 
             $this->Logger->info(
                 message: sprintf(
-                    '%s: Удалили продукт. Добавляем возврат продукции на склад +%s',
+                    '%s: Полностью удалили продукт из заказа. Добавляем возврат продукции на склад +%s',
                     $lastEditProductStockDTO->getInvariable()->getNumber(),
                     $totalDown,
                 ),
@@ -497,6 +498,7 @@ final readonly class ReturnProductStockTotalDispatcher
                 'Ошибка при обновлении складских остатков при возврате',
                 [
                     'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+                    'total' => $total,
                     self::class.':'.__LINE__,
                 ],
             );
@@ -508,6 +510,7 @@ final readonly class ReturnProductStockTotalDispatcher
             'Добавили возврат продукции на склад',
             [
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
+                'total' => $total,
                 self::class.':'.__LINE__,
             ],
         );
