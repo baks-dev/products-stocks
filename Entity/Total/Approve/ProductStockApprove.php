@@ -42,7 +42,7 @@ class ProductStockApprove extends EntityState
     #[Assert\NotBlank]
     #[ORM\Id]
     #[ORM\OneToOne(targetEntity: ProductStockTotal::class, inversedBy: 'approve')]
-    #[ORM\JoinColumn(name: 'main', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'main', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ProductStockTotal $main;
 
 
