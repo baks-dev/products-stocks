@@ -49,6 +49,11 @@ final class ProductStockTotalEditHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
+        if($ProductStockTotal->getTotal() === $command->getTotal())
+        {
+            return $ProductStockTotal;
+        }
+
         if(
             false === $this->validatorCollection->add($ProductStockTotal, context: [
                 self::class.':'.__LINE__,
