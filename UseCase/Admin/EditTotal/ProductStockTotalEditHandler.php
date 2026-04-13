@@ -49,7 +49,10 @@ final class ProductStockTotalEditHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        if($ProductStockTotal->getTotal() === $command->getTotal())
+        if(
+            $ProductStockTotal->getTotal() === $command->getTotal() &&
+            $ProductStockTotal->getReserve() === $command->getReserve()
+        )
         {
             return $ProductStockTotal;
         }
