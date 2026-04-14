@@ -50,14 +50,6 @@ final class ProductStockTotalEditHandler extends AbstractHandler
         }
 
         if(
-            $ProductStockTotal->getTotal() === $command->getTotal() &&
-            $ProductStockTotal->getReserve() === $command->getReserve()
-        )
-        {
-            return $ProductStockTotal;
-        }
-
-        if(
             false === $this->validatorCollection->add($ProductStockTotal, context: [
                 self::class.':'.__LINE__,
                 'class' => ProductStockTotal::class,
