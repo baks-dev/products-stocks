@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Repository\AllProductStocksPickup;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
+use BaksDev\Products\Stocks\Type\Part\ProductStockPartUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Event\UserProfileEventUid;
 use DateTimeImmutable;
@@ -47,6 +48,8 @@ final readonly class AllProductStocksPickupResult
         private ?string $client_profile_event,
         private string $delivery_date,
         private string $delivery_name,
+        private ?string $product_stock_part,
+        private ?string $product_stock_part_number,
     ) {}
 
     public function getNumber(): string
@@ -109,5 +112,13 @@ final readonly class AllProductStocksPickupResult
         return $this->order_comment;
     }
 
+    public function getProductStockPart(): ProductStockPartUid|false
+    {
+        return $this->product_stock_part ? new ProductStockPartUid($this->product_stock_part) : false;
+    }
 
+    public function getProductStockPartNumber(): ?string
+    {
+        return $this->product_stock_part_number;
+    }
 }

@@ -50,6 +50,7 @@ final readonly class AllProductStocksPackageResult
         private ?string $users_profile_username,
         private ?bool $printed,
         private ?string $product_stock_part,
+        private ?string $product_stock_part_number,
         private ?string $client_profile_event,
 
         //private ?bool $products_move,
@@ -130,6 +131,11 @@ final readonly class AllProductStocksPackageResult
     public function getClientProfileEvent(): ?UserProfileEventUid
     {
         return false === empty($this->client_profile_event) ? new UserProfileEventUid($this->client_profile_event) : null;
+    }
+
+    public function getProductStockPartNumber(): ?string
+    {
+        return $this->product_stock_part_number;
     }
 
     //    public function isProductsMove(): bool

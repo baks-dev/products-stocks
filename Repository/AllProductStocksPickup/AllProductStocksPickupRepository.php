@@ -35,6 +35,7 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
+use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
@@ -264,12 +265,23 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
                 'delivery_trans.event = delivery_event.id AND delivery_trans.local = :local',
             );
 
+        $dbal
+            ->addSelect('stock_part.value AS product_stock_part')
+            ->addSelect('stock_part.number AS product_stock_part_number')
+            ->leftJoin(
+                'stock',
+                ProductStockPart::class,
+                'stock_part',
+                'stock_part.event = stock.event',
+            );
+
         // Поиск
         if($this->search?->getQuery())
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchLike('invariable.number');
+                ->addSearchLike('invariable.number')
+                ->addSearchLike('stock_part.number');
         }
 
         $dbal->addOrderBy('order_event.danger', 'DESC');

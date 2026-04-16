@@ -196,6 +196,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
 
         $dbal
             ->addSelect('stock_part.value AS product_stock_part')
+            ->addSelect('stock_part.number AS product_stock_part_number')
             ->leftJoin(
                 'stock',
                 ProductStockPart::class,
