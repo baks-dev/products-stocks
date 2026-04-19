@@ -33,14 +33,17 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductWarehouseTotal\ProductWarehouseTotalInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -77,242 +80,336 @@ class ProductStocksVerify extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+
         $io = new SymfonyStyle($input, $output);
 
-        $profile = $input->getArgument('profile');
 
-        if(!$profile)
+        /** Перечисляем все профили, на которые есть остатки */
+
+        $profiles = [
+            // '019831a9-287b-7ec0-878f-ef6a9af6d41d', // ООО "ИВТОРГСТРОЙ"
+            //'018e9e8f-9a83-7af7-a904-f34b393d69bf', // Митино (Белобородова 38)
+            //'0197b0c0-51fc-735d-ada6-0aa53dfff7cd', // Санкт-Петербург (Московское шоссе, 7Б)
+            //'019d02c9-864b-7bb6-a854-eb8cf323cdb6', // Санкт-Петербург (Большое Тешково)
+            //'0197a337-ebc0-767d-9a41-d90ef0845695', // Симферополь (Коммунальная 34)
+            //'018c435d-3ffa-71df-abd0-2345023d042d', // Дзержинка (Денисьевский 17)
+            // '018b81fa-2120-7473-b87f-31d011ffedd6', // Цесарка (Лесная цесарка 8)
+            '019874f7-a410-7130-91f3-6a23bba1332e', // Ростов (Цусимский 30В)
+            // '01987446-53fc-742c-bb97-d4df579cca4c', // Владивосток (Выселковая 83)
+
+            '01992e03-60f7-7a52-ae28-9db68e2bd6e6', // Склад "Степановское"
+            '01994d3d-986b-7655-8781-386409c1dd90', // Склад "Софьино"
+            // '019c9a53-a5fb-7f1f-a8f5-464067a85d9a', // ООО "Белый знак"
+            // '019c7c19-9cd4-7d12-ba07-3e72c174b984', // Партнер МСК "ПАУЭР ИНТЕРНЭШНЛ"
+
+        ];
+
+
+        foreach($profiles as $profile)
         {
-            $io->error('Не указан идентификатор профиля пользователя (Пример: php bin/console baks:product:stocks:verify <UID>)');
-            return Command::INVALID;
-        }
 
-        $UserProfileUid = new UserProfileUid($profile);
-
-        $dbal = $this->DBALQueryBuilder
-            ->createQueryBuilder(self::class)
-            ->bindLocal();
-
-        // Цесарка
-        //$profile = new UserProfileUid('018b81fa-2120-7473-b87f-31d011ffedd6');
-
-        // Денисьевский
-        //$profile = new UserProfileUid('018c435d-3ffa-71df-abd0-2345023d042d');
-
-        $dbal
-            //->addSelect('event.main AS id')
-            //->addSelect('event.id AS event')
-            //->addSelect('event.number')
-
-            //->addSelect('event.comment')
-            //->addSelect('event.status')
-            //->addSelect('event.profile AS user_profile_id')
-            //->addSelect('move.destination AS destination_profile_id')
-
-            ->from(ProductStockEvent::class, 'event')
-            ->andWhere('event.status = :status ')
-            ->setParameter('status', new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()), ProductStockStatus::TYPE)
-            ->andWhere('(event.profile = :profile OR move.destination = :profile)')
-            ->setParameter('profile', $UserProfileUid, UserProfileUid::TYPE);
-
-        $dbal->addSelect('SUM(CASE WHEN event.profile = :profile THEN stock_product.total ELSE 0 END) AS sum_incoming');
-        $dbal->addSelect('SUM(CASE WHEN move.destination = :profile THEN stock_product.total ELSE 0 END) AS sum_destination');
+            $UserProfileUid = new UserProfileUid($profile);
 
 
-        $dbal
-            ->join(
-                'event',
-                ProductStock::class,
-                'stock',
-                'stock.event = event.id',
+            /** Получаем все остатки по складу текущего профиля */
 
-            );
+            $dbalStocks = $this->DBALQueryBuilder
+                ->createQueryBuilder(self::class)
+                ->bindLocal();
 
-
-        $dbal
-            //->addSelect('move.destination AS move_destination')
-            ->leftJoin(
-                'event',
-                ProductStockMove::class,
-                'move',
-                'move.event = event.id',
-            );
+            $dbalStocks
+                ->select('SUM(stock_product.total) AS total')
+                ->addSelect('SUM(stock_product.reserve) AS reserve')
+                ->addSelect('stock_product.product')
+                ->addSelect('stock_product.offer')
+                ->addSelect('stock_product.variation')
+                ->addSelect('stock_product.modification')
+                ->from(ProductStockTotal::class, 'stock_product');
 
 
-        $dbal
-            ->addSelect('stock_product.product')
-            ->addSelect('stock_product.offer')
-            ->addSelect('stock_product.variation')
-            ->addSelect('stock_product.modification')
-            ->leftJoin(
-                'event',
-                ProductStockProduct::class,
-                'stock_product',
-                'stock_product.event = stock.event',
-            )
+            $dbalStocks->andWhere('stock_product.profile = :profile AND stock_product.total != 0')
+                ->setParameter(
+                    key: 'profile',
+                    value: $UserProfileUid,
+                    type: UserProfileUid::TYPE,
+                );
 
-            //            ->addGroupBy('stock_product.product')
-            //            ->addGroupBy('stock_product.offer')
-            //            ->addGroupBy('stock_product.variation')
-            //            ->addGroupBy('stock_product.modification')
+            $dbalStocks->allGroupByExclude();
 
-        ;
+            $resultStocks = $dbalStocks->fetchAllAssociative();
 
-
-        // Product
-        $dbal
-            ->addSelect('product.id as product_id')
-            //->addSelect('product.event as product_event')
-            ->leftJoin(
-                'stock_product',
-                Product::class,
-                'product',
-                'product.id = stock_product.product',
-            );
-
-        // Product Event
-        $dbal->join(
-            'product',
-            ProductEvent::class,
-            'product_event',
-            'product_event.id = product.event',
-        );
-
-
-        // Product Trans
-        $dbal
-            ->addSelect('product_trans.name as product_name')
-            ->leftJoin(
-                'product_event',
-                ProductTrans::class,
-                'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local',
-            );
-
-        // Торговое предложение
-
-        $dbal
-            //->addSelect('product_offer.id as product_offer_uid')
-            ->addSelect('product_offer.value as product_offer_value')
-            //->addSelect('product_offer.postfix as product_offer_postfix')
-            ->leftJoin(
-                'product_event',
-                ProductOffer::class,
-                'product_offer',
-                'product_offer.event = product_event.id AND product_offer.const = stock_product.offer',
-            );
-
-
-        // Множественные варианты торгового предложения
-
-        $dbal
-            //->addSelect('product_variation.id as product_variation_uid')
-            ->addSelect('product_variation.value as product_variation_value')
-            //->addSelect('product_variation.postfix as product_variation_postfix')
-            ->leftJoin(
-                'product_offer',
-                ProductVariation::class,
-                'product_variation',
-                'product_variation.offer = product_offer.id AND product_variation.const = stock_product.variation',
-            );
-
-
-        // Модификация множественного варианта торгового предложения
-
-        $dbal
-            //->addSelect('product_modification.id as product_modification_uid')
-            ->addSelect('product_modification.value as product_modification_value')
-            ->addSelect('product_modification.postfix as product_modification_postfix')
-            ->leftJoin(
-                'product_variation',
-                ProductModification::class,
-                'product_modification',
-                'product_modification.variation = product_variation.id AND product_modification.const = stock_product.modification',
-            );
-
-
-        $dbal->allGroupByExclude();
-
-        $dbal->orderBy('sum_incoming', 'DESC');
-
-        $error = '';
-        $warning = '';
-
-        foreach($dbal->fetchAllAssociative() as $item)
-        {
-            $total = $this->productWarehouseTotal->getProductProfileTotalNotReserve(
-                $UserProfileUid,
-                new ProductUid($item['product']),
-                new ProductOfferConst($item['offer']),
-                new ProductVariationConst($item['variation']),
-                new ProductModificationConst($item['modification']),
-            );
-
-            //$total = $item['sum_stock_product_total'] / $item['counter'];
-
-            $sum = ($item['sum_incoming'] - $item['sum_destination']);
-
-            if($sum != $total && $item['modification'])
+            if(empty($resultStocks))
             {
-                $name = $item['product_name']
-                    .' R'.$item['product_offer_value']
-                    .' '.$item['product_variation_value']
-                    .'/'.$item['product_modification_value']
-                    .' : '.$sum.' != '.$total;
-
-                if($sum > $total)
-                {
-                    $warning .= PHP_EOL;
-                    $warning .= $name.PHP_EOL;
-                    $warning .= $item['modification'].PHP_EOL;
-                    $warning .= 'остаток указан меньше! сумма транзакций БОЛЬШЕ на '.($sum - $total).'. шт. (ожидается остаток '.$sum.')'.PHP_EOL;
-                }
-
-                if($total > $sum)
-                {
-                    $error .= PHP_EOL;
-                    $error .= $name.PHP_EOL;
-                    $error .= $item['modification'].PHP_EOL;
-                    $error .= 'отсутствует ТРАНЗАКЦИЯ! Остаток БОЛЬШЕ на '.($total - $sum).' шт. (ожидается остаток '.$sum.')'.PHP_EOL;
-                }
-
-                if(!$item['sum_incoming'])
-                {
-                    $error .= PHP_EOL;
-                    $error .= $name;
-                    $error .= ' Не найдено прихода! (Приход !0) ';
-                }
-
-                $error .= PHP_EOL;
+                continue;
             }
-            else
+
+            foreach($resultStocks as $stock)
             {
-                if($sum !== 0)
+                /**
+                 * Получаем все ПРИХОДЫ
+                 */
+
+                $dbalStocksEventIncoming = $this->DBALQueryBuilder
+                    ->createQueryBuilder(self::class);
+
+                $dbalStocksEventIncoming
+                    ->from(ProductStockEvent::class, 'event')
+                    ->andWhere('event.status = :incoming ')
+                    ->setParameter(
+                        'incoming',
+                        new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()),
+                        ProductStockStatus::TYPE,
+                    );
+
+                $dbalStocksEventIncoming
+                    // номер ордера
+                    //->addSelect('product_stock_invariable.number')
+                    ->join(
+                        'event',
+                        ProductStocksInvariable::class,
+                        'product_stock_invariable',
+                        'product_stock_invariable.event = event.id AND product_stock_invariable.profile = :profile',
+                    )
+                    ->setParameter(
+                        'profile',
+                        $UserProfileUid,
+                        UserProfileUid::TYPE,
+                    );
+
+
+                $dbalStocksEventIncoming
+                    ->join(
+                        'event',
+                        ProductStock::class,
+                        'stock',
+                        'stock.event = event.id',
+
+                    );
+
+
+                $dbalStocksEventIncoming
+                    ->join(
+                        'event',
+                        ProductStockProduct::class,
+                        'stock_product',
+                        '
+                            stock_product.event = event.id
+                            AND stock_product.product = :product
+                            AND stock_product.offer = :offer
+                            AND stock_product.variation = :variation
+                            AND stock_product.modification = :modification
+                        ',
+                    )
+                    ->setParameter('product', $stock['product'])
+                    ->setParameter('offer', $stock['offer'])
+                    ->setParameter('variation', $stock['variation'])
+                    ->setParameter('modification', $stock['modification']);
+
+
+                /** Приход */
+                $dbalStocksEventIncoming->addSelect('SUM(stock_product.total) AS total');
+                $transactionTotal = $dbalStocksEventIncoming->fetchOne();
+
+                /**
+                 * Получаем все РАСХОДЫ по заказам
+                 */
+
+                $dbalStocksEventOrder = $this->DBALQueryBuilder
+                    ->createQueryBuilder(self::class);
+
+                $dbalStocksEventOrder
+                    ->from(ProductStockEvent::class, 'event')
+                    ->andWhere('event.status = :completed OR event.status = :decommission')
+                    ->setParameter(
+                        'completed',
+                        new ProductStockStatus(new ProductStockStatus\ProductStockStatusCompleted()),
+                        ProductStockStatus::TYPE,
+                    )
+                    ->setParameter(
+                        'decommission',
+                        new ProductStockStatus(new ProductStockStatus\ProductStockStatusDecommission()),
+                        ProductStockStatus::TYPE,
+                    );
+
+
+                $dbalStocksEventOrder->join(
+                    'event',
+                    ProductStocksInvariable::class,
+                    'product_stock_invariable',
+                    'product_stock_invariable.event = event.id AND product_stock_invariable.profile = :profile',
+                )
+                    ->setParameter(
+                        'profile',
+                        $UserProfileUid,
+                        UserProfileUid::TYPE,
+                    );
+
+
+                $dbalStocksEventOrder
+                    ->join(
+                        'event',
+                        ProductStockProduct::class,
+                        'stock_product',
+                        '
+                            stock_product.event = event.id
+                            AND stock_product.product = :product
+                            AND stock_product.offer = :offer
+                            AND stock_product.variation = :variation
+                            AND stock_product.modification = :modification
+                        ',
+                    )
+                    ->setParameter('product', $stock['product'])
+                    ->setParameter('offer', $stock['offer'])
+                    ->setParameter('variation', $stock['variation'])
+                    ->setParameter('modification', $stock['modification']);
+
+
+                /** Расход */
+                $dbalStocksEventOrder->addSelect('SUM(stock_product.total) AS total');
+                $orderTotal = $dbalStocksEventOrder->fetchOne();
+
+
+                /**
+                 * Получаем все ПЕРЕМЕЩЕНИЯ по заказам
+                 */
+
+                $dbalStocksEventMove = $this->DBALQueryBuilder
+                    ->createQueryBuilder(self::class);
+
+                $dbalStocksEventMove
+                    ->from(ProductStockEvent::class, 'event')
+                    ->andWhere('event.status = :incoming ')
+                    ->setParameter(
+                        'incoming',
+                        new ProductStockStatus(new ProductStockStatus\ProductStockStatusIncoming()),
+                        ProductStockStatus::TYPE,
+                    );
+
+
+                $dbalStocksEventMove
+                    ->join(
+                        'event',
+                        ProductStock::class,
+                        'stock',
+                        'stock.event = event.id',
+
+                    );
+
+
+                $dbalStocksEventMove
+                    //->addSelect('move.destination AS move_destination')
+                    ->join(
+                        'event',
+                        ProductStockMove::class,
+                        'move',
+                        'move.event = event.id AND move.destination = :profile',
+                    )->setParameter(
+                        'profile',
+                        $UserProfileUid,
+                        UserProfileUid::TYPE,
+                    );
+
+
+                $dbalStocksEventMove
+                    ->join(
+                        'event',
+                        ProductStockProduct::class,
+                        'stock_product',
+                        '
+                            stock_product.event = event.id
+                            AND stock_product.product = :product
+                            AND stock_product.offer = :offer
+                            AND stock_product.variation = :variation
+                            AND stock_product.modification = :modification
+                        ',
+                    )
+                    ->setParameter('product', $stock['product'])
+                    ->setParameter('offer', $stock['offer'])
+                    ->setParameter('variation', $stock['variation'])
+                    ->setParameter('modification', $stock['modification']);
+
+
+                /** Перемещения */
+                $dbalStocksEventMove->addSelect('SUM(stock_product.total) AS total');
+                $moveTotal = $dbalStocksEventMove->fetchOne();
+
+                /**
+                 * Результат вычислений
+                 */
+
+                $total = $transactionTotal;
+
+                if($orderTotal)
                 {
-                    $msg = $item['product_name']
-                        .' R'.$item['product_offer_value']
-                        .' '.$item['product_variation_value']
-                        .'/'.$item['product_modification_value']
-                        .' : '.$sum.' = '.$total;
-
-                    $io->text($msg);
+                    $total -= $orderTotal;
                 }
+
+                if($moveTotal)
+                {
+                    $total -= $moveTotal;
+                }
+
+                if($stock['total'] !== $total)
+                {
+
+                    /** Получаем артикул для сверки */
+
+                    $dbalArticle = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+                    if($stock['modification'])
+                    {
+                        $dbalArticle
+                            ->select('product_modification.article')
+                            ->from(ProductModification::class, 'product_modification')
+                            ->where('product_modification.const = :modification')
+                            ->setParameter(
+                                'modification',
+                                new ProductModificationConst($stock['modification']),
+                                ProductModificationConst::TYPE,
+                            )
+                            ->orderBy('product_modification.id', 'DESC');
+                    }
+
+
+                    $article = $dbalArticle->fetchOne();
+
+                    $io->text(sprintf(
+                        '%s; транзакций %s, склад %s ',
+                        $article,
+                        $total,
+                        $stock['total'],
+                    ));
+
+                    //                    if($article === 'PL02-20-275-35-102V')
+                    //                    {
+                    //                        echo "Артикул товара: ".$article.PHP_EOL;
+                    //                        echo "Приходов: ".$transactionTotal.PHP_EOL;
+                    //                        echo "Расходов: ".$orderTotal.PHP_EOL;
+                    //
+                    //                        if($moveTotal)
+                    //                        {
+                    //                            echo "Перемещений на др. склад: ".$orderTotal.PHP_EOL;
+                    //                        }
+                    //
+                    //                        // номер ордера
+                    //                        $dbalStocksEventIncoming->select('product_stock_invariable.number');
+                    //                        $dbalStocksEventIncoming->addSelect('stock_product.total');
+                    //                        $transactionAssociative = $dbalStocksEventIncoming->fetchAllAssociative();
+                    //                        dump($transactionAssociative);
+                    //                    }
+
+
+                }
+
+
+                //$dbalStocksEvent->addSelect('SUM(CASE WHEN event.profile = :profile THEN stock_product.total ELSE 0 END) AS sum_incoming');
+                //$dbalStocksEvent->addSelect('SUM(CASE WHEN move.destination = :profile THEN stock_product.total ELSE 0 END) AS sum_destination');
+
             }
-        }
 
-        if(!empty($error))
-        {
-            $io->error($error);
-        }
 
-        if(!empty($warning))
-        {
-            $io->warning($warning);
-        }
+            dd($UserProfileUid);
 
-        if(!empty($error) || !empty($warning))
-        {
-            $io->note('Обязательно проверьте все приходы!');
         }
 
         return Command::SUCCESS;

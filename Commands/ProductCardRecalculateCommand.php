@@ -78,7 +78,9 @@ class ProductCardRecalculateCommand extends Command
                 modification: $ProductsIdentifierResult->getProductModificationConst(),
             );
 
-            $this->messageDispatch->dispatch(message: $RecalculateProductMessage);
+            $this->messageDispatch->dispatch(
+                message: $RecalculateProductMessage,
+            );
 
             $progressBar->advance();
         }
