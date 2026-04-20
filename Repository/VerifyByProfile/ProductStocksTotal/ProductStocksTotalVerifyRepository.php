@@ -1,0 +1,98 @@
+<?php
+/*
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+declare(strict_types=1);
+
+namespace BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksTotal;
+
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use Generator;
+use InvalidArgumentException;
+
+final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVerifyInterface
+{
+    private UserProfileUid|false $profile = false;
+
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+    public function forProfile(UserProfileUid|UserProfile|false|null $profile): self
+    {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    /**
+     * Все остатки профиля
+     *
+     * @return Generator<ProductStocksTotalVerifyResult>|bool
+     */
+    public function findAll(): Generator|bool
+    {
+        if(false === ($this->profile instanceof UserProfileUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument UserProfileUid');
+        }
+
+        /** Получаем все остатки по складу текущего профиля */
+
+        $dbal = $this->DBALQueryBuilder
+            ->createQueryBuilder(self::class)
+            ->bindLocal();
+
+        $dbal
+            ->select('SUM(stock_product.total) AS total')
+            ->addSelect('SUM(stock_product.reserve) AS reserve')
+            ->addSelect('stock_product.product')
+            ->addSelect('stock_product.offer')
+            ->addSelect('stock_product.variation')
+            ->addSelect('stock_product.modification')
+            ->from(ProductStockTotal::class, 'stock_product');
+
+        $dbal
+            ->andWhere('stock_product.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: $this->profile,
+                type: UserProfileUid::TYPE,
+            );
+
+        $dbal->allGroupByExclude();
+
+        return $dbal->fetchAllHydrate(ProductStocksTotalVerifyResult::class);
+    }
+}
