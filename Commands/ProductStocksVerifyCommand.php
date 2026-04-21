@@ -151,7 +151,7 @@ class ProductStocksVerifyCommand extends Command
 
             foreach($profiles as $profile)
             {
-                if($profile->getParams()->username === $key)
+                if($profile->getParams()->username === $questions[$key])
                 {
                     /* Присваиваем профиль пользователя */
                     $UserProfileUid = $profile;
@@ -161,6 +161,7 @@ class ProductStocksVerifyCommand extends Command
 
             if($UserProfileUid)
             {
+                $this->io->success($UserProfileUid->getParams()->username);
                 $this->update($UserProfileUid, $input->getOption('article'));
             }
 
@@ -265,6 +266,11 @@ class ProductStocksVerifyCommand extends Command
                     $total,
                     $ProductStocksTotalVerifyResult->getTotal(),
                 ));
+            }
+
+            if($CurrentProductIdentifierResult->getArticle() === $article)
+            {
+                break;
             }
         }
     }

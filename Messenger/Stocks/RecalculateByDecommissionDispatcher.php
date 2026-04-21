@@ -122,6 +122,16 @@ final readonly class RecalculateByDecommissionDispatcher
              * Пересчитываем остатки в карточке товара
              */
 
+            $this->logger->info('products-sign: Пересчитываем остатки в карточке товара при списании на складе',
+                [
+                    'product' => (string) $product->getProduct(),
+                    'offer' => (string) $product->getOffer(),
+                    'variation' => (string) $product->getVariation(),
+                    'modification' => (string) $product->getModification(),
+                    self::class.':'.__LINE__,
+                ],
+            );
+
             $RecalculateProductMessage = new RecalculateProductMessage(
                 product: $CurrentProductIdentifier->getProduct(),
                 offer: $CurrentProductIdentifier->getOfferConst(),
@@ -131,7 +141,7 @@ final readonly class RecalculateByDecommissionDispatcher
 
             $this->messageDispatch->dispatch(
                 message: $RecalculateProductMessage,
-                transport: 'products-stocks',
+                transport: 'products-stocks-low',
             );
         }
 

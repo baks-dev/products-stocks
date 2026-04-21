@@ -49,6 +49,7 @@ final class ProductStockTotalEditHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
+
         if(
             false === $this->validatorCollection->add($ProductStockTotal, context: [
                 self::class.':'.__LINE__,
@@ -90,6 +91,15 @@ final class ProductStockTotalEditHandler extends AbstractHandler
 
         if($command instanceof ProductStockTotalEditDTO && $command->isRecalculate())
         {
+            if(
+                $ProductStockTotal->getId()->equals($command->getId())
+                && $ProductStockTotal->getTotal() === $command->getTotal()
+                && $ProductStockTotal->getReserve() === $command->getReserve()
+            )
+            {
+                return $ProductStockTotal;
+            }
+
             /** Отправляем сообщение в шину для пересчета продукции */
 
             $RecalculateProductMessage = new RecalculateProductMessage(
@@ -101,7 +111,7 @@ final class ProductStockTotalEditHandler extends AbstractHandler
 
             $this->messageDispatch->dispatch(
                 message: $RecalculateProductMessage,
-                transport: 'products-stocks',
+                transport: 'products-stocks-low',
             );
         }
 
