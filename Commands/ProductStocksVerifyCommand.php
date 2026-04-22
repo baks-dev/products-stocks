@@ -26,30 +26,17 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\Commands;
 
 
-use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Products\Product\Entity\Event\ProductEvent;
-use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
-use BaksDev\Products\Product\Entity\Product;
-use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
-use BaksDev\Products\Product\Type\Event\ProductEventUid;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
-use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
-use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksIncoming\ProductStocksIncomingVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksMove\ProductStocksMoveVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrders\ProductStocksIncomingOrdersInterface;
+use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksReserve\ProductStocksOrdersReserveVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksTotal\ProductStocksTotalVerifyInterface;
 use BaksDev\Users\Profile\UserProfile\Repository\CurrentAllUserProfiles\CurrentAllUserProfilesByUserInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -72,6 +59,7 @@ class ProductStocksVerifyCommand extends Command
         private ProductStocksIncomingVerifyInterface $ProductStocksIncomingVerifyRepository,
         private ProductStocksMoveVerifyInterface $ProductStocksMoveVerifyRepository,
         private ProductStocksIncomingOrdersInterface $ProductStocksIncomingOrdersRepository,
+        private ProductStocksOrdersReserveVerifyInterface $ProductStocksOrdersReserveVerifyRepository,
         #[Autowire(env: 'PROJECT_USER')] private string|null $projectUser = null,
     )
     {
@@ -190,7 +178,8 @@ class ProductStocksVerifyCommand extends Command
         foreach($resultStocks as $ProductStocksTotalVerifyResult)
         {
             /** Получаем активные идентификаторы продукта */
-            $CurrentProductIdentifierResult = $this->CurrentProductIdentifierByConstRepository
+            $CurrentProductIdentifierResult = $this
+                ->CurrentProductIdentifierByConstRepository
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
                 ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
                 ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
@@ -240,6 +229,19 @@ class ProductStocksVerifyCommand extends Command
                 ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
                 ->find();
 
+
+            /** Получаем все резервы на продукцию по заказам */
+
+
+            $reserve = $this->ProductStocksOrdersReserveVerifyRepository
+                ->forProfile($profile)
+                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
+                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->find();
+
+
             /**
              * Результат вычислений
              */
@@ -261,12 +263,23 @@ class ProductStocksVerifyCommand extends Command
                 /** Получаем артикул для сверки */
 
                 $this->io->text(sprintf(
-                    '%s => транзакций %s | склад %s ',
+                    '%s => остаток %s | расчетный %s',
                     $CurrentProductIdentifierResult->getArticle(),
-                    $total,
                     $ProductStocksTotalVerifyResult->getTotal(),
+                    $total,
                 ));
             }
+
+            if($ProductStocksTotalVerifyResult->getReserve() !== $reserve)
+            {
+                $this->io->text(sprintf(
+                    '%s => резерв %s | склад %s ',
+                    $CurrentProductIdentifierResult->getArticle(),
+                    $ProductStocksTotalVerifyResult->getTotal(),
+                    $reserve,
+                ));
+            }
+
 
             if($CurrentProductIdentifierResult->getArticle() === $article)
             {

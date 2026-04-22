@@ -46,6 +46,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCom
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\EditProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Products\ProductStockProductDTO;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -60,6 +61,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * - добавление нового продукта
  * - удаление продукта
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class EditProductStockTotalDispatcher
 {

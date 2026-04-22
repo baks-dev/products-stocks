@@ -30,12 +30,14 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимает резерв на единицу продукции с указанного склада с мест, начиная с максимального резерва
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubProductStocksReserveDispatcher
 {

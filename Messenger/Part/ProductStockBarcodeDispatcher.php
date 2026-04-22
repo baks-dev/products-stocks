@@ -30,10 +30,12 @@ use BaksDev\Barcode\Writer\BarcodeFormat;
 use BaksDev\Barcode\Writer\BarcodeType;
 use BaksDev\Barcode\Writer\BarcodeWrite;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 
 /** Генерируем QR-код партии */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 99)]
 final readonly class ProductStockBarcodeDispatcher
 {

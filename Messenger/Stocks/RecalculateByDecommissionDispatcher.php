@@ -38,12 +38,14 @@ use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductI
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
 use BaksDev\Products\Stocks\Messenger\Products\Recalculate\RecalculateProductMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  *  Пересчет остатков продукции в карточке товара, если создается заказ со статусом Decommission «Списание»
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 900)]
 final readonly class RecalculateByDecommissionDispatcher
 {

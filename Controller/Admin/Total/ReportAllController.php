@@ -49,6 +49,9 @@ use Twig\Environment;
 #[RoleSecurity('ROLE_PRODUCT_STOCK_REPORT')]
 final class ReportAllController extends AbstractController
 {
+    /**
+     * Отчет по всем регионам
+     */
     #[Route('/admin/products/stock/all/export', name: 'admin.total.all.export', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -204,8 +207,8 @@ final class ReportAllController extends AbstractController
             $Money = $data->getProductPrice();
 
 
-            // Штрихкод
-            $sheet->setCellValue('A'.$key, $data->getBarcode());
+            // Штрихкоды
+            $sheet->setCellValue('A'.$key, $data->getBarcodes() ? implode(',', $data->getBarcodes()) : '');
 
             // Артикул
             $sheet->setCellValue('B'.$key, trim($data->getProductArticle()));

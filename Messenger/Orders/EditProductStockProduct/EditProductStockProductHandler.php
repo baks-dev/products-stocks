@@ -35,12 +35,14 @@ use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusNew;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPhone;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Запускает процесс редактирования складской заявки при изменении заказа, если заказ уже на упаковке
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final class EditProductStockProductHandler
 {

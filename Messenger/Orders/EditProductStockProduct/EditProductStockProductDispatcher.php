@@ -46,6 +46,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Edit\EditProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Edit\Products\ProductStockProductDTO;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -57,6 +58,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @note запускает процесс отслеживания изменений продукции в складской заявке
  * @see ReturnProductStockTotalDispatcher
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class EditProductStockProductDispatcher
 {

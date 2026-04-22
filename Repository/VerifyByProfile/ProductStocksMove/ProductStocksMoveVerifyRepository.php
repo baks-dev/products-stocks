@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 
@@ -114,10 +115,15 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
 
         $dbal
             ->from(ProductStockEvent::class, 'event')
-            ->andWhere('event.status = :incoming ')
+            ->andWhere('(event.status = :incoming OR event.status = :warehouse) ')
             ->setParameter(
                 'incoming',
                 ProductStockStatusIncoming::class,
+                ProductStockStatus::TYPE,
+            )
+            ->setParameter(
+                'incoming',
+                ProductStockStatusWarehouse::class,
                 ProductStockStatus::TYPE,
             );
 
@@ -195,7 +201,6 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
                 type: ProductModificationConst::TYPE,
             );
         }
-
 
         /** Перемещения */
         $dbal->addSelect('SUM(stock_product.total) AS total');

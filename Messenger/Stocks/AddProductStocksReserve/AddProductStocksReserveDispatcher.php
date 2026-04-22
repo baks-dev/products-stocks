@@ -31,6 +31,7 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\AddProductStockInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -38,6 +39,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * Создает резерв на единицу продукции на указанный склад начиная с минимального наличия высвобождая место
  * либо если имеется приоритетное место - начнет с приоритетного
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 999)]
 final readonly class AddProductStocksReserveDispatcher
 {
@@ -101,7 +103,7 @@ final readonly class AddProductStocksReserveDispatcher
         $this->messageDispatch->addClearCacheOther('products-stocks');
 
         $this->logger->info(
-            sprintf('Место %s: Добавили резерв на склад единицы продукции', $ProductStockTotal->getStorage()),
+            sprintf('Место %s: Добавили резерв продукции на складе => %s', $ProductStockTotal->getStorage(), $message->getTotal()),
             [
                 self::class.':'.__LINE__,
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),

@@ -38,12 +38,14 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимаем резерв и наличие со склада отгрузки при статусе Moving «Перемещение»
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByMove
 {
@@ -57,6 +59,7 @@ final readonly class SubReserveProductStockTotalByMove
 
     public function __invoke(ProductStockMessage $message): void
     {
+        /** Складская заявка на перемещение должна иметь предыдущее событие */
         if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
             return;
@@ -85,6 +88,15 @@ final readonly class SubReserveProductStockTotalByMove
 
         if(false === ($ProductStockEventLast instanceof ProductStockEvent))
         {
+
+            $this->Logger->critical(
+                sprintf('Предыдущее событие складской заявки не найдено'),
+                [
+                    self::class.':'.__LINE__,
+                    var_export($message, true),
+                ],
+            );
+
             return;
         }
 

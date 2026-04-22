@@ -39,12 +39,14 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCan
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимает резерв в карточке продукции при отмене заявки Cancel «Отменен»
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductByProductStockCancel
 {

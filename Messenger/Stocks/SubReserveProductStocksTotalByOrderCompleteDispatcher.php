@@ -43,12 +43,14 @@ use BaksDev\Products\Stocks\Messenger\Stocks\SubProductStocksTotal\SubProductSto
 use BaksDev\Products\Stocks\Repository\CountProductStocksStorage\CountProductStocksStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимаем резерв и остаток со склада продукции при статусе заказа Completed «Выполнен»
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 60)]
 final readonly class SubReserveProductStocksTotalByOrderCompleteDispatcher
 {

@@ -38,12 +38,14 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMov
 use BaksDev\Users\Profile\UserProfile\Repository\UserProfileLogisticWarehouse\UserProfileLogisticWarehouseInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимает резерв и отнимает количество продукции при перемещении между складами
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubQuantityReserveProductByMoveWarehouseStock
 {

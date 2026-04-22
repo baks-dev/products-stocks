@@ -46,6 +46,7 @@ use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\CollectionPackageProd
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -54,6 +55,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  *
  * @see ProductStockStatusPackage
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class MultiplyProductStocksPackageDispatcher
 {

@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCom
 use BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal\ApproveProductStockTotalDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\ApproveTotal\ApproveProductStockTotalHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -43,6 +44,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * Задаем значение approve ProductStockTotal = false, при условии,
  * что заявка Completed «Выдан по месту назначения»
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class UpdateStockTotalApproveDispatcher
 {

@@ -36,10 +36,12 @@ use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /** Обновляет складскую заявку на статус Extradition «Укомплектована, готова к выдаче» */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class MultiplyProductStocksExtraditionDispatcher
 {

@@ -30,12 +30,14 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Products\Stocks\Repository\ProductStockMinQuantity\ProductStockQuantityInterface;
 use BaksDev\Products\Stocks\Repository\UpdateProductStock\SubProductStockInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Снимает наличие продукции и резерв с указанного склада с мест, начиная с минимального наличия
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubProductStocksTotalAndReserveDispatcher
 {
@@ -123,7 +125,7 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
         $DeduplicatorExecuted->save();
 
         $this->logger->info(
-            sprintf('место: %s : Сняли резерв и уменьшили количество на единицу продукции', $ProductStockTotal->getStorage()),
+            sprintf('место: %s : Сняли резерв и уменьшили количество продукции на %s', $ProductStockTotal->getStorage(), $message->getTotal()),
             [
                 self::class.':'.__LINE__,
                 var_export($message, true),

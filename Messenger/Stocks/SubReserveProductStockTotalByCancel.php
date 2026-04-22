@@ -43,6 +43,7 @@ use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -51,6 +52,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  *
  * @see CancelProductStocksByCancelOrderDispatcher
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
 final readonly class SubReserveProductStockTotalByCancel
 {

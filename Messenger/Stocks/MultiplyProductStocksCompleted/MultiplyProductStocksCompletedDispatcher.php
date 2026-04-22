@@ -36,10 +36,12 @@ use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInte
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /** Обновляет складскую заявку на статус Completed «Выдан по месту назначения» */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class MultiplyProductStocksCompletedDispatcher
 {

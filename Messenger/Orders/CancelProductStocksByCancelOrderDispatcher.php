@@ -45,7 +45,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Отменяем складскую заявку на продукцию при отмене либо возврате заказа
  */
-// #[Autoconfigure(public: true)]
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 8)]
 final readonly class CancelProductStocksByCancelOrderDispatcher
 {

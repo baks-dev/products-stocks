@@ -41,12 +41,14 @@ use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Orders\DecommissionProduc
 use BaksDev\Products\Stocks\UseCase\Admin\Decommission\Products\DecommissionProductStockProductDTO;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Создает складскую заявку со статусом Decommission «Списание» на продукцию
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class DecommissionProductStocksByDecommissionOrderDispatcher
 {

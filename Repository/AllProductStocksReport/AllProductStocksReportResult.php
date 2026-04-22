@@ -149,6 +149,7 @@ final readonly class AllProductStocksReportResult
         return false === empty($this->old_product_price) ? new Money($this->old_product_price, true) : null;
     }
 
+    /** @depricated */
     public function getBarcode(): ?string
     {
         return true === empty($this->barcode) ? null : $this->barcode;
