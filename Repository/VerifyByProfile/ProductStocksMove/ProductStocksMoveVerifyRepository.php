@@ -122,7 +122,7 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
                 ProductStockStatus::TYPE,
             )
             ->setParameter(
-                'incoming',
+                'warehouse',
                 ProductStockStatusWarehouse::class,
                 ProductStockStatus::TYPE,
             );

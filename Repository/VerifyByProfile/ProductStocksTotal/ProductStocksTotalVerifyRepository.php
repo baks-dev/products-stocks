@@ -76,7 +76,6 @@ final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVeri
 
         $dbal
             ->select('SUM(stock_product.total) AS total')
-            ->addSelect('SUM(stock_product.reserve) AS reserve')
             ->addSelect('stock_product.product')
             ->addSelect('stock_product.offer')
             ->addSelect('stock_product.variation')

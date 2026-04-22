@@ -21,7 +21,7 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksReserve;
+namespace BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrdersReserve;
 
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;

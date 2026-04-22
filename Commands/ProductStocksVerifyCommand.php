@@ -30,7 +30,8 @@ use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductI
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksIncoming\ProductStocksIncomingVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksMove\ProductStocksMoveVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrders\ProductStocksIncomingOrdersInterface;
-use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksReserve\ProductStocksOrdersReserveVerifyInterface;
+use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrdersReserve\ProductStocksOrdersReserveVerifyInterface;
+use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksReserve\ProductStocksReserveVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksTotal\ProductStocksTotalVerifyInterface;
 use BaksDev\Users\Profile\UserProfile\Repository\CurrentAllUserProfiles\CurrentAllUserProfilesByUserInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -59,6 +60,7 @@ class ProductStocksVerifyCommand extends Command
         private ProductStocksIncomingVerifyInterface $ProductStocksIncomingVerifyRepository,
         private ProductStocksMoveVerifyInterface $ProductStocksMoveVerifyRepository,
         private ProductStocksIncomingOrdersInterface $ProductStocksIncomingOrdersRepository,
+        private ProductStocksReserveVerifyInterface $ProductStocksReserveVerifyRepository,
         private ProductStocksOrdersReserveVerifyInterface $ProductStocksOrdersReserveVerifyRepository,
         #[Autowire(env: 'PROJECT_USER')] private string|null $projectUser = null,
     )
@@ -230,18 +232,6 @@ class ProductStocksVerifyCommand extends Command
                 ->find();
 
 
-            /** Получаем все резервы на продукцию по заказам */
-
-
-            $reserve = $this->ProductStocksOrdersReserveVerifyRepository
-                ->forProfile($profile)
-                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
-                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
-                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
-                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
-                ->find();
-
-
             /**
              * Результат вычислений
              */
@@ -270,13 +260,34 @@ class ProductStocksVerifyCommand extends Command
                 ));
             }
 
-            if($ProductStocksTotalVerifyResult->getReserve() !== $reserve)
+
+            /** Получаем резерв на складе */
+
+            $stockReserve = $this->ProductStocksReserveVerifyRepository
+                ->forProfile($profile)
+                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
+                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->find();
+
+            /** Получаем все резервы на продукцию по заказам */
+
+            $ordersReserve = $this->ProductStocksOrdersReserveVerifyRepository
+                ->forProfile($profile)
+                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
+                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->find();
+
+            if($stockReserve !== $ordersReserve)
             {
                 $this->io->text(sprintf(
                     '%s => резерв %s | склад %s ',
                     $CurrentProductIdentifierResult->getArticle(),
-                    $ProductStocksTotalVerifyResult->getTotal(),
-                    $reserve,
+                    $ordersReserve,
+                    $stockReserve,
                 ));
             }
 

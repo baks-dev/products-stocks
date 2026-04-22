@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksReserve;
+namespace BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrdersReserve;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\DeliveryTransport\Type\OrderStatus\OrderStatusDelivery;
@@ -127,7 +127,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
             'orders_invariable',
             '
                 orders_invariable.main = main.id 
-                AND orders_event.profile = :profile
+                AND orders_invariable.profile = :profile
             ',
         )
             ->setParameter(
@@ -140,7 +140,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
             'main',
             OrderEvent::class,
             'orders_event',
-            'orders_event.order = main.id AND orders_event.status IN (:status)',
+            'orders_event.orders = main.id AND orders_event.status IN (:status)',
         )
             ->setParameter(
                 key: 'status',

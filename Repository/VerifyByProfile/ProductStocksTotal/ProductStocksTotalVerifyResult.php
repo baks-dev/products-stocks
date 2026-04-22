@@ -32,7 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/** @see ProductStocksTotalVerifyResult */
+/** @see ProductStocksReserveVerifyResult */
 final class ProductStocksTotalVerifyResult
 {
     private string $product;
@@ -45,7 +45,6 @@ final class ProductStocksTotalVerifyResult
 
     public function __construct(
         private readonly int $total,
-        private readonly int $reserve,
         string $product,
         ?string $offer,
         ?string $variation,
@@ -81,11 +80,6 @@ final class ProductStocksTotalVerifyResult
     public function getTotal(): int
     {
         return $this->total;
-    }
-
-    public function getReserve(): int
-    {
-        return $this->reserve;
     }
 }
 
