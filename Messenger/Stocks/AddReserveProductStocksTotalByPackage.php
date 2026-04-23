@@ -43,7 +43,9 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksHandler;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -68,6 +70,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private ProductStocksTotalAccessInterface $ProductStocksTotalAccessRepository,
         private DeleteProductStocksHandler $deleteProductStocksHandler,
+        private UserByUserProfileInterface $UserByUserProfileRepository,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
@@ -139,7 +142,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->critical(
                 'Пользователь не найден',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -149,7 +152,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->critical(
                 'Профиль пользователя не найден',
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -174,7 +177,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                         'Недостаточно доступной продукции %s на складе для изменения резерва',
                         $product->getProduct(),
                     ),
-                    [self::class]
+                    [self::class],
                 );
 
 
@@ -191,7 +194,7 @@ final readonly class AddReserveProductStocksTotalByPackage
                             '%s: Отменили складскую заявку при недостаточном количестве продукции на складе',
                             $ProductStockEvent->getNumber(),
                         ),
-                        [self::class]
+                        [self::class],
                     );
                 }
 
@@ -287,7 +290,7 @@ final readonly class AddReserveProductStocksTotalByPackage
             $this->logger->critical(
                 sprintf(
                     'orders-order: Ошибка при получении информации о заказе при упаковке %s',
-                    $ProductStockEvent->getOrder()
+                    $ProductStockEvent->getOrder(),
                 ),
                 [self::class],
             );
@@ -295,13 +298,34 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
+        $UserUid = $ProductStockEvent->getModifyUser();
+
+        /** Получаем профиль пользователя в случае если заявка была создана системной */
+        if(false === ($ProductStockEvent->getModifyUser() instanceof UserUid))
+        {
+            $User = $this->UserByUserProfileRepository
+                ->forProfile($UserProfileUid)
+                ->find();
+
+            if(false === ($User instanceof User))
+            {
+                $this->logger->critical(
+                    sprintf('products-stocks: Пользователь по профилю %s не найден', $UserProfileUid),
+                    [self::class.':'.__LINE__, var_export($message, true)],
+                );
+
+                return;
+            }
+
+            $UserUid = $User->getId();
+        }
 
         /** Бросаем сообщение на обновление статуса */
         $OrdersPackageByMultiplyMessage = new OrdersPackageByMultiplyMessage(
             $OrderEvent->getId(),
-            $ProductStockEvent->getModifyUser(),
+            $UserUid,
             $UserProfileUid,
-            $OrderEvent->getComment()
+            $OrderEvent->getComment(),
         );
 
         $this->messageDispatch->dispatch(message: $OrdersPackageByMultiplyMessage, transport: 'orders-order');

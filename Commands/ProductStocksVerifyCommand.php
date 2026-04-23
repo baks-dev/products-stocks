@@ -314,8 +314,7 @@ class ProductStocksVerifyCommand extends Command
 
             /** Получаем все заявки на перемещения (резервы) */
 
-            /** Получаем все ПЕРЕМЕЩЕНИЯ (РАСХОДЫ) по продукту на другой склад */
-            $moveTotal = $this->ProductStocksMoveVerifyRepository
+            $moveReserve = $this->ProductStocksMoveVerifyRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
                 ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
@@ -323,7 +322,7 @@ class ProductStocksVerifyCommand extends Command
                 ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
                 ->reserve();
 
-
+            $ordersReserve += $moveReserve;
 
             if($stockReserve !== $ordersReserve)
             {
@@ -346,6 +345,7 @@ class ProductStocksVerifyCommand extends Command
             /**
              * Проверяем карточку
              */
+
 
             /** Получаем ОСТАТОК в логистических складах */
             $logisticTotal = $this->ProductStocksTotalRepository
