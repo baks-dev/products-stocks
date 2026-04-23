@@ -136,7 +136,7 @@
 
                 <div>
 
-                    {% if item.status == 'incoming' %}
+                    {% if item.status == 'incoming' or item.status == 'warehouse' %}
 
                         <button
                                 class="btn btn-sm p-0 border-0 fw-bolder text-decoration-none modal-link"
@@ -146,13 +146,12 @@
                                 title="Приходный ордер"
                         >
 
-
                             {% if app.user.profile == item.userProfileId and item.usersProfileDestination is not empty %}
                                 <span class="badge text-bg-success me-3">
                                     Перемещение
                                 </span>
                             {% elseif item.usersProfileDestination is not empty %}
-                                <span class="badge text-bg-danger me-3">
+                                <span class="badge {{ item.status == 'warehouse' ? 'text-bg-warning' : 'text-bg-danger' }} me-3">
                                     Перемещение
                                 </span>
                             {% else %}

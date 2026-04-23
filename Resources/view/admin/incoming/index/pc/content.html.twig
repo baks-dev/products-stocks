@@ -259,7 +259,7 @@
                     {% endif %}
 
                     {# Плюсуем расходную часть #}
-                    {% if item.status == 'completed' or item.status == 'decommission' %}
+                    {% if item.status == 'completed' or item.status == 'warehouse' or item.status == 'decommission' %}
                         {% set completed = completed + item.total %}
                     {% endif %}
 

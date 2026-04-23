@@ -61,6 +61,7 @@ use BaksDev\Products\Stocks\Forms\StatusFilter\Admin\ProductStockStatusFilterDTO
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusDecommission;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Avatar\UserProfileAvatar;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Info\UserProfileInfo;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Personal\UserProfilePersonal;
@@ -165,6 +166,7 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                     [
                         ProductStockStatusIncoming::STATUS,
                         ProductStockStatusCompleted::STATUS,
+                        ProductStockStatusWarehouse::STATUS,
                         ProductStockStatusDecommission::STATUS,
                     ], // по умолчанию
                 ArrayParameterType::STRING,
