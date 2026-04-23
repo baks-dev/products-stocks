@@ -27,6 +27,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 /**
  * Возвращает общее количество резерва продукции на всех складах
@@ -42,6 +43,8 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
  */
 interface ProductStocksTotalByReserveInterface
 {
+    public function forProfile(UserProfileUid|null|false $profile): self;
+
     public function product(ProductUid|string $product): self;
 
     public function offer(ProductOfferConst|string|null $offer): self;
@@ -53,6 +56,11 @@ interface ProductStocksTotalByReserveInterface
     /** Только на логистических складах */
     public function onlyLogisticWarehouse(): self;
 
-    /** Метод возвращает общее количество резерва продукции на всех складах */
+    /**
+     * Метод возвращает общее количество РЕЗЕРВА продукции
+     * - на всех складах
+     * - на указанном складе
+     * - в логистических складах
+     */
     public function get(): int;
 }

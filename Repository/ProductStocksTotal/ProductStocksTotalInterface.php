@@ -31,6 +31,8 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface ProductStocksTotalInterface
 {
+    public function forProfile(UserProfileUid|null|false $profile): self;
+
     public function product(ProductUid|string $product): self;
 
     public function offer(ProductOfferConst|string|null $offer): self;
@@ -42,7 +44,12 @@ interface ProductStocksTotalInterface
     /** Только на логистических складах */
     public function onlyLogisticWarehouse(): self;
 
-    /** Метод возвращает общее количество продукции на всех складах (без учета резерва) */
+    /**
+     * Метод возвращает общее количество продукции (без учета резерва)
+     * - на всех складах
+     * - на указанном складе
+     * - в логистических складах
+     */
     public function get(): int;
 
 }

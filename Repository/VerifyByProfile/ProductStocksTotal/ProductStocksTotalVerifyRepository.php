@@ -68,14 +68,11 @@ final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVeri
             throw new InvalidArgumentException('Invalid Argument UserProfileUid');
         }
 
-        /** Получаем все остатки по складу текущего профиля */
-
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
         $dbal
-            ->select('SUM(stock_product.total) AS total')
             ->addSelect('stock_product.product')
             ->addSelect('stock_product.offer')
             ->addSelect('stock_product.variation')

@@ -36,6 +36,7 @@ use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtraditi
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPackage;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusUnpaid;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Type\Id\ProductUid;
@@ -140,7 +141,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
             'main',
             OrderEvent::class,
             'orders_event',
-            'orders_event.orders = main.id AND orders_event.status IN (:status)',
+            'orders_event.id = main.event AND orders_event.status IN (:status)',
         )
             ->setParameter(
                 key: 'status',
@@ -165,7 +166,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
                 'main',
                 Product::class,
                 'product',
-                'orders_product.id = :product',
+                'product.id = :product',
             )
             ->setParameter(
                 key: 'product',
@@ -181,7 +182,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
                     ProductOffer::class,
                     'product_offer',
                     '
-                    product_offer.event = orders_product.product 
+                    product_offer.id = orders_product.offer 
                     AND product_offer.const = :offer_const
                 ',
                 )
@@ -200,7 +201,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
                         ProductVariation::class,
                         'product_variation',
                         '
-                            product_variation.offer = orders_product.offer 
+                            product_variation.id = orders_product.variation 
                             AND product_variation.const = :variation_const
                         ',
                     )
@@ -216,10 +217,10 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
                     $dbal
                         ->join(
                             'product',
-                            ProductVariation::class,
+                            ProductModification::class,
                             'product_modification',
                             '
-                                product_modification.offer = orders_product.offer 
+                                product_modification.id = orders_product.modification 
                                 AND product_modification.const = :modification_const
                             ',
                         )
@@ -229,9 +230,7 @@ final class ProductStocksOrdersReserveVerifyRepository implements ProductStocksO
                             type: ProductModificationConst::TYPE,
                         );
                 }
-
             }
-
         }
 
         $dbal

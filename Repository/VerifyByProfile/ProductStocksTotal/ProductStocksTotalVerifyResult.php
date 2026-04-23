@@ -44,7 +44,6 @@ final class ProductStocksTotalVerifyResult
     private ?string $modification;
 
     public function __construct(
-        private readonly int $total,
         string $product,
         ?string $offer,
         ?string $variation,
@@ -75,11 +74,6 @@ final class ProductStocksTotalVerifyResult
     public function getProductModificationConst(): ProductModificationConst|false
     {
         return $this->modification ? new ProductModificationConst($this->modification) : false;
-    }
-
-    public function getTotal(): int
-    {
-        return $this->total;
     }
 }
 

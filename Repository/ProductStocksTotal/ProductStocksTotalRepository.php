@@ -33,17 +33,33 @@ use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductM
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Warehouse\UserProfileWarehouse;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 
 final class ProductStocksTotalRepository implements ProductStocksTotalInterface
 {
     private ProductUid $product;
+    private UserProfileUid|false $profile = false;
     private ProductOfferConst|false $offer = false;
     private ProductVariationConst|false $variation = false;
     private ProductModificationConst|false $modification = false;
     private bool $isOnlyLogisticWarehouse = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+
+    public function forProfile(UserProfileUid|null|false $profile): self
+    {
+        if(empty($profile))
+        {
+            $this->profile = false;
+            return $this;
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
 
     public function product(ProductUid|string $product): self
     {
@@ -114,12 +130,16 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
     /** Только на логистических складах */
     public function onlyLogisticWarehouse(): self
     {
+        $this->profile = false;
         $this->isOnlyLogisticWarehouse = true;
         return $this;
     }
 
     /**
-     * Метод возвращает общее количество продукции на всех складах (без учета резерва)
+     * Метод возвращает общее количество продукции В НАЛИЧИИ (без учета резерва)
+     * - на всех складах
+     * - на указанном складе
+     * - в логистических складах
      */
     public function get(): int
     {
@@ -135,6 +155,17 @@ final class ProductStocksTotalRepository implements ProductStocksTotalInterface
             ->from(ProductStockTotal::class, 'stock')
             ->andWhere('stock.product = :product')
             ->setParameter('product', $this->product, ProductUid::TYPE);
+
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->profile,
+                    type: UserProfileUid::TYPE,
+                );
+        }
 
         if(true === $this->isOnlyLogisticWarehouse)
         {

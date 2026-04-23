@@ -27,6 +27,18 @@ namespace BaksDev\Products\Stocks\Commands;
 
 
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByConstInterface;
+use BaksDev\Products\Product\Repository\CurrentQuantity\CurrentQuantityByEventInterface;
+use BaksDev\Products\Product\Repository\CurrentQuantity\Modification\CurrentQuantityByModificationInterface;
+use BaksDev\Products\Product\Repository\CurrentQuantity\Offer\CurrentQuantityByOfferInterface;
+use BaksDev\Products\Product\Repository\CurrentQuantity\Variation\CurrentQuantityByVariationInterface;
+use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
+use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotal\ProductStocksTotalInterface;
+use BaksDev\Products\Stocks\Repository\ProductStocksTotalByReserve\ProductStocksTotalByReserveInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksIncoming\ProductStocksIncomingVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksMove\ProductStocksMoveVerifyInterface;
 use BaksDev\Products\Stocks\Repository\VerifyByProfile\ProductStocksOrders\ProductStocksIncomingOrdersInterface;
@@ -62,6 +74,13 @@ class ProductStocksVerifyCommand extends Command
         private ProductStocksIncomingOrdersInterface $ProductStocksIncomingOrdersRepository,
         private ProductStocksReserveVerifyInterface $ProductStocksReserveVerifyRepository,
         private ProductStocksOrdersReserveVerifyInterface $ProductStocksOrdersReserveVerifyRepository,
+
+        private ProductStocksTotalInterface $ProductStocksTotalRepository,
+        private ProductStocksTotalByReserveInterface $ProductStocksTotalByReserveRepository,
+        private CurrentQuantityByEventInterface $CurrentQuantityByEventRepository,
+        private CurrentQuantityByOfferInterface $CurrentQuantityByOfferRepository,
+        private CurrentQuantityByVariationInterface $CurrentQuantityByVariationRepository,
+        private CurrentQuantityByModificationInterface $CurrentQuantityByModificationRepository,
         #[Autowire(env: 'PROJECT_USER')] private string|null $projectUser = null,
     )
     {
@@ -195,9 +214,19 @@ class ProductStocksVerifyCommand extends Command
             }
 
             /**
-             * Получаем все ПРИХОДЫ
+             * Получаем ОСТАТКИ на складе
              */
 
+            /** Получаем остаток продукции на складе */
+            $stockTotal = $this->ProductStocksTotalRepository
+                ->forProfile($profile)
+                ->product($ProductStocksTotalVerifyResult->getProduct())
+                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->get();
+
+            /** Получаем все ПРИХОДЫ на продукт */
             $incomingTotal = $this->ProductStocksIncomingVerifyRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
@@ -207,9 +236,7 @@ class ProductStocksVerifyCommand extends Command
                 ->find();
 
 
-            /**
-             * Получаем все РАСХОДЫ по заказам
-             */
+            /** Получаем все РАСХОДЫ по заказам на продукт */
             $ordersTotal = $this->ProductStocksIncomingOrdersRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
@@ -219,10 +246,7 @@ class ProductStocksVerifyCommand extends Command
                 ->find();
 
 
-            /**
-             * Получаем все ПЕРЕМЕЩЕНИЯ по заказам
-             */
-
+            /** Получаем все ПЕРЕМЕЩЕНИЯ по продукту */
             $moveTotal = $this->ProductStocksMoveVerifyRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
@@ -233,7 +257,7 @@ class ProductStocksVerifyCommand extends Command
 
 
             /**
-             * Результат вычислений
+             * Результат вычислений ОСТАТКОВ на складе
              */
 
             $total = $incomingTotal;
@@ -248,31 +272,40 @@ class ProductStocksVerifyCommand extends Command
                 $total -= $moveTotal;
             }
 
-            if($ProductStocksTotalVerifyResult->getTotal() !== $total)
+
+            if($stockTotal !== $total)
             {
                 /** Получаем артикул для сверки */
 
                 $this->io->text(sprintf(
-                    '%s => остаток %s | расчетный %s',
+                    '%s : остаток на складе %s => расчетный %s',
                     $CurrentProductIdentifierResult->getArticle(),
-                    $ProductStocksTotalVerifyResult->getTotal(),
+                    $stockTotal,
                     $total,
                 ));
+
+                if($CurrentProductIdentifierResult->getArticle() === $article)
+                {
+                    break;
+                }
+
+                continue;
             }
 
+            /**
+             * Проверяем РЕЗЕРВЫ на складе
+             */
 
-            /** Получаем резерв на складе */
-
-            $stockReserve = $this->ProductStocksReserveVerifyRepository
+            /** Получаем резерв продукта на складе  */
+            $stockReserve = $this->ProductStocksTotalByReserveRepository
                 ->forProfile($profile)
-                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
-                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
-                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
-                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
-                ->find();
+                ->product($ProductStocksTotalVerifyResult->getProduct())
+                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->get();
 
-            /** Получаем все резервы на продукцию по заказам */
-
+            /** Получаем все резервы продукта по заказам */
             $ordersReserve = $this->ProductStocksOrdersReserveVerifyRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
@@ -284,18 +317,110 @@ class ProductStocksVerifyCommand extends Command
             if($stockReserve !== $ordersReserve)
             {
                 $this->io->text(sprintf(
-                    '%s => резерв %s | склад %s ',
+                    '%s : резерв на складе %s => расчетный %s ',
                     $CurrentProductIdentifierResult->getArticle(),
-                    $ordersReserve,
                     $stockReserve,
+                    $ordersReserve,
                 ));
+
+                if($CurrentProductIdentifierResult->getArticle() === $article)
+                {
+                    break;
+                }
+
+                continue;
             }
 
+
+            /**
+             * Проверяем карточку
+             */
+
+            /** Получаем ОСТАТОК в логистических складах */
+            $logisticTotal = $this->ProductStocksTotalRepository
+                ->onlyLogisticWarehouse()
+                ->product($ProductStocksTotalVerifyResult->getProduct())
+                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->get();
+
+            /** Получаем РЕЗЕРВ в логистических складах */
+            $logisticReserve = $this->ProductStocksTotalByReserveRepository
+                ->onlyLogisticWarehouse()
+                ->product($ProductStocksTotalVerifyResult->getProduct())
+                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->get();
+
+
+            $cardQuantity = match (true)
+            {
+                $CurrentProductIdentifierResult->getModification() instanceof ProductModificationUid =>
+                $this->CurrentQuantityByModificationRepository->getModificationQuantity(
+                    event: $CurrentProductIdentifierResult->getEvent(),
+                    offer: $CurrentProductIdentifierResult->getOffer(),
+                    variation: $CurrentProductIdentifierResult->getVariation(),
+                    modification: $CurrentProductIdentifierResult->getModification(),
+                ),
+
+                $CurrentProductIdentifierResult->getVariation() instanceof ProductVariationUid =>
+                $this->CurrentQuantityByVariationRepository->getVariationQuantity(
+                    event: $CurrentProductIdentifierResult->getEvent(),
+                    offer: $CurrentProductIdentifierResult->getOffer(),
+                    variation: $CurrentProductIdentifierResult->getVariation(),
+                ),
+
+                $CurrentProductIdentifierResult->getOffer() instanceof ProductOfferUid =>
+                $this->CurrentQuantityByOfferRepository->getOfferQuantity(
+                    event: $CurrentProductIdentifierResult->getEvent(),
+                    offer: $CurrentProductIdentifierResult->getOffer(),
+                ),
+
+                default => $this->CurrentQuantityByEventRepository->getQuantity(event: $CurrentProductIdentifierResult->getEvent())
+            };
+
+
+            if($cardQuantity->getQuantity() !== $logisticTotal)
+            {
+                $this->io->text(sprintf(
+                    '%s : остаток в карточке %s => расчетный %s',
+                    $CurrentProductIdentifierResult->getArticle(),
+                    $cardQuantity->getQuantity(),
+                    $logisticTotal,
+                ));
+
+                if($CurrentProductIdentifierResult->getArticle() === $article)
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            if($cardQuantity->getReserve() !== $logisticReserve)
+            {
+                $this->io->text(sprintf(
+                    '%s : резерв в карточке %s => расчетный %s ',
+                    $CurrentProductIdentifierResult->getArticle(),
+                    $cardQuantity->getReserve(),
+                    $logisticReserve,
+                ));
+
+                if($CurrentProductIdentifierResult->getArticle() === $article)
+                {
+                    break;
+                }
+
+                continue;
+            }
 
             if($CurrentProductIdentifierResult->getArticle() === $article)
             {
                 break;
             }
+
         }
     }
 }
