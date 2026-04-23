@@ -56,6 +56,7 @@ final class ProductStocksTotalByReserveRepository implements ProductStocksTotalB
         }
 
         $this->profile = $profile;
+        $this->isOnlyLogisticWarehouse = false;
 
         return $this;
     }

@@ -244,14 +244,14 @@ class ProductStocksVerifyCommand extends Command
                 ->find();
 
 
-            /** Получаем все ПЕРЕМЕЩЕНИЯ по продукту */
+            /** Получаем все ПЕРЕМЕЩЕНИЯ (РАСХОДЫ) по продукту на другой склад */
             $moveTotal = $this->ProductStocksMoveVerifyRepository
                 ->forProfile($profile)
                 ->forProduct($ProductStocksTotalVerifyResult->getProduct())
                 ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
                 ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
                 ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
-                ->find();
+                ->move();
 
 
             /**
@@ -311,6 +311,19 @@ class ProductStocksVerifyCommand extends Command
                 ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
                 ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
                 ->find();
+
+            /** Получаем все заявки на перемещения (резервы) */
+
+            /** Получаем все ПЕРЕМЕЩЕНИЯ (РАСХОДЫ) по продукту на другой склад */
+            $moveTotal = $this->ProductStocksMoveVerifyRepository
+                ->forProfile($profile)
+                ->forProduct($ProductStocksTotalVerifyResult->getProduct())
+                ->forOfferConst($ProductStocksTotalVerifyResult->getProductOfferConst())
+                ->forVariationConst($ProductStocksTotalVerifyResult->getProductVariationConst())
+                ->forModificationConst($ProductStocksTotalVerifyResult->getProductModificationConst())
+                ->reserve();
+
+
 
             if($stockReserve !== $ordersReserve)
             {

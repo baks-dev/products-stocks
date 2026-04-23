@@ -36,6 +36,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusIncoming;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusMoving;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusWarehouse;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
@@ -107,26 +108,12 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
         return $this;
     }
 
-    /** Получаем все ПЕРЕМЕЩЕНИЯ на продукцию по профилю */
-    public function find(): int
+    private function builder(): DBALQueryBuilder
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class);
 
-        $dbal
-            ->from(ProductStockEvent::class, 'event')
-            ->andWhere('(event.status = :incoming OR event.status = :warehouse) ')
-            ->setParameter(
-                'incoming',
-                ProductStockStatusIncoming::class,
-                ProductStockStatus::TYPE,
-            )
-            ->setParameter(
-                'warehouse',
-                ProductStockStatusWarehouse::class,
-                ProductStockStatus::TYPE,
-            );
-
+        $dbal->from(ProductStockEvent::class, 'event');
 
         $dbal
             ->join(
@@ -202,8 +189,47 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
             );
         }
 
-        /** Перемещения */
         $dbal->addSelect('SUM(stock_product.total) AS total');
+
+        return $dbal;
+
+    }
+
+    /** Метод возвращает количество продукции в резерве на перемещение */
+    public function reserve(): int
+    {
+        $dbal = $this->builder();
+
+        $dbal
+            ->where('event.status = :moving')
+            ->setParameter(
+                'incoming',
+                ProductStockStatusMoving::class,
+                ProductStockStatus::TYPE,
+            );
+
         return $dbal->fetchOne() ?: 0;
     }
+
+    /** Метод возвращает количество продукции отправленной на другой склад */
+    public function move(): int
+    {
+        $dbal = $this->builder();
+
+        $dbal
+            ->where('(event.status = :incoming OR event.status = :warehouse) ')
+            ->setParameter(
+                'incoming',
+                ProductStockStatusIncoming::class,
+                ProductStockStatus::TYPE,
+            )
+            ->setParameter(
+                'warehouse',
+                ProductStockStatusWarehouse::class,
+                ProductStockStatus::TYPE,
+            );
+
+        return $dbal->fetchOne() ?: 0;
+    }
+
 }

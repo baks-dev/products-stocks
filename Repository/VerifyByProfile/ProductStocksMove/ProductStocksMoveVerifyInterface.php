@@ -41,6 +41,10 @@ interface ProductStocksMoveVerifyInterface
 
     public function forModificationConst(ProductModificationConst|null|false $modificationConst): self;
 
-    /** Получаем все ПЕРЕМЕЩЕНИЯ на продукцию по профилю */
-    public function find(): int;
+    /** Метод возвращает количество продукции в резерве на перемещение */
+    public function reserve(): int;
+
+    /** Метод возвращает количество продукции отправленной на другой склад */
+    public function move(): int;
+
 }
