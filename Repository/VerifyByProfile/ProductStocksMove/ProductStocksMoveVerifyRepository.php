@@ -31,6 +31,7 @@ use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
@@ -124,24 +125,6 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
 
             );
 
-
-        $dbal
-            //->addSelect('move.destination AS move_destination')
-            ->join(
-                'event',
-                ProductStockMove::class,
-                'move',
-                '
-                    move.event = event.id 
-                    AND move.destination = :profile
-                ',
-            )->setParameter(
-                'profile',
-                $this->profile,
-                UserProfileUid::TYPE,
-            );
-
-
         $dbal
             ->join(
                 'event',
@@ -201,9 +184,27 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
         $dbal = $this->builder();
 
         $dbal
+            // номер ордера
+            //->addSelect('product_stock_invariable.number')
+            ->join(
+                'event',
+                ProductStocksInvariable::class,
+                'product_stock_invariable',
+                '
+                    product_stock_invariable.event = event.id 
+                    AND product_stock_invariable.profile = :profile
+                ',
+            )
+            ->setParameter(
+                'profile',
+                $this->profile,
+                UserProfileUid::TYPE,
+            );
+
+        $dbal
             ->where('event.status = :moving')
             ->setParameter(
-                'incoming',
+                'moving',
                 ProductStockStatusMoving::class,
                 ProductStockStatus::TYPE,
             );
@@ -215,6 +216,22 @@ final class ProductStocksMoveVerifyRepository implements ProductStocksMoveVerify
     public function move(): int
     {
         $dbal = $this->builder();
+
+        $dbal
+            //->addSelect('move.destination AS move_destination')
+            ->join(
+                'event',
+                ProductStockMove::class,
+                'move',
+                '
+                    move.event = event.id 
+                    AND move.destination = :profile
+                ',
+            )->setParameter(
+                'profile',
+                $this->profile,
+                UserProfileUid::TYPE,
+            );
 
         $dbal
             ->where('(event.status = :incoming OR event.status = :warehouse) ')
