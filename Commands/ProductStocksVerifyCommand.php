@@ -72,9 +72,7 @@ class ProductStocksVerifyCommand extends Command
         private ProductStocksIncomingVerifyInterface $ProductStocksIncomingVerifyRepository,
         private ProductStocksMoveVerifyInterface $ProductStocksMoveVerifyRepository,
         private ProductStocksIncomingOrdersInterface $ProductStocksIncomingOrdersRepository,
-        private ProductStocksReserveVerifyInterface $ProductStocksReserveVerifyRepository,
         private ProductStocksOrdersReserveVerifyInterface $ProductStocksOrdersReserveVerifyRepository,
-
         private ProductStocksTotalInterface $ProductStocksTotalRepository,
         private ProductStocksTotalByReserveInterface $ProductStocksTotalByReserveRepository,
         private CurrentQuantityByEventInterface $CurrentQuantityByEventRepository,
