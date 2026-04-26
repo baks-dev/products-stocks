@@ -258,8 +258,13 @@
                         {% endif %}
                     {% endif %}
 
+                    {# если приемка на складе грузоотправителя - плюсуем расходную часть т.к. было списание #}
+                    {% if item.status == 'warehouse' and app.user.profile != item.userProfileId %}
+                        {% set completed = completed + item.total %}
+                    {% endif %}
+
                     {# Плюсуем расходную часть #}
-                    {% if item.status == 'completed' or item.status == 'warehouse' or item.status == 'decommission' %}
+                    {% if item.status == 'completed' or item.status == 'decommission' %}
                         {% set completed = completed + item.total %}
                     {% endif %}
 
