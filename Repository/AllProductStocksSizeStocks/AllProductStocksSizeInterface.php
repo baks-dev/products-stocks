@@ -34,8 +34,6 @@ use Generator;
 
 interface AllProductStocksSizeInterface
 {
-    public function search(SearchDTO $search): self;
-
     public function filter(ProductFilterDTO $filter): self;
 
     public function forProfile(UserProfileUid|UserProfile $profile): self;

@@ -31,7 +31,7 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Products\Stocks\Repository\AllProductStocks\AllProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStockInfo\ProductStockInfoInterface;
-use BaksDev\Products\Stocks\Repository\ProductStockSettings\ProductStockSettingsByProfileInterface;
+use BaksDev\Products\Stocks\Repository\ProductStockSettings\ProductStockSettingsByProfile\ProductStockSettingsByProfileInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;

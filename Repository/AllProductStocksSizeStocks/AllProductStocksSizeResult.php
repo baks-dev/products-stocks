@@ -38,6 +38,7 @@ final readonly class AllProductStocksSizeResult
 {
     public function __construct(
 
+        private ?string $identifiers, //" => 1100
         private ?int $stock_total, //" => 1100
         private ?int $stock_reserve, //" => 4
         private ?string $product_offer_value, //" => "15"
@@ -101,5 +102,15 @@ final readonly class AllProductStocksSizeResult
     public function getProductOldPrice(): Money|false
     {
         return false;
+    }
+
+    public function getIdentifiers(): array|false
+    {
+        if(true === empty($this->identifiers) || false === json_validate($this->identifiers))
+        {
+            return false;
+        }
+
+        return json_decode($this->identifiers, true, 512, JSON_THROW_ON_ERROR);
     }
 }

@@ -89,7 +89,7 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
         {
             $this->Logger->error(
                 sprintf('Событие складской заявки %s не было найдено', $message->getEvent()),
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -152,9 +152,9 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
                 $this->Logger->warning(
                     sprintf(
                         '%s: Не добавляем приход с нулевым количеством продукции',
-                        $productStockEvent->getNumber()
+                        $productStockEvent->getNumber(),
                     ),
-                    [self::class.':'.__LINE__, var_export($message, true)]
+                    [self::class.':'.__LINE__, var_export($message, true)],
                 );
 
                 continue;
@@ -182,13 +182,11 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
 
             $productStockQuantityDTO = new ProductStockQuantityNewEditDTO();
 
-
             /** Если уже существует такое место складирования - сеттим на DTO */
             if(true === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
             {
                 $ProductStockQuantityEvent->getDto($productStockQuantityDTO);
             }
-
 
             /** Если нужно создать новое место складирования на указанный профиль и пользователя */
             if(false === ($ProductStockQuantityEvent instanceof ProductStockQuantityEvent))
@@ -225,7 +223,7 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
                     $this->Logger->error(
                         sprintf(
                             'У продукта с идентификатором %s отсутствует invariable',
-                            $product->getProduct()
+                            $product->getProduct(),
                         ),
                         [self::class.':'.__LINE__, var_export($message, true)],
                     );
@@ -238,6 +236,9 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
                     ->setProfile($userProfileUid)
                     ->setInvariable($currentProductIdentifierResult->getProductInvariable())
                     ->setStorage($product->getStorage());
+
+                /** При поступлении всегда подтверждаем остаток */
+                $productStockQuantityDTO->getApprove()->setValue(true);
 
                 $this->ProductStockQuantityNewEditHandler->handle($productStockQuantityDTO);
 
@@ -268,14 +269,15 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
         }
 
         $Deduplicator->save();
-
     }
 
     public function handle(ProductStockQuantityNewEditDTO $productStockQuantityDTO, int $total): void
     {
+        /** При поступлении всегда подтверждаем остаток */
+        $productStockQuantityDTO->getApprove()->setValue(true);
+
         $newTotal = $productStockQuantityDTO->getTotal() + $total;
         $productStockQuantityDTO->setTotal($newTotal);
-
 
         /** Добавляем приход на указанный профиль (склад) */
         $handle = $this->ProductStockQuantityNewEditHandler->handle($productStockQuantityDTO);

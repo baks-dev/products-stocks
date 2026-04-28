@@ -152,29 +152,24 @@ class ProductStocksVerifyCommand extends Command
             return Command::SUCCESS;
         }
 
-        else
+
+        $UserProfileUid = null;
+
+        foreach($profiles as $profile)
         {
-            $UserProfileUid = null;
-
-            foreach($profiles as $profile)
+            if($profile->getParams()->username === $questions[$key])
             {
-                if($profile->getParams()->username === $questions[$key])
-                {
-                    /* Присваиваем профиль пользователя */
-                    $UserProfileUid = $profile;
-                    break;
-                }
+                /* Присваиваем профиль пользователя */
+                $UserProfileUid = $profile;
+                break;
             }
-
-            if($UserProfileUid)
-            {
-                $this->io->success($UserProfileUid->getParams()->username);
-                $this->update($UserProfileUid, $input->getOption('article'));
-            }
-
         }
 
-        /** Перечисляем все профили, на которые есть остатки */
+        if($UserProfileUid)
+        {
+            $this->io->success($UserProfileUid->getParams()->username);
+            $this->update($UserProfileUid, $input->getOption('article'));
+        }
 
         return Command::SUCCESS;
     }

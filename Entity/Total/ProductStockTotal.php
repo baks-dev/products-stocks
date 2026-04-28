@@ -117,6 +117,7 @@ class ProductStockTotal extends EntityState
     )
     {
         $this->id = clone new ProductStockTotalUid();
+        $this->approve = new ProductStockApprove($this);
 
         $this->product = $product;
         $this->offer = $offer ?: null;

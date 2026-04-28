@@ -115,10 +115,9 @@
 
     </td>
 
-
     <td class="text-center">
 
-        {% if stock_settings and stock_settings.threshold > item.stockTotal and item.approve == false %}
+        {% if item.approve == false %}
 
             {% if app.user.profile == item.usersProfileId and (is_granted('ROLE_ADMIN') or is_granted('ROLE_PRODUCT_STOCK_APPROVE')) %}
 

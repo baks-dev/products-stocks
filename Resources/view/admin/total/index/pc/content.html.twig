@@ -19,13 +19,13 @@
             <div class="w-100 d-flex align-items-center justify-content-end gap-3">
 
                 {% if is_granted('ROLE_PRODUCT_STOCK_PURCHASE_NEW') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('products-stocks:admin.purchase.new') }}"
+                    <button data-href="{{ path('products-stocks:admin.purchase.new') }}"
                        class="btn btn-danger modal-link disabled"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                        title="Добавить закупку">
                         {{ 'Добавить закупку продукции'|trans({}, 'messages') }}
-                    </a>
+                    </button>
                 {% endif %}
 
 

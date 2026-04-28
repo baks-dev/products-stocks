@@ -78,11 +78,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 final class AllProductStocksSizeRepository implements AllProductStocksSizeInterface
 {
-    private ?int $limit = null;
-
     private ?ProductFilterDTO $filter = null;
-
-    private ?SearchDTO $search = null;
 
     private UserProfileUid|false $profile = false;
 
@@ -93,21 +89,9 @@ final class AllProductStocksSizeRepository implements AllProductStocksSizeInterf
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage,
     ) {}
 
-    public function search(SearchDTO $search): static
-    {
-        $this->search = $search;
-        return $this;
-    }
-
-    public function filter(ProductFilterDTO $filter): static
+    public function filter(ProductFilterDTO $filter): self
     {
         $this->filter = $filter;
-        return $this;
-    }
-
-    public function setLimit(int $limit): self
-    {
-        $this->limit = $limit;
         return $this;
     }
 
@@ -147,6 +131,7 @@ final class AllProductStocksSizeRepository implements AllProductStocksSizeInterf
             ->bindLocal();
 
         $dbal
+            ->addSelect("JSON_AGG (DISTINCT stock_product.id) AS identifiers")
             ->addSelect('SUM(stock_product.total) AS stock_total')
             ->addSelect('SUM(stock_product.reserve) AS stock_reserve')
             ->from(ProductStockTotal::class, 'stock_product')

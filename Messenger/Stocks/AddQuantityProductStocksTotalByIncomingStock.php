@@ -200,6 +200,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
                     $product->getStorage(),
                 );
 
+                $ProductStockTotal->getApprove()->setValue(true);
+
 
                 if(false === empty($ProductStockEvent->getComment()))
                 {
@@ -241,6 +243,8 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
     public function handle(ProductStockTotal $ProductStockTotal, int $total): void
     {
+        $ProductStockTotal->getApprove()->setValue(true);
+
         /** Добавляем приход на указанный профиль (склад) */
         $rows = $this->addProductStock
             ->total($total)

@@ -32,6 +32,7 @@ use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
 use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
 use BaksDev\Products\Stocks\Entity\StocksSettings\Event\ProductStockSettingsEvent;
 use BaksDev\Products\Stocks\Entity\StocksSettings\ProductStockSettings;
+use BaksDev\Products\Stocks\Messenger\Approve\ProductStockSettingsMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -41,19 +42,6 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
  */
 final class ProductStockSettingsHandler extends AbstractHandler
 {
-
-    public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        MessageDispatchInterface $messageDispatch,
-        ValidatorCollectionInterface $validatorCollection,
-        ImageUploadInterface $imageUpload,
-        FileUploadInterface $fileUpload
-    )
-    {
-        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
-    }
-
     /** @see ProductStockSettings */
     public function handle(ProductStockSettingsDTO $command): string|ProductStockSettings
     {
@@ -70,10 +58,11 @@ final class ProductStockSettingsHandler extends AbstractHandler
 
         $this->flush();
 
-        $this->logger->info(sprintf('Обновлена настройка порога наличия остатков для профиля: %s', $command->getProfile()->getValue()));
 
-        $this->messageDispatch->addClearCacheOther('products-stocks');
-
+        $this->messageDispatch->dispatch(
+            message: new ProductStockSettingsMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+            transport: 'products-stocks',
+        );
 
         return $this->main;
     }

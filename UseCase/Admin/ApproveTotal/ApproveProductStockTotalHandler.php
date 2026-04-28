@@ -40,22 +40,8 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
  */
 final class ApproveProductStockTotalHandler extends AbstractHandler
 {
-
-    public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        MessageDispatchInterface $messageDispatch,
-        ValidatorCollectionInterface $validatorCollection,
-        ImageUploadInterface $imageUpload,
-        FileUploadInterface $fileUpload
-    )
-    {
-        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
-    }
-
     public function handle(ApproveProductStockTotalDTO $command): ProductStockTotal|string
     {
-
         $this->setCommand($command);
 
         $this->prePersistOrUpdate(ProductStockTotal::class, ['id' => $command->getId()]);
@@ -68,9 +54,8 @@ final class ApproveProductStockTotalHandler extends AbstractHandler
 
         $this->flush();
 
-        $this->logger->info(sprintf('Подтверждены остатки для места: %s', $command->getId()));
-
-        $this->messageDispatch->addClearCacheOther('products-stocks');
+        $this->messageDispatch
+            ->addClearCacheOther('products-stocks');
 
         return $this->main;
 

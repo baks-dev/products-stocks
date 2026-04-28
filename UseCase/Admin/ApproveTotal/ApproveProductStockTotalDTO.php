@@ -50,6 +50,12 @@ final class ApproveProductStockTotalDTO implements ProductStockTotalInterface
         return $this->id;
     }
 
+    public function setStockTotalIdentifier(ProductStockTotalUid $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
     /** Approve */
     public function getApprove(): ProductStockApproveDTO
     {
