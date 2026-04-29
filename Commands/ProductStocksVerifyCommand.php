@@ -119,9 +119,10 @@ class ProductStocksVerifyCommand extends Command
 
         $questions[] = 'Все';
 
-        foreach($profiles as $quest)
+        foreach($profiles as $key => $quest)
         {
-            $questions[] = $quest->getParams()->username;
+            $key++;
+            $questions[$key] = $quest->getParams()->username;
         }
 
         $questions['-'] = 'Выйти';
@@ -141,6 +142,7 @@ class ProductStocksVerifyCommand extends Command
             /** @var UserProfileUid $profile */
             foreach($profiles as $profile)
             {
+                $key++;
                 $this->io->success(sprintf('[%s] %s', $key, $profile->getParams()->username));
                 $this->update($profile, $input->getOption('article'));
             }
