@@ -141,7 +141,7 @@ class ProductStocksVerifyCommand extends Command
             /** @var UserProfileUid $profile */
             foreach($profiles as $profile)
             {
-                $this->io->success($profile->getParams()->username);
+                $this->io->success(sprintf('[%s] %s', $key, $profile->getParams()->username));
                 $this->update($profile, $input->getOption('article'));
             }
 
@@ -163,7 +163,7 @@ class ProductStocksVerifyCommand extends Command
 
         if($UserProfileUid)
         {
-            $this->io->success($UserProfileUid->getParams()->username);
+            $this->io->success(sprintf('[%s] %s', $key, $UserProfileUid->getParams()->username));
             $this->update($UserProfileUid, $input->getOption('article'));
         }
 
@@ -267,7 +267,7 @@ class ProductStocksVerifyCommand extends Command
                 /** Получаем артикул для сверки */
 
                 $this->io->text(sprintf(
-                    '%s : остаток на складе %s => расчетный %s',
+                    '<fg=bright-red>%s : остаток на складе %s => расчетный %s</>',
                     $CurrentProductIdentifierResult->getArticle(),
                     $stockTotal,
                     $total,
