@@ -58,7 +58,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
-    name: 'baks:product:stocks:verify',
+    name: 'baks:products-stocks:verify:stocks',
     description: 'Сверяем все транзакции c остатками'
 )]
 class ProductStocksVerifyCommand extends Command
@@ -75,10 +75,6 @@ class ProductStocksVerifyCommand extends Command
         private ProductStocksOrdersReserveVerifyInterface $ProductStocksOrdersReserveVerifyRepository,
         private ProductStocksTotalInterface $ProductStocksTotalRepository,
         private ProductStocksTotalByReserveInterface $ProductStocksTotalByReserveRepository,
-        private CurrentQuantityByEventInterface $CurrentQuantityByEventRepository,
-        private CurrentQuantityByOfferInterface $CurrentQuantityByOfferRepository,
-        private CurrentQuantityByVariationInterface $CurrentQuantityByVariationRepository,
-        private CurrentQuantityByModificationInterface $CurrentQuantityByModificationRepository,
         #[Autowire(env: 'PROJECT_USER')] private string|null $projectUser = null,
     )
     {
@@ -178,7 +174,7 @@ class ProductStocksVerifyCommand extends Command
     public function update(UserProfileUid $profile, ?string $article = null): void
     {
         /**
-         * Получаем все остатки по складу текущего профиля
+         * Получаем всю имеющуюся продукцию по складу текущего профиля
          */
         $resultStocks = $this->ProductStocksTotalByProfileVerifyRepository
             ->forProfile($profile)
@@ -336,97 +332,10 @@ class ProductStocksVerifyCommand extends Command
                 continue;
             }
 
-
-            /**
-             * Проверяем карточку
-             */
-
-
-            /** Получаем ОСТАТОК в логистических складах */
-            $logisticTotal = $this->ProductStocksTotalRepository
-                ->onlyLogisticWarehouse()
-                ->product($ProductStocksTotalVerifyResult->getProduct())
-                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
-                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
-                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
-                ->get();
-
-            /** Получаем РЕЗЕРВ в логистических складах */
-            $logisticReserve = $this->ProductStocksTotalByReserveRepository
-                ->onlyLogisticWarehouse()
-                ->product($ProductStocksTotalVerifyResult->getProduct())
-                ->offer($ProductStocksTotalVerifyResult->getProductOfferConst())
-                ->variation($ProductStocksTotalVerifyResult->getProductVariationConst())
-                ->modification($ProductStocksTotalVerifyResult->getProductModificationConst())
-                ->get();
-
-
-            $cardQuantity = match (true)
-            {
-                $CurrentProductIdentifierResult->getModification() instanceof ProductModificationUid =>
-                $this->CurrentQuantityByModificationRepository->getModificationQuantity(
-                    event: $CurrentProductIdentifierResult->getEvent(),
-                    offer: $CurrentProductIdentifierResult->getOffer(),
-                    variation: $CurrentProductIdentifierResult->getVariation(),
-                    modification: $CurrentProductIdentifierResult->getModification(),
-                ),
-
-                $CurrentProductIdentifierResult->getVariation() instanceof ProductVariationUid =>
-                $this->CurrentQuantityByVariationRepository->getVariationQuantity(
-                    event: $CurrentProductIdentifierResult->getEvent(),
-                    offer: $CurrentProductIdentifierResult->getOffer(),
-                    variation: $CurrentProductIdentifierResult->getVariation(),
-                ),
-
-                $CurrentProductIdentifierResult->getOffer() instanceof ProductOfferUid =>
-                $this->CurrentQuantityByOfferRepository->getOfferQuantity(
-                    event: $CurrentProductIdentifierResult->getEvent(),
-                    offer: $CurrentProductIdentifierResult->getOffer(),
-                ),
-
-                default => $this->CurrentQuantityByEventRepository->getQuantity(event: $CurrentProductIdentifierResult->getEvent())
-            };
-
-
-            if($cardQuantity->getQuantity() !== $logisticTotal)
-            {
-                $this->io->text(sprintf(
-                    '%s : остаток в карточке %s => расчетный %s',
-                    $CurrentProductIdentifierResult->getArticle(),
-                    $cardQuantity->getQuantity(),
-                    $logisticTotal,
-                ));
-
-                if($CurrentProductIdentifierResult->getArticle() === $article)
-                {
-                    break;
-                }
-
-                continue;
-            }
-
-            if($cardQuantity->getReserve() !== $logisticReserve)
-            {
-                $this->io->text(sprintf(
-                    '%s : резерв в карточке %s => расчетный %s ',
-                    $CurrentProductIdentifierResult->getArticle(),
-                    $cardQuantity->getReserve(),
-                    $logisticReserve,
-                ));
-
-                if($CurrentProductIdentifierResult->getArticle() === $article)
-                {
-                    break;
-                }
-
-                continue;
-            }
-
             if($CurrentProductIdentifierResult->getArticle() === $article)
             {
                 break;
             }
-
         }
     }
 }

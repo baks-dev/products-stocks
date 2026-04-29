@@ -29,10 +29,11 @@ use Generator;
 
 interface ProductStocksTotalVerifyInterface
 {
+    /** Получить только определенного профиля */
     public function forProfile(UserProfileUid|UserProfile|false|null $profile): self;
 
     /**
-     * Все остатки профиля
+     * Получаем всю имеющуюся продукцию, при передаче профиля - только определенного склада
      *
      * @return Generator<ProductStocksTotalVerifyResult>|bool
      */

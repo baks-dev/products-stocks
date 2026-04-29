@@ -30,7 +30,6 @@ use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Generator;
-use InvalidArgumentException;
 
 final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVerifyInterface
 {
@@ -38,6 +37,7 @@ final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVeri
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
+    /** Получить только определенного профиля */
     public function forProfile(UserProfileUid|UserProfile|false|null $profile): self
     {
         if(empty($profile))
@@ -57,17 +57,12 @@ final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVeri
     }
 
     /**
-     * Все остатки профиля
+     * Получаем всю имеющуюся продукцию, при передаче профиля - только определенного склада
      *
      * @return Generator<ProductStocksTotalVerifyResult>|bool
      */
     public function findAll(): Generator|bool
     {
-        if(false === ($this->profile instanceof UserProfileUid))
-        {
-            throw new InvalidArgumentException('Invalid Argument UserProfileUid');
-        }
-
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
             ->bindLocal();
@@ -79,16 +74,25 @@ final class ProductStocksTotalVerifyRepository implements ProductStocksTotalVeri
             ->addSelect('stock_product.modification')
             ->from(ProductStockTotal::class, 'stock_product');
 
-        $dbal
-            ->andWhere('stock_product.profile = :profile')
-            ->setParameter(
-                key: 'profile',
-                value: $this->profile,
-                type: UserProfileUid::TYPE,
-            );
+        /** Если указан профиль - фильтруем только по профилю */
+        if($this->profile instanceof UserProfileUid)
+        {
+            $dbal
+                ->andWhere('stock_product.profile = :profile')
+                ->setParameter(
+                    key: 'profile',
+                    value: $this->profile,
+                    type: UserProfileUid::TYPE,
+                );
+        }
 
         $dbal->allGroupByExclude();
 
-        return $dbal->fetchAllHydrate(ProductStocksTotalVerifyResult::class);
+        $result = $dbal->fetchAllHydrate(ProductStocksTotalVerifyResult::class);
+
+        /* Сбрасываем свойство */
+        $this->profile = false;
+
+        return $result;
     }
 }
