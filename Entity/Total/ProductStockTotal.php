@@ -103,8 +103,8 @@ class ProductStockTotal extends EntityState
     private bool $priority = false;
 
     /** Approve - одобрено с учетом настройки порога остатков */
-    #[ORM\OneToOne(targetEntity: ProductStockApprove::class, mappedBy: 'main', cascade: ['all'], fetch: 'EAGER')]
-    private ProductStockApprove $approve;
+    #[ORM\OneToOne(targetEntity: ProductStockApprove::class, mappedBy: 'main', cascade: ['all'])]
+    private ?ProductStockApprove $approve = null;
 
     public function __construct(
         UserUid $usr,
@@ -264,7 +264,7 @@ class ProductStockTotal extends EntityState
      */
     public function getApprove(): ProductStockApprove
     {
-        return $this->approve;
+        return $this->approve ?: $this->approve = new ProductStockApprove($this);
     }
 
     public function setApprove(ProductStockApprove $approve): self
