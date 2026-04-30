@@ -19,14 +19,19 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
+use BaksDev\Centrifugo\BaksDevCentrifugoBundle;
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCanceled;
@@ -43,7 +48,9 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Отменяем складскую заявку на продукцию при отмене либо возврате заказа
+ * Если статус заказа Canceled «Отменен» или Return «Возврат» - отменяем складскую заявку
+ *
+ * @note Снимает блокировку с заказа
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 8)]
@@ -51,10 +58,12 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
+        private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $messageDispatch,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private ProductStocksByOrderInterface $ProductStocksByOrderRepository,
         private CancelProductStockHandler $cancelProductStockHandler,
-        private DeduplicatorInterface $deduplicator,
+        private ?CentrifugoPublishInterface $centrifugoPublish = null,
     ) {}
 
     public function __invoke(OrderMessage $message): void
@@ -83,7 +92,6 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
                 'products-stocks: Не найдено событие OrderEvent',
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
-
             return;
         }
 
@@ -100,12 +108,15 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
             return;
         }
 
-        /** Получаем все заявки по идентификатору заказа */
+        /**
+         * Получаем все заявки по идентификатору заказа
+         * @note в массиве должна быть максимум одна складская заявка
+         */
         $stocks = $this->ProductStocksByOrderRepository
             ->onOrder($message->getId())
             ->findAll();
 
-        if(empty($stocks))
+        if(true === empty($stocks))
         {
             return;
         }
@@ -113,9 +124,20 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
         /** @var ProductStockEvent $ProductStockEvent */
         foreach($stocks as $ProductStockEvent)
         {
+
+            if(true === class_exists(BaksDevCentrifugoBundle::class))
+            {
+                /** Скрываем складскую заявку */
+                $this->centrifugoPublish
+                    ->addData([
+                        'identifier' => (string) $ProductStockEvent->getMain(),
+                        'context' => self::class.':'.__LINE__,
+                    ])
+                    ->send('remove');
+            }
+
             /**
-             * Присваиваем рандомные пользователя и профиль,
-             * т.к. при отмене заявки нам важен только комментарий
+             * Получаем комментарий из заказа при его отмене
              */
             $OrderCanceledDTO = new CanceledOrderDTO();
             $OrderEvent->getDto($OrderCanceledDTO);
@@ -126,22 +148,33 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 
             $ProductStock = $this->cancelProductStockHandler->handle($CancelProductStockDTO);
 
-            if($ProductStock instanceof ProductStock)
+            if(false === $ProductStock instanceof ProductStock)
             {
-                $this->logger->info(
-                    sprintf('Отменили складскую заявку %s при возврате заказа', $ProductStockEvent->getNumber()),
-                    [self::class.':'.__LINE__],
-                );
-                continue;
+                $this->logger->critical(
+                    message: sprintf(
+                        'products-stocks: Ошибка %s отмены складской заявки при отмене заказа %s',
+                        $ProductStock, $ProductStockEvent->getNumber()
+                    ),
+                    context: [
+                        self::class.':'.__LINE__,
+                        'ProductStockEventUid' => (string) $ProductStockEvent->getId(),
+                        'OrderUid' => (string) $message->getId(),
+                    ]);
             }
 
-            $this->logger->critical(
-                sprintf('products-stocks: Ошибка %s отмены складской заявки при отмене заказа %s', $ProductStock, $ProductStockEvent->getNumber()),
-                [
-                    self::class.':'.__LINE__,
-                    'ProductStockEventUid' => (string) $ProductStockEvent->getId(),
-                    'OrderUid' => (string) $message->getId(),
-                ]);
+            $this->logger->info(
+                message: sprintf('%s: Отменили складскую заявку при возврате заказа', $ProductStockEvent->getNumber()),
+                context: [self::class.':'.__LINE__],
+            );
+
+            /** Синхронно снимаем блокировку с заказа */
+
+            $this->messageDispatch->dispatch(
+                message: new OrderUnlockMessage(
+                    $ProductStockEvent->getOrder(), self::class.':'.__LINE__
+                ),
+            );
+
         }
 
         $Deduplicator->save();

@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -43,7 +44,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Снимает резерв и отнимает количество продукции при перемещении между складами
+ * Если предыдущий статус складской заявки Moving «Перемещение» - Снимаем резерв и отнимаем количество продукции при перемещении между складами
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -86,10 +87,18 @@ final readonly class SubQuantityReserveProductByMoveWarehouseStock
             || false === ($productStockEvent instanceof ProductStockEvent)
         )
         {
+            $this->Logger->critical(
+                message: 'products-stocks: Не найдено ProductStockEvent',
+                context: [
+                    self::class.':'.__LINE__,
+                    var_export($message, true),
+                ],
+            );
+
             return;
         }
 
-        // Если предыдущий Статус не является Moving «Перемещение»
+        /** Если предыдущий статус не является Moving «Перемещение» - завершаем обработчик */
         if(false === $lastProductStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;

@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -27,6 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Repository\Items\AllOrderProductItemConst\AllOrderProductItemConstInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
@@ -60,6 +62,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * - изменение количества продукта в большую или меньшую сторону
  * - добавление нового продукта
  * - удаление продукта
+ *
+ * @note Снимает блокировку с заказа
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
@@ -67,10 +71,10 @@ final readonly class EditProductStockTotalDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
+        private DeduplicatorInterface $Deduplicator,
+        private MessageDispatchInterface $MessageDispatch,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CountProductStocksStorageInterface $CountProductStocksStorageRepository,
-        private MessageDispatchInterface $MessageDispatch,
-        private DeduplicatorInterface $Deduplicator,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
@@ -88,8 +92,8 @@ final readonly class EditProductStockTotalDispatcher
         }
 
         /**
-         * Не изменяем складские остатки без изменений
-         * Резерв создается @see AddReserveProductStocksTotalByPackage
+         * Если у СК нет прошлого события значит она не редактируется, а создается.
+         * Работа с резервами в выполняется @see AddReserveProductStocksTotalByPackage
          */
         if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
@@ -105,13 +109,20 @@ final readonly class EditProductStockTotalDispatcher
 
         if(false === ($currentProductStockEvent instanceof ProductStockEvent))
         {
+            $this->Logger->critical(
+                message: 'products-stocks: Не найдено ProductStockEvent',
+                context: [
+                    self::class.':'.__LINE__,
+                    var_export($message, true),
+                ],
+            );
+
             return;
         }
 
         /**
          * Если заявка выполнена - пропускаем
-         *
-         * @see ReturnProductStockTotalDispatcher
+         * Работа с резервами в выполняется @see ReturnProductStockTotalDispatcher
          */
         if(true === ($currentProductStockEvent->isStatusEquals(ProductStockStatusCompleted::class)))
         {
@@ -396,7 +407,7 @@ final readonly class EditProductStockTotalDispatcher
 
             /**
              * Если в предыдущем состоянии СЗ продукт НЕ СОВПАДАЕТ с продуктом из текущего состояния СЗ
-             * следует ДОБАВИЛИ новый продукт в текущую СЗ - добавляем резерв на количество НОВОГО продукта из СЗ
+             * ДОБАВИЛИ новый продукт в текущую СЗ - добавляем резерв на количество НОВОГО продукта из СЗ
              */
 
 
@@ -520,7 +531,7 @@ final readonly class EditProductStockTotalDispatcher
                 ],
             );
 
-            $SubProductStocksTotalCancelMessage = new SubProductStocksReserveMessage(
+            $SubProductStocksReserveMessage = new SubProductStocksReserveMessage(
                 stock: $lastProductStockEvent->getMain(),
                 profile: $lastProductStocks->getInvariable()->getProfile(),
                 product: $lastProductStockProductDTO->getProduct(),
@@ -542,12 +553,12 @@ final readonly class EditProductStockTotalDispatcher
                     context: [self::class.':'.__LINE__],
                 );
 
-                $SubProductStocksTotalCancelMessage
+                $SubProductStocksReserveMessage
                     ->setIterate(1)
                     ->setTotal($totalDown);
 
                 $this->MessageDispatch->dispatch(
-                    $SubProductStocksTotalCancelMessage,
+                    $SubProductStocksReserveMessage,
                     transport: 'products-stocks-low', // списание в низкий приоритет
                 );
             }
@@ -568,17 +579,26 @@ final readonly class EditProductStockTotalDispatcher
 
                 for($i = 1; $i <= $totalDown; $i++)
                 {
-                    $SubProductStocksTotalCancelMessage
+                    $SubProductStocksReserveMessage
                         ->setIterate($i)
                         ->setTotal(1);
 
                     $this->MessageDispatch->dispatch(
-                        $SubProductStocksTotalCancelMessage,
+                        $SubProductStocksReserveMessage,
                         transport: 'products-stocks-low', // списание в низкий приоритет
                     );
                 }
             }
         }
+
+        /** Снимаем блокировку с заказа */
+
+        $this->MessageDispatch->dispatch(
+            message: new OrderUnlockMessage(
+                $currentProductStocks->getOrd()->getOrd(), self::class.':'.__LINE__
+            ),
+            transport: 'products-stocks',
+        );
 
         $Deduplicator->save();
     }

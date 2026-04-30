@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -44,7 +45,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Снимает резерв в карточке продукции при отмене заявки Cancel «Отменен»
+ * Если статус складской заявки Cancel «Отменен» - Снимает резерв в карточке продукции
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -84,6 +85,22 @@ final readonly class SubReserveProductByProductStockCancel
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
+            $this->logger->critical(
+                'products-stocks: Не найдено активное событие ProductStockEvent',
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
+            return;
+        }
+
+        if(false === $ProductStockEvent->isInvariable())
+        {
+            $this->logger->critical(
+                sprintf('products-stocks: %s: не найдено ProductStocksInvariable',
+                    $ProductStockEvent->getNumber()),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
             return;
         }
 
@@ -106,12 +123,7 @@ final readonly class SubReserveProductByProductStockCancel
          * Проверяем, является ли данный профиль логистическим складом
          */
 
-        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
-
-        if(false === ($UserProfileUid instanceof UserProfileUid))
-        {
-            return;
-        }
+        $UserProfileUid = $ProductStockEvent->getInvariable()->getProfile();
 
         $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
             ->forProfile($UserProfileUid)
@@ -122,10 +134,10 @@ final readonly class SubReserveProductByProductStockCancel
             return;
         }
 
-        // Получаем всю продукцию в заявке со статусом Cancel «Отменен»
+        /** Получаем всю продукцию в заявке со статусом Cancel «Отменен» */
         $products = $ProductStockEvent->getProduct();
 
-        if($products->isEmpty())
+        if(true === $products->isEmpty())
         {
             $this->logger->warning(
                 'Заявка не имеет продукции в коллекции',

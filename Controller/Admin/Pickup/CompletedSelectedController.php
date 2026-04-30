@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -33,6 +34,9 @@ use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\Compl
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockDispatcher;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockMessage;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
@@ -49,16 +53,17 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CompletedSelectedController extends AbstractController
 {
     /**
-     * Выдать выбранные заказы клиенту.
+     * Выдать выбранные заказы клиенту
+     *
+     * @note Блокируем заказ
      */
     #[Route('/admin/product/stocks/completed-selected', name: 'admin.pickup.completed-selected', methods: ['GET', 'POST'])]
     public function delivery(
         Request $request,
-        CompletedProductStockHandler $CompletedProductStockHandler,
-        ProductsByProductStocksInterface $productDetail,
         CentrifugoPublishInterface $publish,
-        ProductStocksEventInterface $productStocksEvent,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        ProductsByProductStocksInterface $productDetailRepository,
+        ProductStocksEventInterface $productStocksEventRepository,
     ): Response
     {
 
@@ -79,8 +84,21 @@ final class CompletedSelectedController extends AbstractController
 
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
+                /** Событие ProductStock */
+                $ProductStockEvent = $productStocksEventRepository
+                    ->forEvent($CompletedProductStockDTO->getEvent())
+                    ->find();
+
+                /** Синхронно блокируем заказ */
+                $messageDispatch->dispatch(
+                    message: new OrderLockMessage(
+                        $ProductStockEvent->getOrder(), self::class.':'.__LINE__
+                    ),
+                );
+
+
                 $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
-                    $CompletedProductStockDTO->getEvent(),
+                    $CompletedProductStockDTO->getId(),
                     $this->getCurrentProfileUid(),
                     $this->getCurrentUsr(),
                 );
@@ -119,7 +137,7 @@ final class CompletedSelectedController extends AbstractController
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
-            $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
+            $productStocksEventEntity = $productStocksEventRepository->forEvent($CompletedProductStockDTO->getEvent())->find();
 
             if(false === ($productStocksEventEntity instanceof ProductStockEvent))
             {
@@ -135,7 +153,7 @@ final class CompletedSelectedController extends AbstractController
                 ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
                 ->send('remove');
 
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
+            $products[] = $productDetailRepository->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
         }
 
 

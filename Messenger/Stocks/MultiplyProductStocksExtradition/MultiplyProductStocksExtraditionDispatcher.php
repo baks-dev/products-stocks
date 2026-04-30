@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -28,6 +29,8 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradit
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
@@ -40,18 +43,20 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-/** Обновляет складскую заявку на статус Extradition «Укомплектована, готова к выдаче» */
+/**
+ * Изменяет статус складской заявки на Extradition «Укомплектована, готова к выдаче»
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class MultiplyProductStocksExtraditionDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private ExtraditionProductStockHandler $ExtraditionProductStockHandler,
-        private CentrifugoPublishInterface $publish,
-        private UserTokenStorageInterface $UserTokenStorage,
         private DeduplicatorInterface $deduplicator,
+        private CentrifugoPublishInterface $publish,
+        private UserTokenStorageInterface $UserTokenStorageRepository,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private ExtraditionProductStockHandler $ExtraditionProductStockHandler,
     ) {}
 
     public function __invoke(MultiplyProductStocksExtraditionMessage $message): void
@@ -60,7 +65,7 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getProductStockEvent(),
-                self::class,
+                self::class.':'.__LINE__,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -96,18 +101,27 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         /** Скрываем элементы */
 
         $this->publish
-            ->addData(['profile' => false]) // Скрывает у всех
-            ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'profile' => false, // Скрывает у всех
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('remove');
 
         $this->publish
-            ->addData(['profile' => false]) // Скрывает у всех
-            ->addData(['identifier' => (string) $ProductStockEvent->getId()])
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getId(),
+                'profile' => false, // Скрывает у всех
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('remove');
 
         $this->publish
-            ->addData(['profile' => false]) // Скрывает у всех
-            ->addData(['order' => (string) $ProductStockEvent->getOrder()])
+            ->addData([
+                'order' => (string) $ProductStockEvent->getOrder(),
+                'profile' => false, // Скрывает у всех
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('orders');
 
         /**
@@ -123,9 +137,9 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         }
 
         /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
-        if(false === $this->UserTokenStorage->isUser())
+        if(false === $this->UserTokenStorageRepository->isUser())
         {
-            $this->UserTokenStorage->authorization($message->getCurrentUser());
+            $this->UserTokenStorageRepository->authorization($message->getCurrentUser());
         }
 
         $ProductStock = $this->ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
@@ -144,10 +158,5 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         }
 
         $Deduplicator->save();
-
-        $this->logger->info(
-            sprintf('%s: Обновили складскую заявку на статус Extradition «Укомплектован»', $ProductStockEvent->getNumber()),
-            [self::class, var_export($message, true)],
-        );
     }
 }

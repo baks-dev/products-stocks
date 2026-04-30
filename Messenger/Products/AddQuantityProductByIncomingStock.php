@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -44,7 +45,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Пополнение наличием в карточке при поступлении на склад
+ * Если статус складской заявки Incoming «Приход на склад» или Cancel «Отменен» - пополнением наличием в карточке продукта
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 20)]
@@ -52,11 +53,11 @@ final readonly class AddQuantityProductByIncomingStock
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConst,
-        private AddProductQuantityInterface $addProductQuantity,
-        private ProductStocksEventInterface $ProductStocksEventRepository,
         private DeduplicatorInterface $deduplicator,
-        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
+        private CurrentProductIdentifierByConstInterface $currentProductIdentifierByConstRepository,
+        private AddProductQuantityInterface $addProductQuantityRepository,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouseRepository,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -128,7 +129,7 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
-        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
+        $isLogisticWarehouse = $this->UserProfileLogisticWarehouseRepository
             ->forProfile($UserProfileUid)
             ->isLogisticWarehouse();
 
@@ -168,7 +169,7 @@ final readonly class AddQuantityProductByIncomingStock
 
     public function changeTotal(ProductStockProduct $product): void
     {
-        $CurrentProductDTO = $this->currentProductIdentifierByConst
+        $CurrentProductDTO = $this->currentProductIdentifierByConstRepository
             ->forProduct($product->getProduct())
             ->forOfferConst($product->getOffer())
             ->forVariationConst($product->getVariation())
@@ -185,7 +186,7 @@ final readonly class AddQuantityProductByIncomingStock
             return;
         }
 
-        $rows = $this->addProductQuantity
+        $rows = $this->addProductQuantityRepository
             ->forEvent($CurrentProductDTO->getEvent())
             ->forOffer($CurrentProductDTO->getOffer())
             ->forVariation($CurrentProductDTO->getVariation())

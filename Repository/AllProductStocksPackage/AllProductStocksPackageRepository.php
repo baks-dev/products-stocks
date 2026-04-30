@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -50,6 +51,7 @@ use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
+use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLock;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Forms\PackageFilter\ProductStockPackageFilterInterface;
@@ -153,6 +155,15 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
             ProductStockStatus::TYPE,
         );
 
+        /** Блокировка */
+
+        $dbal
+            ->addSelect('product_stock_lock.lock')
+            ->leftJoin(
+                'event',
+                ProductStockLock::class,
+                'product_stock_lock',
+                'product_stock_lock.event = event.id');
 
         /** Погрузка на доставку */
         if(class_exists(DeliveryPackage::class))

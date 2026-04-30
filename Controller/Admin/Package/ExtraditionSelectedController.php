@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -29,6 +30,9 @@ use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockDispatcher;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockMessage;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition\MultiplyProductStocksExtraditionMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
@@ -48,14 +52,16 @@ final class ExtraditionSelectedController extends AbstractController
 {
     /**
      * Укомплектовать выбранные складские заявки
+     *
+     * @note Блокируем заказ
      */
     #[Route('/admin/product/stock/package/extradition-selected', name: 'admin.package.extradition-selected', methods: ['GET', 'POST'])]
     public function extradition(
         Request $request,
-        ProductsByProductStocksInterface $productDetail,
+        MessageDispatchInterface $messageDispatch,
         CentrifugoPublishInterface $publish,
-        ProductStocksEventInterface $productStocksEvent,
-        MessageDispatchInterface $messageDispatch
+        ProductsByProductStocksInterface $productDetailRepository,
+        ProductStocksEventInterface $productStocksEventRepository,
     ): Response
     {
         $ExtraditionSelectedProductStockDTO = new ExtraditionSelectedProductStockDTO();
@@ -75,6 +81,20 @@ final class ExtraditionSelectedController extends AbstractController
 
             foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
             {
+
+                /** Событие ProductStock */
+                $ProductStockEvent = $productStocksEventRepository
+                    ->forEvent($ExtraditionProductStockDTO->getEvent())
+                    ->find();
+
+                /** Синхронно блокируем заказ */
+
+                $messageDispatch->dispatch(
+                    message: new OrderLockMessage(
+                        $ProductStockEvent->getOrder(), self::class.':'.__LINE__
+                    ),
+                );
+
                 $MultiplyProductStocksExtraditionMessage = new MultiplyProductStocksExtraditionMessage(
                     $ExtraditionProductStockDTO->getEvent(),
                     $this->getProfileUid(),
@@ -127,7 +147,7 @@ final class ExtraditionSelectedController extends AbstractController
         /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
         foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
         {
-            $productStockEventEntity = $productStocksEvent
+            $productStockEventEntity = $productStocksEventRepository
                 ->forEvent($ExtraditionProductStockDTO->getEvent())
                 ->find();
 
@@ -141,13 +161,13 @@ final class ExtraditionSelectedController extends AbstractController
             /** Скрываем идентификатор у остальных пользователей */
 
             $publish
-                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->addData(['identifier' => (string) $productStockEventEntity->getMain()])
+                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->send('remove');
 
 
             $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
+            $products[] = $productDetailRepository->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
         }
 
 

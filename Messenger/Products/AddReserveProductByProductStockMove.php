@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -42,7 +43,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Добавляет резерв продукции при перемещении
+ * Если статус складской заявки не является Moving «Перемещение» - Добавляем резерв продукции при перемещении
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -50,13 +51,13 @@ final readonly class AddReserveProductByProductStockMove
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
-        private ProductModificationQuantityInterface $ModificationQuantity,
-        private ProductVariationQuantityInterface $VariationQuantity,
-        private ProductOfferQuantityInterface $OfferQuantity,
-        private ProductQuantityInterface $ProductQuantity,
         private EntityManagerInterface $EntityManager,
         private DeduplicatorInterface $Deduplicator,
-        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouse
+        private ProductModificationQuantityInterface $ModificationQuantityRepository,
+        private ProductVariationQuantityInterface $VariationQuantityRepository,
+        private ProductOfferQuantityInterface $OfferQuantityRepository,
+        private ProductQuantityInterface $ProductQuantityRepository,
+        private UserProfileLogisticWarehouseInterface $UserProfileLogisticWarehouseRepository,
     ) {}
 
     /**
@@ -66,28 +67,46 @@ final readonly class AddReserveProductByProductStockMove
     {
         $this->EntityManager->clear();
 
+        /** @var ProductStockEvent|null $productStockEvent */
         $productStockEvent = $this->EntityManager
             ->getRepository(ProductStockEvent::class)
             ->find($message->getEvent());
 
-        if(!$productStockEvent)
+        if(false === ($productStockEvent instanceof ProductStockEvent))
         {
+            $this->Logger->critical(
+                message: 'products-stocks: Не найдено ProductStockEvent',
+                context: [
+                    self::class.':'.__LINE__,
+                    var_export($message, true),
+                ],
+            );
+
             return;
         }
 
-        /** @var ProductStockEvent $productStockEvent */
-        /** Если Статус не является Статус Moving «Перемещение» */
+        /** Если статус складской заявки не является Moving «Перемещение» - завершаем обработчик */
         if(false === $productStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
 
+        if(false === $productStockEvent->isInvariable())
+        {
+            $this->Logger->critical(
+                sprintf('products-stocks: %s: не найдено ProductStocksInvariable',
+                    $productStockEvent->getNumber()),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
+            return;
+        }
 
         /**
          * Проверяем, является ли данный профиль логистическим складом
          */
-        $isLogisticWarehouse = $this->UserProfileLogisticWarehouse
-            ->forProfile($productStockEvent->getInvariable()?->getProfile())
+        $isLogisticWarehouse = $this->UserProfileLogisticWarehouseRepository
+            ->forProfile($productStockEvent->getInvariable()->getProfile())
             ->isLogisticWarehouse();
 
         if(false === $isLogisticWarehouse)
@@ -96,10 +115,10 @@ final readonly class AddReserveProductByProductStockMove
         }
 
 
-        // Получаем всю продукцию в заявке
+        /** Получаем всю продукцию в заявке */
         $products = $productStockEvent->getProduct();
 
-        if(empty($products))
+        if(true === $products->isEmpty())
         {
             $this->Logger->warning('Заявка не имеет продукции в коллекции', [self::class.':'.__LINE__]);
             return;
@@ -139,7 +158,7 @@ final readonly class AddReserveProductByProductStockMove
         {
             $this->EntityManager->clear();
 
-            $productUpdateReserve = $this->ModificationQuantity->getProductModificationQuantity(
+            $productUpdateReserve = $this->ModificationQuantityRepository->getProductModificationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
@@ -152,7 +171,7 @@ final readonly class AddReserveProductByProductStockMove
         {
             $this->EntityManager->clear();
 
-            $productUpdateReserve = $this->VariationQuantity->getProductVariationQuantity(
+            $productUpdateReserve = $this->VariationQuantityRepository->getProductVariationQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
                 $product->getVariation(),
@@ -164,7 +183,7 @@ final readonly class AddReserveProductByProductStockMove
         {
             $this->EntityManager->clear();
 
-            $productUpdateReserve = $this->OfferQuantity->getProductOfferQuantity(
+            $productUpdateReserve = $this->OfferQuantityRepository->getProductOfferQuantity(
                 $product->getProduct(),
                 $product->getOffer(),
             );
@@ -175,7 +194,7 @@ final readonly class AddReserveProductByProductStockMove
         {
             $this->EntityManager->clear();
 
-            $productUpdateReserve = $this->ProductQuantity->getProductQuantity(
+            $productUpdateReserve = $this->ProductQuantityRepository->getProductQuantity(
                 $product->getProduct(),
             );
         }

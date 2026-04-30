@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -46,9 +47,6 @@ class MultiplyProductStockPackageDebugDispatcherTest extends KernelTestCase
 
     public function testUseCase(): void
     {
-        self::assertTrue(true);
-        return;
-
         // Бросаем событие консольной команды
         $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
         $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
@@ -57,10 +55,13 @@ class MultiplyProductStockPackageDebugDispatcherTest extends KernelTestCase
         /** @var MultiplyProductStocksPackageDispatcher $MultiplyProductStocksPackageDispatcher */
         $MultiplyProductStocksPackageDispatcher = self::getContainer()->get(MultiplyProductStocksPackageDispatcher::class);
 
+        self::assertTrue(true);
+        return;
+
         $MultiplyProductStocksPackageMessage = new MultiplyProductStocksPackageMessage(
-            new OrderUid('019b46a8-1fd2-7dcc-aa6c-4c0495fcbd8d'),
-            new UserProfileUid('019053da-5c80-7345-b227-8609dd8380f3'),
-            new UserUid('019053d9-d1cb-7416-b7e5-4cdd154a04c3'),
+            new OrderUid('019dbb28-46f3-7551-ba86-d3a675e87c9b'),
+            new UserProfileUid('0196e4cf-fa40-79f1-aae6-70cfc444231a'),
+            new UserUid('0196d944-b1ef-74aa-9ee5-bfdabd6a8fae'),
         );
 
         $MultiplyProductStocksPackageDispatcher($MultiplyProductStocksPackageMessage);

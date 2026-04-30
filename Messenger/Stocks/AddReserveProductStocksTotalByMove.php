@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -40,7 +41,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Резервирование на складе продукции при перемещении
+ * Если статус складской заявки Moving «Перемещение» - Резервирование на складе продукции при перемещении
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -48,12 +49,11 @@ final readonly class AddReserveProductStocksTotalByMove
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
-        private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $MessageDispatch,
         private DeduplicatorInterface $Deduplicator,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorageRepository,
     ) {}
-
 
     public function __invoke(ProductStockMessage $message): void
     {
@@ -77,17 +77,22 @@ final readonly class AddReserveProductStocksTotalByMove
 
         if(false === ($productStockEvent instanceof ProductStockEvent))
         {
+            $this->Logger->critical(
+                'products-stocks: Не найдено активное событие ProductStockEvent',
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
             return;
         }
 
-        /** Если Статус не является Статус Moving «Перемещение» - завершаем работу */
+        /** Если Статус не является Moving «Перемещение» - завершаем работу */
         if(false === $productStockEvent->equalsProductStockStatus(ProductStockStatusMoving::class))
         {
             return;
         }
 
 
-        // Получаем всю продукцию в ордере со статусом Moving (перемещение)
+        /** Получаем всю продукцию в ордере со статусом Moving (перемещение) */
         $products = $productStockEvent->getProduct();
 
         if($products->isEmpty())
@@ -102,15 +107,16 @@ final readonly class AddReserveProductStocksTotalByMove
 
         if(false === $productStockEvent->isInvariable())
         {
-            $this->Logger->warning(
-                'Складская заявка не может определить ProductStocksInvariable',
+            $this->Logger->critical(
+                sprintf('products-stocks: %s: не найдено ProductStocksInvariable',
+                    $productStockEvent->getNumber()),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
         }
 
-        $userProfileUid = $productStockEvent->getInvariable()?->getProfile();
+        $userProfileUid = $productStockEvent->getInvariable()->getProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
@@ -140,7 +146,7 @@ final readonly class AddReserveProductStocksTotalByMove
 
             /** Поверяем количество мест складирования продукции на складе */
 
-            $storage = $this->CountProductStocksStorage
+            $storage = $this->CountProductStocksStorageRepository
                 ->forProfile($userProfileUid)
                 ->forProduct($product->getProduct())
                 ->forOffer($product->getOffer())

@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
@@ -32,6 +33,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Archive\PackageProductStockArchiveDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Invariable\PackageOrderInvariableDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Package\Lock\PackageProductStockLockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\PackageProductStockOrderDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\CollectionPackageProductStockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -74,6 +76,12 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     /** Комментарий */
     private ?string $comment = null;
 
+    /**
+     * Блокировка
+     */
+    #[Assert\Valid]
+    private PackageProductStockLockDTO $lock;
+
     public function __construct()
     {
         $this->status = new ProductStockStatus(ProductStockStatusPackage::class);
@@ -81,6 +89,9 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
         $this->ord = new PackageProductStockOrderDTO();
         $this->invariable = new PackageOrderInvariableDTO();
         $this->archive = new PackageProductStockArchiveDTO();
+
+        /** Блокировка */
+        $this->lock = new PackageProductStockLockDTO();
     }
 
 
@@ -176,5 +187,13 @@ final class PackageProductStockDTO implements ProductStockEventInterface, OrderE
     public function getArchive(): PackageProductStockArchiveDTO
     {
         return $this->archive;
+    }
+
+    /**
+     * ProductStockLock
+     */
+    public function getLock(): PackageProductStockLockDTO
+    {
+        return $this->lock;
     }
 }

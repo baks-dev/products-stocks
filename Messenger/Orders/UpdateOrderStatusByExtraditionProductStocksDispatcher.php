@@ -19,16 +19,20 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Orders;
 
+use BaksDev\Centrifugo\BaksDevCentrifugoBundle;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
@@ -46,9 +50,9 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Обновляет статус заказа при сборке на складе на Extradition «Готов к выдаче»
+ * Если статус складской заявки Extradition «Готов к выдаче» - Обновляет статус заказа на Extradition «Готов к выдаче»
  *
- * @see OrderStatusExtradition
+ * @note Снимает блокировку с заказа
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -56,12 +60,13 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private UserByUserProfileInterface $UserByUserProfile,
-        private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CurrentOrderEventInterface $CurrentOrderEvent,
-        private OrderStatusHandler $OrderStatusHandler,
-        private CentrifugoPublishInterface $CentrifugoPublish,
         private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $messageDispatch,
+        private UserByUserProfileInterface $UserByUserProfileRepository,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CurrentOrderEventInterface $CurrentOrderEventRepository,
+        private OrderStatusHandler $OrderStatusHandler,
+        private ?CentrifugoPublishInterface $CentrifugoPublish = null,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -85,6 +90,12 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
+            $this->logger->critical(
+                sprintf('products-stocks: %s: Не найдено активное событие ProductStockEvent',
+                    $ProductStockEvent->getNumber()),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
             return;
         }
 
@@ -96,7 +107,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
             return;
         }
 
-        /* Если упаковка складской заявки на перемещение - статус заказа не обновляем */
+        /** Если упаковка складской заявки на перемещение - статус заказа не обновляем */
         if($ProductStockEvent->getMoveOrder())
         {
             return;
@@ -116,46 +127,44 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
          * Получаем активное событие заказа.
          */
 
-        $CurrentOrderEvent = $this->CurrentOrderEvent
+        $CurrentOrderEvent = $this->CurrentOrderEventRepository
             ->forOrder($ProductStockEvent->getOrder())
             ->find();
 
         if(false === ($CurrentOrderEvent instanceof OrderEvent))
         {
+            $this->logger->critical(
+                message: sprintf('products-stocks: %s: Не найден заказ, связанный со складской заявкой',
+                    $ProductStockEvent->getNumber(),
+                ),
+                context: [self::class.':'.__LINE__],
+            );
+
             return;
         }
 
+        /** Идентификатор ответственного склада */
+        $UserProfileUid = $ProductStockEvent->getInvariable()->getProfile();
 
-        $this->logger->info(
-            'Обновляем статус заказа на "Собран, готов к отправке" (Extradition)',
-            [self::class.':'.__LINE__],
-        );
+        $OrderStatusDTO = new OrderStatusDTO(OrderStatusExtradition::class, $CurrentOrderEvent->getId());
 
-
-        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
-
-        $OrderStatusDTO = new OrderStatusDTO
-        (
-            status: OrderStatusExtradition::class,
-            id: $CurrentOrderEvent->getId(),
-        )
+        $OrderStatusDTO
             ->setProfile($UserProfileUid)
             ->addComment($CurrentOrderEvent->getComment());
-
 
         /**
          * Присваиваем ответственное лицо если указан FIXED
          */
         if(true === ($ProductStockEvent->getFixed() instanceof UserProfileUid))
         {
-            $User = $this->UserByUserProfile
+            $User = $this->UserByUserProfileRepository
                 ->forProfile($ProductStockEvent->getFixed())
                 ->find();
 
             if(false === ($User instanceof User))
             {
                 $this->logger->critical(
-                    'orders-order: Пользователь ответственного лица не найден',
+                    'products-stocks: Пользователь ответственного лица не найден',
                     [self::class.':'.__LINE__, 'fixed' => (string) $ProductStockEvent->getFixed()],
                 );
 
@@ -166,9 +175,6 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
                 ->getModify()
                 ->setUsr($User->getId());
         }
-
-        //$ModifyDTO = $OrderStatusDTO->getModify();
-        //$ModifyDTO->setUsr($ProductStockEvent->getModifyUser());
 
         $handle = $this->OrderStatusHandler->handle($OrderStatusDTO);
 
@@ -184,21 +190,38 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         $DeduplicatorExecuted->save();
 
-        // Отправляем сокет для скрытия заказа у других менеджеров
-        $this->CentrifugoPublish
-            ->addData(['order' => (string) $ProductStockEvent->getOrder()])
-            ->addData(['profile' => (string) $UserProfileUid])
-            ->send('orders');
+        /** Синхронно снимаем блокировку с заказа */
 
-
-        $this->logger->info(
-            'Обновили статус заказа на Extradition «Готов к выдаче»',
-            [
-                self::class.':'.__LINE__,
-                'order' => (string) $ProductStockEvent->getOrder(),
-                'profile' => (string) $UserProfileUid,
-            ],
+        $this->messageDispatch->dispatch(
+            message: new OrderUnlockMessage(
+                $ProductStockEvent->getOrder(), self::class.':'.__LINE__
+            ),
         );
+
+        if(true === class_exists(BaksDevCentrifugoBundle::class))
+        {
+            /** Отправляем сокет для скрытия заказа */
+            $socket = $this->CentrifugoPublish
+                ->addData([
+                    'order' => (string) $ProductStockEvent->getOrder(),
+                    'profile' => false,
+                    'context' => self::class.':'.__LINE__
+                ])
+                ->send('orders');
+
+            if($socket && $socket->isError())
+            {
+                $this->logger->critical(
+                    message: 'products-stocks: Ошибка при отправке информации о блокировке в Centrifugo',
+                    context: [
+                        $socket->getMessage(),
+                        'number' => $ProductStockEvent->getNumber(),
+                        'main' => $ProductStockEvent->getMain(),
+                        self::class.':'.__LINE__,
+                    ],
+                );
+            }
+        }
 
     }
 }

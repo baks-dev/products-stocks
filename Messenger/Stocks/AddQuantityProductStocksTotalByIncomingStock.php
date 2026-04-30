@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -47,7 +48,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
+ * Пополнение складских остатков при поступлении на склад либо при отмене или возврате выполненного заказа (Canceled «Отменен» или Return «Возврат»)
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -56,11 +57,11 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
-        private ProductStocksEventInterface $ProductStocksEventRepository,
-        private UserByUserProfileInterface $userByUserProfile,
-        private ProductStocksTotalStorageInterface $productStocksTotalStorage,
-        private AddProductStockInterface $addProductStock,
         private DeduplicatorInterface $deduplicator,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private UserByUserProfileInterface $userByUserProfileRepository,
+        private ProductStocksTotalStorageInterface $productStocksTotalStorageRepository,
+        private AddProductStockInterface $addProductStockRepository,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -84,6 +85,10 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
+            $this->logger->critical(
+                sprintf('products-stocks: Событие складской заявки %s не было найдено', $message->getEvent()),
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
             return;
         }
 
@@ -119,7 +124,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         }
 
 
-        // Получаем всю продукцию в ордере со статусом Incoming
+        /** Получаем всю продукцию в ордере со статусом Incoming */
         $products = $ProductStockEvent->getProduct();
 
         if($products->isEmpty())
@@ -144,7 +149,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
 
 
         /** Идентификатор профиля склада при поступлении */
-        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()->getProfile();
 
         /** @var ProductStockProduct $product */
         foreach($products as $product)
@@ -160,7 +165,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             }
 
             /** Получаем место для хранения указанной продукции данного профиля */
-            $ProductStockTotal = $this->productStocksTotalStorage
+            $ProductStockTotal = $this->productStocksTotalStorageRepository
                 ->profile($UserProfileUid)
                 ->product($product->getProduct())
                 ->offer($product->getOffer())
@@ -172,7 +177,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
             if(false === ($ProductStockTotal instanceof ProductStockTotal))
             {
                 /* получаем пользователя профиля, для присвоения новому месту складирования */
-                $User = $this->userByUserProfile
+                $User = $this->userByUserProfileRepository
                     ->forProfile($UserProfileUid)
                     ->find();
 
@@ -246,7 +251,7 @@ final readonly class AddQuantityProductStocksTotalByIncomingStock
         $ProductStockTotal->getApprove()->setValue(true);
 
         /** Добавляем приход на указанный профиль (склад) */
-        $rows = $this->addProductStock
+        $rows = $this->addProductStockRepository
             ->total($total)
             ->reserve(false) // не обновляем резерв
             ->updateById($ProductStockTotal);

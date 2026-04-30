@@ -31,6 +31,10 @@ ROLE_PRODUCT_STOCK_DELETE:
   name: 'Удалить'
   desc: 'Удалить складскую заявку'
 
+ROLE_PRODUCT_STOCK_LOCK:
+  name: 'Управление блокировкой'
+  desc: 'Заблокировать или разблокировать'
+
 # Правила
 
 

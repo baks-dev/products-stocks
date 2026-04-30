@@ -24,6 +24,9 @@ ROLE_PRODUCT_STOCK_CANCEL:
   name: 'Cancel'
   desc: 'Cancel request'
 
+ROLE_PRODUCT_STOCK_LOCK:
+  name: 'Lock'
+  desc: 'Lock or unlock'
 
 # Rules
 

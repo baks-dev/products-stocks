@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -125,7 +126,9 @@ final readonly class SubProductStocksTotalAndReserveDispatcher
         $DeduplicatorExecuted->save();
 
         $this->logger->info(
-            sprintf('место: %s : Сняли резерв и уменьшили количество продукции на %s', $ProductStockTotal->getStorage(), $message->getTotal()),
+            sprintf('место: %s : Сняли резерв и уменьшили количество продукции на %s',
+                $ProductStockTotal->getStorage() ?? 'без места',
+                $message->getTotal()),
             [
                 self::class.':'.__LINE__,
                 var_export($message, true),

@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
@@ -27,6 +28,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\Lock\ExtraditionProductStockLockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use ReflectionProperty;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -50,9 +52,18 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    /**
+     * Блокировка
+     */
+    #[Assert\Valid]
+    private ExtraditionProductStockLockDTO $lock;
+
     public function __construct()
     {
         $this->status = new ProductStockStatus(ProductStockStatusExtradition::class);
+
+        /** Блокировка */
+        $this->lock = new ExtraditionProductStockLockDTO();
     }
 
     public function getEvent(): ?ProductStockEventUid
@@ -102,5 +113,13 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
             $this->id = $id;
         }
         return $this;
+    }
+
+    /**
+     * ProductStockLock
+     */
+    public function getLock(): ExtraditionProductStockLockDTO
+    {
+        return $this->lock;
     }
 }

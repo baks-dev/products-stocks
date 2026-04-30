@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -50,7 +51,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Пополнение складских остатков при поступлении на склад либо при отмене выполненного заказа (ВОЗВРАТ)
+ * Пополнение складских остатков при поступлении на склад либо при отмене или возврате выполненного заказа (Canceled «Отменен» или Return «Возврат»)
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -58,12 +59,12 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
+        private DeduplicatorInterface $Deduplicator,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private UserByUserProfileInterface $UserByUserProfileRepository,
         private ProductStocksQuantityStorageInterface $ProductStocksQuantityStorageRepository,
-        private ProductStockQuantityNewEditHandler $ProductStockQuantityNewEditHandler,
-        private DeduplicatorInterface $Deduplicator,
         private CurrentProductIdentifierByConstInterface $CurrentProductIdentifierByConstRepository,
+        private ProductStockQuantityNewEditHandler $ProductStockQuantityNewEditHandler,
     ) {}
 
     public function __invoke(ProductStockMessage $message): void
@@ -87,16 +88,16 @@ final readonly class AddQuantityProductStocksQuantityByIncomingStock
 
         if(false === ($productStockEvent instanceof ProductStockEvent))
         {
-            $this->Logger->error(
-                sprintf('Событие складской заявки %s не было найдено', $message->getEvent()),
-                [self::class.':'.__LINE__, var_export($message, true)],
+            $this->Logger->critical(
+                sprintf('products-stocks: Событие складской заявки %s не было найдено', $message->getEvent()),
+                [self::class.':'.__LINE__, var_export($message, true)]
             );
             return;
         }
 
 
         /**
-         * Пополняем отстаток только если статус НЕ является Incoming «Приход на склад» либо Cancel «Отменен»
+         * Пополняем остаток только если статус НЕ является Incoming «Приход на склад» либо Cancel «Отменен»
          */
         if(
             false === $productStockEvent->equalsProductStockStatus(ProductStockStatusIncoming::class) &&
