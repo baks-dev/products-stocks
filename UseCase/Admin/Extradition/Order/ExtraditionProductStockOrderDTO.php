@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,36 +22,28 @@
  *
  */
 
-namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition;
+declare(strict_types=1);
 
-use Doctrine\Common\Collections\ArrayCollection;
+namespace BaksDev\Products\Stocks\UseCase\Admin\Extradition\Order;
 
-final class ExtraditionSelectedProductStockDTO
+use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrderInterface;
+
+/** @see ProductStockOrder */
+final class ExtraditionProductStockOrderDTO implements ProductStockOrderInterface
 {
-    private ArrayCollection $collection;
+    /** Идентификатор заказа для сборки */
+    private ?OrderUid $ord = null;
 
-    public function __construct()
+    /** Идентификатор заказа для сборки */
+    public function getOrd(): ?OrderUid
     {
-        $this->collection = new ArrayCollection();
+        return $this->ord;
     }
 
-    /** @return ArrayCollection<int, ExtraditionProductStockDTO> */
-    public function getCollection(): ArrayCollection
+    public function setOrd(?OrderUid $ord): self
     {
-        return $this->collection;
-    }
-
-    public function addCollection(ExtraditionProductStockDTO $stockDTO): self
-    {
-        $this->collection->add($stockDTO);
-
-        return $this;
-    }
-
-    public function removeCollection(ExtraditionProductStockDTO $stockDTO): self
-    {
-        $this->collection->removeElement($stockDTO);
-
+        $this->ord = $ord;
         return $this;
     }
 }

@@ -27,31 +27,12 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Lock;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Core\Validator\ValidatorCollectionInterface;
-use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
-use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLock;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 
 
 /** Управляет блокировкой без создания события */
 final class ProductStockLockHandler extends AbstractHandler
 {
-    public function __construct(
-        #[Target('productsStocksLogger')] private readonly LoggerInterface $logger,
-
-        EntityManagerInterface $entityManager,
-        MessageDispatchInterface $messageDispatch,
-        ValidatorCollectionInterface $validatorCollection,
-        ImageUploadInterface $imageUpload,
-        FileUploadInterface $fileUpload
-    )
-    {
-        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
-    }
 
     public function handle(ProductStockLockDTO $command): ProductStockLock|string
     {
@@ -61,14 +42,6 @@ final class ProductStockLockHandler extends AbstractHandler
 
         if(false === ($entity instanceof ProductStockLock))
         {
-            $this->logger->critical(
-                message: 'products-stocks: ProductStockLock не найдена',
-                context: [
-                    'event' => (string) $command->getEvent(),
-                    self::class.':'.__LINE__,
-                ],
-            );
-
             return 'ProductStockLock error';
         }
 

@@ -62,7 +62,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @see MultiplyProductStocksPackageDispatcher
  */
 #[Autoconfigure(shared: false)]
-#[AsMessageHandler(priority: 100)]
+#[AsMessageHandler(priority: 1)]
 final readonly class AddReserveProductStocksTotalByPackage
 {
     public function __construct(
@@ -118,7 +118,6 @@ final readonly class AddReserveProductStocksTotalByPackage
         /** Если Статус НЕ является Package «Упаковка» - завершаем работу */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class))
         {
-            $DeduplicatorExecuted->save();
             return;
         }
 
@@ -204,10 +203,13 @@ final readonly class AddReserveProductStocksTotalByPackage
 
                 /** Синхронно снимаем блокировку с заказа */
 
+                $OrderUnlockMessage = new OrderUnlockMessage(
+                    id: $OrderEvent->getMain(),
+                    context: self::class.':'.__LINE__
+                );
+
                 $this->messageDispatch->dispatch(
-                    message: new OrderUnlockMessage(
-                        $OrderEvent->getMain(), self::class.':'.__LINE__
-                    ),
+                    message: $OrderUnlockMessage,
                 );
 
                 return;

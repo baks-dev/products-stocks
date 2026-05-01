@@ -31,18 +31,16 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockDTO;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
-use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockDispatcher;
+use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\Order\CompletedProductStockOrderDTO;
 use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockMessage;
-use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use InvalidArgumentException;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -84,18 +82,23 @@ final class CompletedSelectedController extends AbstractController
 
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
-                /** Событие ProductStock */
-                $ProductStockEvent = $productStocksEventRepository
-                    ->forEvent($CompletedProductStockDTO->getEvent())
-                    ->find();
 
-                /** Синхронно блокируем заказ */
-                $messageDispatch->dispatch(
-                    message: new OrderLockMessage(
-                        $ProductStockEvent->getOrder(), self::class.':'.__LINE__
-                    ),
-                );
+                if($CompletedProductStockDTO->getOrd()?->getOrd() instanceof OrderUid)
+                {
+                    /** Блокируем заказ */
 
+                    $OrderLockMessage = new OrderLockMessage(
+                        id: $CompletedProductStockDTO->getOrd()->getOrd(),
+                        context: self::class.':'.__LINE__
+                    );
+
+                    /** Отправляем в транспорт профиля */
+
+                    $messageDispatch->dispatch(
+                        message: $OrderLockMessage,
+                        transport: $this->getProfileUid(),
+                    );
+                }
 
                 $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
                     $CompletedProductStockDTO->getId(),
@@ -138,6 +141,10 @@ final class CompletedSelectedController extends AbstractController
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
             $productStocksEventEntity = $productStocksEventRepository->forEvent($CompletedProductStockDTO->getEvent())->find();
+
+            $ord = new CompletedProductStockOrderDTO();
+            $ord->setOrd($productStocksEventEntity->getOrder());
+            $CompletedProductStockDTO->setOrd($ord);
 
             if(false === ($productStocksEventEntity instanceof ProductStockEvent))
             {

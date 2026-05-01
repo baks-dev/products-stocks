@@ -192,10 +192,13 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         /** Синхронно снимаем блокировку с заказа */
 
+        $OrderUnlockMessage = new OrderUnlockMessage(
+            id: $ProductStockEvent->getOrder(),
+            context: self::class.':'.__LINE__
+        );
+
         $this->messageDispatch->dispatch(
-            message: new OrderUnlockMessage(
-                $ProductStockEvent->getOrder(), self::class.':'.__LINE__
-            ),
+            message: $OrderUnlockMessage,
         );
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))

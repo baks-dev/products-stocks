@@ -103,9 +103,14 @@ final readonly class ProductStockUnlockDispatcher
             return;
         }
 
+        $ProductStockUnlockMessage = new ProductStockUnlockMessage(
+            id: $ProductStockEvent->getMain(),
+            context: self::class.':'.__LINE__,
+        );
+
         /** Отправляем сообщение для разблокировки */
         $this->messageDispatch->dispatch(
-            message: new ProductStockUnlockMessage($ProductStockEvent->getMain(), self::class.':'.__LINE__),
+            message: $ProductStockUnlockMessage,
             transport: 'products-stocks',
         );
     }

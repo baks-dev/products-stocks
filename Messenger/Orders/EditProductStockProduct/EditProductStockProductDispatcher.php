@@ -111,7 +111,7 @@ final readonly class EditProductStockProductDispatcher
         $this->publish
             ->addData([
                 'order' => (string) $OrderEvent->getId(),
-                'profile' => (string) $message->getUserProfile(),
+                'profile' => false,
                 'context' => self::class.':'.__LINE__,
             ])
             ->send('orders');
@@ -207,7 +207,6 @@ final readonly class EditProductStockProductDispatcher
             $this->publish
                 ->addData([
                     'identifier' => (string) $ProductStockEvent->getMain(),
-                    'profile' => (string) $message->getUserProfile(),
                     'context' => self::class.':'.__LINE__,
                 ])
                 ->send('remove');

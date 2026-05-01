@@ -29,6 +29,7 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\Lock\ExtraditionProductStockLockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\Order\ExtraditionProductStockOrderDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use ReflectionProperty;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -49,6 +50,9 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     #[Assert\NotBlank]
     private readonly ProductStockStatus $status;
 
+    /** заказ */
+    private ExtraditionProductStockOrderDTO $ord;
+
     /** Комментарий */
     private ?string $comment = null;
 
@@ -61,6 +65,7 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     public function __construct()
     {
         $this->status = new ProductStockStatus(ProductStockStatusExtradition::class);
+        $this->ord = new ExtraditionProductStockOrderDTO();
 
         /** Блокировка */
         $this->lock = new ExtraditionProductStockLockDTO();
@@ -121,5 +126,16 @@ final class ExtraditionProductStockDTO implements ProductStockEventInterface
     public function getLock(): ExtraditionProductStockLockDTO
     {
         return $this->lock;
+    }
+
+    public function setOrd(?ExtraditionProductStockOrderDTO $ord): ExtraditionProductStockDTO
+    {
+        $this->ord = $ord;
+        return $this;
+    }
+
+    public function getOrd(): ?ExtraditionProductStockOrderDTO
+    {
+        return $this->ord;
     }
 }

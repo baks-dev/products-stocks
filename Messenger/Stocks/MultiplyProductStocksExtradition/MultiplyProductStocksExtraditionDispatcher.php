@@ -65,7 +65,7 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
             ->namespace('products-stocks')
             ->deduplication([
                 (string) $message->getProductStockEvent(),
-                self::class.':'.__LINE__,
+                self::class,
             ]);
 
         if($Deduplicator->isExecuted())
@@ -156,6 +156,11 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
 
             return;
         }
+
+        $this->logger->info(
+            sprintf('%s: Обновили складскую заявку на статус Extradition «Укомплектован»', $ProductStockEvent->getNumber()),
+            [self::class, var_export($message, true)],
+        );
 
         $Deduplicator->save();
     }

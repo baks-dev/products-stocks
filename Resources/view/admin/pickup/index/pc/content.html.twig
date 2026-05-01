@@ -185,6 +185,7 @@
                                                    {# Данные, отправляемые POST #}
                                                    data-formname="{{ add_selected_form_name }}"
                                                    data-id="{{ item.stockEvent }}"
+                                                   data-ord="{{ item.orderId }}"
                                                    title="Выбрать данный заказ">
 
                                         </span>
@@ -361,6 +362,8 @@
                                    data-method="post"
                                    data-formname="{{ add_selected_form_name }}"
                                    data-id="{{ item.stockEvent }}"
+                                   data-ord="{{ item.orderId }}"
+
                                    data-collection-form="collection"
                                    data-post-class="add-one-to-collection"
                                    title="Выдать заказ">

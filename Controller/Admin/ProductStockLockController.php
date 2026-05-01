@@ -55,12 +55,18 @@ final class ProductStockLockController extends AbstractController
     {
         if(false === $lock)
         {
-            $message = new ProductStockLockMessage($ProductStock->getId(), self::class.':'.__LINE__);
+            $message = new ProductStockLockMessage(
+                id: $ProductStock->getId(),
+                context: self::class.':'.__LINE__,
+            );
         }
 
         if(true === $lock)
         {
-            $message = new ProductStockUnlockMessage($ProductStock->getId(), self::class.':'.__LINE__);
+            $message = new ProductStockUnlockMessage(
+                id: $ProductStock->getId(),
+                context: self::class.':'.__LINE__,
+            );
         }
 
         $messageDispatch

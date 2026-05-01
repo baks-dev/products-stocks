@@ -283,13 +283,5 @@ final readonly class SubReserveProductStockTotalByCancel
         }
 
         $DeduplicatorExecuted->save();
-
-        /** Синхронно снимаем блокировку с заказа */
-
-        //        $this->messageDispatch->dispatch(
-        //            message: new OrderUnlockMessage(
-        //                $ProductStockEvent->getOrder(), self::class.':'.__LINE__
-        //            ),
-        //        );
     }
 }
