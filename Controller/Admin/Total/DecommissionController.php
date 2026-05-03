@@ -87,7 +87,7 @@ final class DecommissionController extends AbstractController
         /** Добавляем продукт в коллекцию заказа */
 
         $productDTO = new NewDecommissionOrderProductDTO()
-            ->setProduct($ProductDetailByConstResult->getEvent())
+            ->setProduct($ProductDetailByConstResult->getProductEvent())
             ->setOffer($ProductDetailByConstResult->getProductOfferUid())
             ->setVariation($ProductDetailByConstResult->getProductVariationUid())
             ->setModification($ProductDetailByConstResult->getProductModificationUid());
@@ -142,7 +142,7 @@ final class DecommissionController extends AbstractController
                     ->setOffer($ProductDetailByConstResult->getProductOfferConst())
                     ->setVariation($ProductDetailByConstResult->getProductVariationConst())
                     ->setModification($ProductDetailByConstResult->getProductModificationConst())
-                    ->setProduct($ProductDetailByConstResult->getId())
+                    ->setProduct($ProductDetailByConstResult->getProductId())
                     ->setSeller($this->getProfileUid())
                     ->setOrd($handle->getId()),
                 );

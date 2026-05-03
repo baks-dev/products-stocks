@@ -35,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_supply')]
-#[ORM\Index(columns: ['supply'])]
+#[ORM\Index(columns: ['value'])]
 class ProductStockSupply extends EntityEvent
 {
     /** ID события */
@@ -50,7 +50,7 @@ class ProductStockSupply extends EntityEvent
      * Uuid поставки
      */
     #[ORM\Column(type: UuidType::NAME, nullable: false)]
-    private string $supply;
+    private string $value;
 
     public function __construct(ProductStockEvent $event)
     {
@@ -84,8 +84,8 @@ class ProductStockSupply extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getSupply(): string
+    public function getValue(): string
     {
-        return $this->supply;
+        return $this->value;
     }
 }

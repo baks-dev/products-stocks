@@ -26,4 +26,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Entity\Stock\Event\Supply;
 
-interface ProductStockSupplyInterface { }
+interface ProductStockSupplyInterface
+{
+    public function getValue(): string;
+}
