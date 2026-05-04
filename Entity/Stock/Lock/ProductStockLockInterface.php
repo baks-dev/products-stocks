@@ -26,5 +26,5 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Lock;
 
 interface ProductStockLockInterface
 {
-    public function getLock(): bool;
+    public function getValue(): bool;
 }

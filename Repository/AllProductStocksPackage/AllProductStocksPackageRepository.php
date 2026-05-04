@@ -158,7 +158,7 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         /** Блокировка */
 
         $dbal
-            ->addSelect('product_stock_lock.lock')
+            ->addSelect('product_stock_lock.value AS lock')
             ->leftJoin(
                 'event',
                 ProductStockLock::class,

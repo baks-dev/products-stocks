@@ -140,7 +140,7 @@ final class AllProductStocksPickupRepository implements AllProductStocksPickupIn
         /** Блокировка */
 
         $dbal
-            ->addSelect('product_stock_lock.lock')
+            ->addSelect('product_stock_lock.value AS lock')
             ->leftJoin(
                 'event',
                 ProductStockLock::class,

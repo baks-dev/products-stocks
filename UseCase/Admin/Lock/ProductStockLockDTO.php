@@ -36,7 +36,7 @@ final class ProductStockLockDTO implements ProductStockLockInterface
     #[Assert\Uuid]
     private readonly ProductStockEventUid $id;
 
-    private bool $lock = false;
+    private bool $value = false;
 
     public function __construct(ProductStockEventUid $id)
     {
@@ -55,20 +55,20 @@ final class ProductStockLockDTO implements ProductStockLockInterface
      * Lock
      */
 
-    public function getLock(): bool
+    public function getValue(): bool
     {
-        return $this->lock;
+        return $this->value;
     }
 
     public function unlock()
     {
-        $this->lock = false;
+        $this->value = false;
         return $this;
     }
 
     public function lock()
     {
-        $this->lock = true;
+        $this->value = true;
         return $this;
     }
 }

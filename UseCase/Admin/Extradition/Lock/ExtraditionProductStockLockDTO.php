@@ -32,15 +32,15 @@ use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLockInterface;
 final class ExtraditionProductStockLockDTO implements ProductStockLockInterface
 {
     /** Блокируем при создании, не перезаписывая данными из сущности */
-    private readonly true $lock;
+    private readonly true $value;
 
     public function __construct()
     {
-        $this->lock = true;
+        $this->value = true;
     }
 
-    public function getLock(): true
+    public function getValue(): true
     {
-        return $this->lock;
+        return $this->value;
     }
 }

@@ -85,7 +85,7 @@ final readonly class ProductStockUnlockHandler
         }
 
         /** Если складская заявка уже РАЗБЛОКИРОВАНА - прерываем обработчик */
-        if(false === $ProductStockEvent->getLock()->isLock())
+        if(false === $ProductStockEvent->getLock()->getValue())
         {
             $this->logger->warning(
                 message: sprintf('%s: складская заявка в статусе %s уже РАЗБЛОКИРОВАНА',

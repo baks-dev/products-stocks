@@ -42,7 +42,7 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 #[AsController]
 #[RoleSecurity('ROLE_PRODUCTS_STOCKS_LOCK')]
-final class ProductStockLockController extends AbstractController
+final class LockController extends AbstractController
 {
     /** Блокировка */
     #[Route('/admin/product/stock/lock/{id}', name: 'admin.lock', methods: ['GET', 'POST'])]

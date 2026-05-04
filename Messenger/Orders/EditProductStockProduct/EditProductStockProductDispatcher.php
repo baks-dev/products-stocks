@@ -146,6 +146,15 @@ final readonly class EditProductStockProductDispatcher
         /** @var ProductStockEvent $ProductStockEvent */
         $ProductStockEvent = current($productStocks);
 
+
+        /** Скрываем идентификатор СЗ у остальных пользователей */
+        $this->publish
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'context' => self::class.':'.__LINE__,
+            ])
+            ->send('remove');
+
         /**
          * Складская заявка для редактирования
          */
@@ -202,16 +211,7 @@ final readonly class EditProductStockProductDispatcher
 
             /** Добавляем новый продукт в складскую заявку  */
             $EditProductStockDTO->addProduct($ProductStockProductDTO);
-
-            /** Скрываем идентификатор СЗ у остальных пользователей */
-            $this->publish
-                ->addData([
-                    'identifier' => (string) $ProductStockEvent->getMain(),
-                    'context' => self::class.':'.__LINE__,
-                ])
-                ->send('remove');
         }
-
 
         /** Invariable */
         $ProductStockInvariableDTO = $EditProductStockDTO->getInvariable();
@@ -241,6 +241,16 @@ final readonly class EditProductStockProductDispatcher
                     var_export($message, true),
                 ],
             );
+
+            return;
         }
+
+        /** Скрываем идентификатор СЗ у остальных пользователей */
+        $this->publish
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'context' => self::class.':'.__LINE__,
+            ])
+            ->send('remove');
     }
 }

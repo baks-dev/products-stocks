@@ -28,6 +28,7 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Lock;
 
 use BaksDev\Core\Entity\EntityReadonly;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Type\Id\ProductStockUid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
@@ -38,15 +39,23 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_stock_lock')]
-#[ORM\Index(columns: ['lock'])]
+#[ORM\Index(columns: ['value'])]
 class ProductStockLock extends EntityReadonly
 {
+    /**
+     * Идентификатор main
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\Id]
+    #[ORM\Column(type: ProductStockUid::TYPE, nullable: false)]
+    private ProductStockUid $main;
+
     /**
      * Идентификатор События
      */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    #[ORM\Id]
     #[ORM\OneToOne(targetEntity: ProductStockEvent::class, inversedBy: 'lock')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private ProductStockEvent $event;
@@ -55,16 +64,27 @@ class ProductStockLock extends EntityReadonly
      * Значение свойства
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $lock = false;
+    private bool $value = false;
 
     public function __construct(ProductStockEvent $event)
     {
+        $this->main = $event->getMain();
         $this->event = $event;
     }
 
     public function __toString(): string
     {
         return (string) $this->event;
+    }
+
+    public function getMain(): ProductStockUid
+    {
+        return $this->main;
+    }
+
+    public function getValue(): bool
+    {
+        return $this->value === true;
     }
 
     public function getDto($dto): mixed
@@ -87,10 +107,5 @@ class ProductStockLock extends EntityReadonly
 
         throw new InvalidArgumentException(sprintf(
             'Class %s interface error in %s', $dto::class, self::class.':'.__LINE__));
-    }
-
-    public function isLock(): bool
-    {
-        return $this->lock === true;
     }
 }

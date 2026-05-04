@@ -74,7 +74,7 @@ final class PackageProductStockHandler extends AbstractHandler
                 message: sprintf('%s: складская заявка => %s обновили статус на %s',
                     $this->event->getNumber(),
                     ($this->event->getLock() instanceof ProductStockLock) ?
-                        ($this->event->getLock()->isLock() ? 'ЗАБЛОКИРОВАЛИ и' : 'НЕ БЛОКИРУЯ') : 'без блокировок',
+                        ($this->event->getLock()->getValue() ? 'ЗАБЛОКИРОВАЛИ и' : 'НЕ БЛОКИРУЯ') : 'без блокировок',
                     $this->event->getStatus()->getProductStockStatusValue(),
 
                 ),
