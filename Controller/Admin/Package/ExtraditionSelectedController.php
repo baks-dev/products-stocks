@@ -191,10 +191,6 @@ final class ExtraditionSelectedController extends AbstractController
             $productStockEventEntity->getDto($ExtraditionProductStockDTO);
         }
 
-        //        dump($ExtraditionProductStockDTO);
-        dump($form->getData());
-        //        dd();
-
         /** Выводим одну заявку */
         return $this->render(
             parameters: [
