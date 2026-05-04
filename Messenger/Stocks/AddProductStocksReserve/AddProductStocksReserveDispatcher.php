@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -46,9 +47,9 @@ final readonly class AddProductStocksReserveDispatcher
 
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private ProductStockQuantityInterface $productStockMinQuantity,
-        private AddProductStockInterface $addProductStock,
         private MessageDispatchInterface $messageDispatch,
+        private ProductStockQuantityInterface $productStockMinQuantityRepository,
+        private AddProductStockInterface $addProductStockRepository,
     ) {}
 
 
@@ -56,7 +57,7 @@ final readonly class AddProductStocksReserveDispatcher
     {
         /** @note Не создаем дедубликатор, т.к. заказ и складская заявка может меняться */
 
-        $ProductStockTotal = $this->productStockMinQuantity
+        $ProductStockTotal = $this->productStockMinQuantityRepository
             ->profile($message->getProfile())
             ->product($message->getProduct())
             ->offerConst($message->getOffer())
@@ -82,7 +83,7 @@ final readonly class AddProductStocksReserveDispatcher
         }
 
         /** Добавляем в резерв продукции */
-        $rows = $this->addProductStock
+        $rows = $this->addProductStockRepository
             ->total(false) // не обновляем остаток
             ->reserve($message->getTotal())
             ->updateById($ProductStockTotal);
@@ -100,8 +101,6 @@ final readonly class AddProductStocksReserveDispatcher
             return false;
         }
 
-        $this->messageDispatch->addClearCacheOther('products-stocks');
-
         $this->logger->info(
             sprintf('Место %s: Добавили резерв продукции на складе => %s', $ProductStockTotal->getStorage(), $message->getTotal()),
             [
@@ -109,6 +108,8 @@ final readonly class AddProductStocksReserveDispatcher
                 'ProductStockTotalUid' => (string) $ProductStockTotal->getId(),
             ],
         );
+
+        $this->messageDispatch->addClearCacheOther('products-stocks');
 
         return true;
     }

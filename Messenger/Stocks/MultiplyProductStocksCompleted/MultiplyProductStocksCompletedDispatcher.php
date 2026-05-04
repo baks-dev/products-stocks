@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
- *  
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -40,18 +41,20 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-/** Обновляет складскую заявку на статус Completed «Выдан по месту назначения» */
+/**
+ * Если статус складской заявки Extradition «Укомплектована, готова к выдаче» - Обновляет складскую заявку на статус Completed «Выдан по месту назначения»
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class MultiplyProductStocksCompletedDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private CompletedProductStockHandler $CompletedProductStockHandler,
-        private CentrifugoPublishInterface $publish,
-        private UserTokenStorageInterface $UserTokenStorage,
         private DeduplicatorInterface $deduplicator,
+        private CentrifugoPublishInterface $publish,
+        private UserTokenStorageInterface $UserTokenStorageRepository,
         private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CompletedProductStockHandler $CompletedProductStockHandler,
     ) {}
 
 
@@ -76,8 +79,10 @@ final readonly class MultiplyProductStocksCompletedDispatcher
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             $this->logger->critical(
-                'products-stocks: Складская заявка для статуса Completed «Выдан по месту назначения» не найдена',
-                [self::class, var_export($message, true)],
+                sprintf('products-stocks: %s: Складская заявка для статуса Completed «Выдан по месту назначения» не найдена',
+                    $ProductStockEvent->getNumber()
+                ),
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -87,8 +92,11 @@ final readonly class MultiplyProductStocksCompletedDispatcher
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusExtradition::class))
         {
             $this->logger->critical(
-                'products-stocks: Складскую заявку можно укомплектовать только со статусом Extradition «Укомплектована, готова к выдаче»',
-                [self::class, var_export($message, true)],
+                sprintf(
+                    'products-stocks: %s: Складскую заявку можно укомплектовать только со статусом Extradition «Укомплектована, готова к выдаче»',
+                    $ProductStockEvent->getNumber()
+                ),
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
@@ -96,8 +104,11 @@ final readonly class MultiplyProductStocksCompletedDispatcher
 
         /** Скрываем идентификатор у всех пользователей */
         $this->publish
-            ->addData(['profile' => false]) // Скрывает у всех
-            ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'profile' => false, // Скрывает у всех
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('remove');
 
         /**
@@ -107,11 +118,10 @@ final readonly class MultiplyProductStocksCompletedDispatcher
         $CompletedProductStockDTO = new CompletedProductStockDTO();
         $ProductStockEvent->getDto($CompletedProductStockDTO);
 
-
         /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
-        if(false === $this->UserTokenStorage->isUser())
+        if(false === $this->UserTokenStorageRepository->isUser())
         {
-            $this->UserTokenStorage->authorization($message->getCurrentUser());
+            $this->UserTokenStorageRepository->authorization($message->getCurrentUser());
         }
 
         $ProductStock = $this->CompletedProductStockHandler->handle($CompletedProductStockDTO);
@@ -123,18 +133,12 @@ final readonly class MultiplyProductStocksCompletedDispatcher
                     $ProductStock,
                     $ProductStockEvent->getNumber(),
                 ),
-                [self::class, var_export($message, true)],
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
 
             return;
         }
 
         $Deduplicator->save();
-
-        $this->logger->info(
-            sprintf('%s: Обновили складскую заявку на статус Completed «Выдан по месту назначения»', $ProductStockEvent->getNumber()),
-            [self::class, var_export($message, true)],
-        );
-
     }
 }

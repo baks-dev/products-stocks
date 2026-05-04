@@ -33,6 +33,7 @@
 
         {% for collection in form.collection %}
             {{ form_widget(collection.id) }}
+            {{ form_widget(collection.ord) }}
         {% endfor %}
 
         <div class="modal-footer">

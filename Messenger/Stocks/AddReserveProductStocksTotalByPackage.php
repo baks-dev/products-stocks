@@ -29,6 +29,7 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Messenger\MultiplyOrdersPackage\OrdersPackageByMultiplyMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
@@ -44,7 +45,6 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPac
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Delete\DeleteProductStocksHandler;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
@@ -53,7 +53,11 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Резервирование на складе продукции при статусе складской заявки Package «Упаковка»
+ * Если статус складской заявки Package «Упаковка» - Резервирование продукции на складе
+ *
+ * @note проверяет складские остатки продукции из СЗ
+ * @note если складских остатков не хватает - отменяет существующую СЗ
+ * @note Снимает блокировку с заказа
  *
  * @see MultiplyProductStocksPackageDispatcher
  */
@@ -63,12 +67,13 @@ final readonly class AddReserveProductStocksTotalByPackage
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private ProductStocksEventInterface $ProductStocksEventRepository,
-        private CountProductStocksStorageInterface $CountProductStocksStorage,
         private MessageDispatchInterface $messageDispatch,
         private DeduplicatorInterface $deduplicator,
+        private ProductStocksEventInterface $ProductStocksEventRepository,
+        private CountProductStocksStorageInterface $CountProductStocksStorageRepository,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private ProductStocksTotalAccessInterface $ProductStocksTotalAccessRepository,
+        private CurrentOrderEventInterface $currentOrderEventRepository,
         private DeleteProductStocksHandler $deleteProductStocksHandler,
         private UserByUserProfileInterface $UserByUserProfileRepository,
     ) {}
@@ -102,6 +107,10 @@ final readonly class AddReserveProductStocksTotalByPackage
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
+            $this->logger->critical(
+                sprintf('products-stocks: Событие складской заявки %s не было найдено', $message->getEvent()),
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
             return;
         }
 
@@ -112,46 +121,42 @@ final readonly class AddReserveProductStocksTotalByPackage
             return;
         }
 
-
-        // Получаем всю продукцию в ордере
-        $products = $ProductStockEvent->getProduct();
-
-        if($products->isEmpty())
-        {
-            $this->logger->warning(
-                'Заявка не имеет продукции в коллекции',
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-
-            return;
-        }
-
         if(false === $ProductStockEvent->isInvariable())
         {
+            $this->logger->critical(
+                sprintf('products-stocks: %s: Складская заявка не может определить ProductStocksInvariable',
+                    $ProductStockEvent->getNumber()),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+            return;
+        }
+
+        $OrderEvent = $this->currentOrderEventRepository
+            ->forOrder($ProductStockEvent->getOrder())
+            ->find();
+
+        /** Заказ, связанный со складской заявкой */
+        if(false === ($OrderEvent instanceof OrderEvent))
+        {
+            $this->logger->critical(
+                sprintf('products-stocks: %s: Не найден заказ, связанный со складской заявкой',
+                    $ProductStockEvent->getNumber()
+                ),
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
+            return;
+        }
+
+        $UserProfileUid = $ProductStockEvent->getInvariable()->getProfile();
+
+        /** Получаем всю продукцию в складской заявке */
+        $products = $ProductStockEvent->getProduct();
+
+        if(true === $products->isEmpty())
+        {
             $this->logger->warning(
-                'Складская заявка не может определить ProductStocksInvariable',
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-
-            return;
-        }
-
-
-        $UserUid = $ProductStockEvent->getInvariable()?->getUsr();
-        if(false === ($UserUid instanceof UserUid))
-        {
-            $this->logger->critical(
-                'Пользователь не найден',
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-            return;
-        }
-
-        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
-        if(false === ($UserProfileUid instanceof UserProfileUid))
-        {
-            $this->logger->critical(
-                'Профиль пользователя не найден',
+                sprintf('%s: В складской заявке отсутствует продукция',
+                    $ProductStockEvent->getNumber()),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
@@ -170,18 +175,16 @@ final readonly class AddReserveProductStocksTotalByPackage
                 ->forModificationConst($product->getModification())
                 ->get();
 
+            /** Недостаточно доступной продукции на складе */
             if($total < $product->getTotal())
             {
                 $this->logger->warning(
-                    sprintf(
-                        'Недостаточно доступной продукции %s на складе для изменения резерва',
-                        $product->getProduct(),
-                    ),
-                    [self::class],
+                    sprintf('%s: Недостаточно доступной продукции на складе для изменения резерва',
+                        $ProductStockEvent->getNumber()),
+                    [self::class.':'.__LINE__]
                 );
 
-
-                /** Нужно отменить складскую заявку */
+                /** Нужно отменить созданную складскую заявку */
                 $DeleteProductStocksDTO = new DeleteProductStocksDTO();
                 $ProductStockEvent->getDto($DeleteProductStocksDTO);
 
@@ -194,16 +197,28 @@ final readonly class AddReserveProductStocksTotalByPackage
                             '%s: Отменили складскую заявку при недостаточном количестве продукции на складе',
                             $ProductStockEvent->getNumber(),
                         ),
-                        [self::class],
+                        [self::class.':'.__LINE__]
                     );
                 }
+
+                /** Синхронно снимаем блокировку с заказа */
+
+                $OrderUnlockMessage = new OrderUnlockMessage(
+                    id: $OrderEvent->getMain(),
+                    context: self::class.':'.__LINE__
+                );
+
+                $this->messageDispatch->dispatch(
+                    message: $OrderUnlockMessage,
+                );
 
                 return;
             }
 
             $this->logger->info(
-                'Добавляем резерв продукции на складе при создании заявки на упаковку',
-                ['total' => $product->getTotal()],
+                sprintf('%s: Добавляем резерв продукции на складе при создании заявки на упаковку',
+                    $ProductStockEvent->getNumber()),
+                ['total' => $product->getTotal(), self::class.':'.__LINE__],
             );
 
             $AddProductStocksReserve = new AddProductStocksReserveMessage(
@@ -220,7 +235,7 @@ final readonly class AddReserveProductStocksTotalByPackage
 
             /** Поверяем количество мест складирования продукции на складе */
 
-            $storage = $this->CountProductStocksStorage
+            $storage = $this->CountProductStocksStorageRepository
                 ->forProfile($UserProfileUid)
                 ->forProduct($product->getProduct())
                 ->forOffer($product->getOffer())
@@ -244,11 +259,20 @@ final readonly class AddReserveProductStocksTotalByPackage
 
 
             /**
-             * Если на складе количество мест одно - обновляем сразу весь резерв
+             * Если на складе одно место хранения -
+             * обновляем сразу резерв на ВСЕ количество продукции из складской заявки
              */
 
             if($storage === 1)
             {
+                $this->logger->info(
+                    sprintf('%s: обновляем сразу резерв на ВСЕ количество (%s) продукции из складской заявки',
+                        $ProductStockEvent->getNumber(),
+                        $product->getTotal()
+                    ),
+                    [self::class.':'.__LINE__],
+                );
+
                 $AddProductStocksReserve
                     ->setIterate(1)
                     ->setTotal($productTotal);
@@ -260,9 +284,20 @@ final readonly class AddReserveProductStocksTotalByPackage
 
 
             /**
-             * Если на складе количество мест несколько - создаем резерв на единицу продукции
-             * для резерва по местам от меньшего к большему
+             * Если на складе количество мест хранения несколько
+             * - создаем резерв на КАЖДУЮ единицу продукции по местам -
+             * от места, с меньшим количеством продукции, к большему
+             *
+             * @note на КАЖДУЮ единицу продукции будет запущен процесс резервирования остатков
              */
+
+            $this->logger->info(
+                sprintf('%s: создаем резерв на КАЖДУЮ единицу продукции по количеству мест складе - (%s)',
+                    $ProductStockEvent->getNumber(),
+                    $storage,
+                ),
+                [self::class.':'.__LINE__],
+            );
 
             for($i = 1; $i <= $productTotal; $i++)
             {
@@ -280,7 +315,7 @@ final readonly class AddReserveProductStocksTotalByPackage
         }
 
 
-        /** Получаем текуще событие заказа из заявки */
+        /** Получаем текущее событие заказа из заявки */
         $OrderEvent = $this->CurrentOrderEventRepository
             ->forOrder($ProductStockEvent->getOrder())
             ->find();
@@ -289,10 +324,10 @@ final readonly class AddReserveProductStocksTotalByPackage
         {
             $this->logger->critical(
                 sprintf(
-                    'orders-order: Ошибка при получении информации о заказе при упаковке %s',
-                    $ProductStockEvent->getOrder(),
+                    'orders-order: Ошибка при получении информации о заказе при создании складской заявки %s',
+                    $ProductStockEvent->getInvariable()->getNumber()
                 ),
-                [self::class],
+                [self::class.':'.__LINE__],
             );
 
             return;
@@ -328,7 +363,10 @@ final readonly class AddReserveProductStocksTotalByPackage
             $OrderEvent->getComment(),
         );
 
-        $this->messageDispatch->dispatch(message: $OrdersPackageByMultiplyMessage, transport: 'orders-order');
+        $this->messageDispatch->dispatch(
+            message: $OrdersPackageByMultiplyMessage,
+            transport: 'products-stocks'
+        );
 
         $DeduplicatorExecuted->save();
     }

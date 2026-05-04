@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -30,15 +31,16 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockDTO;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedSelectedProductStockForm;
+use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\Order\CompletedProductStockOrderDTO;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockMessage;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use InvalidArgumentException;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -49,16 +51,17 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CompletedSelectedController extends AbstractController
 {
     /**
-     * Выдать выбранные заказы клиенту.
+     * Выдать выбранные заказы клиенту
+     *
+     * @note Блокируем заказ
      */
     #[Route('/admin/product/stocks/completed-selected', name: 'admin.pickup.completed-selected', methods: ['GET', 'POST'])]
     public function delivery(
         Request $request,
-        CompletedProductStockHandler $CompletedProductStockHandler,
-        ProductsByProductStocksInterface $productDetail,
         CentrifugoPublishInterface $publish,
-        ProductStocksEventInterface $productStocksEvent,
-        MessageDispatchInterface $messageDispatch
+        MessageDispatchInterface $messageDispatch,
+        ProductsByProductStocksInterface $productDetailRepository,
+        ProductStocksEventInterface $productStocksEventRepository,
     ): Response
     {
 
@@ -79,8 +82,26 @@ final class CompletedSelectedController extends AbstractController
 
             foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
             {
+
+                if($CompletedProductStockDTO->getOrd()?->getOrd() instanceof OrderUid)
+                {
+                    /** Блокируем заказ */
+
+                    $OrderLockMessage = new OrderLockMessage(
+                        id: $CompletedProductStockDTO->getOrd()->getOrd(),
+                        context: self::class.':'.__LINE__
+                    );
+
+                    /** Отправляем в транспорт профиля */
+
+                    $messageDispatch->dispatch(
+                        message: $OrderLockMessage,
+                        transport: $this->getProfileUid(),
+                    );
+                }
+
                 $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
-                    $CompletedProductStockDTO->getEvent(),
+                    $CompletedProductStockDTO->getId(),
                     $this->getCurrentProfileUid(),
                     $this->getCurrentUsr(),
                 );
@@ -119,7 +140,11 @@ final class CompletedSelectedController extends AbstractController
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
-            $productStocksEventEntity = $productStocksEvent->forEvent($CompletedProductStockDTO->getEvent())->find();
+            $productStocksEventEntity = $productStocksEventRepository->forEvent($CompletedProductStockDTO->getEvent())->find();
+
+            $ord = new CompletedProductStockOrderDTO();
+            $ord->setOrd($productStocksEventEntity->getOrder());
+            $CompletedProductStockDTO->setOrd($ord);
 
             if(false === ($productStocksEventEntity instanceof ProductStockEvent))
             {
@@ -135,7 +160,7 @@ final class CompletedSelectedController extends AbstractController
                 ->addData(['identifier' => (string) $productStocksEventEntity->getMain()])
                 ->send('remove');
 
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
+            $products[] = $productDetailRepository->fetchAllProductsByProductStocksAssociative($productStocksEventEntity->getMain());
         }
 
 

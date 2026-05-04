@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -27,12 +28,12 @@ namespace BaksDev\Products\Stocks\Entity\Stock\Event;
 
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Archive\ProductStockArchive;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Part\ProductStockPart;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Print\ProductStockPrint;
 use BaksDev\Products\Stocks\Entity\Stock\Event\Supply\ProductStockSupply;
 use BaksDev\Products\Stocks\Entity\Stock\Invariable\ProductStocksInvariable;
+use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLock;
 use BaksDev\Products\Stocks\Entity\Stock\Modify\ProductStockModify;
 use BaksDev\Products\Stocks\Entity\Stock\Move\ProductStockMove;
 use BaksDev\Products\Stocks\Entity\Stock\Orders\ProductStockOrder;
@@ -140,6 +141,12 @@ class ProductStockEvent extends EntityEvent
     #[Assert\Length(max: 512)]
     private ?string $comment = null;
 
+    /**
+     * Блокировка складской заявки
+     */
+    #[ORM\OneToOne(targetEntity: ProductStockLock::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
+    private ?ProductStockLock $lock = null;
+
     public function __construct()
     {
         $this->id = clone new ProductStockEventUid();
@@ -208,15 +215,6 @@ class ProductStockEvent extends EntityEvent
     {
         return $this->fixed;
     }
-
-
-    //    /**
-    //     * Идентификатор склада.
-    //     */
-    //    public function getWarehouse(): ?ContactsRegionCallConst
-    //    {
-    //        return $this->warehouse;
-    //    }
 
     /**
      * Идентификатор заказа при перемещении.
@@ -324,5 +322,10 @@ class ProductStockEvent extends EntityEvent
     public function getSupply(): ?ProductStockSupply
     {
         return $this->supply;
+    }
+
+    public function getLock(): ?ProductStockLock
+    {
+        return $this->lock;
     }
 }

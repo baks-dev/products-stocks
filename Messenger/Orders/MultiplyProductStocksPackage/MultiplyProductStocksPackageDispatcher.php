@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -61,12 +62,12 @@ final readonly class MultiplyProductStocksPackageDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private DeduplicatorInterface $deduplicator,
-        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifier,
-        private PackageProductStockHandler $PackageProductStockHandler,
         private CentrifugoPublishInterface $publish,
-        private UserTokenStorageInterface $UserTokenStorage
+        private UserTokenStorageInterface $UserTokenStorage,
+        private CurrentOrderEventInterface $CurrentOrderEventRepository,
+        private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
+        private PackageProductStockHandler $PackageProductStockHandler,
     ) {}
 
     public function __invoke(MultiplyProductStocksPackageMessage $message): void
@@ -92,7 +93,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         if(false === ($OrderEvent instanceof OrderEvent))
         {
             $this->logger->critical(
-                sprintf('products-stocks: Ошибка при создании складской заявки на продукцию заказа %s', $message->getOrderId()),
+                sprintf('products-stocks: не найдено событие активное заказа %s', $message->getOrderId()),
                 [self::class],
             );
 
@@ -101,7 +102,10 @@ final readonly class MultiplyProductStocksPackageDispatcher
 
         /** Скрываем заказ у всех пользователей */
         $this->publish
-            ->addData(['order' => (string) $message->getOrderId()])
+            ->addData([
+                'order' => (string) $message->getOrderId(),
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('orders');
 
         /**
@@ -110,7 +114,6 @@ final readonly class MultiplyProductStocksPackageDispatcher
 
         $PackageProductStockDTO = new PackageProductStockDTO();
         $OrderEvent->getDto($PackageProductStockDTO);
-
 
         /**
          * Трансформируем идентификаторы продукта в константы
@@ -121,7 +124,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         foreach($OrderEvent->getProduct() as $OrderProduct)
         {
             /** Получаем идентификаторы констант продукции  */
-            $currentProductIdentifierResult = $this->CurrentProductIdentifier
+            $currentProductIdentifierResult = $this->CurrentProductIdentifierRepository
                 ->forEvent($OrderProduct->getProduct())
                 ->forOffer($OrderProduct->getOffer())
                 ->forVariation($OrderProduct->getVariation())

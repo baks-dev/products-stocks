@@ -19,18 +19,17 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockProduct;
 
-
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Messenger\EditOrder\EditOrderMessage;
-use BaksDev\Orders\Order\Messenger\OrderMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusNew;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPhone;
@@ -44,7 +43,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
-final class EditProductStockProductHandler
+final readonly class EditProductStockProductHandler
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
@@ -85,9 +84,12 @@ final class EditProductStockProductHandler
             return;
         }
 
-        /** Скрываем заказ у всех пользователей */
+        /** Скрываем заказ у других пользователей */
         $this->publish
-            ->addData(['order' => (string) $OrderEvent->getId()])
+            ->addData([
+                'order' => (string) $OrderEvent->getId(),
+                'profile' => $OrderEvent->getOrderProfile(),
+            ])
             ->send('orders');
 
         $this->messageDispatch->dispatch(

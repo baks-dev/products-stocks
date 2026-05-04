@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -32,13 +33,12 @@ use BaksDev\Products\Stocks\Messenger\ProductStockMessage;
 
 final class DeleteProductStocksHandler extends AbstractHandler
 {
-    /** @see ProductStocks */
     public function handle(DeleteProductStocksDTO $command): string|ProductStock
     {
         /** Добавляем command для валидации и гидрации */
-        $this->setCommand($command);
-
-        $this->preEventRemove(ProductStock::class, ProductStockEvent::class);
+        $this
+            ->setCommand($command)
+            ->preEventRemove(ProductStock::class, ProductStockEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -48,7 +48,7 @@ final class DeleteProductStocksHandler extends AbstractHandler
 
         $this->flush();
 
-        /* Отправляем сообщение в шину */
+        /** Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new ProductStockMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
             transport: 'products-stocks',

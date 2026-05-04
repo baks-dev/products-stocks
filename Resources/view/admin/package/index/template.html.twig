@@ -49,6 +49,7 @@
 
         document.addEventListener("DOMContentLoaded", (event) =>
         {
+
              let pBEuFDfsW = 100;
 
                 setTimeout(function CMMpMfGP()
@@ -61,9 +62,67 @@
                         return setTimeout(CMMpMfGP, pBEuFDfsW);
                     }
 
+
+                    centrifuge.newSubscription("stocks").on("publication", function(ctx)
+                    {
+                        "{{ app.environment }}" === "dev" && (console.log(`stock_lock ctx.data ->`, ctx.data));
+
+                        if(typeof ctx.data.stock !== 'undefined')
+                        {
+                            const stock_card = document.getElementById(ctx.data.stock);
+                            //const div = stock_card.querySelector(`div[data-id="${ctx.data.number}"]`);
+
+                            if(stock_card && typeof ctx.data.lock !== 'undefined')
+                            {
+
+                                const checkbox = stock_card.querySelector(`input[data-number="${ctx.data.number}"]`);
+
+                                /** Блокируем */
+                                if(ctx.data.lock === true)
+                                {
+
+                                    /** Элементы, доступные при разблокированном состоянии */
+                                    let unlock_elements = stock_card.querySelector('[data-lock="false"]');
+                                    unlock_elements?.classList.add("d-none");
+
+                                    /** Элементы, доступные при заблокированном состоянии */
+                                    let lock_elements = stock_card.querySelector('[data-lock="true"]');
+                                    lock_elements?.classList.remove("d-none");
+
+                                    /** Блокируем чекбокс */
+                                    checkbox ? checkbox.disabled = true : null;
+
+                                    "{{ app.environment }}" === "dev" && (console.log(`заблокировали складскую заявку ${ctx.data.number}`));
+                                }
+
+                                  /** Разблокируем */
+                                if(ctx.data.lock === false)
+                                {
+                                    /** Разблокируем чекбокс */
+                                    checkbox ? checkbox.disabled = false : null;
+
+                                    /** Элементы, доступные при заблокированном состоянии */
+                                    let lock_elements = stock_card.querySelector('[data-lock="true"]');
+                                    lock_elements?.classList.add("d-none");
+
+                                    /** Элементы, доступные при разблокированном состоянии */
+                                    let unlock_elements = stock_card.querySelector('[data-lock="false"]');
+                                    unlock_elements?.classList.remove("d-none");
+
+                                    "{{ app.environment }}" === "dev" && (console.log(`разблокировали складскую заявку ${ctx.data.number}`));
+                                }
+                            }
+
+                        }
+
+                    }).subscribe();
+
                     /** Удаляем из списка тикет у других */
                     centrifuge.newSubscription("remove").on("publication", function(ctx)
                     {
+                        console.log('stock_remove ctx.data ->', ctx.data)
+
+
                         if(ctx.data.profile === '{{ current_profile }}')
                         {
                             return;
@@ -74,6 +133,7 @@
                         if($identifier)
                         {
                             $identifier.remove();
+                            console.log('скрыли складскую заявку')
                         }
 
                     }).subscribe();

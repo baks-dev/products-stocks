@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -27,6 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Repository\Items\AllOrderProductItemConst\AllOrderProductItemConstInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByEventInterface;
@@ -60,6 +62,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * - изменение количества продукта в большую или меньшую сторону
  * - добавление нового продукта
  * - удаление продукта
+ *
+ * @note Снимает блокировку с заказа
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
@@ -67,10 +71,10 @@ final readonly class EditProductStockTotalDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $Logger,
+        private DeduplicatorInterface $Deduplicator,
+        private MessageDispatchInterface $MessageDispatch,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private CountProductStocksStorageInterface $CountProductStocksStorageRepository,
-        private MessageDispatchInterface $MessageDispatch,
-        private DeduplicatorInterface $Deduplicator,
     ) {}
 
     public function __invoke(EditProductStockTotalMessage $message): void
@@ -88,8 +92,8 @@ final readonly class EditProductStockTotalDispatcher
         }
 
         /**
-         * Не изменяем складские остатки без изменений
-         * Резерв создается @see AddReserveProductStocksTotalByPackage
+         * Если у СК нет прошлого события значит она не редактируется, а создается.
+         * Работа с резервами в выполняется @see AddReserveProductStocksTotalByPackage
          */
         if(false === ($message->getLast() instanceof ProductStockEventUid))
         {
@@ -105,13 +109,20 @@ final readonly class EditProductStockTotalDispatcher
 
         if(false === ($currentProductStockEvent instanceof ProductStockEvent))
         {
+            $this->Logger->critical(
+                message: 'products-stocks: Не найдено ProductStockEvent',
+                context: [
+                    self::class.':'.__LINE__,
+                    var_export($message, true),
+                ],
+            );
+
             return;
         }
 
         /**
          * Если заявка выполнена - пропускаем
-         *
-         * @see ReturnProductStockTotalDispatcher
+         * Работа с резервами в выполняется @see ReturnProductStockTotalDispatcher
          */
         if(true === ($currentProductStockEvent->isStatusEquals(ProductStockStatusCompleted::class)))
         {
@@ -396,7 +407,7 @@ final readonly class EditProductStockTotalDispatcher
 
             /**
              * Если в предыдущем состоянии СЗ продукт НЕ СОВПАДАЕТ с продуктом из текущего состояния СЗ
-             * следует ДОБАВИЛИ новый продукт в текущую СЗ - добавляем резерв на количество НОВОГО продукта из СЗ
+             * ДОБАВИЛИ новый продукт в текущую СЗ - добавляем резерв на количество НОВОГО продукта из СЗ
              */
 
 
@@ -520,7 +531,7 @@ final readonly class EditProductStockTotalDispatcher
                 ],
             );
 
-            $SubProductStocksTotalCancelMessage = new SubProductStocksReserveMessage(
+            $SubProductStocksReserveMessage = new SubProductStocksReserveMessage(
                 stock: $lastProductStockEvent->getMain(),
                 profile: $lastProductStocks->getInvariable()->getProfile(),
                 product: $lastProductStockProductDTO->getProduct(),
@@ -542,12 +553,12 @@ final readonly class EditProductStockTotalDispatcher
                     context: [self::class.':'.__LINE__],
                 );
 
-                $SubProductStocksTotalCancelMessage
+                $SubProductStocksReserveMessage
                     ->setIterate(1)
                     ->setTotal($totalDown);
 
                 $this->MessageDispatch->dispatch(
-                    $SubProductStocksTotalCancelMessage,
+                    $SubProductStocksReserveMessage,
                     transport: 'products-stocks-low', // списание в низкий приоритет
                 );
             }
@@ -568,212 +579,30 @@ final readonly class EditProductStockTotalDispatcher
 
                 for($i = 1; $i <= $totalDown; $i++)
                 {
-                    $SubProductStocksTotalCancelMessage
+                    $SubProductStocksReserveMessage
                         ->setIterate($i)
                         ->setTotal(1);
 
                     $this->MessageDispatch->dispatch(
-                        $SubProductStocksTotalCancelMessage,
+                        $SubProductStocksReserveMessage,
                         transport: 'products-stocks-low', // списание в низкий приоритет
                     );
                 }
             }
         }
 
+        /** Снимаем блокировку с заказа */
+
+        $OrderUnlockMessage = new OrderUnlockMessage(
+            id: $currentProductStocks->getOrd()->getOrd(),
+            context: self::class.':'.__LINE__
+        );
+
+        $this->MessageDispatch->dispatch(
+            message: $OrderUnlockMessage,
+            transport: 'products-stocks',
+        );
+
         $Deduplicator->save();
-    }
-
-    /**
-     * @depricated
-     *
-     * Отправляет сообщение на резерв Честного знака
-     * - получаем все item по заказу без Честных знаков
-     * - получаем константы по идентификаторам OrderProduct
-     * - на каждую единицу продукции резервируем Честный знак
-     */
-    private function addProductSignReservation(EditProductStockDTO $currentProductStocks): void
-    {
-        return;
-
-        if(false === class_exists(BaksDevProductsSignBundle::class))
-        {
-            return;
-        }
-
-        /** Все единицы продукта из заказа без Честного знака */
-        $productItemsConstants = $this->allOrderProductItemConstRepository
-            ->withoutSign()
-            ->findAll($currentProductStocks->getOrd()->getOrd());
-
-        if(false === $productItemsConstants || false === $productItemsConstants->valid())
-        {
-            $this->Logger->critical(
-                message: 'Не найдены единицы продукции для резервирования Честных знаков',
-                context: [
-                    self::class.':'.__LINE__,
-                    var_export($currentProductStocks, true),
-                ],
-            );
-
-            return;
-        }
-
-        $this->Logger->info(
-            message: 'резервируем Честные знаки по КОЛИЧЕСТВУ продукции',
-            context: [self::class.':'.__LINE__],
-        );
-
-        $ProductSignPart = new ProductSignUid();
-
-        foreach($productItemsConstants as $key => $const)
-        {
-            $DeduplicatorConst = $this->Deduplicator
-                ->namespace('products-stocks')
-                ->deduplication([
-                    (string) $const,
-                    self::class,
-                ]);
-
-            if($DeduplicatorConst->isExecuted())
-            {
-                continue;
-            }
-
-            $orderProductIds = $const->getParams();
-
-            if(null === $orderProductIds)
-            {
-                $this->Logger->critical(
-                    message: 'Невозможно получить идентификаторы OrderProduct',
-                    context: [
-                        self::class.':'.__LINE__,
-                        var_export($productItemsConstants, true),
-                    ],
-                );
-
-                return;
-            }
-
-            /** Получаем константы продукта */
-            $CurrentProductIdentifierResult = $this->CurrentProductIdentifierRepository
-                ->forEvent($orderProductIds['product'])
-                ->forOffer($orderProductIds['offer'])
-                ->forVariation($orderProductIds['variation'])
-                ->forModification($orderProductIds['modification'])
-                ->find();
-
-            if(false === $CurrentProductIdentifierResult instanceof CurrentProductIdentifierResult)
-            {
-                $this->Logger->critical(
-                    message: 'Невозможно получить CurrentProductIdentifierResult',
-                    context: [
-                        self::class.':'.__LINE__,
-                        var_export($const, true),
-                    ],
-                );
-
-                return;
-            }
-
-            /** Разбиваем партии по 100 шт */
-            if((($key + 1) % 100) === 0)
-            {
-                /** Переопределяем группу */
-                $ProductSignPart = new ProductSignUid();
-            }
-
-            /** Дедубликатор */
-
-            $this->MessageDispatch
-                ->dispatch(
-                    message: new ProductSignProcessMessage(
-                        order: $currentProductStocks->getOrd()->getOrd(),
-                        part: $ProductSignPart,
-                        user: $currentProductStocks->getInvariable()->getUsr(),
-                        profile: $currentProductStocks->getInvariable()->getProfile(),
-                        product: $CurrentProductIdentifierResult->getProduct(),
-                        offer: $CurrentProductIdentifierResult->getOfferConst(),
-                        variation: $CurrentProductIdentifierResult->getVariationConst(),
-                        modification: $CurrentProductIdentifierResult->getModificationConst(),
-
-                        itemConst: $const,
-                    ),
-
-                    transport: 'products-stocks',
-                );
-
-            $DeduplicatorConst->save();
-        }
-
-    }
-
-    /**
-     * @depricated
-     *
-     * Отправляет сообщение на снятие резерва с Честного знака
-     */
-    private function subProductSignReservation(EditProductStockDTO $lastProductStocks): void
-    {
-        return;
-
-        if(false === class_exists(BaksDevProductsSignBundle::class))
-        {
-            return;
-        }
-
-        /** Честные знаки, у которых нужно снять резерв
-         * - проверяем, что у ЧЗ есть связь с item
-         * - так как этот item будет удален из заказа и складской заявки - снимаем резерв у ЧЗ - переводим в статус New
-         */
-
-        $OrderUid = $lastProductStocks->getOrd()->getOrd();
-
-        if(false === ($OrderUid instanceof OrderUid))
-        {
-            $this->Logger->warning(
-                message: 'products-stocks: Не снимаем резервы с честных знаков. Идентификатор заказа не присвоен складской заявке',
-                context: [
-                    self::class.':'.__LINE__,
-                    (string) $lastProductStocks->getOrd()->getOrd(),
-                ],
-            );
-
-            return;
-        }
-
-        $result = $this->productSignByOrderRepository
-            ->forOrder($OrderUid)
-            ->withoutItem()
-            ->findAll();
-
-        if(false === $result || false === $result->valid())
-        {
-            $this->Logger->warning(
-                message: 'products-stocks: Не найдены Честные знаки по заказу для снятия резерва и возврата в реализацию',
-                context: [
-                    self::class.':'.__LINE__,
-                    (string) $lastProductStocks->getOrd()->getOrd(),
-                ],
-            );
-
-            return;
-        }
-
-        $this->Logger->info(
-            message: sprintf('%s: снимаем резерв Честных знаков', $OrderUid),
-            context: [self::class.':'.__LINE__],
-        );
-
-        foreach($result as $ProductSignByOrderResult)
-        {
-            $this->MessageDispatch->dispatch(
-                message: new ProductSignCancelMessage(
-                    $lastProductStocks->getInvariable()->getProfile(),
-                    $ProductSignByOrderResult->getSignEvent(),
-                ),
-                transport: 'products-sign',
-            );
-        }
-
     }
 }

@@ -27,13 +27,33 @@ declare(strict_types=1);
 namespace BaksDev\Products\Stocks\UseCase\Admin\Package;
 
 use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Core\Validator\ValidatorCollectionInterface;
+use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
+use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLock;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Messenger\Orders\EditProductStockTotal\EditProductStockTotalMessage;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 
 final class PackageProductStockHandler extends AbstractHandler
 {
+    public function __construct(
+        #[Target('productsStocksLogger')] private LoggerInterface $logger,
+
+        EntityManagerInterface $entityManager,
+        MessageDispatchInterface $messageDispatch,
+        ValidatorCollectionInterface $validatorCollection,
+        ImageUploadInterface $imageUpload,
+        FileUploadInterface $fileUpload
+    )
+    {
+        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
+    }
+
     public function handle(PackageProductStockDTO $command): string|ProductStock
     {
         $this
@@ -47,6 +67,22 @@ final class PackageProductStockHandler extends AbstractHandler
         }
 
         $this->flush();
+
+        if($this->event instanceof ProductStockEvent)
+        {
+            $this->logger->info(
+                message: sprintf('%s: складская заявка => %s обновили статус на %s',
+                    $this->event->getNumber(),
+                    ($this->event->getLock() instanceof ProductStockLock) ?
+                        ($this->event->getLock()->getValue() ? 'ЗАБЛОКИРОВАЛИ и' : 'НЕ БЛОКИРУЯ') : 'без блокировок',
+                    $this->event->getStatus()->getProductStockStatusValue(),
+
+                ),
+                context: [
+                    self::class,
+                    (string) $this->main, (string) $this->event],
+            );
+        }
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

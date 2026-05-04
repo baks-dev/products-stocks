@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -64,9 +65,7 @@ final readonly class EditProductStockProductDispatcher
 {
     public function __construct(
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
-        private DeduplicatorInterface $deduplicator,
         private CentrifugoPublishInterface $publish,
-        private MessageDispatchInterface $messageDispatch,
         private EditProductStockHandler $editProductStockHandler,
         private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
         private CurrentOrderEventInterface $currentOrderEventRepository,
@@ -110,7 +109,11 @@ final readonly class EditProductStockProductDispatcher
 
         /** Скрываем заказ у всех пользователей */
         $this->publish
-            ->addData(['order' => (string) $OrderEvent->getId()])
+            ->addData([
+                'order' => (string) $OrderEvent->getId(),
+                'profile' => false,
+                'context' => self::class.':'.__LINE__,
+            ])
             ->send('orders');
 
         /** Получаем складскую заявку по идентификатору заказа */
@@ -142,6 +145,15 @@ final readonly class EditProductStockProductDispatcher
 
         /** @var ProductStockEvent $ProductStockEvent */
         $ProductStockEvent = current($productStocks);
+
+
+        /** Скрываем идентификатор СЗ у остальных пользователей */
+        $this->publish
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'context' => self::class.':'.__LINE__,
+            ])
+            ->send('remove');
 
         /**
          * Складская заявка для редактирования
@@ -199,13 +211,7 @@ final readonly class EditProductStockProductDispatcher
 
             /** Добавляем новый продукт в складскую заявку  */
             $EditProductStockDTO->addProduct($ProductStockProductDTO);
-
-            /** Скрываем идентификатор СЗ у остальных пользователей */
-            $this->publish
-                ->addData(['identifier' => (string) $ProductStockEvent->getMain()])
-                ->send('remove');
         }
-
 
         /** Invariable */
         $ProductStockInvariableDTO = $EditProductStockDTO->getInvariable();
@@ -235,6 +241,16 @@ final readonly class EditProductStockProductDispatcher
                     var_export($message, true),
                 ],
             );
+
+            return;
         }
+
+        /** Скрываем идентификатор СЗ у остальных пользователей */
+        $this->publish
+            ->addData([
+                'identifier' => (string) $ProductStockEvent->getMain(),
+                'context' => self::class.':'.__LINE__,
+            ])
+            ->send('remove');
     }
 }

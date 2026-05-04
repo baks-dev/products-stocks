@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -27,6 +28,7 @@ namespace BaksDev\Products\Stocks\Messenger\Stocks;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Products\ProductStockProduct;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
@@ -38,9 +40,7 @@ use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCompleted;
 use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -48,9 +48,11 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Отменяет резерв на складе при отмене складской заявки
+ * Если статус складской заявки Cancel «Отменен» - Отменяет резерв на складе
  *
  * @see CancelProductStocksByCancelOrderDispatcher
+ *
+ * @note Снимает блокировку с заказа
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 1)]
@@ -92,6 +94,10 @@ final readonly class SubReserveProductStockTotalByCancel
 
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
+            $this->logger->critical(
+                sprintf('products-stocks: Событие складской заявки %s не было найдено', $message->getEvent()),
+                [self::class.':'.__LINE__, var_export($message, true)]
+            );
             return;
         }
 
@@ -152,7 +158,7 @@ final readonly class SubReserveProductStockTotalByCancel
 
 
         /** Идентификатор профиля склада отгрузки, где производится отмена заявки */
-        $UserProfileUid = $ProductStockEvent->getInvariable()?->getProfile();
+        $UserProfileUid = $ProductStockEvent->getInvariable()->getProfile();
 
 
         /** @var ProductStockProduct $product */

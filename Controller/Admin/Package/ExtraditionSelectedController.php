@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -29,6 +30,8 @@ use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderLockMessage;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition\MultiplyProductStocksExtraditionMessage;
 use BaksDev\Products\Stocks\Repository\ProductsByProductStocks\ProductsByProductStocksInterface;
@@ -36,7 +39,7 @@ use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInte
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionSelectedProductStockForm;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\Order\ExtraditionProductStockOrderDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -48,14 +51,16 @@ final class ExtraditionSelectedController extends AbstractController
 {
     /**
      * Укомплектовать выбранные складские заявки
+     *
+     * @note Блокируем заказ
      */
     #[Route('/admin/product/stock/package/extradition-selected', name: 'admin.package.extradition-selected', methods: ['GET', 'POST'])]
     public function extradition(
         Request $request,
-        ProductsByProductStocksInterface $productDetail,
+        MessageDispatchInterface $messageDispatch,
         CentrifugoPublishInterface $publish,
-        ProductStocksEventInterface $productStocksEvent,
-        MessageDispatchInterface $messageDispatch
+        ProductsByProductStocksInterface $productDetailRepository,
+        ProductStocksEventInterface $productStocksEventRepository,
     ): Response
     {
         $ExtraditionSelectedProductStockDTO = new ExtraditionSelectedProductStockDTO();
@@ -75,6 +80,24 @@ final class ExtraditionSelectedController extends AbstractController
 
             foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
             {
+
+                if($ExtraditionProductStockDTO->getOrd()?->getOrd() instanceof OrderUid)
+                {
+                    /** Блокируем заказ */
+
+                    $OrderLockMessage = new OrderLockMessage(
+                        id: $ExtraditionProductStockDTO->getOrd()->getOrd(),
+                        context: self::class.':'.__LINE__
+                    );
+
+                    /** Отправляем в транспорт профиля */
+
+                    $messageDispatch->dispatch(
+                        message: $OrderLockMessage,
+                        transport: $this->getProfileUid(),
+                    );
+                }
+
                 $MultiplyProductStocksExtraditionMessage = new MultiplyProductStocksExtraditionMessage(
                     $ExtraditionProductStockDTO->getEvent(),
                     $this->getProfileUid(),
@@ -127,9 +150,13 @@ final class ExtraditionSelectedController extends AbstractController
         /** @var ExtraditionProductStockDTO $ExtraditionProductStockDTO */
         foreach($ExtraditionSelectedProductStockDTO->getCollection() as $ExtraditionProductStockDTO)
         {
-            $productStockEventEntity = $productStocksEvent
+            $productStockEventEntity = $productStocksEventRepository
                 ->forEvent($ExtraditionProductStockDTO->getEvent())
                 ->find();
+
+            $ord = new ExtraditionProductStockOrderDTO();
+            $ord->setOrd($productStockEventEntity->getOrder());
+            $ExtraditionProductStockDTO->setOrd($ord);
 
             if(false === ($productStockEventEntity instanceof ProductStockEvent))
             {
@@ -141,15 +168,14 @@ final class ExtraditionSelectedController extends AbstractController
             /** Скрываем идентификатор у остальных пользователей */
 
             $publish
-                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->addData(['identifier' => (string) $productStockEventEntity->getMain()])
+                ->addData(['profile' => (string) $this->getCurrentProfileUid()])
                 ->send('remove');
 
 
             $stock_numbers[] = $productStockEventEntity->getInvariable()?->getNumber();
-            $products[] = $productDetail->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
+            $products[] = $productDetailRepository->fetchAllProductsByProductStocksAssociative($productStockEventEntity->getMain());
         }
-
 
         /** Выводим несколько заявок */
         if($ExtraditionSelectedProductStockDTO->getCollection()->count() > 1)

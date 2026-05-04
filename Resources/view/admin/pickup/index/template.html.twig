@@ -56,37 +56,97 @@
                 }
             });
 
-                let hZmBqNQQ = 100;
+            let hZmBqNQQ = 100;
 
-                setTimeout(function yZugPWYF()
+            setTimeout(function yZugPWYF()
+            {
+
+                if(typeof centrifuge !== "object")
                 {
-                    if(typeof centrifuge !== "object")
-                    {
-                        if(hZmBqNQQ > 1000) { return; }
+                    if(hZmBqNQQ > 1000) { return; }
+                    hZmBqNQQ = hZmBqNQQ * 2;
+                    return setTimeout(yZugPWYF, hZmBqNQQ);
+                }
 
-                        hZmBqNQQ = hZmBqNQQ * 2;
-                        return setTimeout(yZugPWYF, hZmBqNQQ);
+                /** Удаляем из списка тикет у других */
+                centrifuge.newSubscription("remove").on("publication", function(ctx)
+                {
+
+                    if(ctx.data.profile === '{{ current_profile }}')
+                    {
+                        return;
                     }
 
-                    /** Удаляем из списка тикет у других */
-                    centrifuge.newSubscription("remove").on("publication", function(ctx)
+                    let $identifier = document.getElementById(ctx.data.identifier);
+
+                    if($identifier)
                     {
+                        $identifier.remove();
+                    }
 
-                        if(ctx.data.profile === '{{ current_profile }}')
+                }).subscribe();
+
+                centrifuge.newSubscription("stocks").on("publication", function(ctx)
+                {
+
+                    "{{ app.environment }}" === "dev" && (console.log(`stock_lock ctx.data ->`, ctx.data));
+
+                     if(typeof ctx.data.stock !== 'undefined')
                         {
-                            return;
+                            const stock_card = document.getElementById(ctx.data.stock);
+                            //const div = stock_card.querySelector(`div[data-id="${ctx.data.number}"]`);
+
+                            if(stock_card && typeof ctx.data.lock !== 'undefined')
+                            {
+
+                                const checkbox = stock_card.querySelector(`input[data-number="${ctx.data.number}"]`);
+
+                                /** Блокируем */
+                                if(ctx.data.lock === true)
+                                {
+                                    /** Элементы, доступные при разблокированном состоянии */
+                                    let unlock_elements = stock_card.querySelector('[data-lock="false"]');
+                                    unlock_elements?.classList.add("d-none");
+
+                                    /** Элементы, доступные при заблокированном состоянии */
+                                    let lock_elements = stock_card.querySelector('[data-lock="true"]');
+                                    lock_elements?.classList.remove("d-none");
+
+                                    /** Блокируем чекбокс */
+                                    checkbox ? checkbox.disabled = true : null;
+
+                                    "{{ app.environment }}" === "dev" && (console.log(`заблокировали складскую заявку ${ctx.data.number}`));
+                                }
+
+                                  /** Разблокируем */
+                                if(ctx.data.lock === false)
+                                {
+                                    /** Разблокируем чекбокс */
+                                    checkbox ? checkbox.disabled = false : null;
+
+                                    /** Элементы, доступные при заблокированном состоянии */
+                                    let lock_elements = stock_card.querySelector('[data-lock="true"]');
+                                    lock_elements?.classList.add("d-none");
+
+                                    /** Элементы, доступные при разблокированном состоянии */
+                                    let unlock_elements = stock_card.querySelector('[data-lock="false"]');
+                                    unlock_elements?.classList.remove("d-none");
+
+                                    "{{ app.environment }}" === "dev" && (console.log(`разблокировали складскую заявку ${ctx.data.number}`));
+                                }
+                            }
+
                         }
 
-                        let $identifier = document.getElementById(ctx.data.identifier);
 
-                        if($identifier)
-                        {
-                            $identifier.remove();
-                        }
 
-                    }).subscribe();
+                }).subscribe();
 
-                }, 100);
+
+
+
+            }, 100);
+
         });
 
         function changeDatapicker(input)

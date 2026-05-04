@@ -19,6 +19,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
+ *
  */
 
 declare(strict_types=1);
@@ -29,6 +30,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEventInterface;
 use BaksDev\Products\Stocks\Type\Event\ProductStockEventUid;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusCancel;
+use BaksDev\Products\Stocks\UseCase\Admin\Cancel\Lock\CancelProductStockLockDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -53,10 +55,16 @@ final class CancelProductStockDTO implements ProductStockEventInterface
     /** Комментарий */
     private ?string $comment = null;
 
+    /** Блокировка */
+    private CancelProductStockLockDTO $lock;
+
     public function __construct()
     {
         $this->fixed = null;
         $this->status = new ProductStockStatus(ProductStockStatusCancel::class);
+
+        /** Блокировка */
+        $this->lock = new CancelProductStockLockDTO();
     }
 
     /**
@@ -97,4 +105,8 @@ final class CancelProductStockDTO implements ProductStockEventInterface
         return $this;
     }
 
+    public function getLock(): CancelProductStockLockDTO
+    {
+        return $this->lock;
+    }
 }
