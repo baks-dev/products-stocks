@@ -135,9 +135,7 @@ final class ProductStocksByOrderRepository implements ProductStocksByOrderInterf
     public function findByOrder(Order|OrderUid|string $order): array|null
     {
         $this->onOrder($order);
-        $builder = $this->builder();
-
-        return $builder->getResult();
+        return $this->builder()->getResult();
     }
 
     /**

@@ -140,7 +140,9 @@ final class CompletedSelectedController extends AbstractController
         /** @var CompletedProductStockDTO $CompletedProductStockDTO */
         foreach($CompletedSelectedProductStockDTO->getCollection() as $CompletedProductStockDTO)
         {
-            $productStocksEventEntity = $productStocksEventRepository->forEvent($CompletedProductStockDTO->getEvent())->find();
+            $productStocksEventEntity = $productStocksEventRepository
+                ->forEvent($CompletedProductStockDTO->getEvent())
+                ->find();
 
             $ord = new CompletedProductStockOrderDTO();
             $ord->setOrd($productStocksEventEntity->getOrder());
