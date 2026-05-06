@@ -92,14 +92,16 @@ final readonly class EditProductStockProductHandler
             ])
             ->send('orders');
 
-        $this->messageDispatch->dispatch(
-            message: new EditProductStockProductMessage(
-                $OrderEvent->getMain(),
-                $OrderEvent->getOrderProfile(),
-                $OrderEvent->getOrderUser(),
-                $OrderEvent->getOrderNumber(),
-            ),
-            transport: 'products-stocks',
-        );
+        $this->messageDispatch
+            ->addClearCacheOther('orders-order-'.$OrderEvent->getStatus())
+            ->dispatch(
+                message: new EditProductStockProductMessage(
+                    $OrderEvent->getMain(),
+                    $OrderEvent->getOrderProfile(),
+                    $OrderEvent->getOrderUser(),
+                    $OrderEvent->getOrderNumber(),
+                ),
+                transport: 'products-stocks',
+            );
     }
 }
