@@ -39,6 +39,7 @@ use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstResult
 use BaksDev\Products\Sign\UseCase\Admin\Decommission\DecommissionProductSignDTO;
 use BaksDev\Products\Sign\UseCase\Admin\Decommission\DecommissionProductSignHandler;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Type\Id\UserUid;
 use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -60,9 +61,9 @@ final class DecommissionController extends AbstractController
         DecommissionProductSignHandler $DecommissionProductSignHandler,
     ): Response
     {
-        $UserUid = $this->getUsr()?->getId();
+        $User = $this->getUsr();
 
-        if(false === ($UserUid instanceof UserUid))
+        if(false === ($User instanceof User))
         {
             throw new InvalidArgumentException('Invalid Argument User');
         }
@@ -98,7 +99,7 @@ final class DecommissionController extends AbstractController
         $NewDecommissionOrderDTO
             ->getInvariable()
             ->setProfile($this->getProfileUid())
-            ->setUsr($UserUid);
+            ->setUsr($User->getId());
 
 
         $form = $this
@@ -136,7 +137,7 @@ final class DecommissionController extends AbstractController
                 $NewDecommissionOrderProductDTO = $NewDecommissionOrderDTO->getProduct()->current();
 
                 $DecommissionProductSignHandler->handle(new DecommissionProductSignDTO()
-                    ->setUsr($UserUid)
+                    ->setUsr($User->getId())
                     ->setProfile($this->getProfileUid())
                     ->setTotal($NewDecommissionOrderProductDTO->getPrice()->getTotal())
                     ->setOffer($ProductDetailByConstResult->getProductOfferConst())
