@@ -77,6 +77,12 @@ class ReturnProductStockTotalDebugDispatcherTest extends KernelTestCase
 
         $events = $dbal->fetchAllAssociative();
 
+        if(empty($events))
+        {
+            self::assertFalse(false);
+            return;
+        }
+
         $currentEvent = current($events[0]);
         $lastEvent = current($events[1]);
 

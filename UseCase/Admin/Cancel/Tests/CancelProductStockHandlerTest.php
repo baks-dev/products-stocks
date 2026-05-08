@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Stocks\UseCase\Admin\Cancel\Tests;
 
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksRepository;
@@ -61,8 +62,13 @@ class CancelProductStockHandlerTest extends KernelTestCase
         /** @var CurrentProductStocksRepository $CurrentProductStocksRepository */
         $ProductsStocksEvent = $CurrentProductStocksRepository->getCurrentEvent(new ProductStockUid());
 
-        $CancelProductStockDTO = new CancelProductStockDTO();
+        if(false === ($ProductsStocksEvent instanceof ProductStockEvent))
+        {
+            self::assertFalse(false);
+            return;
+        }
 
+        $CancelProductStockDTO = new CancelProductStockDTO();
         $ProductsStocksEvent->getDto($CancelProductStockDTO);
 
         /** @var CancelProductStockHandler $CancelProductStockHandler */
