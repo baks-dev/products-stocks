@@ -41,7 +41,7 @@ final class MultiplyProductStocksCompletedMessage
     public function __construct(
         ProductStockEventUid $id,
         UserProfileUid $profile,
-        UserUid $current,
+        ?UserUid $current,
     )
     {
         $this->id = (string) $id;
@@ -68,9 +68,9 @@ final class MultiplyProductStocksCompletedMessage
     /**
      * Идентификатор текущего пользователя
      */
-    public function getCurrentUser(): UserUid
+    public function getCurrentUser(): ?UserUid
     {
-        return new UserUid($this->current);
+        return $this->current ? new UserUid($this->current) : null;
     }
 
 }

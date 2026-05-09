@@ -36,13 +36,15 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Если статус складской заявки Extradition «Укомплектована, готова к выдаче» - Обновляет складскую заявку на статус Completed «Выдан по месту назначения»
+ * Если статус складской заявки Extradition «Укомплектована, готова к выдаче» - Обновляет складскую заявку на статус
+ * Completed «Выдан по месту назначения»
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
@@ -80,7 +82,7 @@ final readonly class MultiplyProductStocksCompletedDispatcher
         {
             $this->logger->critical(
                 sprintf('products-stocks: %s: Складская заявка для статуса Completed «Выдан по месту назначения» не найдена',
-                    $ProductStockEvent->getNumber()
+                    $ProductStockEvent->getNumber(),
                 ),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
@@ -94,7 +96,7 @@ final readonly class MultiplyProductStocksCompletedDispatcher
             $this->logger->critical(
                 sprintf(
                     'products-stocks: %s: Складскую заявку можно укомплектовать только со статусом Extradition «Укомплектована, готова к выдаче»',
-                    $ProductStockEvent->getNumber()
+                    $ProductStockEvent->getNumber(),
                 ),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
@@ -119,7 +121,10 @@ final readonly class MultiplyProductStocksCompletedDispatcher
         $ProductStockEvent->getDto($CompletedProductStockDTO);
 
         /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
-        if(false === $this->UserTokenStorageRepository->isUser())
+        if(
+            false === $this->UserTokenStorageRepository->isUser()
+            && true === ($message->getCurrentUser() instanceof UserUid)
+        )
         {
             $this->UserTokenStorageRepository->authorization($message->getCurrentUser());
         }
