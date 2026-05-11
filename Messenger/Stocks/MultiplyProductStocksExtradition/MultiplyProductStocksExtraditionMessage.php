@@ -39,18 +39,18 @@ final readonly class MultiplyProductStocksExtraditionMessage
 
     private string $profile;
 
-    private string $current;
+    private ?string $current;
 
     public function __construct(
         ProductStockEventUid $id,
         UserProfileUid $profile,
-        UserUid $current,
+        ?UserUid $current,
         private ?string $comment = null,
     )
     {
         $this->id = (string) $id;
         $this->profile = (string) $profile;
-        $this->current = (string) $current;
+        $this->current = $current ? (string) $current : null;
     }
 
     /**
@@ -72,9 +72,9 @@ final readonly class MultiplyProductStocksExtraditionMessage
     /**
      * Идентификатор текущего пользователя
      */
-    public function getCurrentUser(): UserUid
+    public function getCurrentUser(): UserUid|null
     {
-        return new UserUid($this->current);
+        return $this->current ? new UserUid($this->current) : null;
     }
 
     public function getComment(): string|false

@@ -38,6 +38,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPac
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -137,7 +138,7 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         }
 
         /** Авторизуем текущего пользователя для лога изменений если сообщение обрабатывается из очереди */
-        if(false === $this->UserTokenStorageRepository->isUser())
+        if(false === $this->UserTokenStorageRepository->isUser() && $message->getCurrentUser() instanceof UserUid)
         {
             $this->UserTokenStorageRepository->authorization($message->getCurrentUser());
         }
