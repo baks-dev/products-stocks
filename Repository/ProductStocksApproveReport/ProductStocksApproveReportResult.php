@@ -150,6 +150,11 @@ final readonly class ProductStocksApproveReportResult
 
         $price = new Money($this->product_price, true);
 
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
+        }
 
         /* Скидка магазина */
         if(false === empty($this->project_discount))
@@ -161,12 +166,6 @@ final readonly class ProductStocksApproveReportResult
         if(false === empty($this->profile_discount))
         {
             $price->applyString($this->profile_discount);
-        }
-
-        /* Торговая наценка с учетом сезонности */
-        if(false === empty($this->season_percent))
-        {
-            $price->applyString($this->season_percent);
         }
 
         return $price;
