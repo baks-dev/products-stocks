@@ -75,7 +75,7 @@ final class WarehouseController extends AbstractController
          */
         if($ProductStockEvent->getMoveDestination())
         {
-            $UserUid = $this->getUsr()?->getId();
+            $UserUid = $this->getUsr()->getId();
             $target = $ProductStockEvent->getMove()?->getDestination();
             $destination = $ProductStockEvent->getInvariable()?->getProfile();
 

@@ -138,7 +138,7 @@ final class SendController extends AbstractController
 
                 $move
                     ->getInvariable()
-                    ->setUsr($this->getUsr()?->getId())
+                    ->setUsr($this->getUsr()->getId())
                     ->setProfile($move->getMove()->getWarehouse());
 
                 $move->setComment($movingDTO->getComment());
