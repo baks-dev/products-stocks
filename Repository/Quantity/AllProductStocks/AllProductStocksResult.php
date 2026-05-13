@@ -90,6 +90,7 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
 
         private bool|null $approve = true,
 
+        private string|null $season_percent = null,
     ) {}
 
     public function getApprove(): bool
@@ -252,6 +253,12 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
             $price->applyString($this->profile_discount);
         }
 
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
+        }
+
         return $price;
     }
 
@@ -281,6 +288,12 @@ final readonly class AllProductStocksResult implements ProductPriceResultInterfa
         if(false === empty($this->profile_discount))
         {
             $oldPrice->applyString($this->profile_discount);
+        }
+
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $oldPrice->applyString($this->season_percent);
         }
 
         return $oldPrice;
