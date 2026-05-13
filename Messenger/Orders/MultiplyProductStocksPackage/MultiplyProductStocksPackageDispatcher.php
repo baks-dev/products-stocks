@@ -44,7 +44,10 @@ use BaksDev\Products\Stocks\UseCase\Admin\Package\Orders\PackageProductStockOrde
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\PackageProductStockHandler;
 use BaksDev\Products\Stocks\UseCase\Admin\Package\Products\CollectionPackageProductStockDTO;
+use BaksDev\Users\Profile\UserProfile\Repository\UserByUserProfile\UserByUserProfileInterface;
+use BaksDev\Users\User\Entity\User;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
+use BaksDev\Users\User\Type\Id\UserUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -68,6 +71,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
         private PackageProductStockHandler $PackageProductStockHandler,
+        private UserByUserProfileInterface $UserByUserProfileRepository
     ) {}
 
     public function __invoke(MultiplyProductStocksPackageMessage $message): void
@@ -141,11 +145,39 @@ final readonly class MultiplyProductStocksPackageDispatcher
             $PackageProductStockDTO->addProduct($ProductStockDTO);
         }
 
+
+        /**
+         * Определяем пользователя профиля
+         */
+
+        $UserUid = $OrderEvent->getOrderUser();
+
+        if(false === ($UserUid instanceof UserUid))
+        {
+            $User = $this->UserByUserProfileRepository
+                ->forProfile($message->getUserProfile())
+                ->find();
+
+            if(false === ($User instanceof User))
+            {
+                $this->logger->critical(
+                    sprintf(
+                        'products-stocks: Невозможно определить пользователя по идентификатору профиля %s',
+                        $message->getUserProfile(),
+                    ),
+                    [self::class.':'.__LINE__]);
+
+                return;
+            }
+
+            $UserUid = $User->getId();
+        }
+
         // Присваиваем заявке склад для сборки
         $PackageProductStockDTO
             ->getInvariable()
             ->setNumber($OrderEvent->getPostingNumber())
-            ->setUsr($OrderEvent->getOrderUser())
+            ->setUsr($UserUid)
             ->setProfile($message->getUserProfile());
 
         // Присваиваем заявке идентификатор заказа
