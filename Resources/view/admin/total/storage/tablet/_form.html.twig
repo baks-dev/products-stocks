@@ -38,7 +38,7 @@
                                 offer : card.product_offer_value,
                                 variation : card.product_variation_value,
                                 modification : card.product_modification_value,
-                                postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-' })
+                                postfix:  (card.product_modification_postfix ?: card.product_variation_postfix ?: card.product_offer_postfix ?: null )|replace({ '/': '-', ' ': '~' })
                             }) %}
 
                             <a href="{{ product_href }}"

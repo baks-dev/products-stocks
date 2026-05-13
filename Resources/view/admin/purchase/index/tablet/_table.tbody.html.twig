@@ -37,7 +37,7 @@
                 offer : item.product_offer_value,
                 variation : item.product_variation_value,
                 modification : item.product_modification_value,
-                postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-' })
+                postfix:  (item.product_modification_postfix ?: item.product_variation_postfix ?: item.product_offer_postfix ?: null )|replace({ '/': '-', ' ': '~' })
             }) %}
 
             <div>

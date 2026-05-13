@@ -132,7 +132,7 @@
                     offer : item.productOfferValue,
                     variation : item.productVariationValue,
                     modification : item.productModificationValue,
-                    postfix:  (item.productModificationPostfix ?: item.productVariationPostfix ?: item.productOfferPostfix ?: null )|replace({ '/': '-' })
+                    postfix:  (item.productModificationPostfix ?: item.productVariationPostfix ?: item.productOfferPostfix ?: null )|replace({ '/': '-', ' ': '~' })
                 }) %}
 
                 <div>

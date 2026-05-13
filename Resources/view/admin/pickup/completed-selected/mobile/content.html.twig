@@ -59,7 +59,7 @@
                                     offer : product.product_offer_value,
                                     variation : product.product_variation_value,
                                     modification : product.product_modification_value,
-                                    postfix:  (product.product_modification_postfix ?: product.product_variation_postfix ?: product.product_offer_postfix ?: null )|replace({ '/': '-' })
+                                    postfix:  (product.product_modification_postfix ?: product.product_variation_postfix ?: product.product_offer_postfix ?: null )|replace({ '/': '-', ' ': '~' })
                                 }) %}
 
                                 <div class="icon rounded-3 bg-cover lazy p-1 m-0" style="width: 80px; height: 80px;"
