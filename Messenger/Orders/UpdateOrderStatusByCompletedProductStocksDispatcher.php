@@ -91,7 +91,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         {
             $this->logger->critical(
                 sprintf('products-stocks: Событие складской заявки %s не было найдено', $message->getEvent()),
-                [self::class.':'.__LINE__, var_export($message, true)]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -137,7 +137,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
         {
             $this->logger->critical(
                 message: 'products-stocks: Не найдено OrderEvent',
-                context: [self::class.':'.__LINE__, var_export($message, true)]
+                context: [self::class.':'.__LINE__, var_export($message, true)],
             );
             return;
         }
@@ -179,15 +179,16 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 
         $DeduplicatorExecuted->save();
 
-        /** Синхронно снимаем блокировку с заказа */
+        /** Асинхронно снимаем блокировку с заказа с низким приоритетом */
 
         $OrderUnlockMessage = new OrderUnlockMessage(
             id: $ProductStockEvent->getOrder(),
-            context: self::class.':'.__LINE__
+            context: self::class.':'.__LINE__,
         );
 
         $this->messageDispatch->dispatch(
             message: $OrderUnlockMessage,
+            transport: $CurrentOrderEvent->getOrderProfile().'-low',
         );
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))
@@ -197,7 +198,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
                 ->addData([
                     'order' => (string) $ProductStockEvent->getOrder(),
                     'profile' => false,
-                    'context' => self::class.':'.__LINE__
+                    'context' => self::class.':'.__LINE__,
                 ])
                 ->send('orders');
 

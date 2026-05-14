@@ -48,6 +48,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use const BaksDev\Reference\Car\Type\CarModels\Id\Models\Collection\string;
 
 /**
  * Если статус складской заявки Extradition «Готов к выдаче» - Обновляет статус заказа на Extradition «Готов к выдаче»
@@ -190,15 +191,20 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         $DeduplicatorExecuted->save();
 
-        /** Синхронно снимаем блокировку с заказа */
+        /**
+         * Асинхронно снимаем блокировку с заказа в транспорте профиля
+         *
+         * @note в транспорте профиля - на тот случай, если в контроллере ExtraditionSelectedController отправили большое количество складских заявок
+         */
 
         $OrderUnlockMessage = new OrderUnlockMessage(
             id: $ProductStockEvent->getOrder(),
-            context: self::class.':'.__LINE__
+            context: self::class.':'.__LINE__,
         );
 
         $this->messageDispatch->dispatch(
             message: $OrderUnlockMessage,
+            transport: (string) $CurrentOrderEvent->getOrderProfile(),
         );
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))
@@ -208,7 +214,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
                 ->addData([
                     'order' => (string) $ProductStockEvent->getOrder(),
                     'profile' => false,
-                    'context' => self::class.':'.__LINE__
+                    'context' => self::class.':'.__LINE__,
                 ])
                 ->send('orders');
 
