@@ -62,7 +62,7 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->product;
     }
 
-    public function setProduct(ProductUid $product): ProductStockDTO
+    public function setProduct(ProductUid $product): self
     {
         $this->product = $product;
         return $this;
@@ -74,11 +74,11 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->offer;
     }
 
-    public function setOffer(?ProductOfferConst $offer): ProductStockDTO
+    public function setOffer(ProductOfferConst|null|false $offer): self
     {
         if(false === (new ReflectionProperty(self::class, 'offer'))->isInitialized($this))
         {
-            $this->offer = $offer;
+            $this->offer = $offer instanceof ProductOfferConst ? $offer : null;
         }
 
         return $this;
@@ -90,11 +90,11 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->variation;
     }
 
-    public function setVariation(?ProductVariationConst $variation): ProductStockDTO
+    public function setVariation(ProductVariationConst|null|false $variation): self
     {
         if(false === (new ReflectionProperty(self::class, 'variation'))->isInitialized($this))
         {
-            $this->variation = $variation;
+            $this->variation = $variation instanceof ProductVariationConst ? $variation : null;
         }
 
         return $this;
@@ -106,11 +106,11 @@ final class ProductStockDTO implements ProductStockProductInterface
         return $this->modification;
     }
 
-    public function setModification(?ProductModificationConst $modification): ProductStockDTO
+    public function setModification(ProductModificationConst|null|false $modification): self
     {
         if(false === (new ReflectionProperty(self::class, 'modification'))->isInitialized($this))
         {
-            $this->modification = $modification;
+            $this->modification = $modification instanceof ProductModificationConst ? $modification : null;
         }
 
         return $this;
