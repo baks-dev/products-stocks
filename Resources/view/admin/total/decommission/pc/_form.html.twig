@@ -1,5 +1,7 @@
 {% trans_default_domain 'orders-order.admin' %}
 
+{# @var card \BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByConstResult #}
+
 {% set arr_property = card.categorySectionField %}
 
 <div class="modal-dialog modal-dialog-centered" style="max-width: 780px;">
@@ -30,9 +32,9 @@
 
         </div>
 
-        <div class="modal-body d-flex justify-content-between gap-3">
+        <div class="modal-body">
 
-            <div class="modal-header border-0">
+            <div class="d-flex justify-content-between gap-3">
                 <div class="d-flex gap-3 align-items-center">
                     <div>
 
@@ -102,7 +104,7 @@
                                 Артикул: {{ card.productArticle }}
                             </div>
 
-                            {#                             Свойства, учавствующие в превью карточки #}
+                            {# Свойства, учавствующие в превью карточки #}
                             {% for name_property in  arr_property | filter(props => props.field_card is defined and props.field_card == true) %}
                                 {{ name_property.field_value|call_twig_func(name_property.field_type~'_render') }}
                             {% endfor %}
@@ -110,12 +112,15 @@
 
                     </div>
                 </div>
+
+                <div class="w-25">
+                    {{ form_row(form.product[0].price.total, { label: 'Количество', attr: { min : 1, max: total } }) }}
+                </div>
             </div>
 
-            <div class="w-25">
-                {{ form_row(form.product[0].price.total, { label: 'Количество', attr: { min : 1, max: total } }) }}
+            <div class="mt-3">
+                {{ form_widget(form.comment, { attr: { placeholder : 'Причина списания'} }) }}
             </div>
-
 
         </div>
 

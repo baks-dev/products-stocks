@@ -111,13 +111,15 @@ final readonly class DecommissionProductStocksByDecommissionOrderDispatcher
             ->setUsr($OrderEvent->getOrderUser())
             ->setProfile($OrderEvent->getOrderProfile());
 
+
         // Присваиваем заявке идентификатор заказа
         $DecommissionProductStockOrderDTO = new DecommissionProductStockOrderDTO()
             ->setOrd($OrderEvent->getMain());
 
         $DecommissionProductStockDTO
             ->setInvariable($DecommissionProductStockInvariableDTO)
-            ->setOrd($DecommissionProductStockOrderDTO);
+            ->setOrd($DecommissionProductStockOrderDTO)
+            ->setComment($OrderEvent->getComment());
 
         foreach($OrderEvent->getProduct() as $OrderProduct)
         {
