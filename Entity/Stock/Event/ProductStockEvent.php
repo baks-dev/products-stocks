@@ -138,7 +138,7 @@ class ProductStockEvent extends EntityEvent
 
     /** Комментарий */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Assert\Length(max: 512)]
+    #[Assert\Length(max: 4096)]
     private ?string $comment = null;
 
     /**
