@@ -46,29 +46,32 @@
                 <ul class="dropdown-menu">
 
                     {% if is_granted('ROLE_PRODUCT_STOCK_MOVING_NEW') or is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('products-stocks:admin.moving.new') }}"
-                               class="dropdown-item"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
+
+                        <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mx-3 my-1">
+                            <button data-href="{{ path('products-stocks:admin.moving.new') }}"
+                                    class="btn btn-sm btn-outline-primary text-start border-0 px-3 py-2 w-100 modal-link disabled"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
                             >
-                                Запрос на перемещение со склада
-                            </a>
+                                {{ 'Запрос на перемещение со склада'|trans({}, 'products-stocks') }}
+                            </button>
                         </li>
+
                     {% endif %}
 
                     {% if is_granted('ROLE_PRODUCT_STOCK_WAREHOUSE_SEND_NEW') or is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('products-stocks:admin.moving.send') }}"
-                               class="dropdown-item"
-                               data-bs-toggle="modal"
-                               data-bs-target="#modal"
-                            >
-                                Отправить продукцию другой склад
-                            </a>
-                        </li>
-                    {% endif %}
 
+                        <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mx-3 my-1">
+                            <button data-href="{{ path('products-stocks:admin.moving.send') }}"
+                                    class="btn btn-sm btn-outline-primary text-start border-0 px-3 py-2 w-100 modal-link disabled"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal"
+                            >
+                                {{ 'Отправить продукцию другой склад'|trans({}, 'products-stocks') }}
+                            </button>
+                        </li>
+
+                    {% endif %}
 
                 </ul>
 

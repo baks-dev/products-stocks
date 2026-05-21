@@ -28,19 +28,19 @@ value="{{ item.stock_id }}">
 
 
 <div id="usecase-{{ item.stockId }}-content" class="d-none">
-    <ul class="leader list-group list-group-flush ">
+    <ul class="leader list-group list-group-flush">
 
         {# Редактировать место складирвоания #}
         {% if is_granted('ROLE_PRODUCT_STOCK_STORAGE') or is_granted('ROLE_ADMIN') %}
 
-            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.storage', {id: item.stockId }) }}"
-                   class="text-decoration-none text-dark w-100 modal-link disabled"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
-                   title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
-                    Изменить место складирования
-                </a>
+            <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mb-1">
+                <button data-href="{{ path('products-stocks:admin.total.storage', {id: item.stockId }) }}"
+                        class="btn btn-sm btn-outline-primary text-start border-0 px-3 w-100 modal-link disabled"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                >
+                    {{ 'Изменить место складирования'|trans({}, 'products-stocks') }}
+                </button>
             </li>
 
         {% endif %}
@@ -48,29 +48,30 @@ value="{{ item.stock_id }}">
         {# Редактировать #}
         {% if is_granted('ROLE_PRODUCT_STOCK_EDIT') or is_granted('ROLE_ADMIN') %}
 
-            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.edit', {id: item.stockId }) }}"
-                   class="text-decoration-none text-dark w-100 modal-link disabled"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
-                   title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
-                    Редактировать остатки
-                </a>
+            <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mb-1">
+                <button data-href="{{ path('products-stocks:admin.total.edit', {id: item.stockId }) }}"
+                        class="btn btn-sm btn-outline-primary text-start border-0 px-3 w-100 modal-link disabled"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                >
+                    {{ 'Редактировать остатки'|trans({}, 'products-stocks') }}
+                </button>
             </li>
+
 
         {% endif %}
 
         {# Списать #}
         {% if is_granted('ROLE_ORDERS_STATUS_DECOMMISSION') or is_granted('ROLE_ADMIN') %}
 
-            <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('products-stocks:admin.total.decommission', { id: item.stockId }) }}"
-                   class="text-decoration-none text-dark w-100 modal-link disabled"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal"
-                   title="{{ 'btn.edit'|trans({}, 'core.btn') }}">
-                    Списать остатки
-                </a>
+            <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mb-1">
+                <button data-href="{{ path('products-stocks:admin.total.decommission', { id: item.stockId }) }}"
+                        class="btn btn-sm btn-outline-primary text-start border-0 px-3 w-100 modal-link disabled"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                >
+                    {{ 'Списать остатки'|trans({}, 'products-stocks') }}
+                </button>
             </li>
 
         {% endif %}
@@ -78,18 +79,20 @@ value="{{ item.stock_id }}">
         {# Переместить в другое место складирования на складе #}
         {% if is_granted('ROLE_PRODUCT_STOCK_STORAGE_MOVE') or is_granted('ROLE_ADMIN') %}
             {% if item.stockReserve < item.stockTotal %}
-                <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                    <a href="{{ path('products-stocks:admin.total.move', {id: item.stockId }) }}"
-                       class="text-decoration-none text-dark w-100 modal-link disabled"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal"
-                       title="{{ 'Переместить продукцию'|trans({}, 'products-stocks') }}">
-                        {{ 'Переместить продукцию'|trans({}, 'products-stocks') }}
-                    </a>
-                </li>
-            {% endif %}
-        {% endif %}
 
+                <li class="d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 mb-1">
+                    <button data-href="{{ path('products-stocks:admin.total.move', {id: item.stockId }) }}"
+                            class="btn btn-sm btn-outline-primary text-start border-0 px-3 w-100 modal-link disabled"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal"
+                    >
+                        {{ 'Переместить продукцию'|trans({}, 'products-stocks') }}
+                    </button>
+                </li>
+
+            {% endif %}
+
+        {% endif %}
 
     </ul>
 </div>
