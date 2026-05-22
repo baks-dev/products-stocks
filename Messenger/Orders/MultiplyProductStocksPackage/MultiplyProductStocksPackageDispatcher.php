@@ -33,6 +33,7 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\BaksDevDeliveryTransportBundle;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
 use BaksDev\Orders\Order\Messenger\MultiplyOrdersPackage\MultiplyOrdersPackageMessage;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Repository\ExistOrderEventByStatus\ExistOrderEventByStatusInterface;
@@ -67,6 +68,7 @@ final readonly class MultiplyProductStocksPackageDispatcher
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private DeduplicatorInterface $deduplicator,
         private CentrifugoPublishInterface $publish,
+        private MessageDispatchInterface $messageDispatch,
         private UserTokenStorageInterface $UserTokenStorage,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
         private CurrentProductIdentifierByEventInterface $CurrentProductIdentifierRepository,
@@ -76,7 +78,6 @@ final readonly class MultiplyProductStocksPackageDispatcher
 
     public function __invoke(MultiplyProductStocksPackageMessage $message): void
     {
-
         $Deduplicator = $this->deduplicator
             ->namespace('products-stocks')
             ->deduplication([
@@ -86,6 +87,17 @@ final readonly class MultiplyProductStocksPackageDispatcher
 
         if($Deduplicator->isExecuted())
         {
+            /** Разблокируем заказ */
+
+            $OrderUnlockMessage = new OrderUnlockMessage(
+                $message->getOrderId(),
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $OrderUnlockMessage,
+                transport: 'orders-order-low',
+            );
+
             return;
         }
 
@@ -202,6 +214,17 @@ final readonly class MultiplyProductStocksPackageDispatcher
                     self::class.':'.__LINE__,
                     var_export($message, true),
                 ],
+            );
+
+            /** Разблокируем заказ */
+
+            $OrderUnlockMessage = new OrderUnlockMessage(
+                $message->getOrderId(),
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $OrderUnlockMessage,
+                transport: 'orders-order-low',
             );
 
             return;
