@@ -26,7 +26,7 @@
 
 
 {% block javascript %}
-
+<script nonce='{{ csp_nonce() }}' async data-src="https://api-maps.yandex.ru/2.1/?apikey={{ MAPS_YANDEX_API }}&lang={{ app.request.locale|lower }}" class='lazy'></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/plugins/nice-select2/nice-select2.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/js/print.min.js?v={{ version }}" class="lazy"></script>
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/{{ version }}/plugins/datepicker/datepicker.min.js?v={{ version }}" class="lazy"></script>
