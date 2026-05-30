@@ -212,8 +212,8 @@ final class ReportTotalController extends AbstractController
         /** Общее количество продукции и общая стоимость */
 
         $sheet->setCellValue('A'.$key, 'Итого:');
-        $sheet->setCellValue('D'.$key, $allPrice); // Сумма
-        $sheet->setCellValue('F'.$key, $allTotal); // Наличие
+        $sheet->setCellValue('E'.$key, $allPrice); // Сумма
+        $sheet->setCellValue('G'.$key, $allTotal); // Наличие
 
 
         /**
