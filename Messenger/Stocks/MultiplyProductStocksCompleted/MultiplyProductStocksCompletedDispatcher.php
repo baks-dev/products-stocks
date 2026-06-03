@@ -35,6 +35,7 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksEvent\ProductStocksEventInterface;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Users\User\Repository\UserTokenStorage\UserTokenStorageInterface;
 use BaksDev\Users\User\Type\Id\UserUid;
 use Psr\Log\LoggerInterface;
@@ -90,8 +91,15 @@ final readonly class MultiplyProductStocksCompletedDispatcher
             return;
         }
 
-        /** Выдать заявку можно только со статусом Extradition «Укомплектована, готова к выдаче» */
-        if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusExtradition::class))
+        /**
+         * Выдать заявку можно только со статусом:
+         * - Package «Упаковка»
+         * - Extradition «Укомплектована, готова к выдаче»
+         */
+        if(
+            false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusExtradition::class)
+            && false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class)
+        )
         {
             $this->logger->critical(
                 sprintf(

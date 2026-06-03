@@ -315,6 +315,7 @@ final class AllProductStocksReportRepository implements AllProductStocksReportIn
                 JSONB_BUILD_OBJECT
                 (
                     'users_profile_uid', stock_product.profile,
+                    'stock_storage', stock_product.id,
                     'stock_total', stock_product.total,
                     'stock_reserve', stock_product.reserve
                 )

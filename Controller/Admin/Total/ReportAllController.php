@@ -158,6 +158,9 @@ final class ReportAllController extends AbstractController
         /** Заполнение данных начиная с ряда $key */
         $key = 3;
 
+        $profile_sum = null;
+        $profile_reserve = null;
+
         /** @var AllProductStocksReportResult $data */
         foreach($query as $data)
         {
@@ -206,25 +209,20 @@ final class ReportAllController extends AbstractController
              */
             $Money = $data->getProductPrice();
 
-
             // Штрихкоды
             $sheet->setCellValue('A'.$key, $data->getBarcodes() ? implode(',', $data->getBarcodes()) : '');
 
             // Артикул
             $sheet->setCellValue('B'.$key, trim($data->getProductArticle()));
 
-
             // Наименование товара
             $sheet->setCellValue('C'.$key, $data->getProductName());
-
 
             // Торговое предложение
             $sheet->setCellValue('D'.$key, str_replace(' /', '/', $strOffer));
 
-
             // Стоимость
             $sheet->setCellValue('E'.$key, $Money ? $Money->getValue() : 0);
-
 
             // Предыдущая стоимость
             $sheet->setCellValue('F'.$key,
@@ -236,6 +234,7 @@ final class ReportAllController extends AbstractController
 
             foreach($profiles as $profileKey => $profile)
             {
+
                 /** Для каждого профиля добавляем две колонки - наличие и резерв */
                 $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
                 $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
@@ -250,6 +249,23 @@ final class ReportAllController extends AbstractController
                     $sheet->setCellValue($firstColumnLetter.$key, $total_sum ?: '');
                     $sheet->setCellValue($lastColumnLetter.$key, $total_reserve ?: '');
 
+
+                    if(!isset($profile_sum[(string) $profile]))
+                    {
+                        $profile_sum[(string) $profile] = 0;
+                        $profile_reserve[(string) $profile] = 0;
+                    }
+
+                    if($total_sum)
+                    {
+                        $profile_sum[(string) $profile] += $total_sum;
+                    }
+
+                    if($total_reserve)
+                    {
+                        $profile_reserve[(string) $profile] += $total_reserve;
+                    }
+
                     continue;
                 }
 
@@ -260,6 +276,39 @@ final class ReportAllController extends AbstractController
             $key++;
         }
 
+
+        /** Шапка состоит из двух рядов, в первом - только названия профилей */
+        foreach($profiles as $profileKey => $profile)
+        {
+            /**
+             * Мы заполняем одним значением две колонки, объединяя их. Для этого получаем буквенные индексы, в
+             * пределах которых должна длиться объединенная колонка (включительно)
+             */
+            $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
+            $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
+
+            $sheet->setCellValue($firstColumnLetter.($key + 1), $profile->getAttr());
+
+            $sheet->mergeCells($firstColumnLetter.($key + 1).':'.$lastColumnLetter.($key + 1));
+        }
+
+
+        foreach($profiles as $profileKey => $profile)
+        {
+            /** Для каждого профиля добавляем две колонки - наличие и резерв */
+            $firstColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2);
+            $lastColumnLetter = Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 1);
+
+            $sheet->setCellValue($firstColumnLetter.($key + 2), $profile_sum[(string) $profile]);
+            $sheet->setCellValue($lastColumnLetter.($key + 2), $profile_reserve[(string) $profile]);
+
+            $sheet
+                ->getColumnDimension(Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2))
+                ->setAutoSize(true);
+            $sheet
+                ->getColumnDimension(Coordinate::stringFromColumnIndex($columnsCount + $profileKey * 2 + 2))
+                ->setAutoSize(true);
+        }
 
         /* Отдаем результат для скачивания */
         $filename = 'Отчёт_по_складским_остаткам.xlsx';
