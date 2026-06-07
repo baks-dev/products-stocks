@@ -338,6 +338,20 @@
                             </label>
                         </div>
 
+                    {% else %}
+                        <div class="invisible">
+                            <label class="btn p-3 border-dotted rounded-3">
+                                <div class="d-flex align-items-center">
+                                        <span class="h5 m-0 lh-1">
+                                            <input
+                                                    type="checkbox"
+                                                    class="form-check-input add-all-to-completed btn-outline-danger"
+                                                    disabled
+                                                    title="Выбрать данный заказ">
+                                        </span>
+                                </div>
+                            </label>
+                        </div>
                     {% endif %}
 
                     <button class="accordion-button collapsed btn-sm border-0 shadow-none bg-body p-0 collapse-link-content"
