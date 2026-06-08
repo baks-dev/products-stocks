@@ -86,6 +86,12 @@ final readonly class ProductStockUnlockDispatcher
         /** Если нет связи с блокировкой - прерываем обработчик */
         if(false === ($ProductStockEvent->getLock() instanceof ProductStockLock))
         {
+            $this->logger->warning(
+                sprintf('%s: не найдено ProductStockLock для разблокировки заказа',
+                    $ProductStockEvent->getNumber()),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+
             return;
         }
 

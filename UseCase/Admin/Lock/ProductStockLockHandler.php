@@ -42,7 +42,10 @@ final class ProductStockLockHandler extends AbstractHandler
 
         if(false === ($entity instanceof ProductStockLock))
         {
-            return 'ProductStockLock error';
+            $this->validatorCollection->error(
+                sprintf('Событие %s заблокированного заказа не найдено', $command->getEvent()),
+            );
+            return $this->validatorCollection->getErrorUniqid();
         }
 
         /** Добавляем объект сущности для валидации */

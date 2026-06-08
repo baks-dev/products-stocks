@@ -29,6 +29,9 @@ namespace BaksDev\Products\Stocks\Messenger\Lock;
 use BaksDev\Centrifugo\BaksDevCentrifugoBundle;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Messenger\LockOrder\OrderUnlockMessage;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\Lock\ProductStockLock;
 use BaksDev\Products\Stocks\Repository\CurrentProductStocks\CurrentProductStocksInterface;
@@ -53,7 +56,9 @@ final readonly class ProductStockUnlockHandler
         #[Target('productsStocksLogger')] private LoggerInterface $logger,
         private CurrentProductStocksInterface $currentProductStocksRepository,
         private ProductStockLockHandler $productStockLockHandler,
+        private MessageDispatchInterface $messageDispatch,
         private ?CentrifugoPublishInterface $centrifugoPublish = null,
+
     ) {}
 
     public function __invoke(ProductStockUnlockMessage $message): void
@@ -100,7 +105,6 @@ final readonly class ProductStockUnlockHandler
 
         $ProductStockLockDTO = new ProductStockLockDTO($ProductStockEvent->getId());
         $ProductStockEvent->getLock()->getDto($ProductStockLockDTO);
-
         $ProductStockLockDTO->unlock(); // снимаем блокировку
 
         $ProductStockLock = $this->productStockLockHandler->handle($ProductStockLockDTO);
@@ -113,6 +117,8 @@ final readonly class ProductStockUnlockHandler
                 ),
                 context: [self::class.':'.__LINE__],
             );
+
+            return;
         }
 
         $this->logger->info(
@@ -122,6 +128,26 @@ final readonly class ProductStockUnlockHandler
             ),
             context: [self::class.':'.__LINE__],
         );
+
+        /** Разблокируем заказ */
+        if($ProductStockEvent->getOrder() instanceof OrderUid)
+        {
+            /** Синхронно снимаем блокировку с заказа */
+
+            $OrderUnlockMessage = new OrderUnlockMessage(
+                id: $ProductStockEvent->getOrder(),
+                context: self::class.':'.__LINE__,
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $OrderUnlockMessage,
+                transport: 'orders',
+            );
+
+        }
+
+
+
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))
         {
