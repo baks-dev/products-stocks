@@ -204,7 +204,7 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
 
         $this->messageDispatch->dispatch(
             message: $OrderUnlockMessage,
-            transport: (string) $CurrentOrderEvent->getOrderProfile(),
+            transport: 'orders-order',
         );
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))
@@ -231,6 +231,5 @@ final readonly class UpdateOrderStatusByExtraditionProductStocksDispatcher
                 );
             }
         }
-
     }
 }

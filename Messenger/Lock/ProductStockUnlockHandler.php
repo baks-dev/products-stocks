@@ -146,9 +146,6 @@ final readonly class ProductStockUnlockHandler
 
         }
 
-
-
-
         if(true === class_exists(BaksDevCentrifugoBundle::class))
         {
 

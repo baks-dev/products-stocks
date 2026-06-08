@@ -188,7 +188,7 @@ final readonly class UpdateOrderStatusByCompletedProductStocksDispatcher
 
         $this->messageDispatch->dispatch(
             message: $OrderUnlockMessage,
-            transport: $CurrentOrderEvent->getOrderProfile().'-low',
+            transport: 'orders-order-low',
         );
 
         if(true === class_exists(BaksDevCentrifugoBundle::class))
