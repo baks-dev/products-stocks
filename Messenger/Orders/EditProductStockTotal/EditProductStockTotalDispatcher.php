@@ -600,7 +600,7 @@ final readonly class EditProductStockTotalDispatcher
 
         $this->MessageDispatch->dispatch(
             message: $OrderUnlockMessage,
-            transport: 'products-stocks',
+            transport: 'orders-order',
         );
 
         $Deduplicator->save();

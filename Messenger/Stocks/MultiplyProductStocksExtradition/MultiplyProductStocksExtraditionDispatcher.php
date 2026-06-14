@@ -58,22 +58,11 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
         private UserTokenStorageInterface $UserTokenStorageRepository,
         private ProductStocksEventInterface $ProductStocksEventRepository,
         private ExtraditionProductStockHandler $ExtraditionProductStockHandler,
+        private MessageDispatchInterface $messageDispatch,
     ) {}
 
     public function __invoke(MultiplyProductStocksExtraditionMessage $message): void
     {
-        $Deduplicator = $this->deduplicator
-            ->namespace('products-stocks')
-            ->deduplication([
-                (string) $message->getProductStockEvent(),
-                self::class,
-            ]);
-
-        if($Deduplicator->isExecuted())
-        {
-            return;
-        }
-
         $ProductStockEvent = $this->ProductStocksEventRepository
             ->forEvent($message->getProductStockEvent())
             ->find();
@@ -87,6 +76,32 @@ final readonly class MultiplyProductStocksExtraditionDispatcher
 
             return;
         }
+
+
+        $Deduplicator = $this->deduplicator
+            ->namespace('products-stocks')
+            ->deduplication([
+                (string) $message->getProductStockEvent(),
+                self::class,
+            ]);
+
+        if($Deduplicator->isExecuted())
+        {
+            /** Синхронно снимаем блокировку с заказа */
+
+            $OrderUnlockMessage = new OrderUnlockMessage(
+                id: $ProductStockEvent->getOrder(),
+                context: self::class.':'.__LINE__,
+            );
+
+            $this->messageDispatch->dispatch(
+                message: $OrderUnlockMessage,
+                transport: 'orders-order',
+            );
+
+            return;
+        }
+
 
         /** Укомплектовать заявку можно только со статусом «Упаковка» */
         if(false === $ProductStockEvent->equalsProductStockStatus(ProductStockStatusPackage::class))

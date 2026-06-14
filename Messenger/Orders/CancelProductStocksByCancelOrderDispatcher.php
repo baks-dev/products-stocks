@@ -176,6 +176,7 @@ final readonly class CancelProductStocksByCancelOrderDispatcher
 
             $this->messageDispatch->dispatch(
                 message: $OrderUnlockMessage,
+                transport: 'orders-order',
             );
 
         }

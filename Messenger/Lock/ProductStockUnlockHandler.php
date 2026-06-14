@@ -141,7 +141,7 @@ final readonly class ProductStockUnlockHandler
 
             $this->messageDispatch->dispatch(
                 message: $OrderUnlockMessage,
-                transport: 'orders',
+                transport: 'orders-order',
             );
 
         }

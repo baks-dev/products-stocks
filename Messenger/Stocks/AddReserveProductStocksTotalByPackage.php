@@ -210,6 +210,7 @@ final readonly class AddReserveProductStocksTotalByPackage
 
                 $this->messageDispatch->dispatch(
                     message: $OrderUnlockMessage,
+                    transport: 'orders-order',
                 );
 
                 return;

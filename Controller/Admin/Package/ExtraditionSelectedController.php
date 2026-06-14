@@ -87,7 +87,7 @@ final class ExtraditionSelectedController extends AbstractController
 
                     $OrderLockMessage = new OrderLockMessage(
                         id: $ExtraditionProductStockDTO->getOrd()->getOrd(),
-                        context: self::class.':'.__LINE__
+                        context: self::class.':'.__LINE__,
                     );
 
                     /** Отправляем в транспорт профиля */
