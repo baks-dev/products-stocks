@@ -284,16 +284,19 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
                 $dbal->setParameter('delivery', $this->filter->getDelivery(), DeliveryUid::TYPE);
             }
 
-            if(true === $this->filter->getPrint())
+            if(empty($this->search?->getQuery()))
             {
-                $dbal->andWhere('order_print.printed IS TRUE');
-            }
+                if(true === $this->filter->getPrint())
+                {
+                    $dbal->andWhere('order_print.printed IS TRUE');
+                }
 
-            if(false === $this->filter->getPrint())
-            {
-                $dbal->andWhere('order_print.printed IS NOT TRUE');
-            }
+                if(false === $this->filter->getPrint())
+                {
+                    $dbal->andWhere('order_print.printed IS NOT TRUE');
+                }
 
+            }
         }
 
         $dbal
