@@ -64,8 +64,7 @@ final readonly class ProductStockUnlockDispatcher
         if(false === ($ProductStockEvent instanceof ProductStockEvent))
         {
             $this->logger->critical(
-                sprintf('products-stocks: %s: Не найдено активное событие ProductStockEvent',
-                    $ProductStockEvent->getNumber()),
+                sprintf('products-stocks: Не найдено активное событие складской заявки ProductStockEvent для снятия блокировки'),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
 
@@ -75,7 +74,7 @@ final readonly class ProductStockUnlockDispatcher
         if(false === $ProductStockEvent->isInvariable())
         {
             $this->logger->warning(
-                sprintf('%s: не найдено ProductStocksInvariable',
+                sprintf('%s: не найдено ProductStocksInvariable (складская заявка могла изменится)',
                     $ProductStockEvent->getNumber()),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
