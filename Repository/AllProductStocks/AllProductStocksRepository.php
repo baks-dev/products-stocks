@@ -808,7 +808,12 @@ final class AllProductStocksRepository implements AllProductStocksInterface
 
         return $this
             ->paginator
-            ->fetchAllHydrate($dbal, AllProductStocksResult::class);
+            ->fetchAllHydrate(
+                qb: $dbal,
+                class: AllProductStocksResult::class,
+                namespace: 'products-stocks',
+                ttl: '1 hour',
+            );
 
     }
 

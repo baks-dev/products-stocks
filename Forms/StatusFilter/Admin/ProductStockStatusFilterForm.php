@@ -29,6 +29,7 @@ use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusInc
 use DateTimeImmutable;
 use DateTimeInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -70,6 +71,7 @@ class ProductStockStatusFilterForm extends AbstractType
             'translation_domain' => 'status.product.stock',
         ]);
 
+        $builder->add('sort', CheckboxType::class, ['required' => false]);
 
         $builder->add('date', DateType::class, [
             'widget' => 'single_text',
@@ -113,6 +115,7 @@ class ProductStockStatusFilterForm extends AbstractType
                 if($sessionArray !== false)
                 {
                     !isset($sessionArray['status']) ?: $data->setStatus(new ProductStockStatus($sessionArray['status']));
+                    !isset($sessionArray['sort']) ?: $data->setSort($sessionArray['sort']);
                     !isset($sessionArray['date']) ?: $data->setDate(new DateTimeImmutable($sessionArray['date']));
                 }
             }
@@ -137,6 +140,7 @@ class ProductStockStatusFilterForm extends AbstractType
                     $sessionArray = [];
 
                     !$data->getStatus() ?: $sessionArray['status'] = (string) $data->getStatus();
+                    !$data->getSort() || ($sessionArray['sort'] = $data->getSort());
                     !$data->getDate() ?: $sessionArray['date'] = $data->getDate()->format(DateTimeInterface::W3C);
 
                     if($sessionArray)

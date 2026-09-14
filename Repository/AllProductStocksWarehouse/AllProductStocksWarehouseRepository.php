@@ -581,7 +581,13 @@ final class AllProductStocksWarehouseRepository implements AllProductStocksWareh
 
         $dbal->orderBy('modify.mod_date', 'DESC');
 
-        return $this->paginator->fetchAllHydrate($dbal, ProductStocksWarehouseResult::class);
+        return $this->paginator
+            ->fetchAllHydrate(
+                $dbal,
+                ProductStocksWarehouseResult::class,
+                'products-stocks',
+                '5 minutes',
+            );
 
     }
 }

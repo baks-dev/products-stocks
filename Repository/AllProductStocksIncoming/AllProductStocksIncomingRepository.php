@@ -618,9 +618,17 @@ final class AllProductStocksIncomingRepository implements AllProductStocksIncomi
                 ->addSearchLike('product_variation.article');
         }
 
-        $dbal->orderBy('modify.mod_date', 'DESC');
 
-        return $this->paginator->fetchAllHydrate($dbal, ProductStocksIncomingResult::class);
+        $dbal->orderBy(
+            'modify.mod_date',
+            $this->filter_status?->getSort() ? 'ASC' : 'DESC');
+
+        return $this->paginator->fetchAllHydrate(
+            $dbal,
+            ProductStocksIncomingResult::class,
+            'products-stocks',
+            '5 minutes',
+        );
 
     }
 }

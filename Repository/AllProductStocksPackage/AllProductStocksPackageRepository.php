@@ -463,6 +463,9 @@ final class AllProductStocksPackageRepository implements AllProductStocksPackage
         $dbal->addOrderBy('order_delivery.delivery_date', 'ASC');
         $dbal->addOrderBy('invariable.number', 'ASC');
 
-        return $this->paginator->fetchAllHydrate($dbal, AllProductStocksPackageResult::class);
+        return $this->paginator->fetchAllHydrate(
+            $dbal,
+            AllProductStocksPackageResult::class,
+        );
     }
 }

@@ -179,7 +179,7 @@
                     {% include Template('@products-product/admin/filter/'~baks_settings.device~'/filter.html.twig') %}
                 </div>
 
-                <div class="w-75 m-1 ms-2">
+                <div class="w-100 m-1 ms-2">
                     {{ form_start(filter_status, ) }}
 
                     <div class="d-flex justify-content-between gap-1">
@@ -210,7 +210,51 @@
                             </div>
                         </div>
 
+                        <div class="d-flex flex-column align-items-start radio-buttons gap-2 mb-3"
+                             data-buttons="true"
+                             style='clear: both;'>
+                            <label class="btn border-2 border-dotted rounded-3 text-muted {{ filter_status.sort.vars.data ? 'active' }}">
+                                <span class="d-flex align-items-center align-content-center">
+                                    <span class="flex-grow-1 text-center">
+                                        <span class="h5">
+                                            <span class="form-check d-flex align-items-center mb-0 text-center p-0">
+                                               <span class='mb-1 d-none'>
+                                                   {{ form_widget(filter_status.sort, { label: false, attr: { class: 'btn-check' } }) }}
+                                               </span>
+
+                                                <span style="font-size: 1rem;">
+
+                                                    {% if filter_status.sort.vars.data %}
+
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                             fill="currentColor" class="bi bi-sort-down text-primary"
+                                                             viewBox="0 0 16 16">
+                                                            <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                                                        </svg>
+
+                                                    {% else %}
+
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                             fill="currentColor" class="bi bi-sort-down-alt"
+                                                             viewBox="0 0 16 16">
+                                                          <path d="M3.5 3.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 12.293zm4 .5a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1zm0 3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1zm0 3a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1zM7 12.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5"/>
+                                                        </svg>
+
+                                                    {% endif %}
+
+
+
+                                                    {# {{ include(_self|replace({ "form.row.html.twig": "template.html.twig" }), { 'value' : child.vars.value }) }} #}
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+
                     </div>
+
 
                     {{ form_end(filter_status) }}
                 </div>

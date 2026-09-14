@@ -33,6 +33,8 @@ class ProductStockStatusFilterDTO implements ProductStockStatusFilterInterface
     /**
      * Статус
      */
+    private bool|null $sort = null;
+
     private ProductStockStatus|null $status = null;
 
     private ?DateTimeImmutable $date = null;
@@ -73,4 +75,16 @@ class ProductStockStatusFilterDTO implements ProductStockStatusFilterInterface
 
         return $this;
     }
+
+    public function getSort(): bool
+    {
+        return $this->sort === true;
+    }
+
+    public function setSort(?bool $sort): self
+    {
+        $this->sort = ($sort === true);
+        return $this;
+    }
+
 }
